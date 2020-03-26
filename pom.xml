@@ -6,11 +6,22 @@
 	<groupId>tw.waterball.judge-girl</groupId>
 	<artifactId>k8s</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
+	<packaging>pom</packaging>
+
 	<name>k8s</name>
 	<description>Root project for Judge-K8S</description>
 
 	<properties>
 		<java.version>1.8</java.version>
 	</properties>
+
+	<modules>
+		<module>Domain-Model</module>
+		<module>Streaming-Service</module>
+		<module>Student-Adapter-Service</module>
+		<module>Submission-Service</module>
+		<module>Problem-Service</module>
+		<module>Judge-K8S-Web</module>
+	</modules>
 
 </project>
