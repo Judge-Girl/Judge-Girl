@@ -1,0 +1,20 @@
+[submodule "Judge-K8S-Web"]
+	path = Judge-K8S-Web
+	url = git@github.com:Judge-Girl/Judge-K8S-Web.git
+	
+[submodule "Problem-Service"]
+	path = Problem-Service
+	url = git@github.com:Judge-Girl/Problem-Service.git
+
+[submodule "Streaming-Service"]
+	path = Streaming-Service
+	url = git@github.com:Judge-Girl/Streaming-Service.git
+
+[submodule "Student-Adapter-Service"]
+	path = Student-Adapter-Service
+	url = git@github.com:Judge-Girl/Student-Adapter-Service.git
+
+[submodule "Submission-Service"]
+	path = Submission-Service
+	url = git@github.com:Judge-Girl/Submission-Service.git
+
