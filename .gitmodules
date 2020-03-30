@@ -17,7 +17,3 @@
 [submodule "Submission-Service"]
 	path = Submission-Service
 	url = git@github.com:Judge-Girl/Submission-Service.git
-
-[submodule "Commons"]
-	path = Commons
-	url = git@github.com:Judge-Girl/Commons.git
