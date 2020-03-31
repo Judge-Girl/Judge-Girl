@@ -22,6 +22,7 @@
 		<module>Submission-Service</module>
 		<module>Problem-Service</module>
 		<module>Judge-K8S-Web</module>
+		<module>Judger</module>
 	</modules>
 
 </project>

@@ -21,3 +21,6 @@
 [submodule "Commons"]
 	path = Commons
 	url = git@github.com:Judge-Girl/Commons.git
+[submodule "Judger"]
+	path = Judger
+	url = https://github.com/Judge-Girl/Judger.git
