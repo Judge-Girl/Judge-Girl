@@ -16,7 +16,7 @@
 	</properties>
 
 	<modules>
-		<module>Domain-Model</module>
+		<module>Commons</module>
 		<module>Streaming-Service</module>
 		<module>Student-Adapter-Service</module>
 		<module>Submission-Service</module>
