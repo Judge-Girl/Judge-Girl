@@ -1,7 +1,3 @@
-[submodule "Judge-K8S-Web"]
-	path = Judge-K8S-Web
-	url = git@github.com:Judge-Girl/Judge-K8S-Web.git
-	
 [submodule "Problem-Service"]
 	path = Problem-Service
 	url = git@github.com:Judge-Girl/Problem-Service.git
@@ -21,6 +17,11 @@
 [submodule "Commons"]
 	path = Commons
 	url = git@github.com:Judge-Girl/Commons.git
+
+[submodule "Judge-K8S-Web-Service"]
+	path = Judge-K8S-Web-Service
+	url = git@github.com:Judge-Girl/Judge-K8S-Web-Service.git
+
 [submodule "Judger"]
 	path = Judger
 	url = https://github.com/Judge-Girl/Judger.git
