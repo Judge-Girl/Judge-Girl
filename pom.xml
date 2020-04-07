@@ -21,7 +21,7 @@
 		<module>Student-Adapter-Service</module>
 		<module>Submission-Service</module>
 		<module>Problem-Service</module>
-		<module>Judge-K8S-Web</module>
+		<module>Judge-K8S-Web-Service</module>
 		<module>Judger</module>
 	</modules>
 
