@@ -29,3 +29,6 @@
 [submodule "Plugins"]
 	path = Plugins
 	url = git@github.com:Judge-Girl/Plugins.git
+[submodule "Judge-Girl-Test-Kit"]
+	path = Judge-Girl-Test-Kit
+	url = git@github.com:Judge-Girl/Judge-Girl-Test-Kit.git

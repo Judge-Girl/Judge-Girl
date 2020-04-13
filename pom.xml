@@ -23,6 +23,7 @@
 		<module>Problem-Service</module>
 		<module>Judge-K8S-Web-Service</module>
 		<module>Judger</module>
+		<module>Plugins</module>
 	</modules>
 
 </project>
