@@ -24,6 +24,7 @@
 		<module>Judge-K8S-Web-Service</module>
 		<module>Judger</module>
 		<module>Plugins</module>
+		<module>Judge-Girl-Test-Kit</module>
 	</modules>
 
 </project>
