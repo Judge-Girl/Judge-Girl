@@ -1,0 +1,25 @@
+version: '2.0'
+services:
+  Student-Adapter-Service:
+    build: Student-Adapter-Service
+    environment:
+      spring.profiles.active: prod
+
+  Problem-Service:
+    build: Problem-Service
+    environment:
+      spring.profiles.active: dev
+
+  Submission-Service:
+    build: Submission-Service
+    environment:
+      spring.profiles.active: dev,serviceDriver,jwt
+
+#  gateway:
+#    build: app
+#    links:
+#      - Student-Adapter-Service
+#      - Problem-Service
+#      - Submission-Service
+#    ports:
+#      - 8000:80
