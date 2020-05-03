@@ -1,25 +1,34 @@
 version: '2.0'
 services:
-  Student-Adapter-Service:
+  student-service:
     build: Student-Adapter-Service
     environment:
       spring.profiles.active: prod
+    networks:
+      - host
+      - judge-k8s
 
-  Problem-Service:
+  problem-service:
     build: Problem-Service
     environment:
       spring.profiles.active: dev
+    networks:
+      - judge-k8s
 
-  Submission-Service:
+
+  submission-service:
     build: Submission-Service
     environment:
       spring.profiles.active: dev,serviceDriver,jwt
+    networks:
+      - judge-k8s
 
-#  gateway:
-#    build: app
-#    links:
-#      - Student-Adapter-Service
-#      - Problem-Service
-#      - Submission-Service
-#    ports:
-#      - 8000:80
+  web-gateway:
+    build: app
+    ports:
+      - 80:80
+    networks:
+      - judge-k8s
+
+networks:
+  judge-k8s:
