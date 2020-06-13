@@ -1,5 +1,8 @@
 # Judge-K8S
 
+## DEMO
+![DEMO](https://i.imgur.com/MZeadP5.png)
+
 ## Background
 
 Currently, students depend on Judge girl system to submit the codes for homework or practice purposes. Judge girl works in its unscalable manner due to its heavy coupling to the OS and file system. However, this issue was intensified by those Judge girl’s problems which require GPUs. Judge girl schedules code-submission  in a FIFO fashion, to one hard-coded computing node for execution. 
