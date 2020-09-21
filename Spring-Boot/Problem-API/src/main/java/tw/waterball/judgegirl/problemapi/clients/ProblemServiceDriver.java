@@ -28,7 +28,10 @@ import java.util.List;
  */
 public interface ProblemServiceDriver {
     ProblemView getProblem(int problemId) throws ProblemNotFoundException;
+
     List<TestCase> getTestCases(int problemId) throws ProblemNotFoundException;
+
     FileResource downloadZippedProvidedCodes(int problemId, String providedCodesFileId) throws ProblemNotFoundException;
+
     FileResource downloadZippedTestCaseIOs(int problemId, String testcaseIOsFileId) throws ProblemNotFoundException;
 }

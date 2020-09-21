@@ -33,6 +33,10 @@ public class ReplaceUnderscoresAndCamelCaseDisplayNameGenerator extends DisplayN
     public ReplaceUnderscoresAndCamelCaseDisplayNameGenerator() {
     }
 
+    private static String replaceUnderscores(String name) {
+        return name.replace("_", ", ");
+    }
+
     @Override
     public String generateDisplayNameForClass(Class<?> testClass) {
         return this.replaceCapitals(super.generateDisplayNameForClass(testClass));
@@ -47,10 +51,6 @@ public class ReplaceUnderscoresAndCamelCaseDisplayNameGenerator extends DisplayN
     public String generateDisplayNameForMethod(Class<?> testClass, Method testMethod) {
         String replaceUnderscores = replaceUnderscores(testMethod.getName());
         return this.replaceCapitals(replaceUnderscores);
-    }
-
-    private static String replaceUnderscores(String name) {
-        return name.replace("_", ", ");
     }
 
     private String replaceCapitals(String name) {
