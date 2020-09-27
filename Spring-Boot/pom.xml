@@ -7,18 +7,25 @@
     <parent>
         <artifactId>judge-girl</artifactId>
         <groupId>tw.waterball.judge-girl</groupId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>${revision}</version>
     </parent>
 
+    <name>Spring Boot</name>
     <artifactId>spring-boot</artifactId>
-    <packaging>pom</packaging>
 
     <modules>
-        <module>Problem-API</module>
-        <module>Submission-API</module>
+        <module>Test-Kit</module>
+        <module>Spring-Boot-Problem</module>
+        <module>Spring-Boot-Submission</module>
+        <module>Spring-Boot-Student</module>
     </modules>
 
     <dependencies>
+        <dependency>
+            <groupId>tw.waterball.judge-girl</groupId>
+            <artifactId>spring-boot</artifactId>
+            <version>${revision}</version>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -37,6 +44,23 @@
                     <artifactId>junit-vintage-engine</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <version>0.11.0</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <version>0.11.0</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <version>0.11.0</version>
+            <scope>runtime</scope>
         </dependency>
     </dependencies>
 

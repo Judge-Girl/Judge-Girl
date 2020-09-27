@@ -1,0 +1,42 @@
+pipeline {
+    agent any
+    stages {
+        stage('Install Libs') {
+            steps {
+                build job: "/Judge-K8S.commons", wait: true
+                build job: "/Judge-K8S.plugins", wait: true
+                build job: "/Judge-K8S.Test-kit", wait: true
+            }
+        }
+        stage('Build') {
+            steps {
+                sh 'mvn -B -DskipTests clean package'
+            }
+        }
+        stage('Unit Test') {
+            steps {
+                sh 'mvn -B test'
+            }
+        }
+
+        stage('Integration Test') {
+            steps {
+                sh 'mvn -B -DskipTests verify'
+            }
+        }
+
+        stage('Build Java image') {
+            steps {
+                sh 'docker build -t judge-k8s.submission-service:1.0 .'
+            }
+        }
+
+        stage('Run Image') {
+            steps {
+                sh 'docker stop judge-k8s.submission-service || true'
+                sh 'docker run --network host -d --rm --name judge-k8s.submission-service judge-k8s.submission-service:1.0'
+            }
+        }
+        
+    }
+}
