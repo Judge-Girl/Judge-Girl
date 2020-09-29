@@ -20,12 +20,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import tw.waterball.judgegirl.commons.entities.Student;
-import tw.waterball.judgegirl.commons.services.token.TokenInvalidException;
-import tw.waterball.judgegirl.commons.services.token.TokenService;
 import tw.waterball.judgegirl.commons.utils.HttpHeaderUtils;
+import tw.waterball.judgegirl.entities.Student;
 import tw.waterball.judgegirl.springboot.student.api.LegacyStudentAPI;
-
+import tw.waterball.judgegirl.springboot.token.*;
 import java.util.Optional;
 
 /**

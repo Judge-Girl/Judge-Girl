@@ -28,7 +28,6 @@ import tw.waterball.judgegirl.commons.services.token.TokenInvalidException;
 import tw.waterball.judgegirl.commons.services.token.TokenService;
 import tw.waterball.judgegirl.commons.services.token.TokenService.Token;
 import tw.waterball.judgegirl.springboot.student.api.LegacyStudentAPI;
-import tw.waterball.judgegirl.springboot.student.exceptions.AccountNotFoundException;
 import tw.waterball.judgegirl.springboot.student.exceptions.PasswordIncorrectException;
 
 import java.util.Date;

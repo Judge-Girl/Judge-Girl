@@ -17,9 +17,9 @@
 package tw.waterball.judgegirl.springboot.student.api;
 
 import org.springframework.stereotype.Component;
-import tw.waterball.judgegirl.commons.entities.Student;
-import tw.waterball.judgegirl.commons.profiles.Dev;
-import tw.waterball.judgegirl.springboot.student.exceptions.AccountNotFoundException;
+import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
+import tw.waterball.judgegirl.entities.Student;
+import tw.waterball.judgegirl.springboot.profiles.Dev;
 import tw.waterball.judgegirl.springboot.student.exceptions.PasswordIncorrectException;
 
 import java.util.Optional;
@@ -34,7 +34,7 @@ public class StubLegacyStudentAPI implements LegacyStudentAPI {
     private final static String PASSWORD = "password";
 
     @Override
-    public int authenticate(String account, String password) throws AccountNotFoundException, PasswordIncorrectException {
+    public int authenticate(String account, String password) throws NotFoundException, PasswordIncorrectException {
         if (STUB.getAccount().equals(account)) {
             if (PASSWORD.equals(password)) {
                 return STUB.getId();
@@ -42,7 +42,8 @@ public class StubLegacyStudentAPI implements LegacyStudentAPI {
                 throw new PasswordIncorrectException();
             }
         } else {
-            throw new AccountNotFoundException(account);
+            throw NotFoundException.resource("Student")
+                    .id(account);
         }
     }
 

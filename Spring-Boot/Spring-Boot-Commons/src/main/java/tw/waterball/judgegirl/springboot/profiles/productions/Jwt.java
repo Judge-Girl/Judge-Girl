@@ -14,24 +14,21 @@
  *    limitations under the License.
  */
 
-package tw.waterball.judgegirl.springboot.student.api;
+package tw.waterball.judgegirl.springboot.profiles.productions;
 
-import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
-import tw.waterball.judgegirl.entities.Student;
-import tw.waterball.judgegirl.springboot.student.exceptions.PasswordIncorrectException;
+import org.springframework.context.annotation.Primary;
+import tw.waterball.judgegirl.springboot.profiles.Profiles;
 
-import java.util.Optional;
+import java.lang.annotation.*;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
-public interface LegacyStudentAPI {
-    /**
-     * @return the authenticated student's id
-     */
-    int authenticate(String account, String password) throws NotFoundException, PasswordIncorrectException;
-
-    Optional<Student> getStudentByAccount(String account);
-
-    Optional<Student> getStudentById(int studentId);
+@Target({ElementType.TYPE, ElementType.METHOD})
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Primary
+@Prod
+@org.springframework.context.annotation.Profile(Profiles.JWT)
+public @interface Jwt {
 }

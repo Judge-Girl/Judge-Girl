@@ -12,9 +12,11 @@
 
     <name>Spring Boot</name>
     <artifactId>spring-boot</artifactId>
+    <packaging>pom</packaging>
 
     <modules>
         <module>Test-Kit</module>
+        <module>Spring-Boot-Commons</module>
         <module>Spring-Boot-Problem</module>
         <module>Spring-Boot-Submission</module>
         <module>Spring-Boot-Student</module>
@@ -23,7 +25,7 @@
     <dependencies>
         <dependency>
             <groupId>tw.waterball.judge-girl</groupId>
-            <artifactId>spring-boot</artifactId>
+            <artifactId>commons</artifactId>
             <version>${revision}</version>
         </dependency>
         <dependency>

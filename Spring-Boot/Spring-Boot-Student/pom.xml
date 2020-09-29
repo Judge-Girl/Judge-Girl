@@ -11,4 +11,22 @@
     <artifactId>spring-boot-student</artifactId>
     <name>Spring-Boot Student</name>
 
+    <dependencies>
+        <dependency>
+            <groupId>tw.waterball.judge-girl</groupId>
+            <artifactId>test-kit</artifactId>
+            <version>${revision}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>tw.waterball.judge-girl</groupId>
+            <artifactId>spring-boot-commons</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>tw.waterball.judge-girl</groupId>
+            <artifactId>entities</artifactId>
+            <version>${revision}</version>
+        </dependency>
+    </dependencies>
 </project>

@@ -23,11 +23,11 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
-import tw.waterball.judgegirl.commons.entities.Student;
-import tw.waterball.judgegirl.commons.profiles.productions.Prod;
-import tw.waterball.judgegirl.commons.utils.RestTemplates;
-import tw.waterball.judgegirl.springboot.student.exceptions.AccountNotFoundException;
+import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
+import tw.waterball.judgegirl.entities.Student;
+import tw.waterball.judgegirl.springboot.profiles.productions.Prod;
 import tw.waterball.judgegirl.springboot.student.exceptions.PasswordIncorrectException;
+import tw.waterball.judgegirl.springboot.utils.RestTemplates;
 
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
@@ -75,7 +75,7 @@ public class JudgeGirlLegacyStudentApiAdapter implements LegacyStudentAPI {
     }
 
     @Override
-    public int authenticate(String account, String password) throws AccountNotFoundException, PasswordIncorrectException {
+    public int authenticate(String account, String password) throws NotFoundException, PasswordIncorrectException {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         headers.set("Api-key", apiKey);
@@ -85,7 +85,7 @@ public class JudgeGirlLegacyStudentApiAdapter implements LegacyStudentAPI {
             ResponseEntity<LegacyAuthResponse> response = restTemplate.postForEntity(host + "/api/auth", entity, LegacyAuthResponse.class);
             return requireNonNull(response.getBody()).userId;
         } catch (HttpClientErrorException.NotFound err) {
-            throw new AccountNotFoundException(account);
+            throw NotFoundException.resource("Student").id(account);
         } catch (HttpClientErrorException.BadRequest err) {
             throw new PasswordIncorrectException();
         } catch (Exception err) {
@@ -110,7 +110,7 @@ public class JudgeGirlLegacyStudentApiAdapter implements LegacyStudentAPI {
             return Optional.of(new Student(legacyAuthResponse.userId, legacyAuthResponse.lgn,
                     null /*Name is not supported in the current version*/));
         } catch (HttpClientErrorException.NotFound err) {
-            throw new StudentNotFoundException(studentId);
+            throw new NotFoundException(studentId, "Student");
         } catch (Exception err) {
             throw new RuntimeException(err);
         }

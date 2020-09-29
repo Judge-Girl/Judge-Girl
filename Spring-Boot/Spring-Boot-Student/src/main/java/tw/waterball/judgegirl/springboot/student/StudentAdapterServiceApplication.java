@@ -20,7 +20,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.client.RestTemplate;
-import tw.waterball.judgegirl.commons.utils.RestTemplates;
+import tw.waterball.judgegirl.springboot.ScanRoot;
+import tw.waterball.judgegirl.springboot.utils.RestTemplates;
 
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
@@ -32,7 +33,6 @@ public class StudentAdapterServiceApplication {
     public static void main(String[] args) {
         SpringApplication.run(StudentAdapterServiceApplication.class, args);
     }
-
 
     @Bean
     public RestTemplate restTemplate() throws KeyStoreException, NoSuchAlgorithmException, KeyManagementException {

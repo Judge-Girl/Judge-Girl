@@ -1,4 +1,4 @@
-package tw.waterball.judgegirl.springboot.problem.controllers;/*
+/*
  *  Copyright 2020 Johnny850807 (Waterball) 潘冠辰
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,6 +13,7 @@ package tw.waterball.judgegirl.springboot.problem.controllers;/*
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
+package tw.waterball.judgegirl.springboot.problem.controllers;
 
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -32,14 +33,14 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import tw.waterball.judgegirl.commons.utils.ZipUtils;
 import tw.waterball.judgegirl.entities.problem.Problem;
 import tw.waterball.judgegirl.entities.problem.TestCase;
-import tw.waterball.judgegirl.commons.profiles.Profiles;
-import tw.waterball.judgegirl.commons.utils.ZipUtils;
-import tw.waterball.judgegirl.springboot.problem.SpringBootProblemApplication;
 import tw.waterball.judgegirl.problemapi.views.ProblemItem;
+import tw.waterball.judgegirl.springboot.problem.SpringBootProblemApplication;
 import tw.waterball.judgegirl.springboot.problem.repositories.MongoProblemAndTestCaseRepository;
-import tw.waterball.judgegirl.testkit.jupiter.ReplaceUnderscoresAndCamelCaseDisplayNameGenerator;
+import tw.waterball.judgegirl.springboot.profiles.Profiles;
+import tw.waterball.judgegirl.testkit.jupiter.ReplaceUnderscoresWithCamelCasesDisplayNameGenerator;
 
 import java.io.ByteArrayInputStream;
 import java.util.*;
@@ -63,7 +64,7 @@ import static tw.waterball.judgegirl.problemapi.views.ProblemItem.project;
 @AutoConfigureDataMongo
 @AutoConfigureMockMvc
 @ContextConfiguration(classes = SpringBootProblemApplication.class)
-@DisplayNameGeneration(ReplaceUnderscoresAndCamelCaseDisplayNameGenerator.class)
+@DisplayNameGeneration(ReplaceUnderscoresWithCamelCasesDisplayNameGenerator.class)
 class ProblemControllerTest {
     Problem problem;
     List<TestCase> testCases;
@@ -87,7 +88,6 @@ class ProblemControllerTest {
                 new TestCase("1", problem.getId(), 5, 5, 5000, 1, 20),
                 new TestCase("2", problem.getId(), 5, 5, 5000, 1, 30),
                 new TestCase("3", problem.getId(), 3, 4, 5000, 1, 50));
-
     }
 
     @AfterEach

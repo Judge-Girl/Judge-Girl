@@ -1,29 +1,28 @@
 package tw.waterball.judgegirl.problemapi.clients;
 
-import lombok.Value;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.http.GET;
 import retrofit2.http.Path;
+import tw.waterball.judgegirl.api.retrofit.*;
 import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
 import tw.waterball.judgegirl.entities.problem.TestCase;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
-
+import tw.waterball.judgegirl.api.retrofit.BaseRetrofitAPI;
 import javax.inject.Named;
 import java.util.List;
 
 /**
- * @author - johnny850807@gmail.com (Waterball)
+ * @author - johnny850807@gmail.com (Wateqrball)
  */
 @Named
-public class ProblemApiClient extends BaseRetrofitServiceAPI implements ProblemServiceDriver {
+public class ProblemApiClient extends BaseRetrofitAPI implements ProblemServiceDriver {
     private Api api;
 
     public ProblemApiClient(RetrofitFactory retrofitFactory,
-                            @Value("${judge-girl.problem-service.address}") String address,
-                            @Value("${judge-girl.problem-service.port}") int port) {
+                            String address, int port) {
         this.api = retrofitFactory.create(address, port).create(Api.class);
     }
 
@@ -50,22 +49,21 @@ public class ProblemApiClient extends BaseRetrofitServiceAPI implements ProblemS
         Response<ResponseBody> resp = errorHandlingGetResponse(() -> api.getZippedTestCaseIOs(problemId,
                 testcaseIOsFileId));
         return parseDownloadedFileResource(resp);
-
     }
 
     private interface Api {
         @GET("/api/problems/{problemId}")
-        Call<ProblemView> getProblem(@Path("problemId") int problemId) throws ProblemNotFoundException;
+        Call<ProblemView> getProblem(@Path("problemId") int problemId) throws NotFoundException;
 
         @GET("/api/problems/{problemId}/testcases")
-        Call<List<TestCase>> getTestCases(@Path("problemId") int problemId) throws ProblemNotFoundException;
+        Call<List<TestCase>> getTestCases(@Path("problemId") int problemId) throws NotFoundException;
 
         @GET("/api/problems/{problemId}/providedCodes/{providedCodesFileId}")
         Call<ResponseBody> getZippedProvidedSourceCodes(@Path("problemId") int problemId,
-                                                        @Path("providedCodesFileId") String providedCodesFileId) throws ProblemNotFoundException;
+                                                        @Path("providedCodesFileId") String providedCodesFileId) throws NotFoundException;
 
         @GET("/api/problems/{problemId}/testCaseIOs/{testcaseIOsFileId}")
         Call<ResponseBody> getZippedTestCaseIOs(@Path("problemId") int problemId,
-                                                @Path("testcaseIOsFileId") String testcaseIOsFileId) throws ProblemNotFoundException;
+                                                @Path("testcaseIOsFileId") String testcaseIOsFileId) throws NotFoundException;
     }
 }
