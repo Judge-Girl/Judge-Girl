@@ -18,6 +18,7 @@ package tw.waterball.judgegirl.springboot.problem.controllers;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mongodb.client.MongoClient;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayNameGeneration;
@@ -37,10 +38,11 @@ import tw.waterball.judgegirl.commons.utils.ZipUtils;
 import tw.waterball.judgegirl.entities.problem.Problem;
 import tw.waterball.judgegirl.entities.problem.TestCase;
 import tw.waterball.judgegirl.problemapi.views.ProblemItem;
+import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.springboot.problem.SpringBootProblemApplication;
 import tw.waterball.judgegirl.springboot.problem.repositories.MongoProblemAndTestCaseRepository;
 import tw.waterball.judgegirl.springboot.profiles.Profiles;
-import tw.waterball.judgegirl.testkit.jupiter.ReplaceUnderscoresWithCamelCasesDisplayNameGenerator;
+import tw.waterball.judgegirl.testkit.jupiter.ReplaceUnderscoresWithCamelCasesDisplayNameGenerators;
 
 import java.io.ByteArrayInputStream;
 import java.util.*;
@@ -54,7 +56,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import static tw.waterball.judgegirl.problemapi.views.ProblemItem.project;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -64,22 +65,22 @@ import static tw.waterball.judgegirl.problemapi.views.ProblemItem.project;
 @AutoConfigureDataMongo
 @AutoConfigureMockMvc
 @ContextConfiguration(classes = SpringBootProblemApplication.class)
-@DisplayNameGeneration(ReplaceUnderscoresWithCamelCasesDisplayNameGenerator.class)
-class ProblemControllerTest {
-    Problem problem;
-    List<TestCase> testCases;
+@DisplayNameGeneration(ReplaceUnderscoresWithCamelCasesDisplayNameGenerators.class)
+class ProblemControllerIT {
+    private Problem problem;
+    private List<TestCase> testCases;
 
     @Autowired
     MockMvc mockMvc;
-
     @Autowired
     MongoTemplate mongoTemplate;
-
     @Autowired
     GridFsTemplate gridFsTemplate;
-
     @Autowired
     ObjectMapper objectMapper;
+    @Autowired
+    MongoClient mongoClient;
+
 
     @BeforeEach
     void setup() {
@@ -101,7 +102,8 @@ class ProblemControllerTest {
         byte[] zippedProvidedCodesBytes =
                 givenProblemWithProvidedCodes("/stubs/file1.c", "/stubs/file2.c");
 
-        mockMvc.perform(get("/api/problems/{problemId}/zippedProvidedCodes", problem.getId()))
+        mockMvc.perform(get("/api/problems/{problemId}/providedCodes/{providedCodesFileId}",
+                problem.getId(), problem.getProvidedCodesFileId()))
                 .andExpect(status().isOk())
                 .andExpect(header().longValue("Content-Length", zippedProvidedCodesBytes.length))
                 .andExpect(content().contentType("application/zip"))
@@ -109,23 +111,24 @@ class ProblemControllerTest {
     }
 
     private byte[] givenProblemWithProvidedCodes(String... providedCodePaths) {
-        final Problem problem = Stubs.PROBLEM_TEMPLATE_BUILDER.build();
-        byte[] zippedProvidedCodesBytes = ZipUtils.zipClassPathResources(providedCodePaths);
+        final Problem savedProblem = Stubs.PROBLEM_TEMPLATE_BUILDER.build();
+        byte[] zippedProvidedCodesBytes = ZipUtils.zipFilesFromResources(providedCodePaths);
         String fileId = gridFsTemplate.store(new ByteArrayInputStream(zippedProvidedCodesBytes),
-                problem.getZippedProvidedCodesFileName()).toString();
-        problem.setZippedProvidedCodesFileId(fileId);
-        mongoTemplate.save(problem);
+                savedProblem.getProvidedCodesFileName()).toString();
+        savedProblem.setProvidedCodesFileId(fileId);
+        this.problem = mongoTemplate.save(savedProblem);
         return zippedProvidedCodesBytes;
     }
 
     @Test
-    void GivenProblemSaved_WhenGetThatProblemById_ShouldReturnThatProblem() throws Exception {
+    void GivenProblemSaved_WhenGetThatProblemById_ShouldRespondThatProblem() throws Exception {
         givenProblemSaved();
 
         mockMvc.perform(get("/api/problems/{problemId}", problem.getId()))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().json(objectMapper.writeValueAsString(problem)));
+                .andExpect(content().json(objectMapper.writeValueAsString(
+                        ProblemView.fromEntity(problem))));
     }
 
     private void givenProblemSaved() {
@@ -134,7 +137,7 @@ class ProblemControllerTest {
     }
 
     @Test
-    void getTestCases() throws Exception {
+    void GivenTestcasesSaved_whenGetTestcasesByProblemId_shouldRespondTestCases() throws Exception {
         mongoTemplate.insertAll(testCases);
 
         mockMvc.perform(get("/api/problems/{problemId}/testcases", problem.getId()))
@@ -143,20 +146,17 @@ class ProblemControllerTest {
                 .andExpect(content().json(objectMapper.writeValueAsString(testCases)));
     }
 
-    private void givenTestCases() {
-        mongoTemplate.insertAll(testCases);
-    }
-
     @Test
-    void getZippedTestCaseInputs() throws Exception {
-        final Problem problem = Stubs.PROBLEM_TEMPLATE_BUILDER.build();
-        byte[] bytes = ZipUtils.zipClassPathResources("/stubs/I1.in", "/stubs/I2.in", "/stubs/I3.in");
+    void testDownloadZippedTestCaseIOs() throws Exception {
+        final Problem savedProblem = Stubs.PROBLEM_TEMPLATE_BUILDER.build();
+        byte[] bytes = ZipUtils.zipFilesFromResources("/stubs/in/", "/stubs/out/");
         String fileId = gridFsTemplate.store(new ByteArrayInputStream(bytes),
-                problem.getZippedTestCaseIOsFileName()).toString();
-        problem.setZippedTestCaseInputsFileId(fileId);
-        mongoTemplate.save(problem);
+                savedProblem.getTestCaseIOsFileName()).toString();
+        savedProblem.setTestcaseIOsFileId(fileId);
+        this.problem = mongoTemplate.save(savedProblem);
 
-        mockMvc.perform(get("/api/problems/{problemId}/zippedTestCaseInputs", problem.getId()))
+        mockMvc.perform(get("/api/problems/{problemId}/testcaseIOs/{testcaseIOsFileId}",
+                savedProblem.getId(), problem.getTestcaseIOsFileId()))
                 .andExpect(status().isOk())
                 .andExpect(header().longValue("Content-Length", bytes.length))
                 .andExpect(content().contentType("application/zip"))
@@ -164,23 +164,7 @@ class ProblemControllerTest {
     }
 
     @Test
-    void getZippedTestCaseOutputs() throws Exception {
-        final Problem problem = Stubs.PROBLEM_TEMPLATE_BUILDER.build();
-        byte[] bytes = ZipUtils.zipClassPathResources("/stubs/O1.out", "/stubs/O2.out", "/stubs/O3.out");
-        String fileId = gridFsTemplate.store(new ByteArrayInputStream(bytes),
-                problem.getZippedTestCaseOutputsFileName()).toString();
-        problem.setZippedTestCaseOutputsFileId(fileId);
-        mongoTemplate.save(problem);
-
-        mockMvc.perform(get("/api/problems/{problemId}/zippedTestCaseOutputs", problem.getId()))
-                .andExpect(status().isOk())
-                .andExpect(header().longValue("Content-Length", bytes.length))
-                .andExpect(content().contentType("application/zip"))
-                .andExpect(content().bytes(bytes));
-    }
-
-    @Test
-    void GivenTagsSaved_WhenGetAllTags_ShouldReturnAllTags() throws Exception {
+    void GivenTagsSaved_WhenGetAllTags_ShouldRespondAllTags() throws Exception {
         final List<String> tags = asList("tag1", "tag2", "tag3");
         mongoTemplate.save(new MongoProblemAndTestCaseRepository.AllTags(tags));
 
@@ -191,22 +175,24 @@ class ProblemControllerTest {
     }
 
     @Test
-    void GivenTaggedProblemsSaved_WhenGetProblemsByMatchingTags_ShouldReturnThoseProblemItems() throws Exception {
-        final ProblemItem targetProblem1 = project(givenProblemWithTags(1, "tag1", "tag2"));
-        final ProblemItem targetProblem2 = project(givenProblemWithTags(2, "tag1", "tag2"));
+    void GivenTaggedProblemsSaved_WhenGetProblemsThatMatchToTags_ShouldRespondThoseProblemItems() throws Exception {
+        final ProblemItem targetProblem1 = ProblemItem.fromEntity(
+                givenProblemWithTags(1, "tag1", "tag2"));
+        final ProblemItem targetProblem2 = ProblemItem.fromEntity(
+                givenProblemWithTags(2, "tag1", "tag2"));
 
-        verifyFindProblemsByTagsWillGet(asList("tag1", "tag2"), asList(targetProblem1, targetProblem2));
-        verifyFindProblemsByTagsWillGet(singletonList("tag1"), asList(targetProblem1, targetProblem2));
-        verifyFindProblemsByTagsWillGet(singletonList("tag2"), asList(targetProblem1, targetProblem2));
+        verifyFindProblemsByTagsWithExpectedList(asList("tag1", "tag2"), asList(targetProblem1, targetProblem2));
+        verifyFindProblemsByTagsWithExpectedList(singletonList("tag1"), asList(targetProblem1, targetProblem2));
+        verifyFindProblemsByTagsWithExpectedList(singletonList("tag2"), asList(targetProblem1, targetProblem2));
     }
 
     @Test
-    void GivenTaggedProblemsSaved_WhenGetProblemsByNonMatchingTags_ShouldReturnEmptyArray() throws Exception {
-        project(givenProblemWithTags(1, "tag1", "tag2"));
-        project(givenProblemWithTags(2, "tag1", "tag2"));
+    void GivenTaggedProblemsSaved_WhenGetProblemsToDontMatchToTags_ShouldRespondEmptyArray() throws Exception {
+        ProblemItem.fromEntity(givenProblemWithTags(1, "tag1", "tag2"));
+        ProblemItem.fromEntity(givenProblemWithTags(2, "tag1", "tag2"));
 
-        verifyFindProblemsByTagsWillGet(asList("tag1", "tag2", "tag3"), emptyList());
-        verifyFindProblemsByTagsWillGet(singletonList("Non-existent-tag"), emptyList());
+        verifyFindProblemsByTagsWithExpectedList(asList("tag1", "tag2", "tag3"), emptyList());
+        verifyFindProblemsByTagsWithExpectedList(singletonList("Non-existent-tag"), emptyList());
     }
 
     private Problem givenProblemWithTags(int id, String... tags) {
@@ -216,7 +202,7 @@ class ProblemControllerTest {
         return targetProblem;
     }
 
-    private void verifyFindProblemsByTagsWillGet(List<String> tags, List<ProblemItem> problemItems) throws Exception {
+    private void verifyFindProblemsByTagsWithExpectedList(List<String> tags, List<ProblemItem> problemItems) throws Exception {
         String tagsSplitByCommas = String.join(", ", tags);
 
         mockMvc.perform(get("/api/problems?tags={tags}", tagsSplitByCommas))
@@ -226,34 +212,34 @@ class ProblemControllerTest {
     }
 
     @Test
-    void GivenProblemsSaved_WhenGetAllProblems_ShouldReturnAll() throws Exception {
+    void GivenProblemsSaved_WhenGetAllProblems_ShouldRespondAll() throws Exception {
         List<Problem> problems = givenArbitraryProblemsSaved(10);
-
 
         // verify all problems will be found and projected into problem-items
         assertEquals(problems.stream()
-                .map(ProblemItem::project)
-                .collect(Collectors.toList()), getProblems());
+                .map(ProblemItem::fromEntity)
+                .collect(Collectors.toList()), requestGetProblems());
     }
 
     @Test
-    void GivenOneProblemSaved_WhenGetProblemsWithoutSpecifyingPage_ShouldReturnThatProblem() throws Exception {
+    void GivenOneProblemSaved_WhenGetProblemsWithoutPageSpecified_ShouldRespondOnlyThatProblem() throws Exception {
         Problem expectedProblem = givenArbitraryProblemsSaved(1).get(0);
 
-        assertEquals(project(expectedProblem), getProblems().get(0));
+        assertEquals(ProblemItem.fromEntity(expectedProblem), requestGetProblems().get(0));
     }
 
     @Test
-    void GivenManyProblemsSaved_WhenGetProblemsInPage_ShouldReturnOnlyThoseProblemsInThatPage() throws Exception {
+    void GivenManyProblemsSaved_WhenGetProblemsInPage_ShouldRespondOnlyThoseProblemsInThatPage() throws Exception {
         List<Problem> expectedProblems = givenArbitraryProblemsSaved(200);
 
+        // Strict pagination testing
         int page = 0;
         List<ProblemItem> actualAllProblemItems = new ArrayList<>();
         Set<ProblemItem> actualProblemItemsInPreviousPage = new HashSet<>();
         List<ProblemItem> actualProblemItems;
 
         do {
-            actualProblemItems = getProblemsByPage(page);
+            actualProblemItems = requestGetProblemsInPage(page);
             actualAllProblemItems.addAll(actualProblemItems);
 
             assertTrue(actualProblemItems.stream().noneMatch(actualProblemItemsInPreviousPage::contains),
@@ -268,7 +254,7 @@ class ProblemControllerTest {
         }
     }
 
-    private List<ProblemItem> getProblems() throws Exception {
+    private List<ProblemItem> requestGetProblems() throws Exception {
         MvcResult result = mockMvc.perform(get("/api/problems"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -279,7 +265,7 @@ class ProblemControllerTest {
                 });
     }
 
-    private List<ProblemItem> getProblemsByPage(int page) throws Exception {
+    private List<ProblemItem> requestGetProblemsInPage(int page) throws Exception {
         MvcResult result = mockMvc.perform(get("/api/problems?page={page}", page))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -293,7 +279,8 @@ class ProblemControllerTest {
         Random random = new Random();
         List<Problem> problems = IntStream.range(0, count).mapToObj((id) ->
                 Stubs.PROBLEM_TEMPLATE_BUILDER.id(id)
-                        .title(String.valueOf(random.nextInt())).build()).collect(Collectors.toList());
+                        .title(String.valueOf(random.nextInt())).build())
+                .collect(Collectors.toList());
         problems.forEach(mongoTemplate::save);
         return problems;
     }

@@ -101,7 +101,7 @@ public class ProblemController {
     }
 
 
-    @GetMapping(value = "/{problemId}/testCaseIOs/{testcaseIOsFileId}",
+    @GetMapping(value = "/{problemId}/testcaseIOs/{testcaseIOsFileId}",
             produces = "application/zip")
     public ResponseEntity<InputStreamResource> downloadZippedTestCaseInputs(@PathVariable int problemId,
                                                                             @PathVariable String testcaseIOsFileId) {
@@ -135,7 +135,7 @@ class GetProblemListPresenter implements GetProblemListUseCase.Presenter {
     }
 
     public List<ProblemItem> present() {
-        return problems.stream().map(ProblemItem::project)
+        return problems.stream().map(ProblemItem::fromEntity)
                 .collect(Collectors.toList());
     }
 }

@@ -29,8 +29,8 @@ import java.lang.reflect.Method;
  *
  * @author - johnny850807@gmail.com (Waterball)
  */
-public class ReplaceUnderscoresWithCamelCasesDisplayNameGenerator extends DisplayNameGenerator.Standard {
-    public ReplaceUnderscoresWithCamelCasesDisplayNameGenerator() {
+public class ReplaceUnderscoresWithCamelCasesDisplayNameGenerators extends DisplayNameGenerator.Standard {
+    public ReplaceUnderscoresWithCamelCasesDisplayNameGenerators() {
     }
 
     private static String replaceUnderscores(String name) {

@@ -43,7 +43,7 @@ public class ApplicationContextUtils {
     }
 
     @Bean
-    public PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
+    public PropertySourcesPlaceholderConfigurer myPropertySourcesPlaceholderConfigurer() {
         PropertySourcesPlaceholderConfigurer pph = new PropertySourcesPlaceholderConfigurer();
         pph.setLocations(
                 new ClassPathResource("/application-dev.properties"),

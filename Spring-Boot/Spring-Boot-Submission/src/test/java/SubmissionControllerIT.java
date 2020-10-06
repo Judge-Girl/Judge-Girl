@@ -60,7 +60,7 @@ import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.entities.submission.Submission;
 import tw.waterball.judgegirl.entities.submission.SubmissionThrottling;
 import tw.waterball.judgegirl.submissionservice.ports.JudgerDeployer;
-import tw.waterball.judgegirl.testkit.jupiter.ReplaceUnderscoresWithCamelCasesDisplayNameGenerator;
+import tw.waterball.judgegirl.testkit.jupiter.ReplaceUnderscoresWithCamelCasesDisplayNameGenerators;
 import tw.waterball.judgegirl.testkit.zip.ZipResultMatcher;
 
 import java.util.*;
@@ -86,7 +86,7 @@ import static tw.waterball.judgegirl.springboot.submission.controllers.Submissio
 @AutoConfigureMockMvc
 @AutoConfigureDataMongo
 @ContextConfiguration(classes = {SubmissionServiceApplication.class, SubmissionControllerIT.TestConfig.class})
-@DisplayNameGeneration(ReplaceUnderscoresWithCamelCasesDisplayNameGenerator.class)
+@DisplayNameGeneration(ReplaceUnderscoresWithCamelCasesDisplayNameGenerators.class)
 public class SubmissionControllerIT {
     final String API_PREFIX = "/api/problems/{problemId}/students/{studentId}/submissions";
     private final int STUDENT_ID_1 = 1;

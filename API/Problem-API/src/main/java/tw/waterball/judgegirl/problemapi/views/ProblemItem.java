@@ -31,7 +31,7 @@ public class ProblemItem {
     public int id;
     public String title;
 
-    public static ProblemItem project(Problem problem) {
+    public static ProblemItem fromEntity(Problem problem) {
         return new ProblemItem(problem.getId(), problem.getTitle());
     }
 }

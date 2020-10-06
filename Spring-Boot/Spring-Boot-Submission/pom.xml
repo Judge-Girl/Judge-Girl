@@ -15,29 +15,19 @@
     <dependencies>
         <dependency>
             <groupId>tw.waterball.judge-girl</groupId>
-            <artifactId>test-kit</artifactId>
-            <version>${revision}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>tw.waterball.judge-girl</groupId>
             <artifactId>spring-boot-commons</artifactId>
-            <version>${revision}</version>
         </dependency>
         <dependency>
             <groupId>tw.waterball.judge-girl</groupId>
             <artifactId>submission-service</artifactId>
-            <version>${revision}</version>
         </dependency>
         <dependency>
             <groupId>tw.waterball.judge-girl</groupId>
             <artifactId>problem-api</artifactId>
-            <version>${revision}</version>
         </dependency>
         <dependency>
             <groupId>com.github.fridujo</groupId>
             <artifactId>rabbitmq-mock</artifactId>
-            <version>1.0.14</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -48,6 +38,11 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-amqp</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>tw.waterball.judge-girl</groupId>
+            <artifactId>test-kit</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

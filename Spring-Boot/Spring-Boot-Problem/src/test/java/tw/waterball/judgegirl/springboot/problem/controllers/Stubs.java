@@ -22,11 +22,12 @@ import tw.waterball.judgegirl.entities.problem.Problem.ProblemBuilder;
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
-public class Stubs {
+class Stubs {
 
+    @SuppressWarnings("WeakerAccess")
     public final static int STUB_ID = 1;
 
-    public final static ProblemBuilder PROBLEM_TEMPLATE_BUILDER = Problem.builder()
+    final static ProblemBuilder PROBLEM_TEMPLATE_BUILDER = Problem.builder()
             .id(STUB_ID)
             .title("Title")
             .markdownDescription("# Title \n ```\n Code \n ```")
@@ -34,9 +35,8 @@ public class Stubs {
             .judgePolicyPluginTag(new JudgePluginTag("type", "group", "name", "1.0"))
             .tag("tag1").tag("tag2")
             .submittedCodeSpec(new SubmittedCodeSpec(JudgeLang.C, "main.c"))
-            .zippedProvidedCodesFileId("providedCodesFileId")
-            .zippedTestCaseInputsFileId("testcaseInputsFileId")
-            .zippedTestCaseOutputsFileId("testcaseOutputsFileId")
+            .providedCodesFileId("providedCodesFileId")
+            .testcaseIOsFileId("testcaseIOsFileId")
             .compilation(new Compilation("compilation script"))
             .inputFileName("file.in")
             .outputFileName("file.out");

@@ -131,7 +131,6 @@ public class SubmissionApiClient extends BaseRetrofitAPI implements SubmissionSe
         System.out.println(submission);
 
         FileResource codes = submissionService.getZippedSubmittedCodes(token, studentId, problemId, submission.getId());
-        ZipUtils.unzipAndPrint(codes.getInputStream());
         System.out.println(submissionService.getSubmissions(token, studentId, problemId));
 
         System.out.println(submissionService.getSubmission(token, studentId, problemId, submission.getId()));

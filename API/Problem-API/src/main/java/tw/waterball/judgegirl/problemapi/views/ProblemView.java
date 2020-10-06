@@ -20,9 +20,8 @@ public class ProblemView {
     public List<String> tags;
     public List<SubmittedCodeSpec> submittedCodeSpecs;
     public Compilation compilation;
-    public String zippedProvidedCodesFileId;
-    public String zippedTestCaseInputsFileId;
-    public String zippedTestCaseOutputsFileId;
+    public String providedCodesFileId;
+    public String testcaseIOsFileId;
 
     public static ProblemView fromEntity(Problem problem) {
         return new ProblemView(
@@ -36,9 +35,8 @@ public class ProblemView {
                 problem.getTags(),
                 problem.getSubmittedCodeSpecs(),
                 problem.getCompilation(),
-                problem.getZippedProvidedCodesFileId(),
-                problem.getZippedTestCaseInputsFileId(),
-                problem.getZippedTestCaseOutputsFileId()
+                problem.getProvidedCodesFileId(),
+                problem.getTestcaseIOsFileId()
         );
     }
 }

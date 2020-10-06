@@ -62,16 +62,4 @@ public class StubTestCaseRepository implements TestCaseRepository {
         return Optional.empty();
     }
 
-    @Override
-    public Optional<FileResource> findZippedOutputsInProblem(int problemId) {
-        if (PROBLEM_ID == problemId) {
-            ByteArrayInputStream in = ZipUtils.zipClassPathResourcesToStream("/stubs/O1.out",
-                    "/stubs/O2.out",
-                    "/stubs/O3.out");
-
-            return Optional.of(
-                    new FileResource("testcases_out.zip", in.available(), in));
-        }
-        return Optional.empty();
-    }
 }

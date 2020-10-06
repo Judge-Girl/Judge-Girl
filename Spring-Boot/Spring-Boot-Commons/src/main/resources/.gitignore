@@ -1,0 +1,7 @@
+judge-girl.properties
+connections.properties
+application-mongo.properties
+application-amqp.properties
+application-k8s.properties
+application-prod.properties
+application-jwt.properties

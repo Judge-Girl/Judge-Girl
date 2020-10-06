@@ -22,24 +22,21 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
+    <name>Submission API</name>
     <artifactId>submission-api</artifactId>
 
     <dependencies>
         <dependency>
             <groupId>tw.waterball.judge-girl</groupId>
             <artifactId>entities</artifactId>
-            <version>${revision}</version>
         </dependency>
         <dependency>
             <groupId>tw.waterball.judge-girl</groupId>
             <artifactId>api-commons</artifactId>
-            <version>${revision}</version>
         </dependency>
         <dependency>
             <groupId>tw.waterball.judge-girl</groupId>
             <artifactId>submission-service</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-            <scope>compile</scope>
         </dependency>
     </dependencies>
 </project>

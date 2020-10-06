@@ -25,4 +25,10 @@
     <name>Spring Boot Commons</name>
     <artifactId>spring-boot-commons</artifactId>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+        </dependency>
+    </dependencies>
 </project>

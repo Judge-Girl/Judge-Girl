@@ -89,9 +89,8 @@ public class StubProblemRepository implements ProblemRepository {
             .tag("tag1").tag("tag2")
             .submittedCodeSpec(new SubmittedCodeSpec(JudgeLang.C, "main.c"))
             .submittedCodeSpec(new SubmittedCodeSpec(JudgeLang.C, "function.c"))
-            .zippedProvidedCodesFileId("providedCodesFileId")
-            .zippedTestCaseInputsFileId("testcaseInputsFileId")
-            .zippedTestCaseOutputsFileId("testcaseOutputsFileId")
+            .providedCodesFileId("providedCodesFileId")
+            .testcaseIOsFileId("testcaseIOsFileId")
             .compilation(new Compilation("chmod +x nvprof.sh\n" +
                     "nvcc -Xcompiler \"-O2 -fopenmp\" main.cu -o main\n" +
                     "./nvprof.sh ./main\n" +
@@ -112,7 +111,7 @@ public class StubProblemRepository implements ProblemRepository {
         if (problemId == 1) {
             ByteArrayInputStream in = ZipUtils.zipClassPathResourcesToStream("/stubs/file1.c", "/stubs/file2.c");
             return Optional.of(
-                    new FileResource(PROBLEM_STUB.getZippedProvidedCodesFileName(),
+                    new FileResource(PROBLEM_STUB.getProvidedCodesFileName(),
                             in.available(), in));
         }
         return Optional.empty();

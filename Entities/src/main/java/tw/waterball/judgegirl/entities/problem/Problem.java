@@ -51,23 +51,16 @@ public class Problem {
 
     private Compilation compilation;
 
-    // TODO should we include the zip related meta here?
-    private String zippedProvidedCodesFileId;
-    private String zippedTestCaseInputsFileId;
-    private String zippedTestCaseOutputsFileId;
+    private String providedCodesFileId;
+    private String testcaseIOsFileId;
 
-//    TODO @JsonIgnore
-    public String getZippedProvidedCodesFileName() {
+    //    TODO @JsonIgnore
+    public String getProvidedCodesFileName() {
         return String.format("%d_%s_provided.zip", id, title);
     }
 
-//    TODO @JsonIgnore
-    public String getZippedTestCaseIOsFileName() {
+    //    TODO @JsonIgnore
+    public String getTestCaseIOsFileName() {
         return String.format("%d_%s_IO.zip", id, title);
-    }
-
-//   TODO  @JsonIgnore
-    public String getZippedTestCaseOutputsFileName() {
-        return String.format("%d_%s_outputs.zip", id, title);
     }
 }

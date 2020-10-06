@@ -23,12 +23,12 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import tw.waterball.judgegirl.commons.entities.Student;
-import tw.waterball.judgegirl.commons.services.token.TokenInvalidException;
-import tw.waterball.judgegirl.commons.services.token.TokenService;
-import tw.waterball.judgegirl.commons.services.token.TokenService.Token;
+import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
+import tw.waterball.judgegirl.entities.Student;
 import tw.waterball.judgegirl.springboot.student.api.LegacyStudentAPI;
 import tw.waterball.judgegirl.springboot.student.exceptions.PasswordIncorrectException;
+import tw.waterball.judgegirl.springboot.token.TokenInvalidException;
+import tw.waterball.judgegirl.springboot.token.TokenService;
 
 import java.util.Date;
 import java.util.Optional;
@@ -58,7 +58,7 @@ class StudentControllerTest {
 
         when(legacyStudentAPI.authenticate(ACCOUNT, PASSWORD)).thenReturn(ID);
         when(tokenService.createToken(any())).thenReturn(
-                Token.ofStudent(ID, TOKEN, new Date(Long.MAX_VALUE)));
+                TokenService.Token.ofStudent(ID, TOKEN, new Date(Long.MAX_VALUE)));
 
         mockMvc.perform(post("/api/students/login")
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
@@ -70,7 +70,7 @@ class StudentControllerTest {
     @Test()
     void givenIncorrectStudentId_whenLogin_shouldRespondNotFound() throws Exception {
         final String ACCOUNT = "account";
-        Mockito.doThrow(new AccountNotFoundException(ACCOUNT))
+        Mockito.doThrow(NotFoundException.resource("account").id(ACCOUNT))
                 .when(legacyStudentAPI).authenticate(eq(ACCOUNT), anyString());
 
         mockMvc.perform(post("/api/students/login")
@@ -99,7 +99,7 @@ class StudentControllerTest {
         final String TOKEN = "token";
         final Student stub = new Student(ID, ACCOUNT, "name");
         when(tokenService.parseAndValidate(TOKEN)).thenReturn(
-                Token.ofStudent(ID, TOKEN, new Date(Long.MAX_VALUE)));
+                TokenService.Token.ofStudent(ID, TOKEN, new Date(Long.MAX_VALUE)));
         when(legacyStudentAPI.getStudentById(ID)).thenReturn(Optional.of(stub));
 
         mockMvc.perform(get("/api/students/{studentId}", ID)
@@ -125,7 +125,7 @@ class StudentControllerTest {
         final String TOKEN = "token";
         when(legacyStudentAPI.getStudentByAccount(anyString())).thenReturn(Optional.empty());
         when(tokenService.parseAndValidate(TOKEN)).thenReturn(
-                Token.ofStudent(ID, TOKEN, new Date(Long.MAX_VALUE)));
+                TokenService.Token.ofStudent(ID, TOKEN, new Date(Long.MAX_VALUE)));
 
         mockMvc.perform(get("/api/students/{studentId}", ID)
                 .header("Authorization", "bearer " + TOKEN))

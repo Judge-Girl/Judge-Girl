@@ -65,24 +65,17 @@ public class MongoProblemAndTestCaseRepository implements ProblemRepository, Tes
     @Override
     public Optional<FileResource> downloadTestCaseIOs(int problemId, String testcaseIOsFileId) {
         return findOneFieldById(mongoTemplate,
-                "zippedTestCaseInputsFileId", Problem.class, problemId,
-                Problem::getZippedTestCaseInputsFileId)
+                "testcaseIOsFileId", Problem.class, problemId,
+                Problem::getTestcaseIOsFileId)
                 .map((fileId) -> loadFileResourceByFileId(gridFsTemplate, fileId));
     }
 
-    @Override
-    public Optional<FileResource> findZippedOutputsInProblem(int problemId) {
-        return findOneFieldById(mongoTemplate,
-                "zippedTestCaseOutputsFileId", Problem.class, problemId,
-                Problem::getZippedTestCaseOutputsFileId)
-                .map((fileId) -> loadFileResourceByFileId(gridFsTemplate, fileId));
-    }
 
     @Override
     public Optional<FileResource> downloadZippedProvidedCodes(int problemId) {
         return findOneFieldById(mongoTemplate,
-                "zippedProvidedCodesFileId", Problem.class, problemId,
-                Problem::getZippedProvidedCodesFileId)
+                "providedCodesFileId", Problem.class, problemId,
+                Problem::getProvidedCodesFileId)
                 .map((fileId) -> loadFileResourceByFileId(gridFsTemplate, fileId));
     }
 
