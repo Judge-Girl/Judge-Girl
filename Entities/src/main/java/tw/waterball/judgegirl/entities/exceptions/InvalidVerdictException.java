@@ -11,23 +11,24 @@
  *   limitations under the License.
  */
 
-package tw.waterball.judgegirl.springboot.advices;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ControllerAdvice;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
+package tw.waterball.judgegirl.entities.exceptions;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
-@ControllerAdvice
-public class ExceptionAdvices {
+public class InvalidVerdictException extends IllegalStateException {
+    public InvalidVerdictException() {
+    }
 
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    @ExceptionHandler({NotFoundException.class})
-    public void handleExceptions() {
-        // Nothing to do
+    public InvalidVerdictException(String s) {
+        super(s);
+    }
+
+    public InvalidVerdictException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public InvalidVerdictException(Throwable cause) {
+        super(cause);
     }
 }

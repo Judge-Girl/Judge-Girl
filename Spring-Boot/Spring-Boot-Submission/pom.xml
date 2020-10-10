@@ -15,6 +15,10 @@
     <dependencies>
         <dependency>
             <groupId>tw.waterball.judge-girl</groupId>
+            <artifactId>api-commons</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>tw.waterball.judge-girl</groupId>
             <artifactId>spring-boot-commons</artifactId>
         </dependency>
         <dependency>
@@ -43,6 +47,10 @@
             <groupId>tw.waterball.judge-girl</groupId>
             <artifactId>test-kit</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>tw.waterball.judge-girl</groupId>
+            <artifactId>submission-api</artifactId>
         </dependency>
     </dependencies>
 </project>

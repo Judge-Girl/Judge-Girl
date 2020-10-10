@@ -13,12 +13,15 @@
 
 package tw.waterball.judgegirl.entities.submission;
 
-import lombok.*;
-import tw.waterball.judgegirl.entities.problem.JudgeStatus;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
+import org.jetbrains.annotations.Nullable;
+import tw.waterball.judgegirl.entities.problem.Problem;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
+import java.util.Optional;
+import java.util.function.Consumer;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -26,70 +29,100 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Getter
-@Setter
-@EqualsAndHashCode
-@ToString
-
-// TODO refactoring ignore unknown properties for 'summaryStatus'
-// @JsonIgnoreProperties(ignoreUnknown = true)
-
 public class Submission {
     private String id;
-    private int studentId;
     private int problemId;
+    private Problem problem;
+    private int studentId;
 
-    @Singular
-    private List<Judge> judges = new ArrayList<>();
+    private @Nullable Verdict verdict;
 
-    private Verdict verdict;
-
-    private String zippedSubmittedCodeFilesId;
-    private String compileErrorMessage = "";
-
+    private String submittedCodesFileId;
     private Date submissionTime = new Date();
-    private Date judgeTime;
 
-    public Submission(String id, int studentId, int problemId, String zippedSubmittedCodeFilesId) {
+    public Submission(String id, int studentId, int problemId, String submittedCodesFileId, Date submissionTime) {
+        this(id, studentId, problemId, submittedCodesFileId);
+        this.submissionTime = submissionTime;
+    }
+
+    public Submission(String id, int studentId, int problemId, String submittedCodesFileId) {
         this.id = id;
         this.studentId = studentId;
         this.problemId = problemId;
-        this.zippedSubmittedCodeFilesId = zippedSubmittedCodeFilesId;
+        this.submittedCodesFileId = submittedCodesFileId;
     }
 
-    public Submission(int studentId, int problemId, String zippedSubmittedCodeFilesId) {
+    public Submission(int studentId, int problemId, String submittedCodesFileId) {
         this.studentId = studentId;
         this.problemId = problemId;
-        this.zippedSubmittedCodeFilesId = zippedSubmittedCodeFilesId;
+        this.submittedCodesFileId = submittedCodesFileId;
     }
 
-    public Integer getTotalGrade() {
-        if (judges.isEmpty()) {
-            return null;
+    public void ifHasBeenJudged(Consumer<Verdict> verdictConsumer) {
+        if (isJudged()) {
+            verdictConsumer.accept(verdict);
         }
-        int sum = 0;
-        for (Judge judge : judges) {
-            sum += judge.getGrade();
-        }
-        return sum;
     }
 
-    public JudgeStatus getSummaryStatus() {
-        return judges.stream().map(Judge::getStatus)
-                .min((s1, s2) -> {
-                    if (s1 == JudgeStatus.AC) {
-                        // puts AC at the tail, as if the submission is incorrect in certain test cases,
-                        // the summary should indicate 'Error' regardless how many ACs he got.
-                        return 1;
-                    }
-                    return s1 == s2 ? 0 : -1;
-                })
-                .orElse(JudgeStatus.NONE);
-
-    }
-
-    // TODO @JsonIgnore
     public boolean isJudged() {
-        return judges != null && judges.size() > 0 && judgeTime != null;
+        return verdict != null;
     }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public int getStudentId() {
+        return studentId;
+    }
+
+    public void setStudentId(int studentId) {
+        this.studentId = studentId;
+    }
+
+    public int getProblemId() {
+        return problemId;
+    }
+
+    public Problem getProblem() {
+        return problem;
+    }
+
+    public void setProblem(Problem problem) {
+        assert problemId == problem.getId();
+        this.problem = problem;
+    }
+
+    public Optional<Verdict> getVerdict() {
+        return Optional.ofNullable(verdict);
+    }
+
+    public void setVerdict(@Nullable Verdict verdict) {
+        this.verdict = verdict;
+    }
+
+    public String getSubmittedCodesFileId() {
+        return submittedCodesFileId;
+    }
+
+    public void setSubmittedCodesFileId(String submittedCodesFileId) {
+        this.submittedCodesFileId = submittedCodesFileId;
+    }
+
+    public Date getSubmissionTime() {
+        return submissionTime;
+    }
+
+    public void setSubmissionTime(Date submissionTime) {
+        this.submissionTime = submissionTime;
+    }
+
+    public Date getJudgeTime() {
+        return verdict == null ? null : verdict.getIssueTime();
+    }
+
 }

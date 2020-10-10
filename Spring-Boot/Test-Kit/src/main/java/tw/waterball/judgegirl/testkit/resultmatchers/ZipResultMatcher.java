@@ -1,20 +1,17 @@
 /*
- *  Copyright 2020 Johnny850807 (Waterball) 潘冠辰
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *        http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
+ * Copyright 2020 Johnny850807 (Waterball) 潘冠辰
+ *   Licensed under the Apache License, Version 2.0 (the "License");
+ *   you may not use this file except in compliance with the License.
+ *   You may obtain a copy of the License at
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *   Unless required by applicable law or agreed to in writing, software
+ *   distributed under the License is distributed on an "AS IS" BASIS,
+ *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *   See the License for the specific language governing permissions and
+ *   limitations under the License.
  */
 
-package tw.waterball.judgegirl.testkit.zip;
+package tw.waterball.judgegirl.testkit.resultmatchers;
 
 import org.apache.commons.io.IOUtils;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -39,14 +36,26 @@ import static org.springframework.test.util.AssertionErrors.assertTrue;
 public class ZipResultMatcher implements ResultMatcher {
     private Map<String, MultipartFile> fileNameToFileMap = new HashMap<>();
 
-    public ZipResultMatcher(MultipartFile[] files) {
+    private ZipResultMatcher() { }
+
+    public static ZipResultMatcher zip() {
+        return new ZipResultMatcher();
+    }
+
+    public ZipResultMatcher content(MultipartFile[] files) {
+        fileNameToFileMap.clear();
         for (MultipartFile file : files) {
             fileNameToFileMap.put(file.getOriginalFilename(), file);
         }
+        return this;
     }
+
+
 
     @Override
     public void match(MvcResult result) throws Exception {
+        assertEquals("application/zip", result.getResponse().getContentType(),
+                "Response's Content-Type should be 'application/zip'.");
         HashSet<String> fileNameSet = new HashSet<>(fileNameToFileMap.keySet());
         MockHttpServletResponse response = result.getResponse();
         byte[] bytes = response.getContentAsByteArray();

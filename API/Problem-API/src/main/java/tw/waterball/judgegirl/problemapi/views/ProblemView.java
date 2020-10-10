@@ -39,4 +39,21 @@ public class ProblemView {
                 problem.getTestcaseIOsFileId()
         );
     }
+
+    public static Problem toEntity(ProblemView view) {
+        return new Problem(
+                view.getId(),
+                view.getTitle(),
+                view.getMarkdownDescription(),
+                view.getJudgeSpec(),
+                view.getJudgePolicyPluginTag(),
+                view.getInputFileNames(),
+                view.getOutputFileNames(),
+                view.getTags(),
+                view.getSubmittedCodeSpecs(),
+                view.getCompilation(),
+                view.getProvidedCodesFileId(),
+                view.getTestcaseIOsFileId()
+        );
+    }
 }

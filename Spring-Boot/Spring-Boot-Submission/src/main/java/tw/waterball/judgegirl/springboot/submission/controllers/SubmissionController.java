@@ -17,15 +17,17 @@
 package tw.waterball.judgegirl.springboot.submission.controllers;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
-import tw.waterball.judgegirl.commons.services.token.TokenInvalidException;
-import tw.waterball.judgegirl.commons.services.token.TokenService;
 import tw.waterball.judgegirl.commons.utils.HttpHeaderUtils;
-import tw.waterball.judgegirl.springboot.utils.ResponseEntityUtils;
 import tw.waterball.judgegirl.entities.submission.Submission;
+import tw.waterball.judgegirl.springboot.token.TokenInvalidException;
+import tw.waterball.judgegirl.springboot.token.TokenService;
+import tw.waterball.judgegirl.springboot.utils.ResponseEntityUtils;
+import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 import tw.waterball.judgegirl.submissionservice.domain.usecases.*;
 import tw.waterball.judgegirl.submissionservice.domain.usecases.dto.SubmissionQueryParams;
 
@@ -61,7 +63,7 @@ public class SubmissionController {
         this.downloadSubmittedCodesUseCase = downloadSubmittedCodesUseCase;
     }
 
-    @PostMapping
+    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity submit(@RequestHeader("Authorization") String bearerToken,
                           @PathVariable int problemId, @PathVariable int studentId,
                           @RequestParam(SUBMIT_CODE_MULTIPART_KEY_NAME) MultipartFile[] submittedCodes) {
@@ -71,7 +73,7 @@ public class SubmissionController {
                         Arrays.stream(submittedCodes)
                                 .map(this::convertMultipartFileToFileResource)
                                 .collect(Collectors.toList()));
-                SubmissionPresenterImpl presenter = new SubmissionPresenterImpl();
+                SubmissionPresenter presenter = new SubmissionPresenter();
                 submitCodeUseCase.execute(request, presenter);
                 return ResponseEntity.accepted()
                         .body(presenter.present());
@@ -91,13 +93,14 @@ public class SubmissionController {
         }
     }
 
-    @GetMapping("/{submissionId}")
+    @GetMapping(value = "/{submissionId}",
+            produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity getSubmission(@RequestHeader("Authorization") String bearerToken,
                                  @PathVariable int problemId, @PathVariable int studentId,
                                  @PathVariable String submissionId) {
         return validateIdentity(studentId, bearerToken,
                 (token) -> {
-                    SubmissionPresenterImpl presenter = new SubmissionPresenterImpl();
+                    SubmissionPresenter presenter = new SubmissionPresenter();
                     getSubmissionUseCase.execute(
                             new GetSubmissionUseCase.Request(problemId, studentId, submissionId),
                             presenter);
@@ -117,17 +120,19 @@ public class SubmissionController {
                 });
     }
 
-    @GetMapping(value = "/{submissionId}/zippedSubmittedCodes",
+    @GetMapping(value = "/{submissionId}/submittedCodes/{submittedCodesFileId}",
             produces = "application/zip")
     ResponseEntity downloadZippedSubmittedCodes(@RequestHeader("Authorization") String bearerToken,
                                                 @PathVariable int problemId, @PathVariable int studentId,
-                                                @PathVariable String submissionId) {
+                                                @PathVariable String submissionId,
+                                                @PathVariable String submittedCodesFileId) {
         return validateIdentity(studentId, bearerToken, (token) -> {
-            FileResource fileResource = downloadSubmittedCodesUseCase.execute(submissionId);
+            FileResource fileResource = downloadSubmittedCodesUseCase.execute(
+                    new DownloadSubmittedCodesUseCase.Request(submissionId, submittedCodesFileId)
+            );
             return ResponseEntityUtils.respondInputStreamResource(fileResource);
         });
     }
-
 
     private <T> ResponseEntity validateIdentity(int studentId, String bearerToken, Function<TokenService.Token, ResponseEntity<T>> supplier) {
         String tokenString = HttpHeaderUtils.parseBearerToken(bearerToken);
@@ -146,29 +151,30 @@ public class SubmissionController {
     }
 }
 
-class SubmissionPresenterImpl implements SubmissionPresenter {
-    private Submission submission;
+class SubmissionPresenter implements tw.waterball.judgegirl.submissionservice.domain.usecases.SubmissionPresenter {
+    private SubmissionView submissionView;
 
     @Override
     public void setSubmission(Submission submission) {
-        this.submission = submission;
+        this.submissionView = SubmissionView.fromEntity(submission);
     }
 
-    public Submission present() {
-        return submission;
+    public SubmissionView present() {
+        return submissionView;
     }
 }
 
 
 class GetSubmissionsPresenterImpl implements GetSubmissionsUseCase.Presenter {
-    private List<Submission> submissions;
+    private List<SubmissionView> submissionViews;
 
     @Override
     public void setSubmissions(List<Submission> submissions) {
-        this.submissions = submissions;
+        this.submissionViews = submissions.stream()
+                .map(SubmissionView::fromEntity).collect(Collectors.toList());
     }
 
-    public List<Submission> present() {
-        return submissions;
+    public List<SubmissionView> present() {
+        return submissionViews;
     }
 }

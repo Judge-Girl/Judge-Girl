@@ -18,7 +18,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.amqp.core.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import tw.waterball.judgegirl.entities.submission.JudgeResponse;
+import tw.waterball.judgegirl.submissionservice.ports.VerdictIssuedEvent;
 import tw.waterball.judgegirl.submissionservice.ports.SubmissionMessageQueue;
 import tw.waterball.judgegirl.springboot.profiles.productions.Amqp;
 
@@ -32,13 +32,15 @@ import java.util.Set;
 @Amqp
 @Component
 public class AmqpSubmissionMessageQueue implements SubmissionMessageQueue {
+    public static final String SUBMISSION_EXCHANGE_NAME = "submissions";
+    public static final String VERDICT_ISSUE_QUEUE_NAME = "Submission-Service:Verdict-Issue";
     private boolean running = false;
     private AmqpAdmin amqpAdmin;
     private Queue judgeResponseQueue;
     private AmqpTemplate amqpTemplate;
     private TopicExchange submissionTopicExchange;
     private ObjectMapper objectMapper;
-    private Set<Listener> listeners = new HashSet<>();
+    private Set<VerdictIssueListener> verdictIssueListeners = new HashSet<>();
 
     @Autowired
     public AmqpSubmissionMessageQueue(AmqpAdmin amqpAdmin, AmqpTemplate amqpTemplate,
@@ -46,34 +48,34 @@ public class AmqpSubmissionMessageQueue implements SubmissionMessageQueue {
         this.amqpAdmin = amqpAdmin;
         this.amqpTemplate = amqpTemplate;
         this.objectMapper = objectMapper;
-        this.judgeResponseQueue = new Queue("Submission-Service:Judge-Response", true);
-        this.submissionTopicExchange = new TopicExchange("submissions");
+        this.judgeResponseQueue = new Queue(VERDICT_ISSUE_QUEUE_NAME, true);
+        this.submissionTopicExchange = new TopicExchange(SUBMISSION_EXCHANGE_NAME);
         amqpAdmin.declareQueue(judgeResponseQueue);
         amqpAdmin.declareExchange(submissionTopicExchange);
     }
 
     @Override
-    public void publish(JudgeResponse judgeResponse) {
-        String submissionId = judgeResponse.getSubmissionId();
-        String routingKey = getRoutingKey(submissionId);
+    public void publish(VerdictIssuedEvent event) {
+        String routingKey = getRoutingKey(event.getSubmissionId());
         try {
-            amqpTemplate.convertAndSend(submissionTopicExchange.getName(), routingKey, objectMapper.writeValueAsBytes(judgeResponse));
+            amqpTemplate.convertAndSend(submissionTopicExchange.getName(),
+                    routingKey, objectMapper.writeValueAsBytes(event));
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
     }
 
     @Override
-    public void subscribe(Listener listener) {
-        listeners.add(listener);
+    public void subscribe(VerdictIssueListener verdictIssueListener) {
+        verdictIssueListeners.add(verdictIssueListener);
         amqpAdmin.declareBinding(BindingBuilder.bind(judgeResponseQueue)
                 .to(submissionTopicExchange)
                 .with(getRoutingKey("*"))); // listen to all submissions
     }
 
     @Override
-    public void unsubscribe(Listener listener) {
-        listeners.remove(listener);
+    public void unsubscribe(VerdictIssueListener verdictIssueListener) {
+        verdictIssueListeners.remove(verdictIssueListener);
     }
 
 
@@ -99,14 +101,12 @@ public class AmqpSubmissionMessageQueue implements SubmissionMessageQueue {
                 if (message != null) {
                     synchronized (this) {
                         String json = new String(message.getBody(), StandardCharsets.UTF_8);
-                        JudgeResponse judgeResponse = objectMapper.readValue(json, JudgeResponse.class);
-                        listeners.forEach(l -> l.onBroadcast(judgeResponse));
+                        VerdictIssuedEvent event = objectMapper.readValue(json, VerdictIssuedEvent.class);
+                        verdictIssueListeners.forEach(l -> l.onVerdictIssued(event));
                     }
                 }
-            } catch (JsonProcessingException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
-            } catch (Exception err) {
-                err.printStackTrace();
             }
         }
     }

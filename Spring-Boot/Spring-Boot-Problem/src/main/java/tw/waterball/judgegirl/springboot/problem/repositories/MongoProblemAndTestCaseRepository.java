@@ -29,13 +29,13 @@ import tw.waterball.judgegirl.problemservice.domain.repositories.ProblemQueryPar
 import tw.waterball.judgegirl.problemservice.domain.repositories.ProblemRepository;
 import tw.waterball.judgegirl.problemservice.domain.repositories.TestCaseRepository;
 import tw.waterball.judgegirl.springboot.profiles.productions.Mongo;
+import tw.waterball.judgegirl.springboot.utils.MongoUtils;
 
 import java.util.List;
 import java.util.Optional;
 
 import static java.util.Objects.requireNonNull;
-import static tw.waterball.judgegirl.springboot.utils.MongoUtils.findOneFieldById;
-import static tw.waterball.judgegirl.springboot.utils.MongoUtils.loadFileResourceByFileId;
+import static tw.waterball.judgegirl.springboot.utils.MongoUtils.downloadFileResourceByFileId;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -64,19 +64,24 @@ public class MongoProblemAndTestCaseRepository implements ProblemRepository, Tes
 
     @Override
     public Optional<FileResource> downloadTestCaseIOs(int problemId, String testcaseIOsFileId) {
-        return findOneFieldById(mongoTemplate,
-                "testcaseIOsFileId", Problem.class, problemId,
-                Problem::getTestcaseIOsFileId)
-                .map((fileId) -> loadFileResourceByFileId(gridFsTemplate, fileId));
+        return MongoUtils.query(mongoTemplate)
+                .fromDocument(Problem.class)
+                .selectOneField("testcaseIOsFileId")
+                .byId(problemId)
+                .execute()
+                .getField(Problem::getTestcaseIOsFileId)
+                .map((fileId) -> downloadFileResourceByFileId(gridFsTemplate, fileId));
     }
-
 
     @Override
     public Optional<FileResource> downloadZippedProvidedCodes(int problemId) {
-        return findOneFieldById(mongoTemplate,
-                "providedCodesFileId", Problem.class, problemId,
-                Problem::getProvidedCodesFileId)
-                .map((fileId) -> loadFileResourceByFileId(gridFsTemplate, fileId));
+        return MongoUtils.query(mongoTemplate)
+                .fromDocument(Problem.class)
+                .selectOneField("providedCodesFileId")
+                .byId(problemId)
+                .execute()
+                .getField(Problem::getProvidedCodesFileId)
+                .map((fileId) -> downloadFileResourceByFileId(gridFsTemplate, fileId));
     }
 
     @Override
@@ -112,8 +117,7 @@ public class MongoProblemAndTestCaseRepository implements ProblemRepository, Tes
     public static class AllTags {
         public List<String> allTags;
 
-        public AllTags() {
-        }
+        public AllTags() { }
 
         public AllTags(List<String> allTags) {
             this.allTags = allTags;

@@ -13,27 +13,56 @@
 
 package tw.waterball.judgegirl.entities.submission;
 
-import lombok.*;
 import tw.waterball.judgegirl.entities.problem.JudgeStatus;
+import tw.waterball.judgegirl.entities.problem.TestCase;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
-@NoArgsConstructor
-@AllArgsConstructor
-@EqualsAndHashCode
-@ToString
-@Getter
-@Setter
 public class Judge {
-    private String testCaseName;
+    private TestCase testCase;
     private JudgeStatus status;
-    private int runtime;
-    private long memory;
-    private String errorMessage;
+    private ProgramProfile programProfile;
     private int grade;
 
-    public static Judge forCE(String testCaseName, int grade) {
-        return new Judge(testCaseName, JudgeStatus.CE, 0, 0, "", grade);
+    public Judge(TestCase testCase,
+                 JudgeStatus status,
+                 ProgramProfile programProfile, int grade) {
+        this.testCase = testCase;
+        this.status = status;
+        this.programProfile = programProfile;
+        this.grade = grade;
+    }
+
+    public TestCase getTestCase() {
+        return testCase;
+    }
+
+    public void setTestCase(TestCase testCase) {
+        this.testCase = testCase;
+    }
+
+    public JudgeStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(JudgeStatus status) {
+        this.status = status;
+    }
+
+    public ProgramProfile getProgramProfile() {
+        return programProfile;
+    }
+
+    public void setProgramProfile(ProgramProfile programProfile) {
+        this.programProfile = programProfile;
+    }
+
+    public int getGrade() {
+        return grade;
+    }
+
+    public void setGrade(int grade) {
+        this.grade = grade;
     }
 }

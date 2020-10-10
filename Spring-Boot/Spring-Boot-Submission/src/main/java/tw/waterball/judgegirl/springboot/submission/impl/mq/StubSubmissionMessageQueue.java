@@ -14,9 +14,9 @@
 package tw.waterball.judgegirl.springboot.submission.impl.mq;
 
 import org.springframework.stereotype.Component;
-import tw.waterball.judgegirl.entities.submission.JudgeResponse;
 import tw.waterball.judgegirl.submissionservice.ports.SubmissionMessageQueue;
 import tw.waterball.judgegirl.springboot.profiles.Dev;
+import tw.waterball.judgegirl.submissionservice.ports.VerdictIssuedEvent;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -28,7 +28,7 @@ import java.util.Set;
 @Component
 public class StubSubmissionMessageQueue implements SubmissionMessageQueue {
     private boolean running = false;
-    private Set<Listener> listeners = new HashSet<>();
+    private Set<VerdictIssueListener> verdictIssueListeners = new HashSet<>();
 
     @Override
     public void startListening() {
@@ -41,20 +41,20 @@ public class StubSubmissionMessageQueue implements SubmissionMessageQueue {
     }
 
     @Override
-    public synchronized void publish(JudgeResponse judgeResponse) {
+    public synchronized void publish(VerdictIssuedEvent event) {
         if (running) {
-            listeners.forEach(l -> l.onBroadcast(judgeResponse));
+            verdictIssueListeners.forEach(l -> l.onVerdictIssued(event));
         }
     }
 
     @Override
-    public synchronized void subscribe(Listener listener) {
-        listeners.add(listener);
+    public synchronized void subscribe(VerdictIssueListener verdictIssueListener) {
+        verdictIssueListeners.add(verdictIssueListener);
     }
 
     @Override
-    public void unsubscribe(Listener listener) {
-        listeners.remove(listener);
+    public void unsubscribe(VerdictIssueListener verdictIssueListener) {
+        verdictIssueListeners.remove(verdictIssueListener);
     }
 
 }

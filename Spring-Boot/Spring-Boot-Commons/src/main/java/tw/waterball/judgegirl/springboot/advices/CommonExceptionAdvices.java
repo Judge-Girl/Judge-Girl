@@ -11,22 +11,25 @@
  *   limitations under the License.
  */
 
-package tw.waterball.judgegirl.springboot.submission.controllers.advices;
+package tw.waterball.judgegirl.springboot.advices;
 
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
-import tw.waterball.judgegirl.submissionservice.domain.usecases.exceptions.SubmissionThrottlingException;
+import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
 @ControllerAdvice
-public class ExceptionAdvices {
+@Order(Ordered.LOWEST_PRECEDENCE)
+public class CommonExceptionAdvices {
 
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler({SubmissionThrottlingException.class})
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler({NotFoundException.class})
     public void handleExceptions() {
         // Nothing to do
     }

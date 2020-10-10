@@ -23,7 +23,7 @@ import java.util.Date;
 import java.util.Map;
 
 import static java.util.Collections.singletonMap;
-import static tw.waterball.judgegirl.commons.utils.Dates.NEVER_EXPIRED;
+import static tw.waterball.judgegirl.commons.utils.Dates.NEVER_EXPIRED_IN_LIFETIME_DATE;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -58,7 +58,7 @@ public interface TokenService {
         }
 
         public static Token ofAdmin(String token) {
-            return new Token(token, NEVER_EXPIRED);
+            return new Token(token, NEVER_EXPIRED_IN_LIFETIME_DATE);
         }
 
         @Override

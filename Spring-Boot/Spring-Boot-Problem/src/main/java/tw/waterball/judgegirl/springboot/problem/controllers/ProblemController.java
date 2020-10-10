@@ -109,12 +109,10 @@ public class ProblemController {
                 .execute(new DownloadTestCaseIOsUseCase.Request(problemId, testcaseIOsFileId));
         return ResponseEntityUtils.respondInputStreamResource(fileResource);
     }
-
 }
 
 class GetProblemPresenter implements GetProblemUseCase.Presenter {
     private Problem problem;
-
     @Override
     public void setProblem(Problem problem) {
         this.problem = problem;
@@ -128,7 +126,6 @@ class GetProblemPresenter implements GetProblemUseCase.Presenter {
 
 class GetProblemListPresenter implements GetProblemListUseCase.Presenter {
     private List<Problem> problems;
-
     @Override
     public void setProblemList(List<Problem> problems) {
         this.problems = problems;
@@ -142,7 +139,6 @@ class GetProblemListPresenter implements GetProblemListUseCase.Presenter {
 
 class GetTestCasesPresenter implements GetTestCasesUseCase.Presenter {
     private List<TestCase> testCases;
-
     @Override
     public void setTestCases(List<TestCase> testCases) {
         this.testCases = testCases;

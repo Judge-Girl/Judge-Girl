@@ -35,7 +35,7 @@ import static java.util.Objects.requireNonNull;
  */
 public class MongoUtils {
 
-    public static FileResource loadFileResourceByFileId(GridFsTemplate gridFsTemplate, String fileId) {
+    public static FileResource downloadFileResourceByFileId(GridFsTemplate gridFsTemplate, String fileId) {
         GridFSFile gridFsFile = gridFsTemplate.findOne(new Query(Criteria.where("_id").is(fileId)));
         GridFsResource resource = gridFsTemplate.getResource(requireNonNull(gridFsFile));
         try {
@@ -45,18 +45,84 @@ public class MongoUtils {
         }
     }
 
-    public static <T> Optional<String> findOneFieldByPK(MongoTemplate mongoTemplate, String pkFieldName,
-                                                        String fieldName, Class<T> documentType, Object pkVal,
-                                                        Function<T, String> fieldGetter) {
-        Query query = new Query(Criteria.where(pkFieldName).is(pkVal));
-        query.fields().include(fieldName);
-        T document = mongoTemplate.findOne(query, documentType);
-        return document == null ? Optional.empty() : Optional.of(fieldGetter.apply(document));
+    public static Builder query(MongoTemplate mongoTemplate) {
+        return new Builder(mongoTemplate);
     }
 
-    public static <T> Optional<String> findOneFieldById(MongoTemplate mongoTemplate,
-                                                        String fieldName, Class<T> documentType, Object id,
-                                                        Function<T, String> fieldGetter) {
-        return findOneFieldByPK(mongoTemplate, "id", fieldName, documentType, id, fieldGetter);
+
+    public static class Builder {
+        private MongoTemplate mongoTemplate;
+
+        public Builder(MongoTemplate mongoTemplate) {
+            this.mongoTemplate = mongoTemplate;
+        }
+
+        public <T> FromDocument<T> fromDocument(Class<T> documentType) {
+            return new FromDocument<>(documentType);
+        }
+
+        public class FromDocument<T> {
+            private Class<T> documentType;
+
+            public FromDocument(Class<T> documentType) {
+                this.documentType = documentType;
+            }
+
+            public SelectOneFieldExecution selectOneField(String fieldName) {
+                return new SelectOneFieldExecution(mongoTemplate, fieldName);
+            }
+
+            public class SelectOneFieldExecution {
+                private MongoTemplate mongoTemplate;
+                private String fieldName;
+                private String pkField;
+                private Object pkValue;
+
+                public SelectOneFieldExecution(MongoTemplate mongoTemplate, String fieldName) {
+                    this.mongoTemplate = mongoTemplate;
+                    this.fieldName = fieldName;
+                }
+
+                public SelectOneFieldExecution byId(Object id) {
+                    pkField = "id";
+                    pkValue = id;
+                    return this;
+                }
+
+                public OfValue by(String pkField) {
+                    this.pkField = pkField;
+                    return this.new OfValue();
+                }
+
+                public class OfValue {
+                    public SelectOneFieldExecution ofValue(String value) {
+                        pkValue = value;
+                        return SelectOneFieldExecution.this;
+                    }
+                }
+
+                public Result execute() {
+                    Query query = new Query(Criteria.where(pkField).is(pkValue));
+                    query.fields().include(fieldName);
+                    T document = mongoTemplate.findOne(query, documentType);
+                    return new Result(document);
+                }
+
+                public class Result {
+                    private T document;
+
+                    public Result(T document) {
+                        this.document = document;
+                    }
+
+                    public Optional<String> getField(Function<T, String> fieldGetter) {
+                        return document == null ? Optional.empty() : Optional.of(fieldGetter.apply(document));
+                    }
+                }
+            }
+        }
+
     }
+
+
 }
