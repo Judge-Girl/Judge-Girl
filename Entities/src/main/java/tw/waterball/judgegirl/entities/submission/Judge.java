@@ -13,33 +13,39 @@
 
 package tw.waterball.judgegirl.entities.submission;
 
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import tw.waterball.judgegirl.entities.problem.JudgeStatus;
-import tw.waterball.judgegirl.entities.problem.TestCase;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
+@ToString
+@EqualsAndHashCode
 public class Judge {
-    private TestCase testCase;
+    private String testcaseName;
     private JudgeStatus status;
     private ProgramProfile programProfile;
     private int grade;
 
-    public Judge(TestCase testCase,
+    public Judge() {
+    }
+
+    public Judge(String testcaseName,
                  JudgeStatus status,
                  ProgramProfile programProfile, int grade) {
-        this.testCase = testCase;
+        this.testcaseName = testcaseName;
         this.status = status;
         this.programProfile = programProfile;
         this.grade = grade;
     }
 
-    public TestCase getTestCase() {
-        return testCase;
+    public String getTestcaseName() {
+        return testcaseName;
     }
 
-    public void setTestCase(TestCase testCase) {
-        this.testCase = testCase;
+    public void setTestcase(String testcaseName) {
+        this.testcaseName = testcaseName;
     }
 
     public JudgeStatus getStatus() {

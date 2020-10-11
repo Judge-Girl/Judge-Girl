@@ -17,7 +17,7 @@ package tw.waterball.judgegirl.submissionapi.clients;
 import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
 import tw.waterball.judgegirl.entities.submission.Submission;
-import tw.waterball.judgegirl.submissionservice.domain.usecases.SubmissionRequest;
+import tw.waterball.judgegirl.submissionservice.domain.usecases.SubmitCodeRequest;
 
 import java.io.IOException;
 import java.util.List;
@@ -27,7 +27,7 @@ import java.util.List;
  */
 public interface SubmissionServiceDriver {
 
-    Submission submit(String token, SubmissionRequest submissionRequest) throws IOException;
+    Submission submit(String token, SubmitCodeRequest submitCodeRequest) throws IOException;
 
     Submission getSubmission(String token, int problemId, int studentId, String submissionId) throws NotFoundException;
 

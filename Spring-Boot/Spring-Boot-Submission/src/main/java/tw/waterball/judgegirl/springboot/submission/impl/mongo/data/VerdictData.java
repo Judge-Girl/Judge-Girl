@@ -32,5 +32,6 @@ import java.util.List;
 public class VerdictData {
     private List<Judge> judges = new ArrayList<>();
     private Date issueTime;
+    private int totalGrade;
     private JudgeStatus summaryStatus;
 }

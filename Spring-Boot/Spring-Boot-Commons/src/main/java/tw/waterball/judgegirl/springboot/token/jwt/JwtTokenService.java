@@ -31,8 +31,6 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.Queue;
 
-import static tw.waterball.judgegirl.commons.utils.Dates.NEVER_EXPIRED_IN_LIFETIME_DATE;
-
 /**
  * @author johnny850807@gmail.com (Waterball))
  */
@@ -53,7 +51,7 @@ public class JwtTokenService implements TokenService {
     public Token createToken(Identity identity) {
         Date expirationDate;
         if (identity.isAdmin()) {
-            return Token.ofAdmin(compactTokenString(NEVER_EXPIRED_IN_LIFETIME_DATE, identity));
+            return Token.ofAdmin(compactTokenStringWithoutExpiration(identity));
         }
         expirationDate = new Date((System.currentTimeMillis() + this.expiration.getTime()));
         return Token.ofStudent(identity.getStudentId(), compactTokenString(expirationDate, identity), expirationDate);
@@ -90,6 +88,12 @@ public class JwtTokenService implements TokenService {
         return Jwts.builder()
                 .setClaims(identity.getClaimMap())
                 .setExpiration(expirationDate)
+                .signWith(key).compact();
+    }
+
+    private String compactTokenStringWithoutExpiration(Identity identity) {
+        return Jwts.builder()
+                .setClaims(identity.getClaimMap())
                 .signWith(key).compact();
     }
 }

@@ -38,7 +38,7 @@ import tw.waterball.judgegirl.submissionservice.ports.JudgerDeployer;
  * @author - johnny850807@gmail.com (Waterball)
  */
 @K8S
-@PropertySource("judger-deploy.properties")
+@PropertySource("classpath:judger-deploy.properties")
 @Component
 public class K8SJudgerDeployer implements JudgerDeployer {
     private final String judgerJobNameFormat;

@@ -13,9 +13,14 @@
 
 package tw.waterball.judgegirl.entities.submission;
 
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
+
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
+@ToString
+@EqualsAndHashCode
 public class ProgramProfile {
     private long runtime;
     private long memoryUsage;

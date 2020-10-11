@@ -57,8 +57,10 @@ public class MongoSubmissionRepository implements SubmissionRepository {
     }
 
     @Override
-    public Optional<Submission> findById(String submissionId) {
-        SubmissionData data = mongoTemplate.findById(submissionId, SubmissionData.class);
+    public Optional<Submission> findOne(int studentId, String submissionId) {
+        SubmissionData data = mongoTemplate.findOne(
+                query(where("studentId").is(studentId)
+                        .and("id").is(submissionId)), SubmissionData.class);
         return Optional.ofNullable(DataMapper.toEntity(data));
     }
 

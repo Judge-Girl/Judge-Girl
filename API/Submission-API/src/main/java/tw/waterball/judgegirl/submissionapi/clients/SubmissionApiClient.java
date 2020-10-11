@@ -28,7 +28,7 @@ import tw.waterball.judgegirl.api.retrofit.RetrofitFactory;
 import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
 import tw.waterball.judgegirl.entities.submission.Submission;
-import tw.waterball.judgegirl.submissionservice.domain.usecases.SubmissionRequest;
+import tw.waterball.judgegirl.submissionservice.domain.usecases.SubmitCodeRequest;
 
 import javax.inject.Named;
 import java.io.ByteArrayInputStream;
@@ -50,10 +50,10 @@ public class SubmissionApiClient extends BaseRetrofitAPI implements SubmissionSe
     }
 
     @Override
-    public Submission submit(String token, SubmissionRequest submissionRequest) throws IOException {
+    public Submission submit(String token, SubmitCodeRequest submitCodeRequest) throws IOException {
         return api.submit("Bearer " + token,
-                submissionRequest.problemId, submissionRequest.studentId,
-                submissionRequest.fileResources.stream()
+                submitCodeRequest.problemId, submitCodeRequest.studentId,
+                submitCodeRequest.fileResources.stream()
                         .map(r -> MultipartBody.Part.createFormData("submittedCodes", r.getFileName(),
                                 new RequestBody() {
                                     @Override
@@ -124,7 +124,8 @@ public class SubmissionApiClient extends BaseRetrofitAPI implements SubmissionSe
                 new RetrofitFactory(new ObjectMapper()), "127.0.0.1", 33003);
         byte[] a = "a".getBytes();
         byte[] b = "b".getBytes();
-        Submission submission = submissionService.submit(token, new SubmissionRequest(1, 1,
+        Submission submission = submissionService.submit(token,
+                new SubmitCodeRequest(true, 1, 1,
                 Arrays.asList(new FileResource("a", a.length, new ByteArrayInputStream(a)),
                         new FileResource("b", b.length, new ByteArrayInputStream(b)))));
         System.out.println(submission);

@@ -53,6 +53,7 @@ public class DataMapper {
         return new VerdictData(
                 verdict.getJudges(),
                 verdict.getIssueTime(),
+                verdict.getTotalGrade(),
                 verdict.getSummaryStatus()
         );
     }
@@ -69,13 +70,12 @@ public class DataMapper {
                 data.getSubmissionTime()
         );
 
-        Verdict verdict = toEntity(submission, data.getVerdict());
+        Verdict verdict = toEntity(data.getVerdict());
         submission.setVerdict(verdict);
         return submission;
     }
 
-    public static Verdict toEntity(Submission submission,
-                                   VerdictData data) {
+    public static Verdict toEntity(VerdictData data) {
         if (data == null) {
             return null;
         }

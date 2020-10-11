@@ -69,7 +69,9 @@ public class SubmissionController {
                           @RequestParam(SUBMIT_CODE_MULTIPART_KEY_NAME) MultipartFile[] submittedCodes) {
         return validateIdentity(studentId, bearerToken, (token) -> {
             try {
-                SubmissionRequest request = new SubmissionRequest(studentId, problemId,
+                boolean throttling = !token.isAdmin();
+                SubmitCodeRequest request = new SubmitCodeRequest(
+                        throttling, studentId, problemId,
                         Arrays.stream(submittedCodes)
                                 .map(this::convertMultipartFileToFileResource)
                                 .collect(Collectors.toList()));
@@ -128,7 +130,8 @@ public class SubmissionController {
                                                 @PathVariable String submittedCodesFileId) {
         return validateIdentity(studentId, bearerToken, (token) -> {
             FileResource fileResource = downloadSubmittedCodesUseCase.execute(
-                    new DownloadSubmittedCodesUseCase.Request(submissionId, submittedCodesFileId)
+                    new DownloadSubmittedCodesUseCase.Request(
+                            studentId, submissionId, submittedCodesFileId)
             );
             return ResponseEntityUtils.respondInputStreamResource(fileResource);
         });
