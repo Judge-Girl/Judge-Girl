@@ -19,7 +19,6 @@ package tw.waterball.judgegirl.springboot.problem.controllers;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.client.MongoClient;
-import tw.waterball.judgegirl.entities.stubs.Stubs;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayNameGeneration;
@@ -37,7 +36,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import tw.waterball.judgegirl.commons.utils.ZipUtils;
 import tw.waterball.judgegirl.entities.problem.Problem;
-import tw.waterball.judgegirl.entities.problem.TestCase;
+import tw.waterball.judgegirl.entities.problem.Testcase;
+import tw.waterball.judgegirl.entities.stubs.Stubs;
 import tw.waterball.judgegirl.problemapi.views.ProblemItem;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.springboot.problem.SpringBootProblemApplication;
@@ -68,9 +68,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ContextConfiguration(classes = SpringBootProblemApplication.class)
 @DisplayNameGeneration(ReplaceUnderscoresWithCamelCasesDisplayNameGenerators.class)
 class ProblemControllerIT {
-    private Problem problem;
-    private List<TestCase> testCases;
-
     @Autowired
     MockMvc mockMvc;
     @Autowired
@@ -81,21 +78,22 @@ class ProblemControllerIT {
     ObjectMapper objectMapper;
     @Autowired
     MongoClient mongoClient;
-
+    private Problem problem;
+    private List<Testcase> testcases;
 
     @BeforeEach
     void setup() {
-        problem = Stubs.PROBLEM_TEMPLATE_BUILDER.build();
-        testCases = asList(
-                new TestCase("1", problem.getId(), 5, 5, 5000, 1, 20),
-                new TestCase("2", problem.getId(), 5, 5, 5000, 1, 30),
-                new TestCase("3", problem.getId(), 3, 4, 5000, 1, 50));
+        problem = Stubs.problemTemplateBuilder().build();
+        testcases = asList(
+                new Testcase("1", problem.getId(), 5, 5, 5000, 1, 20),
+                new Testcase("2", problem.getId(), 5, 5, 5000, 1, 30),
+                new Testcase("3", problem.getId(), 3, 4, 5000, 1, 50));
     }
 
     @AfterEach
     void clean() {
         mongoTemplate.dropCollection(Problem.class);
-        mongoTemplate.dropCollection(TestCase.class);
+        mongoTemplate.dropCollection(Testcase.class);
     }
 
     @Test
@@ -112,7 +110,7 @@ class ProblemControllerIT {
     }
 
     private byte[] givenProblemWithProvidedCodes(String... providedCodePaths) {
-        final Problem savedProblem = Stubs.PROBLEM_TEMPLATE_BUILDER.build();
+        final Problem savedProblem = Stubs.problemTemplateBuilder().build();
         byte[] zippedProvidedCodesBytes = ZipUtils.zipFilesFromResources(providedCodePaths);
         String fileId = gridFsTemplate.store(new ByteArrayInputStream(zippedProvidedCodesBytes),
                 savedProblem.getProvidedCodesFileName()).toString();
@@ -133,23 +131,23 @@ class ProblemControllerIT {
     }
 
     private void givenProblemSaved() {
-        final Problem problem = Stubs.PROBLEM_TEMPLATE_BUILDER.build();
+        final Problem problem = Stubs.problemTemplateBuilder().build();
         mongoTemplate.save(problem);
     }
 
     @Test
     void GivenTestcasesSaved_whenGetTestcasesByProblemId_shouldRespondTestCases() throws Exception {
-        mongoTemplate.insertAll(testCases);
+        mongoTemplate.insertAll(testcases);
 
         mockMvc.perform(get("/api/problems/{problemId}/testcases", problem.getId()))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().json(objectMapper.writeValueAsString(testCases)));
+                .andExpect(content().json(objectMapper.writeValueAsString(testcases)));
     }
 
     @Test
     void testDownloadZippedTestCaseIOs() throws Exception {
-        final Problem savedProblem = Stubs.PROBLEM_TEMPLATE_BUILDER.build();
+        final Problem savedProblem = Stubs.problemTemplateBuilder().build();
         byte[] bytes = ZipUtils.zipFilesFromResources("/stubs/in/", "/stubs/out/");
         String fileId = gridFsTemplate.store(new ByteArrayInputStream(bytes),
                 savedProblem.getTestCaseIOsFileName()).toString();
@@ -197,7 +195,7 @@ class ProblemControllerIT {
     }
 
     private Problem givenProblemWithTags(int id, String... tags) {
-        final Problem targetProblem = Stubs.PROBLEM_TEMPLATE_BUILDER.id(id)
+        final Problem targetProblem = Stubs.problemTemplateBuilder().id(id)
                 .tags(asList(tags)).build();
         mongoTemplate.save(targetProblem);
         return targetProblem;
@@ -279,7 +277,7 @@ class ProblemControllerIT {
     private List<Problem> givenArbitraryProblemsSaved(int count) {
         Random random = new Random();
         List<Problem> problems = IntStream.range(0, count).mapToObj((id) ->
-                Stubs.PROBLEM_TEMPLATE_BUILDER.id(id)
+                Stubs.problemTemplateBuilder().id(id)
                         .title(String.valueOf(random.nextInt())).build())
                 .collect(Collectors.toList());
         problems.forEach(mongoTemplate::save);

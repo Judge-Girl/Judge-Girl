@@ -22,7 +22,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
 import tw.waterball.judgegirl.entities.problem.Problem;
-import tw.waterball.judgegirl.entities.problem.TestCase;
+import tw.waterball.judgegirl.entities.problem.Testcase;
 import tw.waterball.judgegirl.problemapi.views.ProblemItem;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.problemservice.domain.repositories.ProblemQueryParams;
@@ -94,7 +94,7 @@ public class ProblemController {
 
 
     @GetMapping("/{problemId}/testcases")
-    public List<TestCase> getTestCases(@PathVariable int problemId) {
+    public List<Testcase> getTestCases(@PathVariable int problemId) {
         GetTestCasesPresenter presenter = new GetTestCasesPresenter();
         getTestCasesUseCase.execute(new GetTestCasesUseCase.Request(problemId), presenter);
         return presenter.present();
@@ -113,6 +113,7 @@ public class ProblemController {
 
 class GetProblemPresenter implements GetProblemUseCase.Presenter {
     private Problem problem;
+
     @Override
     public void setProblem(Problem problem) {
         this.problem = problem;
@@ -126,6 +127,7 @@ class GetProblemPresenter implements GetProblemUseCase.Presenter {
 
 class GetProblemListPresenter implements GetProblemListUseCase.Presenter {
     private List<Problem> problems;
+
     @Override
     public void setProblemList(List<Problem> problems) {
         this.problems = problems;
@@ -138,13 +140,14 @@ class GetProblemListPresenter implements GetProblemListUseCase.Presenter {
 }
 
 class GetTestCasesPresenter implements GetTestCasesUseCase.Presenter {
-    private List<TestCase> testCases;
+    private List<Testcase> testcases;
+
     @Override
-    public void setTestCases(List<TestCase> testCases) {
-        this.testCases = testCases;
+    public void setTestcases(List<Testcase> testcases) {
+        this.testcases = testcases;
     }
 
-    public List<TestCase> present() {
-        return testCases;
+    public List<Testcase> present() {
+        return testcases;
     }
 }

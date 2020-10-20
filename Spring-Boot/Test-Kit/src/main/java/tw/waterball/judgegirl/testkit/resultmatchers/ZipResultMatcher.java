@@ -36,7 +36,8 @@ import static org.springframework.test.util.AssertionErrors.assertTrue;
 public class ZipResultMatcher implements ResultMatcher {
     private Map<String, MultipartFile> fileNameToFileMap = new HashMap<>();
 
-    private ZipResultMatcher() { }
+    private ZipResultMatcher() {
+    }
 
     public static ZipResultMatcher zip() {
         return new ZipResultMatcher();
@@ -49,7 +50,6 @@ public class ZipResultMatcher implements ResultMatcher {
         }
         return this;
     }
-
 
 
     @Override

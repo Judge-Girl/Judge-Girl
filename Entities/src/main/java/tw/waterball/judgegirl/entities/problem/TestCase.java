@@ -24,7 +24,7 @@ import lombok.*;
 @Setter
 @ToString
 
-public class TestCase {
+public class Testcase {
     private String name;
     private int problemId;
     private int timeLimit;
@@ -33,7 +33,7 @@ public class TestCase {
     private int threadNumberLimit;
     private int grade;
 
-    public TestCase(int problemId, int timeLimit, long memoryLimit, long outputLimit, int threadNumberLimit, int grade) {
+    public Testcase(int problemId, int timeLimit, long memoryLimit, long outputLimit, int threadNumberLimit, int grade) {
         this.problemId = problemId;
         this.timeLimit = timeLimit;
         this.memoryLimit = memoryLimit;

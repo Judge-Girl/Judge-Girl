@@ -11,31 +11,28 @@
  *   limitations under the License.
  */
 
-package tw.waterball.judgegirl.entities.problem;
+package tw.waterball.judgegirl.entities.problem.validators;
 
-import lombok.*;
+import tw.waterball.judgegirl.entities.problem.JudgePluginTag;
+
+import javax.validation.Constraint;
+import javax.validation.Payload;
+import java.lang.annotation.*;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
-@NoArgsConstructor
-@AllArgsConstructor
-@EqualsAndHashCode
-@Getter
-@Setter
-public class JudgePluginTag {
-    private Type type;
-    private String group;
-    private String name;
-    private String version;
+@Documented
+@Constraint(validatedBy = JudgePluginTagValidator.class)
+@Target({ElementType.METHOD, ElementType.FIELD})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface JudgePluginTagConstraint {
 
-    @Override
-    public String toString() {
-        return String.format("[%s] %s:%s:%s", type, group, name, version);
-    }
+    JudgePluginTag.Type type();
 
-    public enum Type {
-        OUTPUT_MATCH_POLICY,
-        CODE_INSPECTION
-    }
+    String message() default "Invalid Judge Plugin Tag";
+
+    Class<?>[] groups() default {};
+
+    Class<? extends Payload>[] payload() default {};
 }

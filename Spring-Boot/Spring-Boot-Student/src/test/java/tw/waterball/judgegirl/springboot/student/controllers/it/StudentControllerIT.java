@@ -31,7 +31,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import tw.waterball.judgegirl.springboot.profiles.Profiles;
 import tw.waterball.judgegirl.springboot.student.StudentAdapterServiceApplication;
 import tw.waterball.judgegirl.springboot.student.controllers.LoginResponse;
-import tw.waterball.judgegirl.springboot.token.TokenService;
+import tw.waterball.judgegirl.commons.token.TokenService;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;

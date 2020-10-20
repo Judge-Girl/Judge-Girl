@@ -11,31 +11,27 @@
  *   limitations under the License.
  */
 
-package tw.waterball.judgegirl.entities.problem;
+package tw.waterball.judgegirl.entities.problem.validators;
 
-import lombok.*;
+import tw.waterball.judgegirl.entities.problem.JudgePluginTag;
+
+import javax.validation.ConstraintValidator;
+import javax.validation.ConstraintValidatorContext;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
-@NoArgsConstructor
-@AllArgsConstructor
-@EqualsAndHashCode
-@Getter
-@Setter
-public class JudgePluginTag {
-    private Type type;
-    private String group;
-    private String name;
-    private String version;
+public class JudgePluginTagValidator implements
+        ConstraintValidator<JudgePluginTagConstraint, JudgePluginTag> {
+    private JudgePluginTag.Type expectType;
 
     @Override
-    public String toString() {
-        return String.format("[%s] %s:%s:%s", type, group, name, version);
+    public void initialize(JudgePluginTagConstraint constraintAnnotation) {
+        expectType = constraintAnnotation.type();
     }
 
-    public enum Type {
-        OUTPUT_MATCH_POLICY,
-        CODE_INSPECTION
+    @Override
+    public boolean isValid(JudgePluginTag tag, ConstraintValidatorContext context) {
+        return tag == null || expectType == tag.getType();
     }
 }

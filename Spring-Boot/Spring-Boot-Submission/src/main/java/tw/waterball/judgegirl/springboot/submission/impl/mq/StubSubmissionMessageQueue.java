@@ -14,8 +14,8 @@
 package tw.waterball.judgegirl.springboot.submission.impl.mq;
 
 import org.springframework.stereotype.Component;
-import tw.waterball.judgegirl.submissionservice.ports.SubmissionMessageQueue;
 import tw.waterball.judgegirl.springboot.profiles.Dev;
+import tw.waterball.judgegirl.submissionservice.ports.SubmissionMessageQueue;
 import tw.waterball.judgegirl.submissionservice.ports.VerdictIssuedEvent;
 
 import java.util.HashSet;

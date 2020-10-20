@@ -39,4 +39,13 @@ public class VerdictView {
         }
         return new VerdictView(verdict.getJudges(), verdict.getIssueTime());
     }
+
+    public static Verdict toEntity(@Nullable VerdictView verdictView) {
+        if (verdictView == null) {
+            return null;
+        }
+        return new Verdict(
+                verdictView.getJudges(),
+                verdictView.getIssueTime());
+    }
 }

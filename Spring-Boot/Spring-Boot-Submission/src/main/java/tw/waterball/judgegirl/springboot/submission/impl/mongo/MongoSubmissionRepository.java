@@ -106,7 +106,7 @@ public class MongoSubmissionRepository implements SubmissionRepository {
     @Override
     public List<Submission> find(SubmissionQueryParams params) {
         Query query = query(where("problemId").is(params.getProblemId())
-                        .and("studentId").is(params.getStudentId()));
+                .and("studentId").is(params.getStudentId()));
         params.getPage().ifPresent(page -> query.skip(page * PAGE_SIZE).limit(PAGE_SIZE));
         List<SubmissionData> dataList = mongoTemplate.find(query, SubmissionData.class);
         return DataMapper.toEntity(dataList);
@@ -116,7 +116,7 @@ public class MongoSubmissionRepository implements SubmissionRepository {
     public Optional<SubmissionThrottling> findSubmissionThrottling(int problemId, int studentId) {
         return Optional.ofNullable(mongoTemplate.findOne(
                 query(where("studentId").is(studentId)
-                .and("problemId").is(problemId)), SubmissionThrottling.class));
+                        .and("problemId").is(problemId)), SubmissionThrottling.class));
     }
 
     @Override

@@ -13,7 +13,6 @@
 
 package tw.waterball.judgegirl.submissionapi.clients;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
@@ -27,15 +26,15 @@ import tw.waterball.judgegirl.api.retrofit.BaseRetrofitAPI;
 import tw.waterball.judgegirl.api.retrofit.RetrofitFactory;
 import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
-import tw.waterball.judgegirl.entities.submission.Submission;
+import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 import tw.waterball.judgegirl.submissionservice.domain.usecases.SubmitCodeRequest;
 
 import javax.inject.Named;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static tw.waterball.judgegirl.commons.utils.HttpHeaderUtils.createBearer;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -43,15 +42,18 @@ import java.util.stream.Collectors;
 @Named
 public class SubmissionApiClient extends BaseRetrofitAPI implements SubmissionServiceDriver {
     private API api;
+    private String token;
 
     public SubmissionApiClient(RetrofitFactory retrofitFactory,
-                                        String address, int port) {
+                               String address, int port,
+                               String token) {
+        this.token = token;
         this.api = retrofitFactory.create(address, port).create(API.class);
     }
 
     @Override
-    public Submission submit(String token, SubmitCodeRequest submitCodeRequest) throws IOException {
-        return api.submit("Bearer " + token,
+    public SubmissionView submit(SubmitCodeRequest submitCodeRequest) throws IOException {
+        return api.submit(createBearer(token),
                 submitCodeRequest.problemId, submitCodeRequest.studentId,
                 submitCodeRequest.fileResources.stream()
                         .map(r -> MultipartBody.Part.createFormData("submittedCodes", r.getFileName(),
@@ -69,72 +71,55 @@ public class SubmissionApiClient extends BaseRetrofitAPI implements SubmissionSe
     }
 
     @Override
-    public Submission getSubmission(String token, int problemId, int studentId, String submissionId) throws NotFoundException {
-        return errorHandlingGetBody(() -> api.getSubmission("Bearer " + token,
+    public SubmissionView getSubmission(int problemId, int studentId, String submissionId) throws NotFoundException {
+        return errorHandlingGetBody(() -> api.getSubmission(
+                createBearer(token),
                 problemId, studentId, submissionId).execute());
     }
 
     @Override
-    public FileResource getZippedSubmittedCodes(String token, int problemId, int studentId, String submissionId) throws NotFoundException {
+    public FileResource downloadSubmittedCodes(int problemId, int studentId,
+                                               String submissionId, String submittedCodesFileId) throws NotFoundException {
         Response<ResponseBody> resp = errorHandlingGetResponse(() ->
-                api.getZippedSubmittedCodes("Bearer " + token,
-                        problemId, studentId, submissionId));
+                api.getSubmittedCodes(
+                        createBearer(token),
+                        problemId, studentId, submissionId, submittedCodesFileId));
         return parseDownloadedFileResource(resp);
     }
 
     @Override
-    public List<Submission> getSubmissions(String token, int problemId, int studentId) {
-        return errorHandlingGetBody(() -> api.getSubmissions("Bearer " + token,
+    public List<SubmissionView> getSubmissions(int problemId, int studentId) {
+        return errorHandlingGetBody(() -> api.getSubmissions(
+                createBearer(token),
                 problemId, studentId).execute());
     }
 
     private interface API {
         @Multipart
         @POST("/api/problems/{problemId}/students/{studentId}/submissions")
-        Call<Submission> submit(@Header("Authorization") String bearerToken,
+        Call<SubmissionView> submit(@Header("Authorization") String bearerToken,
                                 @Path("problemId") int problemId,
                                 @Path("studentId") int studentId,
                                 @Part List<MultipartBody.Part> submittedCodes);
 
         @GET("/api/problems/{problemId}/students/{studentId}/submissions/{submissionId}")
-        Call<Submission> getSubmission(@Header("Authorization") String bearerToken,
+        Call<SubmissionView> getSubmission(@Header("Authorization") String bearerToken,
                                        @Path("problemId") int problemId,
                                        @Path("studentId") int studentId,
                                        @Path("submissionId") String submissionId);
 
 
         @GET("/api/problems/{problemId}/students/{studentId}/submissions")
-        Call<List<Submission>> getSubmissions(@Header("Authorization") String bearerToken,
+        Call<List<SubmissionView>> getSubmissions(@Header("Authorization") String bearerToken,
                                               @Path("problemId") int problemId,
                                               @Path("studentId") int studentId);
 
-        @GET("/api/problems/{problemId}/students/{studentId}/submissions/{submissionId}/zippedSubmittedCodes")
-        Call<ResponseBody> getZippedSubmittedCodes(@Header("Authorization") String bearerToken,
-                                                   @Path("problemId") int problemId,
-                                                   @Path("studentId") int studentId,
-                                                   @Path("submissionId") String submissionId);
-    }
-
-    public static void main(String[] args) throws IOException {
-        int studentId = 1;
-        int problemId = 1;
-        String token = studentId + "," + Long.MAX_VALUE;
-
-        SubmissionServiceDriver submissionService = new SubmissionApiClient(
-                new RetrofitFactory(new ObjectMapper()), "127.0.0.1", 33003);
-        byte[] a = "a".getBytes();
-        byte[] b = "b".getBytes();
-        Submission submission = submissionService.submit(token,
-                new SubmitCodeRequest(true, 1, 1,
-                Arrays.asList(new FileResource("a", a.length, new ByteArrayInputStream(a)),
-                        new FileResource("b", b.length, new ByteArrayInputStream(b)))));
-        System.out.println(submission);
-
-        FileResource codes = submissionService.getZippedSubmittedCodes(token, studentId, problemId, submission.getId());
-        System.out.println(submissionService.getSubmissions(token, studentId, problemId));
-
-        System.out.println(submissionService.getSubmission(token, studentId, problemId, submission.getId()));
-
+        @GET("/api/problems/{problemId}/students/{studentId}/submissions/{submissionId}/submittedCodes/{submittedCodesFileId}")
+        Call<ResponseBody> getSubmittedCodes(@Header("Authorization") String bearerToken,
+                                             @Path("problemId") int problemId,
+                                             @Path("studentId") int studentId,
+                                             @Path("submissionId") String submissionId,
+                                             @Path("submittedCodesFileId") String submittedCodesFileId);
     }
 
 }

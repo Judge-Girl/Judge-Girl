@@ -11,31 +11,13 @@
  *   limitations under the License.
  */
 
-package tw.waterball.judgegirl.entities.problem;
+package tw.waterball.judgegirl.entities.submission;
 
-import lombok.*;
+import lombok.Value;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
-@NoArgsConstructor
-@AllArgsConstructor
-@EqualsAndHashCode
-@Getter
-@Setter
-public class JudgePluginTag {
-    private Type type;
-    private String group;
-    private String name;
-    private String version;
-
-    @Override
-    public String toString() {
-        return String.format("[%s] %s:%s:%s", type, group, name, version);
-    }
-
-    public enum Type {
-        OUTPUT_MATCH_POLICY,
-        CODE_INSPECTION
-    }
+@Value
+public class CodeInspectionReport {
 }

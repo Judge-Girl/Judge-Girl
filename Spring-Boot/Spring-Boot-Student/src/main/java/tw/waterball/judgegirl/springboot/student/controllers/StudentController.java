@@ -23,7 +23,9 @@ import org.springframework.web.bind.annotation.*;
 import tw.waterball.judgegirl.commons.utils.HttpHeaderUtils;
 import tw.waterball.judgegirl.entities.Student;
 import tw.waterball.judgegirl.springboot.student.api.LegacyStudentAPI;
-import tw.waterball.judgegirl.springboot.token.*;
+import tw.waterball.judgegirl.commons.token.TokenInvalidException;
+import tw.waterball.judgegirl.commons.token.TokenService;
+
 import java.util.Optional;
 
 /**

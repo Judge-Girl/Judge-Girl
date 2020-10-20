@@ -16,7 +16,7 @@
         <module>Commons</module>
         <module>Submission-Service</module>
         <module>Problem-Service</module>
-        <!-- module>Judger</module -->
+        <module>Judger</module>
         <module>Plugins</module>
         <module>Spring-Boot</module>
         <module>Entities</module>
@@ -29,6 +29,10 @@
         <intellij.annotations.version>12.0</intellij.annotations.version>
         <lombok.version>1.18.12</lombok.version>
         <javax.inject.version>1</javax.inject.version>
+        <javax.validation.version>2.0.0.Final</javax.validation.version>
+        <org.hibernate-validator.version>6.0.10.Final</org.hibernate-validator.version>
+        <javax.el.version>3.0.0</javax.el.version>
+        <org.glassfish.web.javax.el.version>2.2.6</org.glassfish.web.javax.el.version>
         <maven-failsafe-plugin.version>3.0.0-M4</maven-failsafe-plugin.version>
         <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
     </properties>
@@ -47,6 +51,30 @@
 
     <dependencies>
         <!-- Start of Shared Components -->
+
+        <!-- JSR380 -->
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-validator</artifactId>
+            <version>${org.hibernate-validator.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.validation</groupId>
+            <artifactId>validation-api</artifactId>
+            <version>${javax.validation.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.el</groupId>
+            <artifactId>javax.el-api</artifactId>
+            <version>${javax.el.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.web</groupId>
+            <artifactId>javax.el</artifactId>
+            <version>${org.glassfish.web.javax.el.version}</version>
+        </dependency>
+        <!-- End of JSR380 -->
+
         <dependency>
             <groupId>com.intellij</groupId>
             <artifactId>annotations</artifactId>

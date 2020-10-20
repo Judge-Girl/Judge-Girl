@@ -48,4 +48,20 @@ public class SubmissionView {
                 submission.getSubmittedCodesFileId(),
                 submission.getSubmissionTime());
     }
+
+    public static Submission toEntity(@Nullable SubmissionView submissionView) {
+        if (submissionView == null) {
+            return null;
+        }
+
+        VerdictView verdictView = submissionView.getVerdict();
+        Submission submission = new Submission(submissionView.getId(),
+                submissionView.getStudentId(),
+                submissionView.getProblemId(),
+                submissionView.getSubmittedCodesFileId());
+
+        Verdict verdict = VerdictView.toEntity(verdictView);
+        submission.setVerdict(verdict);
+        return submission;
+    }
 }

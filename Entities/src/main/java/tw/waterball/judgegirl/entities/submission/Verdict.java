@@ -20,6 +20,7 @@ import tw.waterball.judgegirl.entities.problem.JudgeStatus;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -27,8 +28,11 @@ import java.util.List;
 public class Verdict {
     @Singular
     private List<Judge> judges;
-    private @Nullable String compileErrorMessage;
+    @Nullable
+    private String compileErrorMessage;
     private Date issueTime = new Date();
+    @Nullable
+    private CodeInspectionReport codeInspectionReport;
 
     public Verdict(List<Judge> judges, Date issueTime) throws InvalidVerdictException {
         this(judges);
@@ -40,10 +44,6 @@ public class Verdict {
         if (getSummaryStatus() == JudgeStatus.NONE) {
             throw new InvalidVerdictException("Verdict must not have a NONE summary status.");
         }
-    }
-
-    public void setCompileErrorMessage(@Nullable String compileErrorMessage) {
-        this.compileErrorMessage = compileErrorMessage;
     }
 
     public boolean isCompileError() {
@@ -75,6 +75,7 @@ public class Verdict {
 
     }
 
+
     public List<Judge> getJudges() {
         return judges;
     }
@@ -85,5 +86,17 @@ public class Verdict {
 
     public String getCompileErrorMessage() {
         return compileErrorMessage;
+    }
+
+    public void setCompileErrorMessage(@Nullable String compileErrorMessage) {
+        this.compileErrorMessage = compileErrorMessage;
+    }
+
+    public Optional<CodeInspectionReport> getCodeInspectionReport() {
+        return Optional.ofNullable(codeInspectionReport);
+    }
+
+    public void setCodeInspectionReport(CodeInspectionReport codeInspectionReport) {
+        this.codeInspectionReport = codeInspectionReport;
     }
 }

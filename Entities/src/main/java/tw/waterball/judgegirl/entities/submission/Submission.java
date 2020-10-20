@@ -35,7 +35,8 @@ public class Submission {
     private Problem problem;
     private int studentId;
 
-    private @Nullable Verdict verdict;
+    @Nullable
+    private Verdict verdict;
 
     private String submittedCodesFileId;
     private Date submissionTime = new Date();

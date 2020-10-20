@@ -24,7 +24,7 @@ import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.stereotype.Component;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
 import tw.waterball.judgegirl.entities.problem.Problem;
-import tw.waterball.judgegirl.entities.problem.TestCase;
+import tw.waterball.judgegirl.entities.problem.Testcase;
 import tw.waterball.judgegirl.problemservice.domain.repositories.ProblemQueryParams;
 import tw.waterball.judgegirl.problemservice.domain.repositories.ProblemRepository;
 import tw.waterball.judgegirl.problemservice.domain.repositories.TestCaseRepository;
@@ -58,8 +58,8 @@ public class MongoProblemAndTestCaseRepository implements ProblemRepository, Tes
     }
 
     @Override
-    public List<TestCase> findAllInProblem(int problemId) {
-        return mongoTemplate.find(new Query(Criteria.where("problemId").is(problemId)), TestCase.class);
+    public List<Testcase> findAllInProblem(int problemId) {
+        return mongoTemplate.find(new Query(Criteria.where("problemId").is(problemId)), Testcase.class);
     }
 
     @Override
@@ -117,7 +117,8 @@ public class MongoProblemAndTestCaseRepository implements ProblemRepository, Tes
     public static class AllTags {
         public List<String> allTags;
 
-        public AllTags() { }
+        public AllTags() {
+        }
 
         public AllTags(List<String> allTags) {
             this.allTags = allTags;

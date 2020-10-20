@@ -17,6 +17,7 @@ import org.springframework.context.annotation.ComponentScan;
 
 /**
  * Scan this class for injection.
+ *
  * @author - johnny850807@gmail.com (Waterball)
  */
 @ComponentScan

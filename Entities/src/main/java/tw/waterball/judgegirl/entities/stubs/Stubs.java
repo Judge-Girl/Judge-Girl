@@ -24,19 +24,20 @@ public class Stubs {
     @SuppressWarnings("WeakerAccess")
     public final static int STUB_ID = 1;
 
-    public final static ProblemBuilder PROBLEM_TEMPLATE_BUILDER = Problem.builder()
-            .id(STUB_ID)
-            .title("Title")
-            .markdownDescription("# Title \n ```\n Code \n ```")
-            .judgeSpec(new JudgeSpec(JudgeLang.C, JudgeEnv.NORMAL, 0.5f, 0))
-            .judgePolicyPluginTag(new JudgePluginTag("type", "group", "name", "1.0"))
-            .tag("tag1").tag("tag2")
-            .submittedCodeSpec(new SubmittedCodeSpec(JudgeLang.C, "main.c"))
-            .providedCodesFileId("providedCodesFileId")
-            .testcaseIOsFileId("testcaseIOsFileId")
-            .compilation(new Compilation("compilation script"))
-            .inputFileName("file.in")
-            .outputFileName("file.out");
-
-
+    public final static ProblemBuilder problemTemplateBuilder() {
+        return Problem.builder()
+                .id(STUB_ID)
+                .title("Title")
+                .markdownDescription("# Title \n ```\n Code \n ```")
+                .judgeSpec(new JudgeSpec(JudgeLang.C, JudgeEnv.NORMAL, 0.5f, 0))
+                .outputMatchPolicyPluginTag(new JudgePluginTag(
+                        JudgePluginTag.Type.OUTPUT_MATCH_POLICY, "group", "name", "1.0"))
+                .tag("tag1").tag("tag2")
+                .submittedCodeSpec(new SubmittedCodeSpec(JudgeLang.C, "main.c"))
+                .providedCodesFileId("providedCodesFileId")
+                .testcaseIOsFileId("testcaseIOsFileId")
+                .compilation(new Compilation("compilation script"))
+                .inputFileName("file.in")
+                .outputFileName("file.out");
+    }
 }

@@ -59,6 +59,15 @@ public class K8SJudgerDeployer implements JudgerDeployer {
         this.api = api;
     }
 
+    public static void main(String[] args) {
+        ApplicationContext context = ApplicationContextUtils.setupSpringApplicationContext(
+                new String[]{Profiles.DEV, Profiles.SERVICE_DRIVER, Profiles.K8S}, SubmissionServiceApplication.class);
+
+        JudgerDeployer judgerDeployer = context.getBean(JudgerDeployer.class);
+        judgerDeployer.deployJudger(Stubs.problemTemplateBuilder().build(), 1434,
+                new Submission("1", 1, 1, ""));
+    }
+
     @Override
     public void deployJudger(Problem problem, int studentId, Submission submission) {
         try {
@@ -100,15 +109,6 @@ public class K8SJudgerDeployer implements JudgerDeployer {
                 .withBackoffLimit(4)
                 .endSpec()
                 .build();
-    }
-
-    public static void main(String[] args) {
-        ApplicationContext context = ApplicationContextUtils.setupSpringApplicationContext(
-                new String[]{Profiles.DEV, Profiles.SERVICE_DRIVER, Profiles.K8S}, SubmissionServiceApplication.class);
-
-        JudgerDeployer judgerDeployer = context.getBean(JudgerDeployer.class);
-        judgerDeployer.deployJudger(Stubs.PROBLEM_TEMPLATE_BUILDER.build(), 1434,
-                new Submission("1", 1, 1, ""));
     }
 }
 

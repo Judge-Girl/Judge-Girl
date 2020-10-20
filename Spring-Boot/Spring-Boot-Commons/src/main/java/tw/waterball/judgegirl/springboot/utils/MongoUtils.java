@@ -94,18 +94,18 @@ public class MongoUtils {
                     return this.new OfValue();
                 }
 
-                public class OfValue {
-                    public SelectOneFieldExecution ofValue(String value) {
-                        pkValue = value;
-                        return SelectOneFieldExecution.this;
-                    }
-                }
-
                 public Result execute() {
                     Query query = new Query(Criteria.where(pkField).is(pkValue));
                     query.fields().include(fieldName);
                     T document = mongoTemplate.findOne(query, documentType);
                     return new Result(document);
+                }
+
+                public class OfValue {
+                    public SelectOneFieldExecution ofValue(String value) {
+                        pkValue = value;
+                        return SelectOneFieldExecution.this;
+                    }
                 }
 
                 public class Result {

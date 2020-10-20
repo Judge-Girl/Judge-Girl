@@ -18,9 +18,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.amqp.core.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import tw.waterball.judgegirl.submissionservice.ports.VerdictIssuedEvent;
-import tw.waterball.judgegirl.submissionservice.ports.SubmissionMessageQueue;
 import tw.waterball.judgegirl.springboot.profiles.productions.Amqp;
+import tw.waterball.judgegirl.submissionservice.ports.SubmissionMessageQueue;
+import tw.waterball.judgegirl.submissionservice.ports.VerdictIssuedEvent;
 
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;

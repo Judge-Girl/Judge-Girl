@@ -11,31 +11,22 @@
  *   limitations under the License.
  */
 
-package tw.waterball.judgegirl.entities.problem;
+package tw.waterball.judgegirl.springboot;
 
-import lombok.*;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Configuration;
+import tw.waterball.judgegirl.commons.token.jwt.JwtTokenService;
+import tw.waterball.judgegirl.springboot.profiles.productions.Jwt;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
-@NoArgsConstructor
-@AllArgsConstructor
-@EqualsAndHashCode
-@Getter
-@Setter
-public class JudgePluginTag {
-    private Type type;
-    private String group;
-    private String name;
-    private String version;
+@Jwt
+@Configuration
+public class JwtConfiguration {
 
-    @Override
-    public String toString() {
-        return String.format("[%s] %s:%s:%s", type, group, name, version);
-    }
-
-    public enum Type {
-        OUTPUT_MATCH_POLICY,
-        CODE_INSPECTION
+    public JwtTokenService jwtTokenService(@Value("${jwt.secret}") String secret,
+                                           @Value("${jwt.exp}") long expiration) {
+        return new JwtTokenService(secret, expiration);
     }
 }

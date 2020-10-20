@@ -26,6 +26,11 @@ public class ProgramProfile {
     private long memoryUsage;
     private String errorMessage;
 
+
+    public static ProgramProfile onlyCompileError(String compileErrorMessage) {
+        return new ProgramProfile(0, 0, compileErrorMessage);
+    }
+
     public ProgramProfile() {
     }
 

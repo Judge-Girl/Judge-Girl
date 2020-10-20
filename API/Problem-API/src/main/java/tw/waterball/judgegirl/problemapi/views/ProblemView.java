@@ -14,7 +14,8 @@ public class ProblemView {
     public String title;
     public String markdownDescription;
     public JudgeSpec judgeSpec;
-    public JudgePluginTag judgePolicyPluginTag;
+    public JudgePluginTag judgeMatchPolicyPluginTag;
+    public JudgePluginTag judgeCodeInspectionPluginTag;
     public List<String> inputFileNames;
     public List<String> outputFileNames;
     public List<String> tags;
@@ -23,13 +24,15 @@ public class ProblemView {
     public String providedCodesFileId;
     public String testcaseIOsFileId;
 
+
     public static ProblemView fromEntity(Problem problem) {
         return new ProblemView(
                 problem.getId(),
                 problem.getTitle(),
                 problem.getMarkdownDescription(),
                 problem.getJudgeSpec(),
-                problem.getJudgePolicyPluginTag(),
+                problem.getOutputMatchPolicyPluginTag(),
+                problem.getCodeInspectionPluginTag().orElse(null),
                 problem.getInputFileNames(),
                 problem.getOutputFileNames(),
                 problem.getTags(),
@@ -41,19 +44,19 @@ public class ProblemView {
     }
 
     public static Problem toEntity(ProblemView view) {
-        return new Problem(
-                view.getId(),
-                view.getTitle(),
-                view.getMarkdownDescription(),
-                view.getJudgeSpec(),
-                view.getJudgePolicyPluginTag(),
-                view.getInputFileNames(),
-                view.getOutputFileNames(),
-                view.getTags(),
-                view.getSubmittedCodeSpecs(),
-                view.getCompilation(),
-                view.getProvidedCodesFileId(),
-                view.getTestcaseIOsFileId()
-        );
+        return Problem.builder()
+                .id(view.getId())
+                .title(view.getTitle())
+                .markdownDescription(view.markdownDescription)
+                .judgeSpec(view.judgeSpec)
+                .outputMatchPolicyPluginTag(view.judgeMatchPolicyPluginTag)
+                .inputFileNames(view.inputFileNames)
+                .outputFileNames(view.outputFileNames)
+                .tags(view.tags)
+                .submittedCodeSpecs(view.submittedCodeSpecs)
+                .compilation(view.compilation)
+                .providedCodesFileId(view.providedCodesFileId)
+                .testcaseIOsFileId(view.testcaseIOsFileId)
+                .build();
     }
 }

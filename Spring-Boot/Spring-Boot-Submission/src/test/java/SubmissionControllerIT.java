@@ -54,14 +54,17 @@ import tw.waterball.judgegirl.commons.utils.Delay;
 import tw.waterball.judgegirl.entities.problem.JudgeStatus;
 import tw.waterball.judgegirl.entities.problem.Problem;
 import tw.waterball.judgegirl.entities.stubs.Stubs;
-import tw.waterball.judgegirl.entities.submission.*;
+import tw.waterball.judgegirl.entities.submission.Judge;
+import tw.waterball.judgegirl.entities.submission.ProgramProfile;
+import tw.waterball.judgegirl.entities.submission.Submission;
+import tw.waterball.judgegirl.entities.submission.SubmissionThrottling;
 import tw.waterball.judgegirl.problemapi.clients.ProblemServiceDriver;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.springboot.profiles.Profiles;
 import tw.waterball.judgegirl.springboot.submission.SubmissionServiceApplication;
 import tw.waterball.judgegirl.springboot.submission.impl.mongo.data.SubmissionData;
 import tw.waterball.judgegirl.springboot.submission.impl.mongo.data.VerdictData;
-import tw.waterball.judgegirl.springboot.token.TokenService;
+import tw.waterball.judgegirl.commons.token.TokenService;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 import tw.waterball.judgegirl.submissionservice.domain.usecases.SubmitCodeUseCase;
 import tw.waterball.judgegirl.submissionservice.ports.SubmissionMessageQueue;
@@ -84,7 +87,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static tw.waterball.judgegirl.springboot.submission.controllers.SubmissionController.SUBMIT_CODE_MULTIPART_KEY_NAME;
-import static tw.waterball.judgegirl.springboot.token.TokenService.Identity.admin;
+import static tw.waterball.judgegirl.commons.token.TokenService.Identity.admin;
 import static tw.waterball.judgegirl.testkit.resultmatchers.ZipResultMatcher.zip;
 
 /**
@@ -98,7 +101,7 @@ import static tw.waterball.judgegirl.testkit.resultmatchers.ZipResultMatcher.zip
 @DisplayNameGeneration(ReplaceUnderscoresWithCamelCasesDisplayNameGenerators.class)
 public class SubmissionControllerIT {
     private final String API_PREFIX = "/api/problems/{problemId}/students/{studentId}/submissions";
-    private final Problem problem = Stubs.PROBLEM_TEMPLATE_BUILDER.build();
+    private final Problem problem = Stubs.problemTemplateBuilder().build();
     private final String SUBMISSION_EXCHANGE_NAME = "submissions";
 
     @Value("${spring.rabbitmq.username}")
@@ -215,16 +218,14 @@ public class SubmissionControllerIT {
     }
 
 
-    // TODO: write the drunk code, need improving
+    // TODO: drunk code, need improving
     // A White-Box test: Strictly test the submission behavior
     @Test
     void WhenSubmitCodeWithValidToken_ShouldSaveIt_DeployJudger_ListenToVerdictIssuedEvent_AndHandleTheEvent() throws Exception {
         SubmissionView submissionView = givenSubmitCode(STUDENT1_ID, STUDENT1_TOKEN);
         ArgumentCaptor<V1Job> jobCaptor = ArgumentCaptor.forClass(V1Job.class);
 
-
         verify(batchV1Api).createNamespacedJob(anyString(), jobCaptor.capture(), any(), any(), any());
-
         V1Job job = jobCaptor.getValue();
 
         // Verify the applied k8s job is correct according to the problem, submission and the student
@@ -324,7 +325,7 @@ public class SubmissionControllerIT {
     @Test
     void GivenStudent1Submission_WhenDownloadItsSubmittedCodesUnderStudent2_ShouldRespondNotFound() throws Exception {
         SubmissionView submissionView = givenSubmitCode(STUDENT1_ID, STUDENT1_TOKEN);
-        requestWithToken(() -> get(API_PREFIX  + "/{submissionId}/submittedCodes/{submittedCodesFileId}",
+        requestWithToken(() -> get(API_PREFIX + "/{submissionId}/submittedCodes/{submittedCodesFileId}",
                 problem.getId(), STUDENT2_ID, submissionView.getId(),
                 submissionView.submittedCodesFileId), STUDENT2_TOKEN)
                 .andExpect(status().isNotFound());
@@ -381,14 +382,14 @@ public class SubmissionControllerIT {
 
     private SubmissionView givenSubmitCode(int studentId, String token) throws Exception {
         String responseJson = requestSubmitCode(studentId, token)
-                        .andExpect(status().isAccepted())
-                        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                        .andExpect(jsonPath("id").exists())
-                        .andExpect(jsonPath("studentId").value(studentId))
-                        .andExpect(jsonPath("problemId").value(problem.getId()))
-                        .andExpect(jsonPath("submittedCodesFileId").exists())
-                        .andExpect(jsonPath("submissionTime").exists())
-                        .andReturn().getResponse().getContentAsString();
+                .andExpect(status().isAccepted())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("id").exists())
+                .andExpect(jsonPath("studentId").value(studentId))
+                .andExpect(jsonPath("problemId").value(problem.getId()))
+                .andExpect(jsonPath("submittedCodesFileId").exists())
+                .andExpect(jsonPath("submissionTime").exists())
+                .andReturn().getResponse().getContentAsString();
 
         return objectMapper.readValue(responseJson, SubmissionView.class);
     }
@@ -410,7 +411,8 @@ public class SubmissionControllerIT {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andReturn();
         return objectMapper.readValue(result.getResponse().getContentAsString(),
-                new TypeReference<List<SubmissionView>>() {});
+                new TypeReference<List<SubmissionView>>() {
+                });
     }
 
     @Configuration

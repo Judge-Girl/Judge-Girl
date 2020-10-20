@@ -36,13 +36,6 @@ public class JsonResultMatcher implements ResultMatcher {
         return matcher.new Builder();
     }
 
-    public class Builder {
-        public JsonResultMatcher compareWith(Object expectedObj) {
-            JsonResultMatcher.this.expectedObj = expectedObj;
-            return JsonResultMatcher.this;
-        }
-    }
-
     @Override
     public void match(MvcResult result) throws Exception {
         assertEquals(MediaType.APPLICATION_JSON_VALUE, result.getResponse().getContentType(),
@@ -55,5 +48,12 @@ public class JsonResultMatcher implements ResultMatcher {
         JsonNode expectedJsonTree = objectMapper.readTree(expectedJson);
 
         assertEquals(expectedJsonTree, actualJsonTree);
+    }
+
+    public class Builder {
+        public JsonResultMatcher compareWith(Object expectedObj) {
+            JsonResultMatcher.this.expectedObj = expectedObj;
+            return JsonResultMatcher.this;
+        }
     }
 }
