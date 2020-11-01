@@ -29,7 +29,7 @@
         <retrofit.version>2.8.0</retrofit.version>
         <apache.httpclient.version>4.5.6</apache.httpclient.version>
         <kubernetes.client-java.version>5.0.0</kubernetes.client-java.version>
-        <log4j.version>2.11.2</log4j.version>
+        <log4j.version>2.13.3</log4j.version>
         <jackson-yaml.version>2.11.1</jackson-yaml.version>
         <commons-io.version>2.6</commons-io.version>
         <jsonwebtoken.jjwt.version>0.11.0</jsonwebtoken.jjwt.version>
