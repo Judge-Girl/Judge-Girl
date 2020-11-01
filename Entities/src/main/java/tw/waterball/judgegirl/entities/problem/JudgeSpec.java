@@ -25,7 +25,7 @@ import lombok.*;
 @Getter
 @Setter
 public class JudgeSpec {
-    private JudgeLang language;
+    private Language language;
     private JudgeEnv environment;
     private float cpu;
     private float gpu;

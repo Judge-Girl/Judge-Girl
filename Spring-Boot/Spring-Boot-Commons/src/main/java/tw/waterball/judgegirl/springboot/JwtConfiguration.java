@@ -14,6 +14,7 @@
 package tw.waterball.judgegirl.springboot;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import tw.waterball.judgegirl.commons.token.jwt.JwtTokenService;
 import tw.waterball.judgegirl.springboot.profiles.productions.Jwt;
@@ -25,6 +26,7 @@ import tw.waterball.judgegirl.springboot.profiles.productions.Jwt;
 @Configuration
 public class JwtConfiguration {
 
+    @Bean
     public JwtTokenService jwtTokenService(@Value("${jwt.secret}") String secret,
                                            @Value("${jwt.exp}") long expiration) {
         return new JwtTokenService(secret, expiration);

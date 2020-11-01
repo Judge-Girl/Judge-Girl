@@ -46,8 +46,10 @@ public class Verdict {
         }
     }
 
-    public boolean isCompileError() {
-        return compileErrorMessage != null;
+    public static Verdict compileError(String compileErrorMessage, List<Judge> judges) {
+        Verdict verdict = new Verdict(judges);
+        verdict.setCompileErrorMessage(compileErrorMessage);
+        return verdict;
     }
 
     public Integer getTotalGrade() {
@@ -84,12 +86,29 @@ public class Verdict {
         return issueTime;
     }
 
+    public boolean isCompileError() {
+        return compileErrorMessage != null;
+    }
+
+    @Nullable
     public String getCompileErrorMessage() {
         return compileErrorMessage;
     }
 
     public void setCompileErrorMessage(@Nullable String compileErrorMessage) {
         this.compileErrorMessage = compileErrorMessage;
+        validateCompileErrorStatusConsistency();
+    }
+
+    private void validateCompileErrorStatusConsistency() {
+        if (isCompileError()) {
+            boolean allJudgesAreCE = judges.stream()
+                    .allMatch(judge -> judge.getStatus() == JudgeStatus.CE);
+            if (!allJudgesAreCE) {
+                throw new IllegalStateException("Inconsistent status," +
+                        " all the judges in a compile error verdict should also have a status of CE.");
+            }
+        }
     }
 
     public Optional<CodeInspectionReport> getCodeInspectionReport() {

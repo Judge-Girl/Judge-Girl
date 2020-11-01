@@ -27,7 +27,7 @@ public class JudgePluginTagValidator implements
 
     @Override
     public void initialize(JudgePluginTagConstraint constraintAnnotation) {
-        expectType = constraintAnnotation.type();
+        expectType = constraintAnnotation.typeShouldBe();
     }
 
     @Override

@@ -45,11 +45,11 @@ public class Problem {
 
     @Valid
     @NotNull
-    @JudgePluginTagConstraint(type = OUTPUT_MATCH_POLICY)
+    @JudgePluginTagConstraint(typeShouldBe = OUTPUT_MATCH_POLICY)
     private JudgePluginTag outputMatchPolicyPluginTag;
 
     @Valid
-    @JudgePluginTagConstraint(type = CODE_INSPECTION)
+    @JudgePluginTagConstraint(typeShouldBe = CODE_INSPECTION)
     private JudgePluginTag codeInspectionPluginTag;
 
     @Singular
@@ -71,11 +71,11 @@ public class Problem {
     }
 
     public String getProvidedCodesFileName() {
-        return String.format("%d_%s_provided.zip", id, title);
+        return String.format("%d-%s-provided.zip", id, title);
     }
 
     public String getTestCaseIOsFileName() {
-        return String.format("%d_%s_IO.zip", id, title);
+        return String.format("%d-%s-IO.zip", id, title);
     }
 
     public Integer getId() {
@@ -178,7 +178,7 @@ public class Problem {
         this.testcaseIOsFileId = testcaseIOsFileId;
     }
 
-    public boolean mustBeCompiled() {
+    public boolean isCompiledLanguage() {
         return getJudgeSpec().getLanguage().isCompiledLang();
     }
 }

@@ -22,10 +22,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
-import tw.waterball.judgegirl.commons.utils.HttpHeaderUtils;
-import tw.waterball.judgegirl.entities.submission.Submission;
 import tw.waterball.judgegirl.commons.token.TokenInvalidException;
 import tw.waterball.judgegirl.commons.token.TokenService;
+import tw.waterball.judgegirl.commons.utils.HttpHeaderUtils;
+import tw.waterball.judgegirl.entities.submission.Submission;
 import tw.waterball.judgegirl.springboot.utils.ResponseEntityUtils;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 import tw.waterball.judgegirl.submissionservice.domain.usecases.*;
@@ -70,19 +70,22 @@ public class SubmissionController {
         return validateIdentity(studentId, bearerToken, (token) -> {
             try {
                 boolean throttling = !token.isAdmin();
-                SubmitCodeRequest request = new SubmitCodeRequest(
-                        throttling, studentId, problemId,
-                        Arrays.stream(submittedCodes)
-                                .map(this::convertMultipartFileToFileResource)
-                                .collect(Collectors.toList()));
+                SubmitCodeRequest request = convertToSubmitCodeRequest(problemId, studentId, submittedCodes, throttling);
                 SubmissionPresenter presenter = new SubmissionPresenter();
                 submitCodeUseCase.execute(request, presenter);
-                return ResponseEntity.accepted()
-                        .body(presenter.present());
+                return ResponseEntity.accepted().body(presenter.present());
             } catch (IOException e) {
                 throw new RuntimeException("File uploading error", e);
             }
         });
+    }
+
+    private SubmitCodeRequest convertToSubmitCodeRequest(@PathVariable int problemId, @PathVariable int studentId, @RequestParam(SUBMIT_CODE_MULTIPART_KEY_NAME) MultipartFile[] submittedCodes, boolean throttling) {
+        return new SubmitCodeRequest(
+                throttling, studentId, problemId,
+                Arrays.stream(submittedCodes)
+                        .map(this::convertMultipartFileToFileResource)
+                        .collect(Collectors.toList()));
     }
 
     private FileResource convertMultipartFileToFileResource(MultipartFile multipartFile) {

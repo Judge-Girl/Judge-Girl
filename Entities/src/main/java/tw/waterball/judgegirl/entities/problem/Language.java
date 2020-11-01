@@ -16,7 +16,7 @@ package tw.waterball.judgegirl.entities.problem;
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
-public enum JudgeLang {
+public enum Language {
     C(false),
     OPEN_CL(true),
     CUDA(false),
@@ -25,7 +25,7 @@ public enum JudgeLang {
 
     private boolean interpretedLang;
 
-    JudgeLang(boolean interpretedLang) {
+    Language(boolean interpretedLang) {
         this.interpretedLang = interpretedLang;
     }
 

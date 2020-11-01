@@ -28,7 +28,7 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface JudgePluginTagConstraint {
 
-    JudgePluginTag.Type type();
+    JudgePluginTag.Type typeShouldBe();
 
     String message() default "Invalid Judge Plugin Tag";
 

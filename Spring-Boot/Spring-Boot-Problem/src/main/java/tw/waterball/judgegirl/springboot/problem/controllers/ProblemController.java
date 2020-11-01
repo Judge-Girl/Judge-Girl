@@ -119,7 +119,7 @@ class GetProblemPresenter implements GetProblemUseCase.Presenter {
         this.problem = problem;
     }
 
-    public ProblemView present() {
+    ProblemView present() {
         return ProblemView.fromEntity(problem);
     }
 }
@@ -133,7 +133,7 @@ class GetProblemListPresenter implements GetProblemListUseCase.Presenter {
         this.problems = problems;
     }
 
-    public List<ProblemItem> present() {
+    List<ProblemItem> present() {
         return problems.stream().map(ProblemItem::fromEntity)
                 .collect(Collectors.toList());
     }
@@ -147,7 +147,7 @@ class GetTestCasesPresenter implements GetTestCasesUseCase.Presenter {
         this.testcases = testcases;
     }
 
-    public List<Testcase> present() {
+    List<Testcase> present() {
         return testcases;
     }
 }

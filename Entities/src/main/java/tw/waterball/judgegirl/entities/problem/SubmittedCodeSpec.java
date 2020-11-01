@@ -25,6 +25,6 @@ import lombok.*;
 @Getter
 @Setter
 public class SubmittedCodeSpec {
-    private JudgeLang language;
+    private Language language;
     private String fileName;
 }
