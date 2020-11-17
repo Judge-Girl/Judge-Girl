@@ -145,10 +145,6 @@ class ProblemControllerIT {
     }
 
     @Test
-    void a() {
-        fail();
-    }
-    @Test
     void testDownloadZippedTestCaseIOs() throws Exception {
         final Problem savedProblem = Stubs.problemTemplateBuilder().build();
         byte[] bytes = ZipUtils.zipFilesFromResources("/stubs/in/", "/stubs/out/");

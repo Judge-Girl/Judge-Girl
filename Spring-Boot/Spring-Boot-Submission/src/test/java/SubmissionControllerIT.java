@@ -17,10 +17,6 @@
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.fridujo.rabbitmq.mock.MockConnectionFactory;
-import io.kubernetes.client.apis.BatchV1Api;
-import io.kubernetes.client.models.V1Container;
-import io.kubernetes.client.models.V1Job;
-import io.kubernetes.client.models.V1ResourceRequirements;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayNameGeneration;
@@ -68,8 +64,9 @@ import tw.waterball.judgegirl.springboot.submission.impl.mongo.data.SubmissionDa
 import tw.waterball.judgegirl.springboot.submission.impl.mongo.data.VerdictData;
 import tw.waterball.judgegirl.submissionapi.clients.VerdictPublisher;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
-import tw.waterball.judgegirl.submissionservice.domain.usecases.SubmitCodeUseCase;
 import tw.waterball.judgegirl.submissionapi.views.VerdictIssuedEvent;
+import tw.waterball.judgegirl.submissionservice.domain.usecases.SubmitCodeUseCase;
+import tw.waterball.judgegirl.submissionservice.ports.JudgerDeployer;
 import tw.waterball.judgegirl.testkit.jupiter.ReplaceUnderscoresWithCamelCasesDisplayNameGenerators;
 import tw.waterball.judgegirl.testkit.resultmatchers.ZipResultMatcher;
 
@@ -80,8 +77,6 @@ import java.util.stream.IntStream;
 
 import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -154,7 +149,7 @@ public class SubmissionControllerIT {
     ProblemServiceDriver problemServiceDriver;
 
     @MockBean
-    BatchV1Api batchV1Api;
+    JudgerDeployer judgerDeployer;
 
     @Autowired
     AmqpAdmin amqpAdmin;
@@ -225,25 +220,7 @@ public class SubmissionControllerIT {
     @Test
     void WhenSubmitCodeWithValidToken_ShouldSaveIt_DeployJudger_ListenToVerdictIssuedEvent_AndHandleTheEvent() throws Exception {
         SubmissionView submissionView = givenSubmitCode(STUDENT1_ID, STUDENT1_TOKEN);
-        ArgumentCaptor<V1Job> jobCaptor = ArgumentCaptor.forClass(V1Job.class);
-
-        verify(batchV1Api).createNamespacedJob(anyString(), jobCaptor.capture(), any(), any(), any());
-        V1Job job = jobCaptor.getValue();
-
-        // Verify the applied k8s job is correct according to the problem, submission and the student
-        assertEquals(1, job.getSpec().getTemplate().getSpec().getContainers().size(), "Should only deploy one containers.");
-        V1Container judgerContainer = job.getSpec().getTemplate().getSpec().getContainers().get(0);
-        assertTrue(judgerContainer.getEnv().stream().anyMatch(e ->
-                e.getName().equals("problemId") && Integer.parseInt(e.getValue()) == problem.getId()), "env problemId incorrect.");
-        assertTrue(judgerContainer.getEnv().stream().anyMatch(e ->
-                e.getName().equals("submissionId") && e.getValue().equals(submissionView.getId())), "env submissionId incorrect.");
-        assertTrue(judgerContainer.getEnv().stream().anyMatch(e ->
-                e.getName().equals("studentId") && Integer.parseInt(e.getValue()) == STUDENT1_ID), "env studentId incorrect.");
-        V1ResourceRequirements resources = judgerContainer.getResources();
-        assertEquals(problem.getJudgeSpec().getCpu(),
-                resources.getRequests().get("cpu").getNumber().floatValue());
-        assertEquals(problem.getJudgeSpec().getGpu(),
-                resources.getLimits().get("nvidia.com/gpu").getNumber().floatValue());
+        verifyJudgerDeployed(submissionView);
 
         // Publish the verdict through message queue after three seconds
         Delay.delay(3000);
@@ -259,6 +236,18 @@ public class SubmissionControllerIT {
         assertEquals(JudgeStatus.WA, verdictData.getSummaryStatus());
         assertEquals(new HashSet<>(verdictIssuedEvent.getJudges()),
                 new HashSet<>(verdictData.getJudges()));
+    }
+
+    private void verifyJudgerDeployed(SubmissionView submissionView) {
+        ArgumentCaptor<Problem> problemArgumentCaptor = ArgumentCaptor.forClass(Problem.class);
+        ArgumentCaptor<Integer> studentIdArgumentCaptor = ArgumentCaptor.forClass(Integer.class);
+        ArgumentCaptor<Submission> submissionArgumentCaptor = ArgumentCaptor.forClass(Submission.class);
+
+        verify(judgerDeployer).deployJudger(problemArgumentCaptor.capture(), studentIdArgumentCaptor.capture(),
+                submissionArgumentCaptor.capture());
+        assertEquals(STUDENT1_ID, studentIdArgumentCaptor.getValue());
+        assertEquals(ProblemView.fromEntity(problem), ProblemView.fromEntity(problemArgumentCaptor.getValue()));
+        assertEquals(submissionView, SubmissionView.fromEntity(submissionArgumentCaptor.getValue()));
     }
 
     private VerdictIssuedEvent generateVerdictIssuedEvent(SubmissionView submissionView) {

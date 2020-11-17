@@ -1,69 +1,75 @@
 spring:
   main:
-    lazy-initialization: true
+    lazy-initialization: false
   rabbitmq:
-    virtual-host: /judge-girl
-    username: PLACEHOLDER
-    password: PLACEHOLDER
-    host: ${RABBIT_HOST:localhost}
-    port: ${RABBIT_PORT:5672}
+    virtual-host: ${judge-girl.amqp.virtual-host}
+    username: ${judge-girl.amqp.username}
+    password: ${judge-girl.amqp.password}
+    host: ${judge-girl.amqp.host}
+    port: ${judge-girl.amqp.port}
+
   data:
     mongodb:
-      database: judge-girl
-      host: ${MONGO_HOST:localhost}
+      # TODO should be turned up after figured out how to avoid authentication in embedded mongo tests
+      # authentication-database: admin
+      # username: tony
+      # password: tony3345678
+      database: ${judge-girl.mongo.database}
+      host: ${judge-girl.mongo.host:localhost}
 
 judge-girl:
+  mongo:
+    database: judge-girl
+    host: ${MONGO_HOST:localhost}
+    port: 27017
   amqp:
+    virtual-host: /judge-girl
+    username: judge-girl-service
+    password: service-girl-judge
+    host: ${RABBIT_HOST:localhost}
+    port: 5672
     verdict-issued-event-queue: Submission-Service:Verdict-Issue
     submission-exchange-name: Submissions
     verdict-issued-routing-key-format: submissions.%s.verdict
-
   client:
     problem-service:
       scheme: http
-      host: ${problem-service:127.0.0.1}
-      port: 8000
+      host: problem-service
+      port: 80
     submission-service:
       scheme: http
-      host: ${submission-service:127.0.0.1}
-      port: 8000
-
-  student-service:
-    legacy-judge-girl:
-      base-url: PLACEHOLDER
-      api-key: PLACEHOLDER
-    test:
-      student-id: 1434
-      account: PLACEHOLDER
-      password: PLACEHOLDER
-      token:  PLACEHOLDER
-
-  deploy:
+      host: submission-service
+      port: 80
+  judger:
     # (docker | kubernetes)
-    strategy: kubernetes
-    jwt-token:  PLACEHOLDER
+    strategy: docker
+    jwt-token: PLACEHOLDER
     job:
       name-format: judge-girl-judger-%s
     image:
       # Note: the judger's image should be deployed to your **PRIVATE** registry
       # since it contains confidential properties files
-      name:  # PLACEHOLDER/judge-girl.judger:latest
+      name: judger
     container:
       name-format: judge-girl-judger-%s
+    docker:
+      # corresponding to the network defined in docker-compose.yaml
+      network: judge-girl_services
     kubernetes:
       # the secret can be created following the instructions: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
       # you can replace it according to your secret's name
       image-pull-secret: regcred
 
+
 jwt:
-  secret:  PLACEHOLDER
+  secret: PLACEHOLDER
   exp: 14400000
-  token-admin:  PLACEHOLDER
+  token-admin: PLACEHOLDER
   test:
     student1:
       id: 1234
-      token:  PLACEHOLDER
+      token: PLACEHOLDER
     student2:
       id: 2000
-      token:  PLACEHOLDER
+      token: PLACEHOLDER
 
