@@ -13,7 +13,6 @@
 
 package tw.waterball.judgegirl.submissionapi.views;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.Nullable;
@@ -27,14 +26,25 @@ import java.util.Date;
  */
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 public class SubmissionView {
     public String id;
     public int studentId;
     public int problemId;
     public VerdictView verdict;
+    public boolean isJudged;
     public String submittedCodesFileId;
     public Date submissionTime;
+
+    public SubmissionView(String id, int studentId, int problemId, VerdictView verdict,
+                          String submittedCodesFileId, Date submissionTime) {
+        this.id = id;
+        this.studentId = studentId;
+        this.problemId = problemId;
+        this.verdict = verdict;
+        this.isJudged = verdict != null;
+        this.submittedCodesFileId = submittedCodesFileId;
+        this.submissionTime = submissionTime;
+    }
 
     public static SubmissionView fromEntity(@Nullable Submission submission) {
         if (submission == null) {

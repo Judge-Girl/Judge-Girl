@@ -17,6 +17,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.Nullable;
+import tw.waterball.judgegirl.entities.problem.JudgeStatus;
+import tw.waterball.judgegirl.entities.submission.CodeInspectionReport;
 import tw.waterball.judgegirl.entities.submission.Judge;
 import tw.waterball.judgegirl.entities.submission.Verdict;
 
@@ -31,13 +33,26 @@ import java.util.List;
 @AllArgsConstructor
 public class VerdictView {
     private List<Judge> judges;
+    private JudgeStatus summaryStatus;
+    private int totalGrade;
+    private String compileErrorMessage;
+    private long maximumRuntime;
+    private long maximumMemoryUsage;
+    private CodeInspectionReport codeInspectionReport;
     private Date issueTime;
 
     public static VerdictView fromEntity(@Nullable Verdict verdict) {
         if (verdict == null) {
             return null;
         }
-        return new VerdictView(verdict.getJudges(), verdict.getIssueTime());
+        return new VerdictView(verdict.getJudges(),
+                verdict.getSummaryStatus(),
+                verdict.getTotalGrade(),
+                verdict.getCompileErrorMessage(),
+                verdict.getMaximumRuntime(),
+                verdict.getMaximumMemoryUsage(),
+                verdict.getCodeInspectionReport().orElse(null),
+                verdict.getIssueTime());
     }
 
     public static Verdict toEntity(@Nullable VerdictView verdictView) {

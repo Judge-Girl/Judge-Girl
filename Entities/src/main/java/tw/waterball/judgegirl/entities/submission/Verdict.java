@@ -74,9 +74,19 @@ public class Verdict {
                     return s1 == s2 ? 0 : -1;
                 })
                 .orElse(JudgeStatus.NONE);
-
     }
 
+    public long getMaximumRuntime() {
+        return judges.stream()
+                .mapToLong(j -> j.getProgramProfile().getRuntime())
+                .max().orElseThrow(() -> new IllegalStateException("A verdict that doesn't have judges."));
+    }
+
+    public long getMaximumMemoryUsage() {
+        return judges.stream()
+                .mapToLong(j -> j.getProgramProfile().getMemoryUsage())
+                .max().orElseThrow(() -> new IllegalStateException("A verdict that doesn't have judges."));
+    }
 
     public List<Judge> getJudges() {
         return judges;
