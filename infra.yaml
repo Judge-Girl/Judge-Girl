@@ -1,0 +1,26 @@
+version: '2.0'
+services:
+  mongodb:
+    image: mongo
+    container_name: mongodb
+    ports:
+      - 27017:27017
+    command: --bind_ip 0.0.0.0
+    volumes:
+      - /data/db
+    restart: always    
+    networks:
+      - infra
+
+  rabbitmq:
+    build: infra/rabbitmq
+    container_name: rabbitmq
+    ports:
+      - 5672:5672
+    environment:
+      AMQP_PASSWORD: service-girl-judge
+    networks:
+      - infra
+
+networks:
+  infra:

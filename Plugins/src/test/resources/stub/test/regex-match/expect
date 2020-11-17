@@ -1,0 +1,10 @@
+Hello, OpenCL
+\d+ platform found
+There are \d+ GPU devices
+The size of kernel source is \d+
+Build program completes
+Build kernel completes
+Build buffers completes
+Set kernel arguments completes
+Specify the shape of the domain completes.
+Kernel execution completes.

@@ -1,0 +1,30 @@
+root:
+  path: "/judger"
+  logHome:
+    path: "log"
+
+  judgerWorkspace:
+    path: "run"
+
+    profiler: "profiler"
+    submissionHome:
+      path: "${submission.id}"
+      sourceRoot:
+        path: "src"
+        compileScript: "compile.sh"
+        executable: "a.out"
+
+      testcaseHome:
+        path: "${testcase.name}"
+        sandboxRoot:
+          path: "in"
+          stdin: "std.in"
+          actualStdout: "std.out"
+          actualStderr: "std.err"
+          executable: "a.out"
+        testcaseOutputHome:
+          path: "out"
+          expectedStdout: "std.out"
+
+
+

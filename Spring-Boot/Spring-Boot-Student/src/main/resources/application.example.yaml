@@ -1,0 +1,5 @@
+judge-girl:
+  student-service:
+    legacy-judge-girl:
+      base-url: PLACEHOLDER
+      api-key: PLACEHOLDER

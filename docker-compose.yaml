@@ -1,0 +1,37 @@
+version: '2.0'
+services:
+
+  student-service:
+    build: Spring-Boot/Spring-Boot-Student
+    environment:
+      spring.profiles.active: prod
+      judge-girl.mongo.host: host.docker.internal
+      judge-girl.amqp.host: host.docker.internal
+    networks:
+      - services
+
+  problem-service:
+    build: Spring-Boot/Spring-Boot-Problem
+    ports:
+      - 8081:80
+    environment:
+      spring.profiles.active: prod,mongo
+      judge-girl.mongo.host: host.docker.internal
+    networks:
+      - services
+
+  submission-service:
+    build: Spring-Boot/Spring-Boot-Submission
+    ports:
+      - 8080:80
+    environment:
+      spring.profiles.active: prod,mongo,amqp
+      judge-girl.mongo.host: host.docker.internal
+      judge-girl.amqp.host: host.docker.internal
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock # docker-in-docker for running judger
+    networks:
+      - services
+
+networks:
+  services:

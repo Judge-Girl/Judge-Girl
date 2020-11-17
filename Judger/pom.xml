@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>tw.waterball.judge-girl</groupId>
+        <artifactId>judge-girl</artifactId>
+        <!-- TODO Should be spring-boot -->
+        <version>${revision}</version>
+    </parent>
+
+    <properties>
+        <java.version>1.8</java.version>
+        <start-class>tw.waterball.judgegirl.judger.Main</start-class>
+    </properties>
+
+    <name>Judger</name>
+    <artifactId>judger</artifactId>
+
+    <dependencies>
+        <dependency>
+            <groupId>tw.waterball.judge-girl</groupId>
+            <artifactId>entities</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>tw.waterball.judge-girl</groupId>
+            <artifactId>commons</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>tw.waterball.judge-girl</groupId>
+            <artifactId>plugins</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>tw.waterball.judge-girl</groupId>
+            <artifactId>problem-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>tw.waterball.judge-girl</groupId>
+            <artifactId>submission-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>tw.waterball.judge-girl</groupId>
+            <artifactId>judger-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-yaml</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>tw.waterball.judgegirl.judger.Main</mainClass>
+                        </manifest>
+                    </archive>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

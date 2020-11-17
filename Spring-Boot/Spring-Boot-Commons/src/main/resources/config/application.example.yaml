@@ -1,0 +1,69 @@
+spring:
+  main:
+    lazy-initialization: true
+  rabbitmq:
+    virtual-host: /judge-girl
+    username: PLACEHOLDER
+    password: PLACEHOLDER
+    host: ${RABBIT_HOST:localhost}
+    port: ${RABBIT_PORT:5672}
+  data:
+    mongodb:
+      database: judge-girl
+      host: ${MONGO_HOST:localhost}
+
+judge-girl:
+  amqp:
+    verdict-issued-event-queue: Submission-Service:Verdict-Issue
+    submission-exchange-name: Submissions
+    verdict-issued-routing-key-format: submissions.%s.verdict
+
+  client:
+    problem-service:
+      scheme: http
+      host: ${problem-service:127.0.0.1}
+      port: 8000
+    submission-service:
+      scheme: http
+      host: ${submission-service:127.0.0.1}
+      port: 8000
+
+  student-service:
+    legacy-judge-girl:
+      base-url: PLACEHOLDER
+      api-key: PLACEHOLDER
+    test:
+      student-id: 1434
+      account: PLACEHOLDER
+      password: PLACEHOLDER
+      token:  PLACEHOLDER
+
+  deploy:
+    # (docker | kubernetes)
+    strategy: kubernetes
+    jwt-token:  PLACEHOLDER
+    job:
+      name-format: judge-girl-judger-%s
+    image:
+      # Note: the judger's image should be deployed to your **PRIVATE** registry
+      # since it contains confidential properties files
+      name:  # PLACEHOLDER/judge-girl.judger:latest
+    container:
+      name-format: judge-girl-judger-%s
+    kubernetes:
+      # the secret can be created following the instructions: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+      # you can replace it according to your secret's name
+      image-pull-secret: regcred
+
+jwt:
+  secret:  PLACEHOLDER
+  exp: 14400000
+  token-admin:  PLACEHOLDER
+  test:
+    student1:
+      id: 1234
+      token:  PLACEHOLDER
+    student2:
+      id: 2000
+      token:  PLACEHOLDER
+

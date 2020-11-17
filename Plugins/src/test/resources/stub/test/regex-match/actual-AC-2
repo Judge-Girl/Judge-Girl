@@ -1,0 +1,10 @@
+Hello, OpenCL
+10 platform found
+There are 200 GPU devices
+The size of kernel source is 12345
+Build program completes
+Build kernel completes
+Build buffers completes
+Set kernel arguments completes
+Specify the shape of the domain completes.
+Kernel execution completes.

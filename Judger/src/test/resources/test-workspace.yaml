@@ -1,0 +1,4 @@
+
+root:
+  path: "/${testcase.name}"
+  testFile: "${testcase.memoryLimit}/${submission.id}/haha"
