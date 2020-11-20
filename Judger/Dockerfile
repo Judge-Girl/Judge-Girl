@@ -53,17 +53,7 @@ RUN mkdir -p /judger/run && cp profiler /judger/run/profiler
 
 WORKDIR /
 
-# Build-args
-ARG submissionServiceHost
-ARG problemServiceHost
-ARG rabbitHost
-# use build-args to config env vars since only env vars can be used in CMD
-ENV submissionServiceHost ${submissionServiceHost}
-ENV problemServiceHost ${problemServiceHost}
-ENV rabbitHost ${rabbitHost}
-
-# Execute the judger.jar with properties
-CMD java -Djudge-girl.submission-service.host=${submissionServiceHost} -Djudge-girl.problem-service.host=${problemServiceHost} -DRABBIT_HOST=${rabbitHost} -jar judger.jar
+CMD java -jar judger.jar
 
 
 
