@@ -32,7 +32,7 @@ public class Verdict {
     private String compileErrorMessage;
     private Date issueTime = new Date();
     @Nullable
-    private CodeInspectionReport codeInspectionReport;
+    private CodeQualityInspectionReport codeQualityInspectionReport;
 
     public Verdict(List<Judge> judges, Date issueTime) throws InvalidVerdictException {
         this(judges);
@@ -121,11 +121,11 @@ public class Verdict {
         }
     }
 
-    public Optional<CodeInspectionReport> getCodeInspectionReport() {
-        return Optional.ofNullable(codeInspectionReport);
+    public Optional<CodeQualityInspectionReport> getCodeQualityInspectionReport() {
+        return Optional.ofNullable(codeQualityInspectionReport);
     }
 
-    public void setCodeInspectionReport(CodeInspectionReport codeInspectionReport) {
-        this.codeInspectionReport = codeInspectionReport;
+    public void setCodeQualityInspectionReport(CodeQualityInspectionReport codeQualityInspectionReport) {
+        this.codeQualityInspectionReport = codeQualityInspectionReport;
     }
 }

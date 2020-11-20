@@ -19,5 +19,5 @@ import lombok.Value;
  * @author - johnny850807@gmail.com (Waterball)
  */
 @Value
-public class CodeInspectionReport {
+public class CodeQualityInspectionReport {
 }

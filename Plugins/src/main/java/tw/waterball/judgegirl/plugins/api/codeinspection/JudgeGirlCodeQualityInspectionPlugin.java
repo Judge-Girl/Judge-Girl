@@ -14,7 +14,7 @@
 package tw.waterball.judgegirl.plugins.api.codeinspection;
 
 import tw.waterball.judgegirl.entities.problem.JudgePluginTag;
-import tw.waterball.judgegirl.entities.submission.CodeInspectionReport;
+import tw.waterball.judgegirl.entities.submission.CodeQualityInspectionReport;
 import tw.waterball.judgegirl.plugins.api.JudgeGirlPlugin;
 
 import java.nio.file.Path;
@@ -22,8 +22,8 @@ import java.nio.file.Path;
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
-public interface JudgeGirlCodeInspectionPlugin extends JudgeGirlPlugin {
+public interface JudgeGirlCodeQualityInspectionPlugin extends JudgeGirlPlugin {
     JudgePluginTag.Type TYPE = JudgePluginTag.Type.CODE_INSPECTION;
 
-    CodeInspectionReport doCodeInspection(Path sourceRootPath);
+    CodeQualityInspectionReport performAtSourceRoot(Path sourceRootPath);
 }

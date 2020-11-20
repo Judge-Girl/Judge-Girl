@@ -15,7 +15,7 @@ package tw.waterball.judgegirl.submissionapi.views;
 
 import lombok.*;
 import org.jetbrains.annotations.Nullable;
-import tw.waterball.judgegirl.entities.submission.CodeInspectionReport;
+import tw.waterball.judgegirl.entities.submission.CodeQualityInspectionReport;
 import tw.waterball.judgegirl.entities.submission.Judge;
 
 import java.util.Date;
@@ -39,7 +39,7 @@ public class VerdictIssuedEvent {
     private Date issueTime;
 
     @Nullable
-    private CodeInspectionReport codeInspectionReport;
+    private CodeQualityInspectionReport codeQualityInspectionReport;
 
     @Singular
     private List<Judge> judges;

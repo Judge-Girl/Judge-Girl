@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
+ * The root of the Judger, adopting template method to represent the Judge Flow.
  * @author - johnny850807@gmail.com (Waterball)
  */
 @SuppressWarnings("WeakerAccess")
@@ -125,10 +126,10 @@ public abstract class Judger {
     private void inspectCodeQuality(Verdict verdict) {
         getProblem().getCodeInspectionPluginTag()
                 .map(this::doCodeInspection)
-                .ifPresent(verdict::setCodeInspectionReport);
+                .ifPresent(verdict::setCodeQualityInspectionReport);
     }
 
-    protected abstract CodeInspectionReport doCodeInspection(JudgePluginTag codeInspectionTag);
+    protected abstract CodeQualityInspectionReport doCodeInspection(JudgePluginTag codeInspectionTag);
 
     protected abstract void publishVerdict(Verdict verdict);
 

@@ -232,7 +232,7 @@ public class CCJudger extends PluginExtendedJudger {
                         getSubmission().getId(),
                         verdict.getCompileErrorMessage(),
                         verdict.getIssueTime(),
-                        verdict.getCodeInspectionReport().orElse(null),
+                        verdict.getCodeQualityInspectionReport().orElse(null),
                         verdict.getJudges()));
     }
 
