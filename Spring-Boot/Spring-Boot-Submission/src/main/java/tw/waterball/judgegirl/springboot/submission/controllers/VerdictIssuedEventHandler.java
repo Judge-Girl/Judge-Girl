@@ -42,7 +42,7 @@ public class VerdictIssuedEventHandler {
 
 
     // This is for test-purpose, test script can wait for this lock until the next onIssueVerdict()
-    public final NotifyWaitLock onHandlingCompletion = new NotifyWaitLock();
+    public final NotifyWaitLock onHandlingCompletion$ = new NotifyWaitLock();
 
     @RabbitListener(queues = "${judge-girl.amqp.verdict-issued-event-queue}")
     public void listen(@Payload String body) throws JsonProcessingException {
@@ -51,8 +51,8 @@ public class VerdictIssuedEventHandler {
         logger.info(event);
         Verdict verdict = new Verdict(event.getJudges(), event.getIssueTime());
         verdict.setCompileErrorMessage(event.getCompileErrorMessage());
-        submissionRepository.saveVerdictOfSubmission(event.getSubmissionId(), verdict);
+        submissionRepository.issueVerdictOfSubmission(event.getSubmissionId(), verdict);
 
-        onHandlingCompletion.doNotifyAll();
+        onHandlingCompletion$.doNotifyAll();
     }
 }

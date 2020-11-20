@@ -228,7 +228,7 @@ public class SubmissionControllerIT {
         verdictPublisher.publish(verdictIssuedEvent);
 
         // Verify the submission is updated with the verdict
-        verdictIssuedEventHandler.onHandlingCompletion.doWait(3000);
+        verdictIssuedEventHandler.onHandlingCompletion$.doWait(3000);
         SubmissionData updatedSubmissionData = mongoTemplate.findById(submissionView.getId(), SubmissionData.class);
         assertNotNull(updatedSubmissionData);
         VerdictData verdictData = updatedSubmissionData.getVerdict();

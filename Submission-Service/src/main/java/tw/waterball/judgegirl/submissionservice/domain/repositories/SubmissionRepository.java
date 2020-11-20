@@ -34,7 +34,7 @@ import java.util.Optional;
 public interface SubmissionRepository {
     Optional<Submission> findOne(int studentId, String submissionId);
 
-    void saveVerdictOfSubmission(String submissionId, Verdict verdict);
+    void issueVerdictOfSubmission(String submissionId, Verdict verdict);
 
     List<Submission> findBySummaryJudgeStatus(JudgeStatus summaryJudgeStatus);
 

@@ -20,7 +20,7 @@ import io.kubernetes.client.models.V1EnvVar;
 import io.kubernetes.client.models.V1Job;
 import io.kubernetes.client.models.V1JobBuilder;
 import io.kubernetes.client.models.V1LocalObjectReference;
-import tw.waterball.judgegirl.entities.problem.JudgeSpec;
+import tw.waterball.judgegirl.entities.problem.JudgeEnvSpec;
 import tw.waterball.judgegirl.entities.problem.Problem;
 import tw.waterball.judgegirl.entities.submission.Submission;
 import tw.waterball.judgegirl.submissionservice.ports.JudgerDeployer;
@@ -58,7 +58,7 @@ public class K8SJudgerDeployer implements JudgerDeployer {
     }
 
     private V1Job createJob(Problem problem, int studentId, Submission submission) {
-        JudgeSpec judgeSpec = problem.getJudgeSpec();
+        JudgeEnvSpec judgeEnvSpec = problem.getJudgeEnvSpec();
 
         return new V1JobBuilder()
                 .withKind("Job")
@@ -76,8 +76,8 @@ public class K8SJudgerDeployer implements JudgerDeployer {
                 .withName(String.format(judgerContainerNameFormat, submission.getId()))
                 .withImage(judgerImageName)
                 .withNewResources()
-                .addToRequests("cpu", new Quantity(String.valueOf(judgeSpec.getCpu())))
-                .addToLimits("nvidia.com/gpu", new Quantity(String.valueOf(judgeSpec.getGpu())))
+                .addToRequests("cpu", new Quantity(String.valueOf(judgeEnvSpec.getCpu())))
+                .addToLimits("nvidia.com/gpu", new Quantity(String.valueOf(judgeEnvSpec.getGpu())))
                 .endResources()
                 .addToEnv(new V1EnvVar().name("submissionId").value(String.valueOf(submission.getId())))
                 .addToEnv(new V1EnvVar().name("problemId").value(String.valueOf(problem.getId())))

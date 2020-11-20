@@ -24,7 +24,7 @@ import lombok.*;
 @ToString
 @Getter
 @Setter
-public class JudgeSpec {
+public class JudgeEnvSpec {
     private Language language;
     private JudgeEnv environment;
     private float cpu;

@@ -220,7 +220,7 @@ public class MigrateOneProblem implements CommandLineRunner {
     }
 
     private void populateProblemAndTestcasesWithNewSchema() {
-        problem.setJudgeSpec(new JudgeSpec(Language.C, JudgeEnv.NORMAL,
+        problem.setJudgeEnvSpec(new JudgeEnvSpec(Language.C, JudgeEnv.NORMAL,
                 inputRangedNumberOrDefault("Input allocated CPU ", 2f, 0.1f, 100),
                 inputRangedNumberOrDefault("Input allocated GPU ", 1f, 0, 10)));
 

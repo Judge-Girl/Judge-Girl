@@ -45,7 +45,7 @@ public class Problem {
 
     @Valid
     @NotNull
-    private JudgeSpec judgeSpec;
+    private JudgeEnvSpec judgeEnvSpec;
 
     @Valid
     @NotNull
@@ -106,12 +106,12 @@ public class Problem {
         this.markdownDescription = markdownDescription;
     }
 
-    public JudgeSpec getJudgeSpec() {
-        return judgeSpec;
+    public JudgeEnvSpec getJudgeEnvSpec() {
+        return judgeEnvSpec;
     }
 
-    public void setJudgeSpec(JudgeSpec judgeSpec) {
-        this.judgeSpec = judgeSpec;
+    public void setJudgeEnvSpec(JudgeEnvSpec judgeEnvSpec) {
+        this.judgeEnvSpec = judgeEnvSpec;
     }
 
     public JudgePluginTag getOutputMatchPolicyPluginTag() {
@@ -183,7 +183,7 @@ public class Problem {
     }
 
     public boolean isCompiledLanguage() {
-        return getJudgeSpec().getLanguage().isCompiledLang();
+        return getJudgeEnvSpec().getLanguage().isCompiledLang();
     }
 
     public void setOutputMatchPolicyPluginTag(JudgePluginTag outputMatchPolicyPluginTag) {

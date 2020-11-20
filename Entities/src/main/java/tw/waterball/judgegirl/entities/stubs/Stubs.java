@@ -29,7 +29,7 @@ public class Stubs {
                 .id(STUB_ID)
                 .title("Title")
                 .markdownDescription("# Title \n ```\n Code \n ```")
-                .judgeSpec(new JudgeSpec(Language.C, JudgeEnv.NORMAL, 0.5f, 0))
+                .judgeEnvSpec(new JudgeEnvSpec(Language.C, JudgeEnv.NORMAL, 0.5f, 0))
                 .outputMatchPolicyPluginTag(new JudgePluginTag(
                         JudgePluginTag.Type.OUTPUT_MATCH_POLICY, "group", "name", "1.0"))
                 .tag("tag1").tag("tag2")
