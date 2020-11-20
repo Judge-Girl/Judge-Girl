@@ -11,28 +11,14 @@
  *   limitations under the License.
  */
 
-package tw.waterball.judgegirl.judger;
+package tw.waterball.judgegirl.judger.infra.compile;
 
-import lombok.Getter;
+import tw.waterball.judgegirl.entities.problem.Compilation;
+import tw.waterball.judgegirl.judger.infra.ProcessRunner;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
-@Getter
-public class CompileResult {
-    private boolean isSuccessful;
-    private String errorMessage;
-
-    private CompileResult(boolean isSuccessful, String errorMessage) {
-        this.isSuccessful = isSuccessful;
-        this.errorMessage = errorMessage;
-    }
-
-    public static CompileResult success() {
-        return new CompileResult(true, null);
-    }
-
-    public static CompileResult error(String compileErrorMessage) {
-        return new CompileResult(false, compileErrorMessage);
-    }
+public interface Compiler extends ProcessRunner {
+    CompileResult compile(Compilation compilation);
 }

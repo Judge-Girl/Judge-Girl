@@ -11,14 +11,22 @@
  *   limitations under the License.
  */
 
-package tw.waterball.judgegirl.judger;
+package tw.waterball.judgegirl.judger.infra.testexecutor;
 
-import tw.waterball.judgegirl.entities.problem.Testcase;
+import tw.waterball.judgegirl.judger.infra.ProcessRunner;
+
+import java.nio.file.Path;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
-public interface TestcaseExecutorFactory {
-    TestcaseExecutor create(String submissionId,
-                            Testcase testcase, JudgerWorkspace layoutResolver);
+public interface TestcaseExecutor extends ProcessRunner {
+
+    /**
+     * Fork a new process and execute the given executable asynchronously,
+     * while it's executing, it monitors and profiles the executed process
+     *
+     * @param executablePath the path of the executable (e.g. "../programs/a.out")
+     */
+    TestcaseExecutionResult executeProgramByProfiler(Path executablePath);
 }

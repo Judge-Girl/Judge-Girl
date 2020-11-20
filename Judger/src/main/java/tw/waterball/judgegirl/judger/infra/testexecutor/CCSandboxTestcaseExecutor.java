@@ -11,12 +11,16 @@
  *   limitations under the License.
  */
 
-package tw.waterball.judgegirl.judger;
+package tw.waterball.judgegirl.judger.infra.testexecutor;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tw.waterball.judgegirl.entities.problem.Testcase;
 import tw.waterball.judgegirl.entities.submission.ProgramProfile;
+import tw.waterball.judgegirl.judger.infra.AbstractProcessRunner;
+import tw.waterball.judgegirl.judger.layout.JudgerWorkspace;
+import tw.waterball.judgegirl.judger.layout.SandboxRoot;
+import tw.waterball.judgegirl.judger.layout.TestcaseHome;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -58,7 +62,7 @@ public class CCSandboxTestcaseExecutor extends AbstractProcessRunner implements 
     }
 
     @Override
-    public ProgramExecutionResult executeProgramByProfiler(Path profilerPath) {
+    public TestcaseExecutionResult executeProgramByProfiler(Path profilerPath) {
         String[] arguments = new String[numOfArguments];
         arguments[0] = profilerPath.toString();
         arguments[1] = String.valueOf(this.cpuTimeLimit);
@@ -98,7 +102,7 @@ public class CCSandboxTestcaseExecutor extends AbstractProcessRunner implements 
         }
     }
 
-    private ProgramExecutionResult parseResult() {
+    private TestcaseExecutionResult parseResult() {
         String processReturnString = getStdout();
         String[] processReturnArray = processReturnString.split(",");
 
@@ -107,28 +111,28 @@ public class CCSandboxTestcaseExecutor extends AbstractProcessRunner implements 
         long runtime = Integer.parseInt(processReturnArray[1]);
         long memory = Long.parseLong(processReturnArray[2]);
         int statusNumber = Integer.parseInt(processReturnArray[6]);
-        ProgramExecutionResult result = new ProgramExecutionResult(getStatus(statusNumber),
+        TestcaseExecutionResult result = new TestcaseExecutionResult(getStatus(statusNumber),
                 new ProgramProfile(runtime, memory, getStderr()));
 
         logger.info(result);
         return result;
     }
 
-    private ProgramExecutionResult.Status getStatus(int resultNumber) {
+    private TestcaseExecutionResult.Status getStatus(int resultNumber) {
         switch (resultNumber) {
             case 0:
             case 1: // Don't consider cpu time temporarily
-                return ProgramExecutionResult.Status.SUCCESSFUL;
+                return TestcaseExecutionResult.Status.SUCCESSFUL;
             case 2:
-                return ProgramExecutionResult.Status.TIME_LIMIT_EXCEEDS;
+                return TestcaseExecutionResult.Status.TIME_LIMIT_EXCEEDS;
             case 3:
-                return ProgramExecutionResult.Status.MEMORY_LIMIT_EXCEEDS;
+                return TestcaseExecutionResult.Status.MEMORY_LIMIT_EXCEEDS;
             case 4:
-                return ProgramExecutionResult.Status.RUNTIME_ERROR;
+                return TestcaseExecutionResult.Status.RUNTIME_ERROR;
             case 5:
-                return ProgramExecutionResult.Status.SYSTEM_ERROR;
+                return TestcaseExecutionResult.Status.SYSTEM_ERROR;
             case 6:
-                return ProgramExecutionResult.Status.OUTPUT_LIMIT_EXCEEDS;
+                return TestcaseExecutionResult.Status.OUTPUT_LIMIT_EXCEEDS;
             default:
                 throw new RuntimeException("Unreachable statement.");
         }

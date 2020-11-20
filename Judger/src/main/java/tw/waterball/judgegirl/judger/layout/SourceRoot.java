@@ -11,37 +11,15 @@
  *   limitations under the License.
  */
 
-package tw.waterball.judgegirl.judger;
+package tw.waterball.judgegirl.judger.layout;
+
+import java.nio.file.Path;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
-public interface ProcessRunner {
-
-    /**
-     * block until the sub-process has terminated
-     */
-    void awaitTermination();
-
-    /**
-     * stop the sub-process
-     */
-    void stop();
-
-    /**
-     * @return whether the sub-process' execution has finished
-     */
-    boolean isTerminated();
-
-    /**
-     * @return whether the sub-process' execution was successful
-     */
-    boolean isSuccessful();
-
-    /**
-     * @return the exit-code from the sub-process' finished execution
-     */
-    int getExitCode();
-
-
+public interface SourceRoot {
+    Path getCompileScriptPath();
+    Path getExecutablePath();
+    Path getPath();
 }

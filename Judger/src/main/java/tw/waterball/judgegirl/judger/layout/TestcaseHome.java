@@ -11,49 +11,15 @@
  *   limitations under the License.
  */
 
-package tw.waterball.judgegirl.judger;
+package tw.waterball.judgegirl.judger.layout;
 
 import java.nio.file.Path;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
-public interface JudgerWorkspace {
-    void setupWholeLayout();
-    Path getPath();
-    Path getLogHomePath();
-    Path getProfilerPath();
-
-    SubmissionHome getSubmissionHome(String submissionId);
-}
-
-interface SubmissionHome {
-    Path getPath();
-    SourceRoot getSourceRoot();
-    TestcaseHome getTestCaseHome(String testcaseName);
-}
-
-interface SourceRoot {
-    Path getCompileScriptPath();
-    Path getExecutablePath();
-    Path getPath();
-}
-
-interface TestcaseHome {
+public interface TestcaseHome {
     Path getPath();
     SandboxRoot getSandboxRoot();
     TestCaseOutputHome getTestcaseOutputHome();
-}
-
-interface SandboxRoot {
-    Path getPath();
-    Path getActualStandardErrPath();
-    Path getActualStandardOutPath();
-    Path getStandardInPath();
-    Path getExecutablePath();
-}
-
-interface TestCaseOutputHome {
-    Path getPath();
-    Path getExpectedStandardOutPath();
 }

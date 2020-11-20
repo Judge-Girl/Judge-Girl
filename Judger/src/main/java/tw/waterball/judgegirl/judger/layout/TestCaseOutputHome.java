@@ -11,12 +11,14 @@
  *   limitations under the License.
  */
 
+package tw.waterball.judgegirl.judger.layout;
+
+import java.nio.file.Path;
+
 /**
- * The tests for a Judger.
- *
- * There are reasons that we can't put these test classes into 'src/main/test':
- * - We put the test classes in the main source so that maven will
- * package them into the judger's jar, which will be run in the container
- * with being tested by the JUnit5 engine.
+ * @author - johnny850807@gmail.com (Waterball)
  */
-package tw.waterball.judgegirl.judger.tests;
+public interface TestCaseOutputHome {
+    Path getPath();
+    Path getExpectedStandardOutPath();
+}

@@ -20,6 +20,7 @@ import tw.waterball.judgegirl.judgerapi.env.JudgerEnvVariables;
 import java.io.IOException;
 
 /**
+ * The CCJudger's bootstrap.
  * @author - johnny850807@gmail.com (Waterball)
  */
 public class Main {

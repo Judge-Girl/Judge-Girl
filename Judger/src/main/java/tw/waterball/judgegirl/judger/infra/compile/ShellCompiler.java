@@ -11,11 +11,12 @@
  *   limitations under the License.
  */
 
-package tw.waterball.judgegirl.judger;
+package tw.waterball.judgegirl.judger.infra.compile;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tw.waterball.judgegirl.entities.problem.Compilation;
+import tw.waterball.judgegirl.judger.infra.AbstractProcessRunner;
 
 import java.nio.file.Files;
 import java.nio.file.Path;

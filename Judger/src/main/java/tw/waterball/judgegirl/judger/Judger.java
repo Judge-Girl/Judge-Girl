@@ -20,6 +20,8 @@ import tw.waterball.judgegirl.entities.problem.JudgeStatus;
 import tw.waterball.judgegirl.entities.problem.Problem;
 import tw.waterball.judgegirl.entities.problem.Testcase;
 import tw.waterball.judgegirl.entities.submission.*;
+import tw.waterball.judgegirl.judger.infra.compile.CompileResult;
+import tw.waterball.judgegirl.judger.infra.testexecutor.TestcaseExecutionResult;
 
 import java.io.IOException;
 import java.util.List;
@@ -96,14 +98,14 @@ public abstract class Judger {
         return getTestcases().stream()
                 .map(testcase -> {
                     onBeforeRunningTestcase(testcase);
-                    ProgramExecutionResult executionResult = runTestcase(testcase);
+                    TestcaseExecutionResult executionResult = runTestcase(testcase);
                     return judgeFromProgramExecutionResult(testcase, executionResult);
                 }).collect(Collectors.toList());
     }
 
-    protected abstract ProgramExecutionResult runTestcase(Testcase testcase);
+    protected abstract TestcaseExecutionResult runTestcase(Testcase testcase);
 
-    protected Judge judgeFromProgramExecutionResult(Testcase testcase, ProgramExecutionResult executionResult) {
+    protected Judge judgeFromProgramExecutionResult(Testcase testcase, TestcaseExecutionResult executionResult) {
         if (executionResult.isSuccessful()) {
             if (isProgramOutputAllCorrect(testcase)) {
                 return new Judge(testcase.getName(), JudgeStatus.AC,

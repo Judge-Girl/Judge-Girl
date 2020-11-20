@@ -22,11 +22,12 @@ import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import tw.waterball.judgegirl.api.retrofit.RetrofitFactory;
+import tw.waterball.judgegirl.judger.infra.compile.ShellCompilerFactory;
+import tw.waterball.judgegirl.judger.infra.testexecutor.CCSandboxTestcaseExecutorFactory;
 import tw.waterball.judgegirl.judgerapi.env.JudgerEnvVariables;
+import tw.waterball.judgegirl.plugins.Plugins;
 import tw.waterball.judgegirl.plugins.api.JudgeGirlPlugin;
 import tw.waterball.judgegirl.plugins.api.PresetJudgeGirlPluginLocator;
-import tw.waterball.judgegirl.plugins.impl.match.AllMatchPolicyPlugin;
-import tw.waterball.judgegirl.plugins.impl.match.RegexMatchPolicyPlugin;
 import tw.waterball.judgegirl.problemapi.clients.ProblemApiClient;
 import tw.waterball.judgegirl.problemapi.clients.ProblemServiceDriver;
 import tw.waterball.judgegirl.submissionapi.clients.AmqpVerdictPublisher;
@@ -40,12 +41,11 @@ import java.util.List;
 import static java.util.Arrays.asList;
 
 /**
+ * Provide different basic ways to construct a CCJudger.
+ * (Either from env variables or customizing it)
  * @author - johnny850807@gmail.com (Waterball)
  */
 public class DefaultCCJudgerFactory {
-    private static final List<JudgeGirlPlugin> defaultPlugins = asList(
-            new AllMatchPolicyPlugin(), new RegexMatchPolicyPlugin());
-
 
     @SneakyThrows
     public static CCJudger create(JudgerEnvVariables.Values values,
@@ -58,7 +58,7 @@ public class DefaultCCJudgerFactory {
                 problemApiClient(values),
                 submissionApiClient(values),
                 verdictPublisher(values),
-                new BashCompilerFactory(),
+                new ShellCompilerFactory(),
                 new CCSandboxTestcaseExecutorFactory()
         );
     }
@@ -77,14 +77,14 @@ public class DefaultCCJudgerFactory {
                 problemServiceDriver,
                 submissionServiceDriver,
                 verdictPublisher,
-                new BashCompilerFactory(),
+                new ShellCompilerFactory(),
                 new CCSandboxTestcaseExecutorFactory()
         );
     }
 
     private static List<JudgeGirlPlugin> aggregateJudgeGirlPlugins(JudgeGirlPlugin... plugins) {
         List<JudgeGirlPlugin> allPlugins = new LinkedList<>();
-        allPlugins.addAll(defaultPlugins);
+        allPlugins.addAll(Plugins.getDefaultPlugins());
         allPlugins.addAll(asList(plugins));
         return allPlugins;
     }
@@ -128,7 +128,7 @@ public class DefaultCCJudgerFactory {
         return connectionFactory;
     }
 
-    // TODO the objectMapper should be injected
+    // TODO the objectMapper implementation should be injected
     private static ObjectMapper objectMapper() {
         return new ObjectMapper();
     }

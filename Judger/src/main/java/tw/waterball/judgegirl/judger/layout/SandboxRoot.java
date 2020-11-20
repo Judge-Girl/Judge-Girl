@@ -11,19 +11,17 @@
  *   limitations under the License.
  */
 
-package tw.waterball.judgegirl.judger;
+package tw.waterball.judgegirl.judger.layout;
 
-import tw.waterball.judgegirl.entities.problem.Testcase;
+import java.nio.file.Path;
 
 /**
- * @author - Haribo
+ * @author - johnny850807@gmail.com (Waterball)
  */
-public class CCSandboxTestcaseExecutorFactory implements TestcaseExecutorFactory {
-
-    @Override
-    public TestcaseExecutor create(String submissionId,
-                                   Testcase testcase,
-                                   JudgerWorkspace layoutResolver) {
-        return new CCSandboxTestcaseExecutor(submissionId, testcase, layoutResolver);
-    }
+public interface SandboxRoot {
+    Path getPath();
+    Path getActualStandardErrPath();
+    Path getActualStandardOutPath();
+    Path getStandardInPath();
+    Path getExecutablePath();
 }

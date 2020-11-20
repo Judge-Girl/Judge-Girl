@@ -11,12 +11,37 @@
  *   limitations under the License.
  */
 
+package tw.waterball.judgegirl.judger.infra;
+
 /**
- * The tests for a Judger.
- *
- * There are reasons that we can't put these test classes into 'src/main/test':
- * - We put the test classes in the main source so that maven will
- * package them into the judger's jar, which will be run in the container
- * with being tested by the JUnit5 engine.
+ * @author - johnny850807@gmail.com (Waterball)
  */
-package tw.waterball.judgegirl.judger.tests;
+public interface ProcessRunner {
+
+    /**
+     * block until the sub-process has terminated
+     */
+    void awaitTermination();
+
+    /**
+     * stop the sub-process
+     */
+    void stop();
+
+    /**
+     * @return whether the sub-process' execution has finished
+     */
+    boolean isTerminated();
+
+    /**
+     * @return whether the sub-process' execution was successful
+     */
+    boolean isSuccessful();
+
+    /**
+     * @return the exit-code from the sub-process' finished execution
+     */
+    int getExitCode();
+
+
+}

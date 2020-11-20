@@ -11,7 +11,7 @@
  *   limitations under the License.
  */
 
-package tw.waterball.judgegirl.judger;
+package tw.waterball.judgegirl.judger.infra;
 
 import org.apache.commons.io.IOUtils;
 import org.jetbrains.annotations.Nullable;

@@ -24,6 +24,7 @@ import java.nio.file.Path;
 import java.util.Map;
 
 /**
+ * Abstract Judger that encapsulates the plugin-extensions.
  * @author - johnny850807@gmail.com (Waterball)
  */
 @SuppressWarnings("WeakerAccess")
@@ -53,6 +54,9 @@ public abstract class PluginExtendedJudger extends Judger {
 
     protected abstract Path getExpectStandardOutputPath(Testcase testcase);
 
+    /**
+     * @return a mapping between the paths of every pair of the 'actual file-output' and the 'expected file-output'
+     */
     protected abstract Map<Path, Path> getActualToExpectOutputFilePathMap(Testcase testcase);
 
     @Override

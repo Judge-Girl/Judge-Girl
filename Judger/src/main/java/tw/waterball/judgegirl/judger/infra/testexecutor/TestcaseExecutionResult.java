@@ -11,7 +11,7 @@
  *   limitations under the License.
  */
 
-package tw.waterball.judgegirl.judger;
+package tw.waterball.judgegirl.judger.infra.testexecutor;
 
 import lombok.AllArgsConstructor;
 import lombok.Value;
@@ -23,7 +23,7 @@ import tw.waterball.judgegirl.entities.submission.ProgramProfile;
  */
 @Value
 @AllArgsConstructor
-public class ProgramExecutionResult {
+public class TestcaseExecutionResult {
     private Status status;
     private ProgramProfile profile;
 

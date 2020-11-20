@@ -17,8 +17,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import tw.waterball.judgegirl.commons.utils.ResourceUtils;
-import tw.waterball.judgegirl.entities.problem.Testcase;
-import tw.waterball.judgegirl.entities.submission.Submission;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -73,20 +71,5 @@ public class YAMLFileLayoutBuilder implements FileLayoutBuilder {
             }
         }
     }
-
-    public static void main(String[] args) throws IOException {
-        FileLayout layout = new YAMLFileLayoutBuilder("/judger-layout.yaml").build();
-        Directory directory = layout.getRoot();
-        InterpolationItemVisitor visitor =
-                new InterpolationItemVisitor(
-                        new Testcase("aaa", 1, 1, 1, 1, 1, 1),
-                        new Submission("1", 1, 1, ""));
-        directory.acceptVisitor(visitor);
-
-        TreePrintVisitor printer = new TreePrintVisitor();
-        directory.acceptVisitor(printer);
-        System.out.println(printer.getOutput());
-    }
-
 
 }

@@ -22,6 +22,13 @@ import tw.waterball.judgegirl.entities.problem.SubmittedCodeSpec;
 import tw.waterball.judgegirl.entities.problem.Testcase;
 import tw.waterball.judgegirl.entities.submission.Submission;
 import tw.waterball.judgegirl.entities.submission.Verdict;
+import tw.waterball.judgegirl.judger.infra.compile.CompileResult;
+import tw.waterball.judgegirl.judger.infra.compile.Compiler;
+import tw.waterball.judgegirl.judger.infra.compile.CompilerFactory;
+import tw.waterball.judgegirl.judger.infra.testexecutor.TestcaseExecutionResult;
+import tw.waterball.judgegirl.judger.infra.testexecutor.TestcaseExecutor;
+import tw.waterball.judgegirl.judger.infra.testexecutor.TestcaseExecutorFactory;
+import tw.waterball.judgegirl.judger.layout.*;
 import tw.waterball.judgegirl.plugins.api.JudgeGirlPluginLocator;
 import tw.waterball.judgegirl.problemapi.clients.ProblemServiceDriver;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
@@ -130,7 +137,7 @@ public class CCJudger extends PluginExtendedJudger {
     @SneakyThrows
     protected void onBeforeRunningTestcase(Testcase testcase) {
         copyExecutableIntoSandboxRoot(testcase);
-        // TODO should also copy provided codes
+        // TODO should also copy provided codes, this will fail in an interpreted language case
         copyInterpretedSubmittedCodesIntoSandboxRoot(testcase);
     }
 
@@ -155,7 +162,7 @@ public class CCJudger extends PluginExtendedJudger {
     }
 
     @Override
-    protected ProgramExecutionResult runTestcase(Testcase testcase) {
+    protected TestcaseExecutionResult runTestcase(Testcase testcase) {
         TestcaseExecutor testcaseExecutor =
                 testcaseExecutorFactory.create(getSubmission().getId(),
                         testcase, judgerWorkspace);
