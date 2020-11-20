@@ -14,6 +14,6 @@ and replace the PLACEHOLDERs with the values according to your environment.
 
 4. Run the script to build up the project
 ```shell script
-./mvn install -DskipTests
+./mvnw install -DskipTests
 ```
 

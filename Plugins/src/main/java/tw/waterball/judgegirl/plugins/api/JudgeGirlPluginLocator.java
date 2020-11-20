@@ -20,6 +20,7 @@ package tw.waterball.judgegirl.plugins.api;
 import tw.waterball.judgegirl.entities.problem.JudgePluginTag;
 
 /**
+ * Locates a JudgeGirlPlugin by its Tag.
  * @author - johnny850807@gmail.com (Waterball)
  */
 public interface JudgeGirlPluginLocator {

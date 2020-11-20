@@ -11,36 +11,24 @@
  *   limitations under the License.
  */
 
-package tw.waterball.judgegirl.submissionapi.views;
+package tw.waterball.judgegirl.plugins;
 
-import lombok.*;
-import org.jetbrains.annotations.Nullable;
-import tw.waterball.judgegirl.entities.submission.CodeInspectionReport;
-import tw.waterball.judgegirl.entities.submission.Judge;
+import tw.waterball.judgegirl.plugins.api.JudgeGirlPlugin;
+import tw.waterball.judgegirl.plugins.impl.match.AllMatchPolicyPlugin;
+import tw.waterball.judgegirl.plugins.impl.match.RegexMatchPolicyPlugin;
 
-import java.util.Date;
 import java.util.List;
+
+import static java.util.Arrays.asList;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
-@Builder
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-// TODO refactor: include VerdictView instead of List<Judge>
-public class VerdictIssuedEvent {
-    private int problemId;
-    private String problemTitle;
-    private String submissionId;
+public class Plugins {
+    private static List<JudgeGirlPlugin> DEFAULT_PLUGINS = asList(
+            new AllMatchPolicyPlugin(), new RegexMatchPolicyPlugin());
 
-    @Nullable
-    private String compileErrorMessage;
-    private Date issueTime;
-
-    @Nullable
-    private CodeInspectionReport codeInspectionReport;
-
-    @Singular
-    private List<Judge> judges;
+    public static List<JudgeGirlPlugin> getDefaultPlugins() {
+        return DEFAULT_PLUGINS;
+    }
 }
