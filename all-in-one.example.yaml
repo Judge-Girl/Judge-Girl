@@ -1,0 +1,73 @@
+version: '2.0'
+services:
+
+  mongodb:
+    image: mongo
+    networks:
+      - infra
+    command: --bind_ip 0.0.0.0
+    volumes:
+      - db-data:/data/db
+  rabbitmq:
+    image: rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: PLACEHOLDER
+      RABBITMQ_DEFAULT_PASS: PLACEHOLDER
+      RABBITMQ_DEFAULT_VHOST: /judge-girl
+    networks:
+      - infra
+
+  student-service:
+    build: Spring-Boot/Spring-Boot-Student
+    ports:
+      - 8080:80
+    environment:
+      spring.profiles.active: prod
+      judge-girl.mongo.host: mongodb
+      judge-girl.amqp.host: rabbitmq
+    depends_on:
+      - mongodb
+      - rabbitmq
+    networks:
+      - services
+      - infra
+
+  problem-service:
+    build: Spring-Boot/Spring-Boot-Problem
+    ports:
+      - 8081:80
+    environment:
+      spring.profiles.active: prod,mongo
+      judge-girl.mongo.host: mongodb
+    depends_on:
+      - mongodb
+      - rabbitmq
+    networks:
+      - services
+      - infra
+
+  submission-service:
+    build: Spring-Boot/Spring-Boot-Submission
+    ports:
+      - 8082:80
+    environment:
+      spring.profiles.active: prod,mongo,amqp
+      judge-girl.mongo.host: mongodb
+      judge-girl.amqp.host: rabbitmq
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock # docker-in-docker for running judger
+    networks:
+      - services
+      - infra
+    depends_on:
+      - mongodb
+      - rabbitmq
+    # Sleep 10 seconds to wait-for its dependencies
+    command: "/bin/sh -c 'sleep 10 && /usr/bin/java -jar /app.jar'"
+
+
+volumes:
+  db-data:
+networks:
+  services:
+  infra:

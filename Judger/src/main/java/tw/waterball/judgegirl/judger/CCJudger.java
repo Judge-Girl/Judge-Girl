@@ -40,9 +40,7 @@ import tw.waterball.judgegirl.submissionapi.views.VerdictIssuedEvent;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -132,6 +130,7 @@ public class CCJudger extends PluginExtendedJudger {
         Compiler compiler = compilerFactory.create(getSourceRoot().getPath());
         return compiler.compile(getProblem().getCompilation());
     }
+
 
     @Override
     @SneakyThrows
@@ -242,5 +241,6 @@ public class CCJudger extends PluginExtendedJudger {
             Files.createDirectory(directoryPath);
         }
     }
+
 
 }
