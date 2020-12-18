@@ -15,8 +15,8 @@ package tw.waterball.judgegirl.judger;
 
 import tw.waterball.judgegirl.entities.problem.JudgePluginTag;
 import tw.waterball.judgegirl.entities.problem.Testcase;
-import tw.waterball.judgegirl.entities.submission.CodeQualityInspectionReport;
 import tw.waterball.judgegirl.plugins.api.JudgeGirlPluginLocator;
+import tw.waterball.judgegirl.entities.submission.CodeQualityInspectionReport;
 import tw.waterball.judgegirl.plugins.api.codeinspection.JudgeGirlCodeQualityInspectionPlugin;
 import tw.waterball.judgegirl.plugins.api.match.JudgeGirlMatchPolicyPlugin;
 

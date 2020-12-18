@@ -13,16 +13,15 @@
 
 package tw.waterball.judgegirl.plugins.api.codeinspection;
 
-import tw.waterball.judgegirl.entities.problem.JudgePluginTag;
-import tw.waterball.judgegirl.plugins.api.JudgeGirlPlugin;
-
-import java.nio.file.Path;
+import lombok.Value;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
-public interface JudgeGirlCodeQualityInspectionPlugin extends JudgeGirlPlugin {
-    JudgePluginTag.Type TYPE = JudgePluginTag.Type.CODE_INSPECTION;
-
-    CodeQualityInspectionReport performAtSourceRoot(Path sourceRootPath);
+@Value
+public class CodeQualityInspectionReport {
+    CyclomaticComplexityReport CCReport;
+    public CodeQualityInspectionReport(CyclomaticComplexityReport report){
+        this.CCReport = report;
+    }
 }
