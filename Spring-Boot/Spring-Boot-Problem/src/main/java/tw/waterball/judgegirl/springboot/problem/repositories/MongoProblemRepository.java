@@ -104,7 +104,7 @@ public class MongoProblemRepository implements ProblemRepository {
 
     @Override
     public Problem save(Problem problem, Map<LanguageEnv, InputStream> providedCodesZipMap, InputStream testcaseIOsZip) {
-        // TODO atomicity problem
+        // TODO: atomicity doesn't hold
         providedCodesZipMap.forEach((langEnv, zip) -> {
             String providedCodesName = format("%d-%s-provided.zip", problem.getId(), langEnv.getName());
             langEnv.setProvidedCodesFileId(

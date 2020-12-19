@@ -11,7 +11,7 @@
  *   limitations under the License.
  */
 
-package tw.waterball.judgegirl.migration;
+package tw.waterball.judgegirl.migration.utils;
 
 import java.util.Collection;
 import java.util.Scanner;
