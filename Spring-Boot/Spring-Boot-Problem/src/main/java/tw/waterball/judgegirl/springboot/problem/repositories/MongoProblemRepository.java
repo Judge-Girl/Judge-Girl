@@ -46,8 +46,8 @@ import static tw.waterball.judgegirl.springboot.utils.MongoUtils.downloadFileRes
 @Component
 public class MongoProblemRepository implements ProblemRepository {
     private final static int PAGE_SIZE = 50;
-    private MongoTemplate mongoTemplate;
-    private GridFsTemplate gridFsTemplate;
+    private final MongoTemplate mongoTemplate;
+    private final GridFsTemplate gridFsTemplate;
 
     public MongoProblemRepository(MongoTemplate mongoTemplate, GridFsTemplate gridFsTemplate) {
         this.mongoTemplate = mongoTemplate;
@@ -102,7 +102,7 @@ public class MongoProblemRepository implements ProblemRepository {
 
     @Override
     public Problem save(Problem problem, Map<LanguageEnv, InputStream> providedCodesZipMap, InputStream testcaseIOsZip) {
-        // TODO atomicity problem
+        // TODO: atomicity doesn't hold
         providedCodesZipMap.forEach((langEnv, zip) -> {
             String providedCodesName = format("%d-%s-provided.zip", problem.getId(), langEnv.getName());
             langEnv.setProvidedCodesFileId(

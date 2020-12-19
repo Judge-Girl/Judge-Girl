@@ -13,6 +13,7 @@
 
 package tw.waterball.judgegirl.commons.utils;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -65,5 +66,11 @@ public class DirectoryUtils {
             return false;
         }
         return equal[0];
+    }
+
+    public static File[] removeHiddenDirectories(File[] testcaseDirs) {
+        return Arrays.stream(testcaseDirs)
+                .filter(d -> !d.isHidden())
+                .toArray(File[]::new);
     }
 }
