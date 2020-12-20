@@ -21,6 +21,7 @@ import java.nio.file.Path;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
+ * @author - ryan01234keroro56789@gmail.com (Giver)
  */
 public interface JudgeGirlCodeQualityInspectionPlugin extends JudgeGirlPlugin {
     JudgePluginTag.Type TYPE = JudgePluginTag.Type.CODE_INSPECTION;

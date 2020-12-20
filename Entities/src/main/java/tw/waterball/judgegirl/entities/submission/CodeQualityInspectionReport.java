@@ -17,7 +17,13 @@ import lombok.Value;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
+ * @author - ryan01234keroro56789@gmail.com (Giver)
  */
 @Value
 public class CodeQualityInspectionReport {
+    private CyclomaticComplexityReport ccReport;
+    public CodeQualityInspectionReport(CyclomaticComplexityReport ccReport){
+        this.ccReport=ccReport;
+    }
+    public CyclomaticComplexityReport getCcReport() {return this.ccReport;}
 }
