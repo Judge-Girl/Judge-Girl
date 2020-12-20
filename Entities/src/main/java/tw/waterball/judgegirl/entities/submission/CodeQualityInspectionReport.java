@@ -21,8 +21,9 @@ import lombok.Value;
  */
 @Value
 public class CodeQualityInspectionReport {
-    CyclomaticComplexityReport ccReport;
+    private CyclomaticComplexityReport ccReport;
     public CodeQualityInspectionReport(CyclomaticComplexityReport ccReport){
         this.ccReport=ccReport;
     }
+    public CyclomaticComplexityReport getCcReport() {return this.ccReport;}
 }
