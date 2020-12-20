@@ -13,16 +13,17 @@
 
 package tw.waterball.judgegirl.plugins.impl.cqi;
 
+import tw.waterball.judgegirl.entities.submission.CodeQualityInspectionReport;
+import tw.waterball.judgegirl.entities.submission.CyclomaticComplexityReport;
 import tw.waterball.judgegirl.plugins.api.AbstractJudgeGirlPlugin;
-import tw.waterball.judgegirl.plugins.api.codeinspection.CodeQualityInspectionReport;
 import tw.waterball.judgegirl.plugins.api.codeinspection.JudgeGirlCodeQualityInspectionPlugin;
-import tw.waterball.judgegirl.cqi.cyclomatic.CyclomaticComplexityReport;
 
 import java.nio.file.Path;
 import java.util.Map;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
+ * @author - ryan01234keroro56789@gmail.com (Giver)
  */
 public abstract class AbstractJudgeGirlCodeQualityInspectionPlugin extends AbstractJudgeGirlPlugin
         implements JudgeGirlCodeQualityInspectionPlugin {

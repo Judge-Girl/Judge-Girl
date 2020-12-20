@@ -11,17 +11,19 @@
  *   limitations under the License.
  */
 
-package tw.waterball.judgegirl.plugins.api.codeinspection;
+package tw.waterball.judgegirl.entities.submission;
 
 import lombok.Value;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
+ * @author - ryan01234keroro56789@gmail.com (Giver)
  */
 @Value
 public class CyclomaticComplexityReport {
-    int score;
-    public CyclomaticComplexityReport(int score) {
-        this.score = score;
+    private int ccScore;
+    public CyclomaticComplexityReport(int ccScore){
+        this.ccScore=ccScore;
     }
+    public int getScore() {return this.ccScore;}
 }

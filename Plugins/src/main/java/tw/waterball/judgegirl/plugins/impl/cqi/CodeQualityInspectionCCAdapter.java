@@ -16,8 +16,9 @@ package tw.waterball.judgegirl.plugins.impl.cqi;
 import tw.waterball.judgegirl.entities.problem.JudgePluginTag;
 import tw.waterball.judgegirl.plugins.api.ParameterMeta;
 import tw.waterball.judgegirl.plugins.api.codeinspection.JudgeGirlCodeQualityInspectionPlugin;
+import tw.waterball.judgegirl.entities.submission.CyclomaticComplexityReport;
 import tw.waterball.judgegirl.cqi.cyclomatic.CyclomaticComplexityCalculatorImpl;
-import tw.waterball.judgegirl.cqi.cyclomatic.CyclomaticComplexityReport;
+import tw.waterball.judgegirl.cqi.cyclomatic.CyclomaticComplexityCalculator;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -28,6 +29,7 @@ import java.util.Set;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
+ * @author - ryan01234keroro56789@gmail.com (Giver)
  */
 public class CodeQualityInspectionCCAdapter extends AbstractJudgeGirlCodeQualityInspectionPlugin {
     public final static String GROUP = JUDGE_GIRL_GROUP;
@@ -67,6 +69,6 @@ public class CodeQualityInspectionCCAdapter extends AbstractJudgeGirlCodeQuality
         for(int i = 0; i < fileList.length; i++) {
             sourceCodes.add(fileList[i].getPath());
         }
-        return calculator.calculate(sourceCodes);
+        return new CyclomaticComplexityReport(calculator.calculate(sourceCodes).score);
     }
 }
