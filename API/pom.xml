@@ -27,11 +27,15 @@
     <name>API</name>
     <artifactId>api</artifactId>
 
+    <properties>
+        <java.version>11</java.version>
+    </properties>
+
     <modules>
         <module>API-Commons</module>
         <module>Problem-API</module>
-        <module>submission-api</module>
-        <module>judger-api</module>
+        <module>Submission-API</module>
+        <module>Judger-API</module>
     </modules>
 
     <dependencies>
@@ -52,6 +56,18 @@
             <artifactId>converter-jackson</artifactId>
         </dependency>
     </dependencies>
-
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven-compiler-plugin.version}</version>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>
