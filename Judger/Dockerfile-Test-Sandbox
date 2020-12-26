@@ -1,0 +1,25 @@
+# Build Judger from Maven
+FROM gcc:9.3.0 as cc-profiler-sandbox-builder
+
+# Build CC-Profiler-Sandbox from nvidia/cuda
+
+COPY CC-Profiler-Sandbox/ /usr/src/app
+WORKDIR /usr/src/app
+
+# Install libraries for gcc compiling
+RUN apt-get update && apt-get install -y clinfo ocl-icd-libopencl1 opencl-headers \
+    ocl-icd-opencl-dev libseccomp-dev libseccomp2 seccomp
+## TODO Don't know if this is required
+# RUN apt-get update && apt-get install -y cgroup-bin cgroup-lite libcgroup1
+
+# Compile the profiler
+RUN gcc -std=c99 -o profiler main.c sandbox.c profiler.c logger.c \
+    killer.c rules/general.c rules/c_cpp.c rules/c_cpp_file_io.c \
+    -lpthread -lseccomp
+
+
+FROM nvidia/cuda:10.0-base
+RUN mkdir -p /etc/OpenCL/vendors && echo "libnvidia-opencl.so.1" >/etc/OpenCL/vendors/nvidia.icd
+
+WORKDIR /judger/run
+COPY --from=cc-profiler-sandbox-builder /usr/src/app/profiler profiler
