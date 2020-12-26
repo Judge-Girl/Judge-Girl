@@ -14,6 +14,7 @@
 package tw.waterball.judgegirl.springboot.submission.impl.deployer.docker;
 
 import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.HostConfig;
 import tw.waterball.judgegirl.entities.problem.Problem;
 import tw.waterball.judgegirl.entities.submission.Submission;
@@ -23,27 +24,34 @@ import tw.waterball.judgegirl.springboot.configs.properties.JudgeGirlJudgerProps
 import tw.waterball.judgegirl.springboot.configs.properties.ServiceProps;
 import tw.waterball.judgegirl.submissionservice.ports.JudgerDeployer;
 
+import javax.annotation.PostConstruct;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static java.lang.String.format;
+import static java.util.Collections.singletonList;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
 public class DockerJudgerDeployer implements JudgerDeployer {
     private DockerClient dockerClient;
+    private ScheduledExecutorService scheduler;
     private ServiceProps.ProblemService problemServiceInstance;
     private ServiceProps.SubmissionService submissionServiceInstance;
     private JudgeGirlAmqpProps amqpProps;
     private JudgeGirlJudgerProps judgerProps;
 
     public DockerJudgerDeployer(DockerClient dockerClient,
+                                ScheduledExecutorService scheduler,
                                 ServiceProps.ProblemService problemServiceInstance,
                                 ServiceProps.SubmissionService submissionServiceInstance,
                                 JudgeGirlAmqpProps amqpProps,
                                 JudgeGirlJudgerProps judgerProps) {
         this.dockerClient = dockerClient;
+        this.scheduler = scheduler;
         this.problemServiceInstance = problemServiceInstance;
         this.submissionServiceInstance = submissionServiceInstance;
         this.amqpProps = amqpProps;
@@ -80,5 +88,18 @@ public class DockerJudgerDeployer implements JudgerDeployer {
                         .exec().getId();
 
         dockerClient.startContainerCmd(containerId).exec();
+    }
+
+    @PostConstruct
+    public void startJudgerAutoRemoval() {
+        scheduler.scheduleAtFixedRate(this::removeAllExitedJudgerContainers,
+                60, 10, TimeUnit.SECONDS);
+    }
+
+    private void removeAllExitedJudgerContainers() {
+        dockerClient.listContainersCmd()
+                .withNameFilter(singletonList(judgerProps.getImage().getName()))
+                .withStatusFilter(singletonList("exited")).exec().stream()
+                .map(Container::getId).forEach(dockerClient::removeContainerCmd);
     }
 }
