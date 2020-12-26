@@ -17,12 +17,9 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.RemoveContainerCmd;
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.HostConfig;
-<<<<<<< HEAD
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-=======
 import org.jetbrains.annotations.NotNull;
->>>>>>> :construction: try finish the k8s judger job
 import tw.waterball.judgegirl.entities.problem.Problem;
 import tw.waterball.judgegirl.entities.submission.Submission;
 import tw.waterball.judgegirl.springboot.configs.properties.JudgeGirlAmqpProps;
