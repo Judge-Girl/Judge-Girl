@@ -14,11 +14,14 @@
 package tw.waterball.judgegirl.plugins.impl.cqi;
 
 import tw.waterball.judgegirl.entities.submission.CodeQualityInspectionReport;
+import tw.waterball.judgegirl.entities.submission.CodingStyleAnalyzeReport;
 import tw.waterball.judgegirl.entities.submission.CyclomaticComplexityReport;
 import tw.waterball.judgegirl.plugins.api.AbstractJudgeGirlPlugin;
 import tw.waterball.judgegirl.plugins.api.codeinspection.JudgeGirlCodeQualityInspectionPlugin;
 
 import java.nio.file.Path;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -36,8 +39,11 @@ public abstract class AbstractJudgeGirlCodeQualityInspectionPlugin extends Abstr
 
     @Override
     public CodeQualityInspectionReport performAtSourceRoot(Path sourceRootPath) {
-        return new CodeQualityInspectionReport(calcCyclomaticComplexity(sourceRootPath));
+        return new CodeQualityInspectionReport(calcCyclomaticComplexity(sourceRootPath),
+                                               analyzeCodingStyle(sourceRootPath.toString(), Collections.emptyList()));
     }
 
     protected abstract CyclomaticComplexityReport calcCyclomaticComplexity(Path sourceRootPath);
+
+    protected abstract CodingStyleAnalyzeReport analyzeCodingStyle(String sourceRootPath, List<String> variableWhitelist);
 }
