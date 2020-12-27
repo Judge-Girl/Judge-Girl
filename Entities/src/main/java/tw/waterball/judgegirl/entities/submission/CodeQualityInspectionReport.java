@@ -18,12 +18,28 @@ import lombok.Value;
 /**
  * @author - johnny850807@gmail.com (Waterball)
  * @author - ryan01234keroro56789@gmail.com (Giver)
+ * @author - edisonhello@hotmail.com (edisonhello)
  */
 @Value
 public class CodeQualityInspectionReport {
     private CyclomaticComplexityReport ccReport;
+    private CodingStyleAnalyzeReport csaReport;
+
     public CodeQualityInspectionReport(CyclomaticComplexityReport ccReport){
         this.ccReport=ccReport;
     }
+
+    public CodeQualityInspectionReport(CodingStyleAnalyzeReport csaReport){
+        this.csaReport = csaReport;
+    }
+
+    public CodeQualityInspectionReport(CyclomaticComplexityReport ccReport,
+                                       CodingStyleAnalyzeReport csaReport){
+        this.ccReport = ccReport;
+        this.csaReport = csaReport;
+    }
+
     public CyclomaticComplexityReport getCcReport() {return this.ccReport;}
+
+    public CodingStyleAnalyzeReport getCsaReport() { return this.csaReport; }
 }

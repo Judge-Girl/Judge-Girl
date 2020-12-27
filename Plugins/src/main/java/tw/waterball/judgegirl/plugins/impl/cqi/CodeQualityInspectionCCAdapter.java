@@ -14,6 +14,7 @@
 package tw.waterball.judgegirl.plugins.impl.cqi;
 
 import tw.waterball.judgegirl.entities.problem.JudgePluginTag;
+import tw.waterball.judgegirl.entities.submission.CodingStyleAnalyzeReport;
 import tw.waterball.judgegirl.plugins.api.ParameterMeta;
 import tw.waterball.judgegirl.plugins.api.codeinspection.JudgeGirlCodeQualityInspectionPlugin;
 import tw.waterball.judgegirl.entities.submission.CyclomaticComplexityReport;
@@ -40,10 +41,12 @@ public class CodeQualityInspectionCCAdapter extends AbstractJudgeGirlCodeQuality
     public final static JudgePluginTag TAG = new JudgePluginTag(JudgeGirlCodeQualityInspectionPlugin.TYPE, GROUP, NAME, VERSION);
 
     private CyclomaticComplexityCalculator calculator;
+    private CodingStyleAnalyer analyzer;
 
     public CodeQualityInspectionCCAdapter() {
         super(Collections.emptyMap());
         calculator = new CyclomaticComplexityCalculatorImpl();
+        analyzer = new CodingStyleAnalyzer();
     }
 
     @Override
@@ -70,5 +73,10 @@ public class CodeQualityInspectionCCAdapter extends AbstractJudgeGirlCodeQuality
             sourceCodes.add(fileList[i].getPath());
         }
         return new CyclomaticComplexityReport(calculator.calculate(sourceCodes).score);
+    }
+
+    @Override
+    protected CodingStyleAnalyzeReport analyzeCodingStyle(String sourceRoot, List<String> variableWhitelist) {
+        return new CyclomaticComplexityReport(analyzer.analyze(sourceRoot, variableWhitelist));
     }
 }
