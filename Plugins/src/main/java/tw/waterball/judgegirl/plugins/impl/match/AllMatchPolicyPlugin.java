@@ -22,6 +22,7 @@ import tw.waterball.judgegirl.plugins.api.ParameterMeta;
 import tw.waterball.judgegirl.plugins.api.match.JudgeGirlMatchPolicyPlugin;
 
 import java.io.FileInputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Set;
@@ -68,10 +69,8 @@ public class AllMatchPolicyPlugin extends AbstractJudgeGirlMatchPolicyPlugin {
     @Override
     protected boolean onDetermineTwoFileContentMatches(Path actualFilePath, Path expectFilePath) throws Exception {
         // TODO strictTrailingBreakLine is not implemented yet
-        String actual = IOUtils.toString(new FileInputStream(actualFilePath.toFile()));
-        String expected = IOUtils.toString(new FileInputStream(expectFilePath.toFile()));
-        System.out.println("Actual: " + actual);
-        System.out.println("Expected: " + expected);
+        String actual = IOUtils.toString(new FileInputStream(actualFilePath.toFile()), StandardCharsets.US_ASCII);
+        String expected = IOUtils.toString(new FileInputStream(expectFilePath.toFile()), StandardCharsets.US_ASCII);
         return actual.equals(expected);
 
     }
