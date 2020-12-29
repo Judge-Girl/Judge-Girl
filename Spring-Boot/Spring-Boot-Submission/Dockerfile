@@ -1,4 +1,5 @@
-FROM openjdk:8-jre-alpine
+FROM adoptopenjdk/openjdk11:alpine-slim
+RUN apk add build-base
 COPY target/*.jar /app.jar
 EXPOSE 80
-CMD /usr/bin/java -jar /app.jar
+CMD /opt/java/openjdk/bin/java -jar /app.jar

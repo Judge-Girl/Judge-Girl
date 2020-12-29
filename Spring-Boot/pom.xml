@@ -20,7 +20,7 @@
         <module>Spring-Boot-Problem</module>
         <module>Spring-Boot-Submission</module>
         <module>Spring-Boot-Student</module>
-        <module>migration</module>
+        <module>Migration</module>
     </modules>
 
     <dependencies>

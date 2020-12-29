@@ -24,10 +24,10 @@ import org.springframework.context.annotation.ComponentScan;
         tw.waterball.judgegirl.springboot.ScanRoot.class,
         tw.waterball.judgegirl.submissionservice.ScanRoot.class})
 @SpringBootApplication
-public class SubmissionServiceApplication {
+public class SpringBootSubmissionApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(SubmissionServiceApplication.class, args);
+        SpringApplication.run(SpringBootSubmissionApplication.class, args);
     }
 
 }

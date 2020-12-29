@@ -30,7 +30,7 @@ import tw.waterball.judgegirl.submissionapi.views.VerdictIssuedEvent;
  */
 @Component
 public class VerdictIssuedEventHandler {
-    private static final Logger logger = LogManager.getLogger();
+    private static final Logger logger = LogManager.getLogger(VerdictIssuedEventHandler.class);
     private ObjectMapper objectMapper;
     private SubmissionRepository submissionRepository;
 

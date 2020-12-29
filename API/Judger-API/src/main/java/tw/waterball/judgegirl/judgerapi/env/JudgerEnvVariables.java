@@ -134,8 +134,12 @@ public interface JudgerEnvVariables {
     }
 
 
-    static String getenv(String env) {
-        return System.getenv(convertEnv(env));
+    static String getenv(String envKey) {
+        String value = System.getenv(convertEnv(envKey));
+        if (value == null) {
+            throw new IllegalStateException("Environment variable '" + envKey + "' not found.");
+        }
+        return value;
     }
 
     static String convertEnv(String env) {

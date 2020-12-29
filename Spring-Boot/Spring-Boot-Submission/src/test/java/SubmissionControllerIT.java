@@ -58,7 +58,7 @@ import tw.waterball.judgegirl.entities.submission.SubmissionThrottling;
 import tw.waterball.judgegirl.problemapi.clients.ProblemServiceDriver;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.springboot.profiles.Profiles;
-import tw.waterball.judgegirl.springboot.submission.SubmissionServiceApplication;
+import tw.waterball.judgegirl.springboot.submission.SpringBootSubmissionApplication;
 import tw.waterball.judgegirl.springboot.submission.controllers.VerdictIssuedEventHandler;
 import tw.waterball.judgegirl.springboot.submission.impl.mongo.data.SubmissionData;
 import tw.waterball.judgegirl.springboot.submission.impl.mongo.data.VerdictData;
@@ -93,7 +93,7 @@ import static tw.waterball.judgegirl.testkit.resultmatchers.ZipResultMatcher.zip
 @ActiveProfiles({Profiles.PROD, Profiles.MONGO, Profiles.AMQP, Profiles.K8S})
 @AutoConfigureMockMvc
 @AutoConfigureDataMongo
-@ContextConfiguration(classes = {SubmissionServiceApplication.class, SubmissionControllerIT.TestConfig.class})
+@ContextConfiguration(classes = {SpringBootSubmissionApplication.class, SubmissionControllerIT.TestConfig.class})
 @DisplayNameGeneration(ReplaceUnderscoresWithCamelCasesDisplayNameGenerators.class)
 public class SubmissionControllerIT {
     private final String API_PREFIX = "/api/problems/{problemId}/students/{studentId}/submissions";

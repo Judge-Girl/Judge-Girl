@@ -24,11 +24,11 @@ import java.io.IOException;
  * @author - johnny850807@gmail.com (Waterball)
  */
 public class Main {
-    private final static Logger logger = LogManager.getLogger();
+    private final static Logger logger = LogManager.getLogger(Main.class);
 
     public static void main(String[] args) throws IOException {
         logger.info("Running CCJudger...");
-        JudgerEnvVariables.Values values = JudgerEnvVariables.fromSystemEnvs();
+        var values = JudgerEnvVariables.fromSystemEnvs();
         System.out.println(values);
 
         CCJudger judger = DefaultCCJudgerFactory.create(values,
