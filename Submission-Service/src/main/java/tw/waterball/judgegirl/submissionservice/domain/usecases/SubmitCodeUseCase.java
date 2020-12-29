@@ -20,7 +20,7 @@ import java.io.InputStream;
  */
 @Named
 public class SubmitCodeUseCase {
-    private final static Logger logger = LogManager.getLogger();
+    private final static Logger logger = LogManager.getLogger(SubmitCodeUseCase.class);
 
     private ThrottleSubmissionUseCase throttleSubmissionUseCase;
     private SubmissionRepository submissionRepository;
