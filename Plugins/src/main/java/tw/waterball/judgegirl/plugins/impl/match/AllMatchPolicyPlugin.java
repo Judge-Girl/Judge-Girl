@@ -72,6 +72,5 @@ public class AllMatchPolicyPlugin extends AbstractJudgeGirlMatchPolicyPlugin {
         String actual = IOUtils.toString(new FileInputStream(actualFilePath.toFile()), StandardCharsets.US_ASCII);
         String expected = IOUtils.toString(new FileInputStream(expectFilePath.toFile()), StandardCharsets.US_ASCII);
         return actual.equals(expected);
-
     }
 }

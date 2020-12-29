@@ -14,7 +14,11 @@
 package tw.waterball.judgegirl.springboot.submission.impl.deployer.docker;
 
 import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.command.RemoveContainerCmd;
+import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.HostConfig;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import tw.waterball.judgegirl.entities.problem.Problem;
 import tw.waterball.judgegirl.entities.submission.Submission;
 import tw.waterball.judgegirl.judgerapi.env.JudgerEnvVariables;
@@ -23,27 +27,35 @@ import tw.waterball.judgegirl.springboot.configs.properties.JudgeGirlJudgerProps
 import tw.waterball.judgegirl.springboot.configs.properties.ServiceProps;
 import tw.waterball.judgegirl.submissionservice.ports.JudgerDeployer;
 
-import java.util.LinkedList;
-import java.util.List;
+import javax.annotation.PostConstruct;
+import java.util.*;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static java.lang.String.format;
+import static java.util.Collections.singletonList;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
 public class DockerJudgerDeployer implements JudgerDeployer {
+    private final static Logger logger = LogManager.getLogger();
     private DockerClient dockerClient;
+    private ScheduledExecutorService scheduler;
     private ServiceProps.ProblemService problemServiceInstance;
     private ServiceProps.SubmissionService submissionServiceInstance;
     private JudgeGirlAmqpProps amqpProps;
     private JudgeGirlJudgerProps judgerProps;
 
     public DockerJudgerDeployer(DockerClient dockerClient,
+                                ScheduledExecutorService scheduler,
                                 ServiceProps.ProblemService problemServiceInstance,
                                 ServiceProps.SubmissionService submissionServiceInstance,
                                 JudgeGirlAmqpProps amqpProps,
                                 JudgeGirlJudgerProps judgerProps) {
         this.dockerClient = dockerClient;
+        this.scheduler = scheduler;
         this.problemServiceInstance = problemServiceInstance;
         this.submissionServiceInstance = submissionServiceInstance;
         this.amqpProps = amqpProps;
@@ -70,15 +82,36 @@ public class DockerJudgerDeployer implements JudgerDeployer {
                         .verdictIssuedRoutingKeyFormat(
                                 format(amqpProps.getVerdictIssuedRoutingKeyFormat(), "*"))
                         .build());
+        String containerName = format(judgerProps.getContainer().getNameFormat(), submission.getId());
         String containerId =
                 dockerClient.createContainerCmd(judgerProps.getImage().getName())
-                        .withName(format(judgerProps.getContainer().getNameFormat(), submission.getId()))
+                        .withName(containerName)
                         .withHostConfig(HostConfig
                                 .newHostConfig()
                                 .withNetworkMode(judgerProps.getDocker().getNetwork()))
                         .withEnv(envs)
                         .exec().getId();
-
         dockerClient.startContainerCmd(containerId).exec();
+    }
+
+    @PostConstruct
+    public void startJudgerAutoRemoval() {
+        scheduler.scheduleAtFixedRate(this::removeAllExitedJudgerContainers,
+                5, 10, TimeUnit.SECONDS);
+    }
+
+    private void removeAllExitedJudgerContainers() {
+        List<Container> containers = dockerClient.listContainersCmd()
+                .withAncestorFilter(singletonList(judgerProps.getImage().getName()))
+                .withStatusFilter(singletonList("exited")).exec();
+        containers.stream().map(Container::getId)
+                .map(dockerClient::removeContainerCmd)
+                .forEach(RemoveContainerCmd::exec);
+        Set<String> removedNames = containers.stream()
+                .flatMap(c -> Arrays.stream(c.getNames()))
+                .map(name -> name.substring(1))
+                .collect(Collectors.toSet()); // remove the beginning slash '/'
+        logger.info("Remove all exited judger containers which are based on the image '{}', found: {}",
+                judgerProps.getImage().getName(), String.join(", ", removedNames));
     }
 }

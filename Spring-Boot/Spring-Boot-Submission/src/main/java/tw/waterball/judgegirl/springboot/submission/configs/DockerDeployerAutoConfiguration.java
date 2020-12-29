@@ -19,6 +19,8 @@ import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientConfig;
 import com.github.dockerjava.core.DockerClientImpl;
 import com.github.dockerjava.jaxrs.JerseyDockerCmdExecFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,6 +30,9 @@ import tw.waterball.judgegirl.springboot.configs.properties.ServiceProps;
 import tw.waterball.judgegirl.springboot.submission.impl.deployer.docker.DockerJudgerDeployer;
 import tw.waterball.judgegirl.submissionservice.ports.JudgerDeployer;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
@@ -35,15 +40,23 @@ import tw.waterball.judgegirl.submissionservice.ports.JudgerDeployer;
         havingValue = DockerDeployerAutoConfiguration.STRATEGY)
 @Configuration
 public class DockerDeployerAutoConfiguration {
-    static final String STRATEGY = "docker";
+    public static final String STRATEGY = "docker";
+    private static final Logger logger = LogManager.getLogger();
+
+    @Bean
+    public ScheduledExecutorService scheduler() {
+        logger.info("Allocating ScheduledExecutorService with thread pool size=2.");
+        return Executors.newScheduledThreadPool(2);
+    }
 
     @Bean
     public JudgerDeployer kubernetesJudgerDeployer(DockerClient dockerClient,
+                                                   ScheduledExecutorService scheduler,
                                                    ServiceProps.ProblemService problemServiceProps,
                                                    ServiceProps.SubmissionService submissionServiceProps,
                                                    JudgeGirlAmqpProps amqpProp,
                                                    JudgeGirlJudgerProps deployProps) {
-        return new DockerJudgerDeployer(dockerClient,
+        return new DockerJudgerDeployer(dockerClient, scheduler,
                 problemServiceProps, submissionServiceProps, amqpProp, deployProps);
     }
 
@@ -63,4 +76,6 @@ public class DockerDeployerAutoConfiguration {
         return DockerClientImpl.getInstance(config)
                 .withDockerCmdExecFactory(dockerCmdExecFactory);
     }
+
+
 }

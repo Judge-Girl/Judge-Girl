@@ -36,6 +36,7 @@ public class Main {
         logger.info("CCJudger has been instantiated.");
         judger.judge(values.studentId, values.problemId, values.submissionId);
         logger.info("CCJudger has completed the judge.");
+        System.exit(0);
     }
 
 }
