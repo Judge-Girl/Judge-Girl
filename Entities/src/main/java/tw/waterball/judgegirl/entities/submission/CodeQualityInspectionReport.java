@@ -13,25 +13,14 @@
 
 package tw.waterball.judgegirl.entities.submission;
 
-import lombok.Value;
-
 /**
  * @author - johnny850807@gmail.com (Waterball)
  * @author - ryan01234keroro56789@gmail.com (Giver)
  * @author - edisonhello@hotmail.com (edisonhello)
  */
-@Value
 public class CodeQualityInspectionReport {
     private CyclomaticComplexityReport ccReport;
     private CodingStyleAnalyzeReport csaReport;
-
-    public CodeQualityInspectionReport(CyclomaticComplexityReport ccReport){
-        this.ccReport=ccReport;
-    }
-
-    public CodeQualityInspectionReport(CodingStyleAnalyzeReport csaReport){
-        this.csaReport = csaReport;
-    }
 
     public CodeQualityInspectionReport(CyclomaticComplexityReport ccReport,
                                        CodingStyleAnalyzeReport csaReport){

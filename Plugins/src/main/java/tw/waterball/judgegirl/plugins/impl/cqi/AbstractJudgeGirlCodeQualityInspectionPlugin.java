@@ -27,6 +27,7 @@ import java.util.Map;
 /**
  * @author - johnny850807@gmail.com (Waterball)
  * @author - ryan01234keroro56789@gmail.com (Giver)
+ * @author - edisonhello@hotmail.com (edisonhello)
  */
 public abstract class AbstractJudgeGirlCodeQualityInspectionPlugin extends AbstractJudgeGirlPlugin
         implements JudgeGirlCodeQualityInspectionPlugin {
