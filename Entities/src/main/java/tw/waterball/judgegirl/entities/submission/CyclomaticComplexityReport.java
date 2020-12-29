@@ -22,8 +22,12 @@ import lombok.Value;
 @Value
 public class CyclomaticComplexityReport {
     private int ccScore;
-    public CyclomaticComplexityReport(int ccScore){
-        this.ccScore=ccScore;
+
+    public CyclomaticComplexityReport(int ccScore) {
+        this.ccScore = ccScore;
     }
-    public int getScore() {return this.ccScore;}
+
+    public int getScore() {
+        return this.ccScore;
+    }
 }

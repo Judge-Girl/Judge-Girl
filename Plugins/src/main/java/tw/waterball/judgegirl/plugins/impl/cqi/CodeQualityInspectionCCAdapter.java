@@ -13,19 +13,21 @@
 
 package tw.waterball.judgegirl.plugins.impl.cqi;
 
+import tw.waterball.judgegirl.cqi.codingStyle.CodingStyleAnalyzer;
+import tw.waterball.judgegirl.cqi.codingStyle.CodingStyleAnalyzerImpl;
+import tw.waterball.judgegirl.cqi.cyclomatic.CyclomaticComplexityCalculator;
+import tw.waterball.judgegirl.cqi.cyclomatic.CyclomaticComplexityCalculatorImpl;
 import tw.waterball.judgegirl.entities.problem.JudgePluginTag;
+import tw.waterball.judgegirl.entities.submission.CodingStyleAnalyzeReport;
+import tw.waterball.judgegirl.entities.submission.CyclomaticComplexityReport;
 import tw.waterball.judgegirl.plugins.api.ParameterMeta;
 import tw.waterball.judgegirl.plugins.api.codeinspection.JudgeGirlCodeQualityInspectionPlugin;
-import tw.waterball.judgegirl.entities.submission.CyclomaticComplexityReport;
-import tw.waterball.judgegirl.cqi.cyclomatic.CyclomaticComplexityCalculatorImpl;
-import tw.waterball.judgegirl.cqi.cyclomatic.CyclomaticComplexityCalculator;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+
+import static java.util.Objects.requireNonNull;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -40,10 +42,12 @@ public class CodeQualityInspectionCCAdapter extends AbstractJudgeGirlCodeQuality
     public final static JudgePluginTag TAG = new JudgePluginTag(JudgeGirlCodeQualityInspectionPlugin.TYPE, GROUP, NAME, VERSION);
 
     private CyclomaticComplexityCalculator calculator;
+    private CodingStyleAnalyzer analyzer;
 
     public CodeQualityInspectionCCAdapter() {
         super(Collections.emptyMap());
         calculator = new CyclomaticComplexityCalculatorImpl();
+        analyzer = new CodingStyleAnalyzerImpl();
     }
 
     @Override
@@ -66,9 +70,15 @@ public class CodeQualityInspectionCCAdapter extends AbstractJudgeGirlCodeQuality
         File folder = sourceRootPath.toFile();
         File[] fileList = folder.listFiles();
         List<String> sourceCodes = new ArrayList<>();
-        for(int i = 0; i < fileList.length; i++) {
-            sourceCodes.add(fileList[i].getPath());
+        for (File file : requireNonNull(fileList)) {
+            sourceCodes.add(file.getPath());
         }
         return new CyclomaticComplexityReport(calculator.calculate(sourceCodes).score);
+    }
+
+    @Override
+    protected CodingStyleAnalyzeReport analyzeCodingStyle(String sourceRoot, List<String> variableWhitelist) {
+        var report = analyzer.analyze(sourceRoot, variableWhitelist);
+        return new CodingStyleAnalyzeReport(report.rawString);
     }
 }
