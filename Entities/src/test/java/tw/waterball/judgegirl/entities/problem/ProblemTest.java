@@ -27,10 +27,10 @@ class ProblemTest {
     }
 
     @Test
-    void GivenProblemWithMatchPolicyPluginTagOfCodeInspectionType_WhenValidate_ShouldThrow() {
+    void GivenProblemWithMatchPolicyPluginTagOfSourceCodeFilterType_WhenValidate_ShouldThrow() {
         Problem problem = Stubs.problemTemplateBuilder()
                 .outputMatchPolicyPluginTag(new JudgePluginTag(
-                        JudgePluginTag.Type.CODE_INSPECTION,
+                        JudgePluginTag.Type.SOURCE_CODE_FILTER,
                         "group", "name", "1.0"
                 )).build();
 
@@ -41,7 +41,7 @@ class ProblemTest {
     @Test
     void GivenProblemWithCodeInspectionOfOutputMatchType_WhenValidate_ShouldThrow() {
         Problem problem = Stubs.problemTemplateBuilder()
-                .codeInspectionPluginTag(new JudgePluginTag(
+                .filterPluginTag(new JudgePluginTag(
                         JudgePluginTag.Type.OUTPUT_MATCH_POLICY,
                         "group", "name", "1.0"
                 )).build();

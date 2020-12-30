@@ -15,9 +15,10 @@ package tw.waterball.judgegirl.judger;
 
 import tw.waterball.judgegirl.entities.problem.JudgePluginTag;
 import tw.waterball.judgegirl.entities.problem.Testcase;
+import tw.waterball.judgegirl.entities.submission.Verdict;
 import tw.waterball.judgegirl.plugins.api.JudgeGirlPluginLocator;
-import tw.waterball.judgegirl.entities.submission.CodeQualityInspectionReport;
-import tw.waterball.judgegirl.plugins.api.codeinspection.JudgeGirlCodeQualityInspectionPlugin;
+import tw.waterball.judgegirl.plugins.api.JudgeGirlVerdictFilterPlugin;
+import tw.waterball.judgegirl.plugins.api.codeinspection.JudgeGirlSourceCodeFilterPlugin;
 import tw.waterball.judgegirl.plugins.api.match.JudgeGirlMatchPolicyPlugin;
 
 import java.nio.file.Path;
@@ -60,19 +61,17 @@ public abstract class PluginExtendedJudger extends Judger {
     protected abstract Map<Path, Path> getActualToExpectOutputFilePathMap(Testcase testcase);
 
     @Override
-    protected CodeQualityInspectionReport doCodeInspection(JudgePluginTag codeInspectionTag) {
-        JudgeGirlCodeQualityInspectionPlugin codeInspectionPlugin = locateCodeInspectionPlugin(codeInspectionTag);
-        return doCodeInspection(codeInspectionPlugin);
+    protected void doSourceCodeFilteringForTag(JudgePluginTag tag) {
+        JudgeGirlSourceCodeFilterPlugin plugin = (JudgeGirlSourceCodeFilterPlugin) pluginLocator.locate(tag);
+        plugin.filter(getSourceRootPath());
     }
 
-    private JudgeGirlCodeQualityInspectionPlugin locateCodeInspectionPlugin(JudgePluginTag tag) {
-        return (JudgeGirlCodeQualityInspectionPlugin) pluginLocator.locate(tag);
+    @Override
+    protected void doVerdictFilteringForTag(Verdict verdict, JudgePluginTag tag) {
+        JudgeGirlVerdictFilterPlugin plugin = (JudgeGirlVerdictFilterPlugin) pluginLocator.locate(tag);
+        plugin.filter(verdict);
     }
 
-    private CodeQualityInspectionReport doCodeInspection(JudgeGirlCodeQualityInspectionPlugin codeInspectionPlugin) {
-        return codeInspectionPlugin.performAtSourceRoot(getCodeInspectionHomePath());
-    }
-
-    protected abstract Path getCodeInspectionHomePath();
+    protected abstract Path getSourceRootPath();
 
 }

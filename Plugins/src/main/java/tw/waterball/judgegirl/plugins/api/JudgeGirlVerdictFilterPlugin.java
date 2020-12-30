@@ -11,33 +11,18 @@
  *   limitations under the License.
  */
 
-package tw.waterball.judgegirl.submissionapi.views;
+package tw.waterball.judgegirl.plugins.api;
 
-import lombok.*;
-import org.jetbrains.annotations.Nullable;
-import tw.waterball.judgegirl.entities.submission.Judge;
-
-import java.util.Date;
-import java.util.List;
+import tw.waterball.judgegirl.entities.problem.JudgePluginTag;
+import tw.waterball.judgegirl.entities.submission.Verdict;
 
 /**
+ * The filter that add new runtime behaviors and modify some parts of the verdict.
+ * The filter method will be invoked after the testcases execution and output matching has been completed.
  * @author - johnny850807@gmail.com (Waterball)
  */
-@Builder
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-// TODO refactor: include VerdictView instead of List<Judge>
-public class VerdictIssuedEvent {
-    private int problemId;
-    private String problemTitle;
-    private String submissionId;
+public interface JudgeGirlVerdictFilterPlugin extends JudgeGirlPlugin {
+    JudgePluginTag.Type TYPE = JudgePluginTag.Type.VERDICT_FILTER;
 
-    @Nullable
-    private String compileErrorMessage;
-    private Date issueTime;
-    private ReportView report;
-
-    @Singular
-    private List<Judge> judges;
+    void filter(Verdict verdict);
 }

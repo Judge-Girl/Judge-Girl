@@ -18,14 +18,19 @@ import tw.waterball.judgegirl.cqi.codingStyle.CodingStyleAnalyzerImpl;
 import tw.waterball.judgegirl.cqi.cyclomatic.CyclomaticComplexityCalculator;
 import tw.waterball.judgegirl.cqi.cyclomatic.CyclomaticComplexityCalculatorImpl;
 import tw.waterball.judgegirl.entities.problem.JudgePluginTag;
+import tw.waterball.judgegirl.entities.submission.CodeQualityInspectionReport;
 import tw.waterball.judgegirl.entities.submission.CodingStyleAnalyzeReport;
 import tw.waterball.judgegirl.entities.submission.CyclomaticComplexityReport;
-import tw.waterball.judgegirl.plugins.api.ParameterMeta;
-import tw.waterball.judgegirl.plugins.api.codeinspection.JudgeGirlCodeQualityInspectionPlugin;
+import tw.waterball.judgegirl.entities.submission.Verdict;
+import tw.waterball.judgegirl.plugins.api.AbstractJudgeGirlPlugin;
+import tw.waterball.judgegirl.plugins.api.JudgeGirlVerdictFilterPlugin;
+import tw.waterball.judgegirl.plugins.api.codeinspection.JudgeGirlSourceCodeFilterPlugin;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import static java.util.Objects.requireNonNull;
 
@@ -33,26 +38,22 @@ import static java.util.Objects.requireNonNull;
  * @author - johnny850807@gmail.com (Waterball)
  * @author - ryan01234keroro56789@gmail.com (Giver)
  */
-public class CodeQualityInspectionCCAdapter extends AbstractJudgeGirlCodeQualityInspectionPlugin {
+public class CodeQualityInspectionPlugin extends AbstractJudgeGirlPlugin
+        implements JudgeGirlSourceCodeFilterPlugin, JudgeGirlVerdictFilterPlugin {
     public final static String GROUP = JUDGE_GIRL_GROUP;
     public final static String NAME = "CodeQualityInspection";
     public final static String DESCRIPTION = "Calculate cyclomatic complexity and perform code quality inspection" +
             "of the submission source code.";
     public final static String VERSION = "1.0";
-    public final static JudgePluginTag TAG = new JudgePluginTag(JudgeGirlCodeQualityInspectionPlugin.TYPE, GROUP, NAME, VERSION);
+    public final static JudgePluginTag TAG = new JudgePluginTag(JudgeGirlSourceCodeFilterPlugin.TYPE, GROUP, NAME, VERSION);
 
-    private CyclomaticComplexityCalculator calculator;
-    private CodingStyleAnalyzer analyzer;
+    private CyclomaticComplexityCalculator ccCalculator;
+    private CodingStyleAnalyzer csAnalyzer;
+    private CodeQualityInspectionReport report;
 
-    public CodeQualityInspectionCCAdapter() {
-        super(Collections.emptyMap());
-        calculator = new CyclomaticComplexityCalculatorImpl();
-        analyzer = new CodingStyleAnalyzerImpl();
-    }
-
-    @Override
-    public Set<ParameterMeta> getParameterMetas() {
-        return Collections.emptySet();
+    public CodeQualityInspectionPlugin() {
+        ccCalculator = new CyclomaticComplexityCalculatorImpl();
+        csAnalyzer = new CodingStyleAnalyzerImpl();
     }
 
     @Override
@@ -66,19 +67,28 @@ public class CodeQualityInspectionCCAdapter extends AbstractJudgeGirlCodeQuality
     }
 
     @Override
-    protected CyclomaticComplexityReport calcCyclomaticComplexity(Path sourceRootPath) {
+    public void filter(Path sourceRootPath) {
+        report = new CodeQualityInspectionReport(calcCyclomaticComplexity(sourceRootPath),
+                analyzeCodingStyle(sourceRootPath.toString(), Collections.emptyList()));
+    }
+
+    private CyclomaticComplexityReport calcCyclomaticComplexity(Path sourceRootPath) {
         File folder = sourceRootPath.toFile();
         File[] fileList = folder.listFiles();
         List<String> sourceCodes = new ArrayList<>();
         for (File file : requireNonNull(fileList)) {
             sourceCodes.add(file.getPath());
         }
-        return new CyclomaticComplexityReport(calculator.calculate(sourceCodes).score);
+        return new CyclomaticComplexityReport(ccCalculator.calculate(sourceCodes).score);
+    }
+
+    private CodingStyleAnalyzeReport analyzeCodingStyle(String sourceRoot, List<String> variableWhitelist) {
+        var report = csAnalyzer.analyze(sourceRoot, variableWhitelist);
+        return new CodingStyleAnalyzeReport(report.rawString);
     }
 
     @Override
-    protected CodingStyleAnalyzeReport analyzeCodingStyle(String sourceRoot, List<String> variableWhitelist) {
-        var report = analyzer.analyze(sourceRoot, variableWhitelist);
-        return new CodingStyleAnalyzeReport(report.rawString);
+    public void filter(Verdict verdict) {
+        verdict.addReport(report);
     }
 }

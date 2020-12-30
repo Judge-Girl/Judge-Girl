@@ -50,6 +50,7 @@ public class VerdictIssuedEventHandler {
 
         logger.info(event);
         Verdict verdict = new Verdict(event.getJudges(), event.getIssueTime());
+        verdict.setReport(event.getReport().toEntity());
         verdict.setCompileErrorMessage(event.getCompileErrorMessage());
         submissionRepository.issueVerdictOfSubmission(event.getSubmissionId(), verdict);
 

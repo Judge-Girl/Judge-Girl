@@ -34,6 +34,7 @@ import tw.waterball.judgegirl.problemapi.clients.ProblemServiceDriver;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.submissionapi.clients.SubmissionServiceDriver;
 import tw.waterball.judgegirl.submissionapi.clients.VerdictPublisher;
+import tw.waterball.judgegirl.submissionapi.views.ReportView;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 import tw.waterball.judgegirl.submissionapi.views.VerdictIssuedEvent;
 
@@ -195,7 +196,7 @@ public class CCJudger extends PluginExtendedJudger {
     }
 
     @Override
-    protected Path getCodeInspectionHomePath() {
+    protected Path getSourceRootPath() {
         return getSourceRoot().getPath();
     }
 
@@ -231,7 +232,7 @@ public class CCJudger extends PluginExtendedJudger {
                         getSubmission().getId(),
                         verdict.getCompileErrorMessage(),
                         verdict.getIssueTime(),
-                        verdict.getCodeQualityInspectionReport().orElse(null),
+                        ReportView.fromEntity(verdict.getReport()),
                         verdict.getJudges()));
     }
 

@@ -15,6 +15,10 @@ package tw.waterball.judgegirl.entities.stubs;
 
 import tw.waterball.judgegirl.entities.problem.*;
 import tw.waterball.judgegirl.entities.problem.Problem.ProblemBuilder;
+import tw.waterball.judgegirl.entities.submission.CompositeReport;
+import tw.waterball.judgegirl.entities.submission.Report;
+
+import static java.util.Collections.singletonMap;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -39,5 +43,13 @@ public class Stubs {
                 .compilation(new Compilation("compilation script"))
                 .inputFileName("file.in")
                 .outputFileName("file.out");
+    }
+
+    public final static CompositeReport compositeReport() {
+        CompositeReport compositeReport = new CompositeReport();
+        compositeReport.addReport(new Report("A"));
+        compositeReport.addReport(new Report("B"));
+        compositeReport.addReport(new Report("C", () -> singletonMap("C-1", 1)));
+        return compositeReport;
     }
 }

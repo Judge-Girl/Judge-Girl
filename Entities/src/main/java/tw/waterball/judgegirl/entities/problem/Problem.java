@@ -23,11 +23,12 @@ import tw.waterball.judgegirl.entities.problem.validators.JudgePluginTagConstrai
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-import static tw.waterball.judgegirl.entities.problem.JudgePluginTag.Type.CODE_INSPECTION;
-import static tw.waterball.judgegirl.entities.problem.JudgePluginTag.Type.OUTPUT_MATCH_POLICY;
+import static tw.waterball.judgegirl.entities.problem.JudgePluginTag.Type.*;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -52,9 +53,9 @@ public class Problem {
     @JudgePluginTagConstraint(typeShouldBe = OUTPUT_MATCH_POLICY)
     private JudgePluginTag outputMatchPolicyPluginTag;
 
-    @Valid
-    @JudgePluginTagConstraint(typeShouldBe = CODE_INSPECTION)
-    private JudgePluginTag codeInspectionPluginTag;
+    @Singular
+    private Set<@JudgePluginTagConstraint(typeShouldBe = {SOURCE_CODE_FILTER, VERDICT_FILTER})
+            JudgePluginTag> filterPluginTags;
 
     @Singular
     private List<@NotBlank String> inputFileNames;
@@ -118,8 +119,14 @@ public class Problem {
         return outputMatchPolicyPluginTag;
     }
 
-    public Optional<JudgePluginTag> getCodeInspectionPluginTag() {
-        return Optional.ofNullable(codeInspectionPluginTag);
+    public Collection<JudgePluginTag> getFilterPluginTagsOfType(JudgePluginTag.Type type) {
+        return filterPluginTags.stream()
+                .filter(tag -> tag.getType() == type)
+                .collect(Collectors.toSet());
+    }
+
+    public Collection<JudgePluginTag> getFilterPluginTags() {
+        return filterPluginTags;
     }
 
     public List<String> getInputFileNames() {

@@ -13,23 +13,37 @@
 
 package tw.waterball.judgegirl.entities.submission;
 
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 /**
  * @author - johnny850807@gmail.com (Waterball)
- * @author - ryan01234keroro56789@gmail.com (Giver)
- * @author - edisonhello@hotmail.com (edisonhello)
  */
-public class CodeQualityInspectionReport extends Report {
-    private CyclomaticComplexityReport ccReport;
-    private CodingStyleAnalyzeReport csaReport;
+public class CompositeReport extends Report {
+    private Collection<Report> reports;
 
-    public CodeQualityInspectionReport(CyclomaticComplexityReport ccReport,
-                                       CodingStyleAnalyzeReport csaReport){
-        super("CodeQualityInspectionReport");
-        this.ccReport = ccReport;
-        this.csaReport = csaReport;
+    public CompositeReport() {
+        this(new HashSet<>());
     }
 
-    public CyclomaticComplexityReport getCcReport() {return this.ccReport;}
+    public CompositeReport(Collection<Report> reports) {
+        super("CompositeReport");
+        this.reports = reports;
+    }
 
-    public CodingStyleAnalyzeReport getCsaReport() { return this.csaReport; }
+    public void addReport(Report report) {
+        reports.add(report);
+    }
+
+    public void removeReport(Report report) {
+        reports.remove(report);
+    }
+
+    @Override
+    public Map<String, Map<String, ?>> getRawData() {
+         return reports.stream()
+                .collect(Collectors.toMap(Report::getName, Report::getRawData));
+    }
 }

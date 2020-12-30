@@ -36,6 +36,7 @@ public class JudgePluginTag {
 
     public enum Type {
         OUTPUT_MATCH_POLICY,
-        CODE_INSPECTION
+        SOURCE_CODE_FILTER,
+        VERDICT_FILTER
     }
 }

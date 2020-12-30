@@ -51,10 +51,7 @@ import tw.waterball.judgegirl.commons.utils.Delay;
 import tw.waterball.judgegirl.entities.problem.JudgeStatus;
 import tw.waterball.judgegirl.entities.problem.Problem;
 import tw.waterball.judgegirl.entities.stubs.Stubs;
-import tw.waterball.judgegirl.entities.submission.Judge;
-import tw.waterball.judgegirl.entities.submission.ProgramProfile;
-import tw.waterball.judgegirl.entities.submission.Submission;
-import tw.waterball.judgegirl.entities.submission.SubmissionThrottling;
+import tw.waterball.judgegirl.entities.submission.*;
 import tw.waterball.judgegirl.problemapi.clients.ProblemServiceDriver;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.springboot.profiles.Profiles;
@@ -63,6 +60,7 @@ import tw.waterball.judgegirl.springboot.submission.controllers.VerdictIssuedEve
 import tw.waterball.judgegirl.springboot.submission.impl.mongo.data.SubmissionData;
 import tw.waterball.judgegirl.springboot.submission.impl.mongo.data.VerdictData;
 import tw.waterball.judgegirl.submissionapi.clients.VerdictPublisher;
+import tw.waterball.judgegirl.submissionapi.views.ReportView;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 import tw.waterball.judgegirl.submissionapi.views.VerdictIssuedEvent;
 import tw.waterball.judgegirl.submissionservice.domain.usecases.SubmitCodeUseCase;
@@ -171,6 +169,8 @@ public class SubmissionControllerIT {
                     "int minus(int a, int b) {return a - b;}".getBytes())};
     private String ADMIN_TOKEN;
 
+    private Report stubReport = Stubs.compositeReport();
+
     @BeforeEach
     void setup() {
         ADMIN_TOKEN = tokenService.createToken(admin()).toString();
@@ -236,6 +236,7 @@ public class SubmissionControllerIT {
         assertEquals(JudgeStatus.WA, verdictData.getSummaryStatus());
         assertEquals(new HashSet<>(verdictIssuedEvent.getJudges()),
                 new HashSet<>(verdictData.getJudges()));
+        assertEquals(stubReport.getRawData(), verdictData.getReportData());
     }
 
     private void verifyJudgerDeployed(SubmissionView submissionView) {
@@ -259,8 +260,11 @@ public class SubmissionControllerIT {
                 .judge(new Judge("t2", JudgeStatus.AC, new ProgramProfile(6, 6, ""), 30))
                 .judge(new Judge("t3", JudgeStatus.WA, new ProgramProfile(7, 7, ""), 0))
                 .issueTime(new Date())
+                .report(ReportView.fromEntity(Stubs.compositeReport()))
                 .build();
     }
+
+    private
 
     @Test
     void GivenStudent1Submission_WhenGetThatSubmissionUsingAdminToken_ShouldRespondSuccessfully() throws Exception {
