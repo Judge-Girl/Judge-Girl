@@ -13,7 +13,6 @@
 
 package tw.waterball.judgegirl.plugins.api.codeinspection;
 
-import tw.waterball.judgegirl.entities.problem.JudgePluginTag;
 import tw.waterball.judgegirl.plugins.api.JudgeGirlPlugin;
 
 import java.nio.file.Path;
@@ -23,7 +22,5 @@ import java.nio.file.Path;
  * @author - ryan01234keroro56789@gmail.com (Giver)
  */
 public interface JudgeGirlSourceCodeFilterPlugin extends JudgeGirlPlugin {
-    JudgePluginTag.Type TYPE = JudgePluginTag.Type.SOURCE_CODE_FILTER;
-
     void filter(Path sourceRootPath);
 }

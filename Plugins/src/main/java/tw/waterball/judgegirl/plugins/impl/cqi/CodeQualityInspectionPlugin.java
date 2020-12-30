@@ -45,7 +45,7 @@ public class CodeQualityInspectionPlugin extends AbstractJudgeGirlPlugin
     public final static String DESCRIPTION = "Calculate cyclomatic complexity and perform code quality inspection" +
             "of the submission source code.";
     public final static String VERSION = "1.0";
-    public final static JudgePluginTag TAG = new JudgePluginTag(JudgeGirlSourceCodeFilterPlugin.TYPE, GROUP, NAME, VERSION);
+    public final static JudgePluginTag TAG = new JudgePluginTag(JudgePluginTag.Type.FILTER, GROUP, NAME, VERSION);
 
     private CyclomaticComplexityCalculator ccCalculator;
     private CodingStyleAnalyzer csAnalyzer;

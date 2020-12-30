@@ -54,7 +54,7 @@ public class Problem {
     private JudgePluginTag outputMatchPolicyPluginTag;
 
     @Singular
-    private Set<@JudgePluginTagConstraint(typeShouldBe = {SOURCE_CODE_FILTER, VERDICT_FILTER})
+    private Set<@JudgePluginTagConstraint(typeShouldBe = {FILTER})
             JudgePluginTag> filterPluginTags;
 
     @Singular

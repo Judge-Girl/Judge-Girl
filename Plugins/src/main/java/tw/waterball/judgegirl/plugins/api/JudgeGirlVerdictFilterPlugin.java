@@ -22,7 +22,7 @@ import tw.waterball.judgegirl.entities.submission.Verdict;
  * @author - johnny850807@gmail.com (Waterball)
  */
 public interface JudgeGirlVerdictFilterPlugin extends JudgeGirlPlugin {
-    JudgePluginTag.Type TYPE = JudgePluginTag.Type.VERDICT_FILTER;
+    JudgePluginTag.Type TYPE = JudgePluginTag.Type.FILTER;
 
     void filter(Verdict verdict);
 }

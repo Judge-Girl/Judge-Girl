@@ -126,10 +126,10 @@ public class Verdict {
     }
 
     public void addReport(Report report) {
-        if (report == Report.EMPTY) {
-            report = new CompositeReport();
+        if (this.report == Report.EMPTY) {
+            this.report = new CompositeReport();
         }
-        ((CompositeReport) report).addReport(report);
+        ((CompositeReport) this.report).addReport(report);
     }
 
 }

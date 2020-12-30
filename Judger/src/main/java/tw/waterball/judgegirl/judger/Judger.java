@@ -19,11 +19,13 @@ import tw.waterball.judgegirl.entities.problem.JudgePluginTag;
 import tw.waterball.judgegirl.entities.problem.JudgeStatus;
 import tw.waterball.judgegirl.entities.problem.Problem;
 import tw.waterball.judgegirl.entities.problem.Testcase;
-import tw.waterball.judgegirl.entities.submission.*;
+import tw.waterball.judgegirl.entities.submission.Judge;
+import tw.waterball.judgegirl.entities.submission.ProgramProfile;
+import tw.waterball.judgegirl.entities.submission.Submission;
+import tw.waterball.judgegirl.entities.submission.Verdict;
 import tw.waterball.judgegirl.judger.infra.compile.CompileResult;
 import tw.waterball.judgegirl.judger.infra.testexecutor.TestcaseExecutionResult;
 import tw.waterball.judgegirl.plugins.api.JudgeGirlVerdictFilterPlugin;
-import tw.waterball.judgegirl.plugins.api.codeinspection.JudgeGirlSourceCodeFilterPlugin;
 
 import java.io.IOException;
 import java.util.List;
@@ -128,7 +130,7 @@ public abstract class Judger {
     protected abstract boolean isProgramOutputAllCorrect(Testcase testcase);
 
     private void doSourceCodeFiltering() {
-        getProblem().getFilterPluginTagsOfType(JudgeGirlSourceCodeFilterPlugin.TYPE)
+        getProblem().getFilterPluginTagsOfType(JudgePluginTag.Type.FILTER)
                 .forEach(this::doSourceCodeFilteringForTag);
     }
 
@@ -147,7 +149,6 @@ public abstract class Judger {
     @Value
     @AllArgsConstructor
     public static class JudgeContext {
-
         public final int studentId;
         public final Problem problem;
         public final List<Testcase> testcases;

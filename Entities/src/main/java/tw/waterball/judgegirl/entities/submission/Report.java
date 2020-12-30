@@ -33,6 +33,10 @@ public class Report {
         this(name, Collections::emptyMap);
     }
 
+    public Report(String name, Map<String, ?> rawData) {
+        this(name, () -> rawData);
+    }
+
     public Report(String name, Supplier<Map<String, ?>> rawDataSupplier) {
         this.name = name;
         this.rawDataSupplier = rawDataSupplier;

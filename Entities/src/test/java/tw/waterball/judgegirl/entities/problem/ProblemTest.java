@@ -30,7 +30,7 @@ class ProblemTest {
     void GivenProblemWithMatchPolicyPluginTagOfSourceCodeFilterType_WhenValidate_ShouldThrow() {
         Problem problem = Stubs.problemTemplateBuilder()
                 .outputMatchPolicyPluginTag(new JudgePluginTag(
-                        JudgePluginTag.Type.SOURCE_CODE_FILTER,
+                        JudgePluginTag.Type.FILTER,
                         "group", "name", "1.0"
                 )).build();
 

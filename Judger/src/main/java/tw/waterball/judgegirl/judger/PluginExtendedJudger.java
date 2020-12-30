@@ -13,6 +13,8 @@
 
 package tw.waterball.judgegirl.judger;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import tw.waterball.judgegirl.entities.problem.JudgePluginTag;
 import tw.waterball.judgegirl.entities.problem.Testcase;
 import tw.waterball.judgegirl.entities.submission.Verdict;
@@ -26,10 +28,12 @@ import java.util.Map;
 
 /**
  * Abstract Judger that encapsulates the plugin-extensions.
+ *
  * @author - johnny850807@gmail.com (Waterball)
  */
 @SuppressWarnings("WeakerAccess")
 public abstract class PluginExtendedJudger extends Judger {
+    private final static Logger logger = LogManager.getLogger(PluginExtendedJudger.class);
     private JudgeGirlPluginLocator pluginLocator;
 
     public PluginExtendedJudger(JudgeGirlPluginLocator pluginLocator) {
@@ -62,14 +66,24 @@ public abstract class PluginExtendedJudger extends Judger {
 
     @Override
     protected void doSourceCodeFilteringForTag(JudgePluginTag tag) {
-        JudgeGirlSourceCodeFilterPlugin plugin = (JudgeGirlSourceCodeFilterPlugin) pluginLocator.locate(tag);
-        plugin.filter(getSourceRootPath());
+        logger.info("doSourceCodeFilteringForTag: {}.", tag);
+        try {
+            JudgeGirlSourceCodeFilterPlugin plugin = (JudgeGirlSourceCodeFilterPlugin) pluginLocator.locate(tag);
+            plugin.filter(getSourceRootPath());
+        } catch (Exception err) {
+            logger.error("Error occurs on source code filtering for the tag {}", tag, err);
+        }
     }
 
     @Override
     protected void doVerdictFilteringForTag(Verdict verdict, JudgePluginTag tag) {
-        JudgeGirlVerdictFilterPlugin plugin = (JudgeGirlVerdictFilterPlugin) pluginLocator.locate(tag);
-        plugin.filter(verdict);
+        logger.info("doVerdictFilteringForTag: {}.", tag);
+        try {
+            JudgeGirlVerdictFilterPlugin plugin = (JudgeGirlVerdictFilterPlugin) pluginLocator.locate(tag);
+            plugin.filter(verdict);
+        } catch (Exception err) {
+            logger.error("Error occurs on verdict filtering for the tag {}", tag, err);
+        }
     }
 
     protected abstract Path getSourceRootPath();

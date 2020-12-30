@@ -15,6 +15,8 @@ package tw.waterball.judgegirl.judger;
 
 import lombok.SneakyThrows;
 import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
 import tw.waterball.judgegirl.commons.utils.ZipUtils;
 import tw.waterball.judgegirl.entities.problem.Problem;
@@ -41,13 +43,16 @@ import tw.waterball.judgegirl.submissionapi.views.VerdictIssuedEvent;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
 @SuppressWarnings("WeakerAccess")
 public class CCJudger extends PluginExtendedJudger {
+    private final static Logger logger = LogManager.getLogger(CCJudger.class);
     private JudgerWorkspace judgerWorkspace;
     private ProblemServiceDriver problemServiceDriver;
     private SubmissionServiceDriver submissionServiceDriver;
@@ -73,7 +78,9 @@ public class CCJudger extends PluginExtendedJudger {
 
     @Override
     protected Problem findProblemById(int problemId) {
-        return ProblemView.toEntity(problemServiceDriver.getProblem(problemId));
+        var problem = ProblemView.toEntity(problemServiceDriver.getProblem(problemId));
+        logger.info(problem);
+        return problem;
     }
 
     @Override
@@ -239,7 +246,7 @@ public class CCJudger extends PluginExtendedJudger {
     @SneakyThrows
     private void mkdirIfNotExists(Path directoryPath) {
         if (!Files.exists(directoryPath)) {
-            Files.createDirectory(directoryPath);
+            FileUtils.forceMkdir(directoryPath.toFile());
         }
     }
 
