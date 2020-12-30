@@ -11,30 +11,14 @@
  *   limitations under the License.
  */
 
-package tw.waterball.judgegirl.entities.problem;
+package tw.waterball.judgegirl.plugins.api;
 
-import lombok.*;
+import tw.waterball.judgegirl.entities.problem.JudgePluginTag;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
-@NoArgsConstructor
-@AllArgsConstructor
-@EqualsAndHashCode
-@Getter
-@Setter
-public class JudgePluginTag {
-    private Type type;
-    private String group;
-    private String name;
-    private String version;
-
-    @Override
-    public String toString() {
-        return String.format("[%s] %s:%s:%s", type, group, name, version);
-    }
-
-    public enum Type {
-        OUTPUT_MATCH_POLICY, FILTER
-    }
+public abstract class AbstractJudgeGirlVerdictFilterPlugin
+        extends AbstractJudgeGirlPlugin implements JudgeGirlVerdictFilterPlugin {
+    protected final JudgePluginTag.Type type = JudgePluginTag.Type.FILTER;
 }

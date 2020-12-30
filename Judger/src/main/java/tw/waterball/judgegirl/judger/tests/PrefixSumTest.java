@@ -46,7 +46,7 @@ public class PrefixSumTest {
     private final static String zippedProvidedCodesFileName = "/judgeCases/prefixsum/provided.zip";
     private final static String zippedTestcaseIOsFileName = "/judgeCases/prefixsum/io.zip";
     private final static String zippedSubmittedCodesFileNameFormat = "/judgeCases/prefixsum/%s/submitted.zip";
-    private final static int MEMORY_LIMIT = 128 * 1024 * 1024;
+    private final static int MEMORY_LIMIT = 128 << 20;
     private static JudgeEnvSpec judgeEnvSpec = new JudgeEnvSpec(Language.C, JudgeEnv.NORMAL, 2f, 0);
     private static int problemId = 1;
     private static Problem problem = Problem.builder()

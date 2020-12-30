@@ -9,10 +9,8 @@ RUN mkdir -p /etc/OpenCL/vendors && echo "libnvidia-opencl.so.1" >/etc/OpenCL/ve
 ENV JAVA_VER 11
 ENV JAVA_HOME /usr/lib/jvm/java-8-oracle
 
-# This is in accordance to : https://www.digitalocean.com/community/tutorials/how-to-install-java-with-apt-get-on-ubuntu-16-04
 RUN apt-get update && apt-get install -y openjdk-11-jdk
 
-# Setup JAVA_HOME, this is useful for docker commandline
 ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64/
 RUN export JAVA_HOME
 

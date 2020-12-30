@@ -18,7 +18,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.Nullable;
 import tw.waterball.judgegirl.entities.problem.JudgeStatus;
-import tw.waterball.judgegirl.entities.submission.CodeQualityInspectionReport;
 import tw.waterball.judgegirl.entities.submission.Judge;
 import tw.waterball.judgegirl.entities.submission.Verdict;
 
@@ -38,7 +37,7 @@ public class VerdictView {
     private String compileErrorMessage;
     private long maximumRuntime;
     private long maximumMemoryUsage;
-    private CodeQualityInspectionReport codeQualityInspectionReport;
+    private ReportView report;
     private Date issueTime;
 
     public static VerdictView fromEntity(@Nullable Verdict verdict) {
@@ -51,7 +50,7 @@ public class VerdictView {
                 verdict.getCompileErrorMessage(),
                 verdict.getMaximumRuntime(),
                 verdict.getMaximumMemoryUsage(),
-                verdict.getCodeQualityInspectionReport().orElse(null),
+                ReportView.fromEntity(verdict.getReport()),
                 verdict.getIssueTime());
     }
 
@@ -59,8 +58,10 @@ public class VerdictView {
         if (verdictView == null) {
             return null;
         }
-        return new Verdict(
+        Verdict verdict = new Verdict(
                 verdictView.getJudges(),
                 verdictView.getIssueTime());
+        verdict.setReport(verdictView.getReport().toEntity());
+        return verdict;
     }
 }

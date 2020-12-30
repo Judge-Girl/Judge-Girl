@@ -13,6 +13,7 @@
 
 package tw.waterball.judgegirl.springboot.submission.impl.mongo.data;
 
+import tw.waterball.judgegirl.entities.submission.Report;
 import tw.waterball.judgegirl.entities.submission.Submission;
 import tw.waterball.judgegirl.entities.submission.Verdict;
 
@@ -54,7 +55,8 @@ public class DataMapper {
                 verdict.getJudges(),
                 verdict.getIssueTime(),
                 verdict.getTotalGrade(),
-                verdict.getSummaryStatus()
+                verdict.getSummaryStatus(),
+                verdict.getReport().getRawData()
         );
     }
 
@@ -79,6 +81,8 @@ public class DataMapper {
         if (data == null) {
             return null;
         }
-        return new Verdict(data.getJudges(), data.getIssueTime());
+        Verdict verdict = new Verdict(data.getJudges(), data.getIssueTime());
+        verdict.setReport(Report.fromData(data.getReportData()));
+        return verdict;
     }
 }

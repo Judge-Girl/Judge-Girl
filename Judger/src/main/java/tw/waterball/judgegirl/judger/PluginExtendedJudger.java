@@ -13,11 +13,14 @@
 
 package tw.waterball.judgegirl.judger;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import tw.waterball.judgegirl.entities.problem.JudgePluginTag;
 import tw.waterball.judgegirl.entities.problem.Testcase;
+import tw.waterball.judgegirl.entities.submission.Verdict;
 import tw.waterball.judgegirl.plugins.api.JudgeGirlPluginLocator;
-import tw.waterball.judgegirl.entities.submission.CodeQualityInspectionReport;
-import tw.waterball.judgegirl.plugins.api.codeinspection.JudgeGirlCodeQualityInspectionPlugin;
+import tw.waterball.judgegirl.plugins.api.JudgeGirlVerdictFilterPlugin;
+import tw.waterball.judgegirl.plugins.api.codeinspection.JudgeGirlSourceCodeFilterPlugin;
 import tw.waterball.judgegirl.plugins.api.match.JudgeGirlMatchPolicyPlugin;
 
 import java.nio.file.Path;
@@ -25,10 +28,12 @@ import java.util.Map;
 
 /**
  * Abstract Judger that encapsulates the plugin-extensions.
+ *
  * @author - johnny850807@gmail.com (Waterball)
  */
 @SuppressWarnings("WeakerAccess")
 public abstract class PluginExtendedJudger extends Judger {
+    private final static Logger logger = LogManager.getLogger(PluginExtendedJudger.class);
     private JudgeGirlPluginLocator pluginLocator;
 
     public PluginExtendedJudger(JudgeGirlPluginLocator pluginLocator) {
@@ -60,19 +65,27 @@ public abstract class PluginExtendedJudger extends Judger {
     protected abstract Map<Path, Path> getActualToExpectOutputFilePathMap(Testcase testcase);
 
     @Override
-    protected CodeQualityInspectionReport doCodeInspection(JudgePluginTag codeInspectionTag) {
-        JudgeGirlCodeQualityInspectionPlugin codeInspectionPlugin = locateCodeInspectionPlugin(codeInspectionTag);
-        return doCodeInspection(codeInspectionPlugin);
+    protected void doSourceCodeFilteringForTag(JudgePluginTag tag) {
+        logger.info("doSourceCodeFilteringForTag: {}.", tag);
+        try {
+            JudgeGirlSourceCodeFilterPlugin plugin = (JudgeGirlSourceCodeFilterPlugin) pluginLocator.locate(tag);
+            plugin.filter(getSourceRootPath());
+        } catch (Exception err) {
+            logger.error("Error occurs on source code filtering for the tag {}", tag, err);
+        }
     }
 
-    private JudgeGirlCodeQualityInspectionPlugin locateCodeInspectionPlugin(JudgePluginTag tag) {
-        return (JudgeGirlCodeQualityInspectionPlugin) pluginLocator.locate(tag);
+    @Override
+    protected void doVerdictFilteringForTag(Verdict verdict, JudgePluginTag tag) {
+        logger.info("doVerdictFilteringForTag: {}.", tag);
+        try {
+            JudgeGirlVerdictFilterPlugin plugin = (JudgeGirlVerdictFilterPlugin) pluginLocator.locate(tag);
+            plugin.filter(verdict);
+        } catch (Exception err) {
+            logger.error("Error occurs on verdict filtering for the tag {}", tag, err);
+        }
     }
 
-    private CodeQualityInspectionReport doCodeInspection(JudgeGirlCodeQualityInspectionPlugin codeInspectionPlugin) {
-        return codeInspectionPlugin.performAtSourceRoot(getCodeInspectionHomePath());
-    }
-
-    protected abstract Path getCodeInspectionHomePath();
+    protected abstract Path getSourceRootPath();
 
 }

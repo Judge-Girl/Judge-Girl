@@ -16,13 +16,19 @@
 
 package tw.waterball.judgegirl.plugins.api;
 
+import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
 public abstract class AbstractJudgeGirlPlugin implements JudgeGirlPlugin {
     protected Map<String, String> parameters;
+
+    public AbstractJudgeGirlPlugin() {
+        this(Collections.emptyMap());
+    }
 
     public AbstractJudgeGirlPlugin(Map<String, String> parameters) {
         this.parameters = parameters;
@@ -31,5 +37,10 @@ public abstract class AbstractJudgeGirlPlugin implements JudgeGirlPlugin {
     @Override
     public Map<String, String> getParameters() {
         return parameters;
+    }
+
+    @Override
+    public Set<ParameterMeta> getParameterMetas() {
+        return Collections.emptySet();
     }
 }

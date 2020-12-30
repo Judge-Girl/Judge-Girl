@@ -17,21 +17,23 @@ import tw.waterball.judgegirl.entities.problem.JudgePluginTag;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
+import java.util.Arrays;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
 public class JudgePluginTagValidator implements
         ConstraintValidator<JudgePluginTagConstraint, JudgePluginTag> {
-    private JudgePluginTag.Type expectType;
+    private JudgePluginTag.Type[] expectTypes;
 
     @Override
     public void initialize(JudgePluginTagConstraint constraintAnnotation) {
-        expectType = constraintAnnotation.typeShouldBe();
+        expectTypes = constraintAnnotation.typeShouldBe();
     }
 
     @Override
     public boolean isValid(JudgePluginTag tag, ConstraintValidatorContext context) {
-        return tag == null || expectType == tag.getType();
+        return tag == null ||
+                Arrays.stream(expectTypes).anyMatch(t -> t == tag.getType());
     }
 }

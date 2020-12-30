@@ -20,7 +20,6 @@ import tw.waterball.judgegirl.entities.problem.JudgeStatus;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -31,8 +30,8 @@ public class Verdict {
     @Nullable
     private String compileErrorMessage;
     private Date issueTime = new Date();
-    @Nullable
-    private CodeQualityInspectionReport codeQualityInspectionReport;
+    private Report report = Report.EMPTY;
+
 
     public Verdict(List<Judge> judges, Date issueTime) throws InvalidVerdictException {
         this(judges);
@@ -56,11 +55,8 @@ public class Verdict {
         if (judges.isEmpty()) {
             return null;
         }
-        int sum = 0;
-        for (Judge judge : judges) {
-            sum += judge.getGrade();
-        }
-        return sum;
+        return judges.stream()
+                .mapToInt(Judge::getGrade).sum();
     }
 
     public JudgeStatus getSummaryStatus() {
@@ -121,11 +117,19 @@ public class Verdict {
         }
     }
 
-    public Optional<CodeQualityInspectionReport> getCodeQualityInspectionReport() {
-        return Optional.ofNullable(codeQualityInspectionReport);
+    public Report getReport() {
+        return report;
     }
 
-    public void setCodeQualityInspectionReport(CodeQualityInspectionReport codeQualityInspectionReport) {
-        this.codeQualityInspectionReport = codeQualityInspectionReport;
+    public void setReport(Report report) {
+        this.report = report;
     }
+
+    public void addReport(Report report) {
+        if (this.report == Report.EMPTY) {
+            this.report = new CompositeReport();
+        }
+        ((CompositeReport) this.report).addReport(report);
+    }
+
 }

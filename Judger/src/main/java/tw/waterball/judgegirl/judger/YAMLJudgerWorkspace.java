@@ -22,6 +22,8 @@ import tw.waterball.judgegirl.judger.layout.*;
 import java.io.IOException;
 import java.nio.file.Path;
 
+import static java.util.Objects.requireNonNull;
+
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
@@ -59,7 +61,7 @@ public class YAMLJudgerWorkspace implements JudgerWorkspace {
     public SubmissionHome getSubmissionHome(String submissionId) {
         Directory judgerWorkspace = (Directory) root.getByKey("judgerWorkspace");
         Directory submissionHome = (Directory) (judgerWorkspace.getByKey("submissionHome"));
-        submissionHome.setName(submissionId);
+        submissionHome.setName(requireNonNull(submissionId));
         return new YAMLSubmissionHome(submissionHome);
     }
 
@@ -84,7 +86,7 @@ public class YAMLJudgerWorkspace implements JudgerWorkspace {
         @Override
         public TestcaseHome getTestCaseHome(String testcaseName) {
             Directory testcaseHome = (Directory) submissionHome.getByKey("testcaseHome");
-            testcaseHome.setName(testcaseName);
+            testcaseHome.setName(requireNonNull(testcaseName));
             return new YAMLTestcaseHome(testcaseHome);
         }
     }

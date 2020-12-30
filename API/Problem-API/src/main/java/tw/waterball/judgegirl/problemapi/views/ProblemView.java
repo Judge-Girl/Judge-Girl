@@ -1,8 +1,11 @@
 package tw.waterball.judgegirl.problemapi.views;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import tw.waterball.judgegirl.entities.problem.*;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -17,7 +20,7 @@ public class ProblemView {
     public String markdownDescription;
     public JudgeEnvSpec judgeEnvSpec;
     public JudgePluginTag judgeMatchPolicyPluginTag;
-    public JudgePluginTag judgeCodeInspectionPluginTag;
+    public Collection<JudgePluginTag> judgeFilterPluginTags;
     public List<String> inputFileNames;
     public List<String> outputFileNames;
     public List<String> tags;
@@ -34,7 +37,7 @@ public class ProblemView {
                 problem.getMarkdownDescription(),
                 problem.getJudgeEnvSpec(),
                 problem.getOutputMatchPolicyPluginTag(),
-                problem.getCodeInspectionPluginTag().orElse(null),
+                problem.getFilterPluginTags(),
                 problem.getInputFileNames(),
                 problem.getOutputFileNames(),
                 problem.getTags(),
@@ -46,7 +49,7 @@ public class ProblemView {
     }
 
     public static Problem toEntity(ProblemView view) {
-        return Problem.builder()
+        var builder =  Problem.builder()
                 .id(view.getId())
                 .title(view.getTitle())
                 .markdownDescription(view.markdownDescription)
@@ -58,7 +61,10 @@ public class ProblemView {
                 .submittedCodeSpecs(view.submittedCodeSpecs)
                 .compilation(view.compilation)
                 .providedCodesFileId(view.providedCodesFileId)
-                .testcaseIOsFileId(view.testcaseIOsFileId)
-                .build();
+                .testcaseIOsFileId(view.testcaseIOsFileId);
+        if (view.judgeFilterPluginTags != null) {
+            builder.filterPluginTags(view.judgeFilterPluginTags);
+        }
+        return builder.build();
     }
 }

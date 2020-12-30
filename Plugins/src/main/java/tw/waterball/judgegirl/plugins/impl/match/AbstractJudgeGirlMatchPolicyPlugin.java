@@ -17,8 +17,8 @@
 package tw.waterball.judgegirl.plugins.impl.match;
 
 import tw.waterball.judgegirl.plugins.api.AbstractJudgeGirlPlugin;
-import tw.waterball.judgegirl.plugins.api.match.JudgeGirlMatchPolicyPlugin;
 import tw.waterball.judgegirl.plugins.api.exceptions.MatchPolicyPluginException;
+import tw.waterball.judgegirl.plugins.api.match.JudgeGirlMatchPolicyPlugin;
 
 import java.nio.file.Path;
 import java.util.Map;
@@ -58,6 +58,5 @@ public abstract class AbstractJudgeGirlMatchPolicyPlugin extends AbstractJudgeGi
 
 
     protected abstract boolean onDetermineTwoFileContentMatches(Path actualFilePath, Path expectFilePath) throws Exception;
-
 
 }

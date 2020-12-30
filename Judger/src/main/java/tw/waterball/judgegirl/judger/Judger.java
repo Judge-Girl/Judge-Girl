@@ -19,9 +19,13 @@ import tw.waterball.judgegirl.entities.problem.JudgePluginTag;
 import tw.waterball.judgegirl.entities.problem.JudgeStatus;
 import tw.waterball.judgegirl.entities.problem.Problem;
 import tw.waterball.judgegirl.entities.problem.Testcase;
-import tw.waterball.judgegirl.entities.submission.*;
+import tw.waterball.judgegirl.entities.submission.Judge;
+import tw.waterball.judgegirl.entities.submission.ProgramProfile;
+import tw.waterball.judgegirl.entities.submission.Submission;
+import tw.waterball.judgegirl.entities.submission.Verdict;
 import tw.waterball.judgegirl.judger.infra.compile.CompileResult;
 import tw.waterball.judgegirl.judger.infra.testexecutor.TestcaseExecutionResult;
+import tw.waterball.judgegirl.plugins.api.JudgeGirlVerdictFilterPlugin;
 
 import java.io.IOException;
 import java.util.List;
@@ -29,6 +33,7 @@ import java.util.stream.Collectors;
 
 /**
  * The root of the Judger, adopting template method to represent the Judge Flow.
+ *
  * @author - johnny850807@gmail.com (Waterball)
  */
 @SuppressWarnings("WeakerAccess")
@@ -49,9 +54,10 @@ public abstract class Judger {
 
         Verdict verdict;
         if (compileResult.isSuccessful()) {
+            doSourceCodeFiltering();
             List<Judge> judges = runAndJudgeAllTestcases();
             verdict = new Verdict(judges);
-            inspectCodeQuality(verdict);
+            doVerdictFiltering(verdict);
         } else {
             verdict = issueCompileErrorVerdict(compileResult);
         }
@@ -123,20 +129,26 @@ public abstract class Judger {
 
     protected abstract boolean isProgramOutputAllCorrect(Testcase testcase);
 
-    private void inspectCodeQuality(Verdict verdict) {
-        getProblem().getCodeInspectionPluginTag()
-                .map(this::doCodeInspection)
-                .ifPresent(verdict::setCodeQualityInspectionReport);
+    private void doSourceCodeFiltering() {
+        getProblem().getFilterPluginTagsOfType(JudgePluginTag.Type.FILTER)
+                .forEach(this::doSourceCodeFilteringForTag);
     }
 
-    protected abstract CodeQualityInspectionReport doCodeInspection(JudgePluginTag codeInspectionTag);
+    protected abstract void doSourceCodeFilteringForTag(JudgePluginTag pluginTag);
+
+    private void doVerdictFiltering(Verdict verdict) {
+        getProblem().getFilterPluginTagsOfType(JudgeGirlVerdictFilterPlugin.TYPE)
+                .forEach(tag -> doVerdictFilteringForTag(verdict, tag));
+    }
+
+    protected abstract void doVerdictFilteringForTag(Verdict verdict, JudgePluginTag pluginTag);
+
 
     protected abstract void publishVerdict(Verdict verdict);
 
     @Value
     @AllArgsConstructor
     public static class JudgeContext {
-
         public final int studentId;
         public final Problem problem;
         public final List<Testcase> testcases;

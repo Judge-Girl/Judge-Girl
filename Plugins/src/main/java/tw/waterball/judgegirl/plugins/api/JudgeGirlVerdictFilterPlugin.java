@@ -11,30 +11,18 @@
  *   limitations under the License.
  */
 
-package tw.waterball.judgegirl.entities.problem;
+package tw.waterball.judgegirl.plugins.api;
 
-import lombok.*;
+import tw.waterball.judgegirl.entities.problem.JudgePluginTag;
+import tw.waterball.judgegirl.entities.submission.Verdict;
 
 /**
+ * The filter that add new runtime behaviors and modify some parts of the verdict.
+ * The filter method will be invoked after the testcases execution and output matching has been completed.
  * @author - johnny850807@gmail.com (Waterball)
  */
-@NoArgsConstructor
-@AllArgsConstructor
-@EqualsAndHashCode
-@Getter
-@Setter
-public class JudgePluginTag {
-    private Type type;
-    private String group;
-    private String name;
-    private String version;
+public interface JudgeGirlVerdictFilterPlugin extends JudgeGirlPlugin {
+    JudgePluginTag.Type TYPE = JudgePluginTag.Type.FILTER;
 
-    @Override
-    public String toString() {
-        return String.format("[%s] %s:%s:%s", type, group, name, version);
-    }
-
-    public enum Type {
-        OUTPUT_MATCH_POLICY, FILTER
-    }
+    void filter(Verdict verdict);
 }

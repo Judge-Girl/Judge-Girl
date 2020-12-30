@@ -13,8 +13,6 @@
 
 package tw.waterball.judgegirl.plugins.api.codeinspection;
 
-import tw.waterball.judgegirl.entities.problem.JudgePluginTag;
-import tw.waterball.judgegirl.entities.submission.CodeQualityInspectionReport;
 import tw.waterball.judgegirl.plugins.api.JudgeGirlPlugin;
 
 import java.nio.file.Path;
@@ -23,8 +21,6 @@ import java.nio.file.Path;
  * @author - johnny850807@gmail.com (Waterball)
  * @author - ryan01234keroro56789@gmail.com (Giver)
  */
-public interface JudgeGirlCodeQualityInspectionPlugin extends JudgeGirlPlugin {
-    JudgePluginTag.Type TYPE = JudgePluginTag.Type.CODE_INSPECTION;
-
-    CodeQualityInspectionReport performAtSourceRoot(Path sourceRootPath);
+public interface JudgeGirlSourceCodeFilterPlugin extends JudgeGirlPlugin {
+    void filter(Path sourceRootPath);
 }

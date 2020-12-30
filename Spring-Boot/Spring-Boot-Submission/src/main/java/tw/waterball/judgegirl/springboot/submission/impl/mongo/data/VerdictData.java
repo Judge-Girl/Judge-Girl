@@ -22,6 +22,7 @@ import tw.waterball.judgegirl.entities.submission.Judge;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -34,4 +35,5 @@ public class VerdictData {
     private Date issueTime;
     private int totalGrade;
     private JudgeStatus summaryStatus;
+    private Map<String, ?> reportData;
 }

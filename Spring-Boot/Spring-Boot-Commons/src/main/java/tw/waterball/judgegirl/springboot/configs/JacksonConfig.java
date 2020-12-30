@@ -25,7 +25,7 @@ import org.springframework.context.annotation.Configuration;
  * @author - johnny850807@gmail.com (Waterball)
  */
 @Configuration
-public class JsonConfig {
+public class JacksonConfig {
     public final static ObjectMapper OBJECT_MAPPER;
 
     static {
