@@ -11,18 +11,25 @@
  *   limitations under the License.
  */
 
-package tw.waterball.judgegirl.plugins.api;
+package tw.waterball.judgegirl.entities.submission;
 
-import tw.waterball.judgegirl.entities.problem.JudgePluginTag;
-import tw.waterball.judgegirl.entities.submission.VerdictIssuer;
+import tw.waterball.judgegirl.entities.problem.JudgeStatus;
+
+import java.util.List;
+import java.util.function.Consumer;
 
 /**
- * The filter that add new runtime behaviors and modify some parts of the verdict.
- * The filter method will be invoked after the testcases execution and output matching has been completed.
+ * The builder pattern adoption of Verdict
  * @author - johnny850807@gmail.com (Waterball)
  */
-public interface JudgeGirlVerdictFilterPlugin extends JudgeGirlPlugin {
-    JudgePluginTag.Type TYPE = JudgePluginTag.Type.FILTER;
+public interface VerdictIssuer {
+    VerdictIssuer setJudges(List<Judge> judges);
+    VerdictIssuer modifyJudges(Consumer<? super JudgeModifier> judgeModifierConsumer);
+    VerdictIssuer addReport(Report report);
+    Verdict issue();
 
-    void filter(VerdictIssuer verdictIssuer);
+    interface JudgeModifier {
+        JudgeModifier setStatus(JudgeStatus status);
+        JudgeModifier setGrade(int grade);
+    }
 }

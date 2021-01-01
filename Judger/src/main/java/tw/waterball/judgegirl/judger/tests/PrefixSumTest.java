@@ -65,7 +65,7 @@ public class PrefixSumTest {
                     MEMORY_LIMIT, MEMORY_LIMIT, -1, 30),
             new Testcase("2", problemId, 1000,
                     MEMORY_LIMIT, MEMORY_LIMIT, -1, 30),
-            new Testcase("3", problemId, 2000,
+            new Testcase("3", problemId, 2500,
                     MEMORY_LIMIT, MEMORY_LIMIT, -1, 40));
     private static int studentId = 1;
     private static Submission submission = new Submission(studentId, problem.getId(), "fileId");
