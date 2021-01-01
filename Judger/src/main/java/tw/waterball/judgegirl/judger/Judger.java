@@ -53,7 +53,7 @@ public abstract class Judger {
         if (compileResult.isSuccessful()) {
             doSourceCodeFiltering();
             List<Judge> judges = runAndJudgeAllTestcases();
-            var verdictIssuer = new DefaultVerdictIssuer().setJudges(judges);
+            VerdictIssuer verdictIssuer = VerdictIssuer.fromJudges(judges);
             doVerdictFiltering(verdictIssuer);
             verdict = verdictIssuer.issue();
         } else {

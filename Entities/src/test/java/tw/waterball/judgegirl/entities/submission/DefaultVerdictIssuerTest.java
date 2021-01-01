@@ -31,8 +31,7 @@ class DefaultVerdictIssuerTest {
 
     @Test
     void test() {
-        VerdictIssuer issuer = new DefaultVerdictIssuer();
-        issuer.setJudges(judges);
+        VerdictIssuer issuer = VerdictIssuer.fromJudges(judges);
 
         Verdict verdict = issuer.modifyJudges(j -> j.setStatus(JudgeStatus.AC).setGrade(80))
                 .addReport(new Report("TestReport"))

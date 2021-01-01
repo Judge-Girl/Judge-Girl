@@ -23,6 +23,10 @@ import java.util.function.Consumer;
  * @author - johnny850807@gmail.com (Waterball)
  */
 public interface VerdictIssuer {
+    static VerdictIssuer fromJudges(List<Judge> judges) {
+        return new DefaultVerdictIssuer().setJudges(judges);
+    }
+
     VerdictIssuer setJudges(List<Judge> judges);
     VerdictIssuer modifyJudges(Consumer<? super JudgeModifier> judgeModifierConsumer);
     VerdictIssuer addReport(Report report);
