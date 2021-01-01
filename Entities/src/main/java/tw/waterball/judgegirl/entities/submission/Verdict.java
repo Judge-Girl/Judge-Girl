@@ -88,6 +88,10 @@ public class Verdict {
         return judges;
     }
 
+    public void setIssueTime(Date issueTime) {
+        this.issueTime = issueTime;
+    }
+
     public Date getIssueTime() {
         return issueTime;
     }

@@ -14,7 +14,7 @@
 package tw.waterball.judgegirl.plugins.api;
 
 import tw.waterball.judgegirl.entities.problem.JudgePluginTag;
-import tw.waterball.judgegirl.entities.submission.Verdict;
+import tw.waterball.judgegirl.entities.submission.VerdictIssuer;
 
 /**
  * The filter that add new runtime behaviors and modify some parts of the verdict.
@@ -24,5 +24,5 @@ import tw.waterball.judgegirl.entities.submission.Verdict;
 public interface JudgeGirlVerdictFilterPlugin extends JudgeGirlPlugin {
     JudgePluginTag.Type TYPE = JudgePluginTag.Type.FILTER;
 
-    void filter(Verdict verdict);
+    void filter(VerdictIssuer verdictIssuer);
 }

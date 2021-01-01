@@ -17,7 +17,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tw.waterball.judgegirl.entities.problem.JudgePluginTag;
 import tw.waterball.judgegirl.entities.problem.Testcase;
-import tw.waterball.judgegirl.entities.submission.Verdict;
+import tw.waterball.judgegirl.entities.submission.VerdictIssuer;
 import tw.waterball.judgegirl.plugins.api.JudgeGirlPluginLocator;
 import tw.waterball.judgegirl.plugins.api.JudgeGirlVerdictFilterPlugin;
 import tw.waterball.judgegirl.plugins.api.codeinspection.JudgeGirlSourceCodeFilterPlugin;
@@ -76,11 +76,11 @@ public abstract class PluginExtendedJudger extends Judger {
     }
 
     @Override
-    protected void doVerdictFilteringForTag(Verdict verdict, JudgePluginTag tag) {
+    protected void doVerdictFilteringForTag(VerdictIssuer verdictIssuer, JudgePluginTag tag) {
         logger.info("doVerdictFilteringForTag: {}.", tag);
         try {
             JudgeGirlVerdictFilterPlugin plugin = (JudgeGirlVerdictFilterPlugin) pluginLocator.locate(tag);
-            plugin.filter(verdict);
+            plugin.filter(verdictIssuer);
         } catch (Exception err) {
             logger.error("Error occurs on verdict filtering for the tag {}", tag, err);
         }

@@ -19,10 +19,7 @@ import tw.waterball.judgegirl.entities.problem.JudgePluginTag;
 import tw.waterball.judgegirl.entities.problem.JudgeStatus;
 import tw.waterball.judgegirl.entities.problem.Problem;
 import tw.waterball.judgegirl.entities.problem.Testcase;
-import tw.waterball.judgegirl.entities.submission.Judge;
-import tw.waterball.judgegirl.entities.submission.ProgramProfile;
-import tw.waterball.judgegirl.entities.submission.Submission;
-import tw.waterball.judgegirl.entities.submission.Verdict;
+import tw.waterball.judgegirl.entities.submission.*;
 import tw.waterball.judgegirl.judger.infra.compile.CompileResult;
 import tw.waterball.judgegirl.judger.infra.testexecutor.TestcaseExecutionResult;
 import tw.waterball.judgegirl.plugins.api.JudgeGirlVerdictFilterPlugin;
@@ -56,8 +53,9 @@ public abstract class Judger {
         if (compileResult.isSuccessful()) {
             doSourceCodeFiltering();
             List<Judge> judges = runAndJudgeAllTestcases();
-            verdict = new Verdict(judges);
-            doVerdictFiltering(verdict);
+            VerdictIssuer verdictIssuer = VerdictIssuer.fromJudges(judges);
+            doVerdictFiltering(verdictIssuer);
+            verdict = verdictIssuer.issue();
         } else {
             verdict = issueCompileErrorVerdict(compileResult);
         }
@@ -136,12 +134,12 @@ public abstract class Judger {
 
     protected abstract void doSourceCodeFilteringForTag(JudgePluginTag pluginTag);
 
-    private void doVerdictFiltering(Verdict verdict) {
+    private void doVerdictFiltering(VerdictIssuer verdictIssuer) {
         getProblem().getFilterPluginTagsOfType(JudgeGirlVerdictFilterPlugin.TYPE)
-                .forEach(tag -> doVerdictFilteringForTag(verdict, tag));
+                .forEach(tag -> doVerdictFilteringForTag(verdictIssuer, tag));
     }
 
-    protected abstract void doVerdictFilteringForTag(Verdict verdict, JudgePluginTag pluginTag);
+    protected abstract void doVerdictFilteringForTag(VerdictIssuer verdictIssuer, JudgePluginTag pluginTag);
 
 
     protected abstract void publishVerdict(Verdict verdict);

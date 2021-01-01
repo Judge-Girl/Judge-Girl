@@ -19,10 +19,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
 import tw.waterball.judgegirl.entities.problem.*;
-import tw.waterball.judgegirl.entities.submission.Judge;
 import tw.waterball.judgegirl.entities.submission.Report;
 import tw.waterball.judgegirl.entities.submission.Submission;
-import tw.waterball.judgegirl.entities.submission.Verdict;
+import tw.waterball.judgegirl.entities.submission.VerdictIssuer;
 import tw.waterball.judgegirl.judger.CCJudger;
 import tw.waterball.judgegirl.judger.DefaultCCJudgerFactory;
 import tw.waterball.judgegirl.plugins.api.AbstractJudgeGirlPlugin;
@@ -49,13 +48,15 @@ import static org.mockito.Mockito.*;
 
 /**
  * TODO duplicate test's setup code with PrefixSumText
+ *
  * @author - johnny850807@gmail.com (Waterball)
  */
 public class JudgeGirlFilterPluginTest {
     private final static String zippedProvidedCodesFileName = "/judgeCases/prefixsum/provided.zip";
     private final static String zippedTestcaseIOsFileName = "/judgeCases/prefixsum/io.zip";
     private final static String zippedSubmittedCodesFileNameFormat = "/judgeCases/prefixsum/%s/submitted.zip";
-    private final static TestFilterPlugin filterPlugin = new TestFilterPlugin();;
+    private final static TestFilterPlugin filterPlugin = new TestFilterPlugin();
+    ;
     private static int problemId = 1;
     private static int studentId = 1;
     private static String submissionId = "id";
@@ -156,7 +157,7 @@ public class JudgeGirlFilterPluginTest {
         public boolean hasBeenInvokedSourceCodeFilter;
         public boolean hasBeenInvokedVerdictFilter;
         public Report report = new Report("TestReport",
-                                 Collections.singletonMap("my-data", "YO"));
+                Collections.singletonMap("my-data", "YO"));
 
         @Override
         public void filter(Path sourceRootPath) {
@@ -164,11 +165,10 @@ public class JudgeGirlFilterPluginTest {
         }
 
         @Override
-        public void filter(Verdict verdict) {
+        public void filter(VerdictIssuer verdictIssuer) {
             hasBeenInvokedVerdictFilter = true;
-            List<Judge> judges = verdict.getJudges();
-            judges.forEach(j -> j.setStatus(JudgeStatus.AC));
-            verdict.addReport(report);
+            verdictIssuer.modifyJudges(j -> j.setStatus(JudgeStatus.AC))
+                    .addReport(report);
         }
 
         @Override

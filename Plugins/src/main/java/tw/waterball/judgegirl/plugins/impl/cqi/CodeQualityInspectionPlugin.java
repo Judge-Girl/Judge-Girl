@@ -18,10 +18,7 @@ import tw.waterball.judgegirl.cqi.codingStyle.CodingStyleAnalyzerImpl;
 import tw.waterball.judgegirl.cqi.cyclomatic.CyclomaticComplexityCalculator;
 import tw.waterball.judgegirl.cqi.cyclomatic.CyclomaticComplexityCalculatorImpl;
 import tw.waterball.judgegirl.entities.problem.JudgePluginTag;
-import tw.waterball.judgegirl.entities.submission.CodeQualityInspectionReport;
-import tw.waterball.judgegirl.entities.submission.CodingStyleAnalyzeReport;
-import tw.waterball.judgegirl.entities.submission.CyclomaticComplexityReport;
-import tw.waterball.judgegirl.entities.submission.Verdict;
+import tw.waterball.judgegirl.entities.submission.*;
 import tw.waterball.judgegirl.plugins.api.AbstractJudgeGirlPlugin;
 import tw.waterball.judgegirl.plugins.api.JudgeGirlVerdictFilterPlugin;
 import tw.waterball.judgegirl.plugins.api.codeinspection.JudgeGirlSourceCodeFilterPlugin;
@@ -88,7 +85,7 @@ public class CodeQualityInspectionPlugin extends AbstractJudgeGirlPlugin
     }
 
     @Override
-    public void filter(Verdict verdict) {
-        verdict.addReport(report);
+    public void filter(VerdictIssuer verdictIssuer) {
+        verdictIssuer.addReport(report);
     }
 }
