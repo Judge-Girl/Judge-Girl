@@ -328,7 +328,7 @@ public class MigrateOneProblem implements CommandLineRunner {
                         .map(File::getPath).collect(Collectors.joining("\n")));
 
         File zipOutputFile = File.createTempFile("judge-girl-", "");
-        ZipUtils.zipToFile(files, new FileOutputStream(zipOutputFile), ignoredFileNames);
+        ZipUtils.zip(files, new FileOutputStream(zipOutputFile), ignoredFileNames);
         System.out.println("Successfully zipped in " + zipOutputFile.getPath());
         zipFileConsumer.accept(zipOutputFile);
         zipOutputFile.delete();

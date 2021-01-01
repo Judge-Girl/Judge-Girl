@@ -10,7 +10,7 @@ then
 else
   # Run the Junit5 engine to test the judger in the judger container
   # Note: junit-platform-console-standalone-1.7.0.jar is required
-  tests_classname_pattern="tw.waterball.judgegirl.judger.tests.*"
+  tests_classname_pattern="tw.waterball.judgegirl.judger.tests.*Test"
   docker run --rm \
   -v "$(pwd)"/junit-platform-console-standalone-1.7.0.jar:/junit5.jar "$judgerImageId" \
     java -jar junit5.jar -cp /judger.jar \

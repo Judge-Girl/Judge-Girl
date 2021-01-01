@@ -16,18 +16,23 @@
 
 package tw.waterball.judgegirl.commons.utils;
 
+import lombok.SneakyThrows;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
-import tw.waterball.judgegirl.commons.models.files.StreamingResource;
+import tw.waterball.judgegirl.commons.models.files.InputStreamResource;
 
 import java.io.*;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
@@ -40,23 +45,37 @@ import static java.util.Objects.requireNonNull;
  */
 public class ZipUtils {
     public static ByteArrayInputStream zipClassPathResourcesToStream(String... resourcePaths) {
-        return new ByteArrayInputStream(zipFilesFromResources(resourcePaths));
+        return new ByteArrayInputStream(zipRegularFilesFromResources(resourcePaths));
     }
 
-    public static byte[] zipFilesFromResources(String... resourcePaths) {
+    public static byte[] zipDirectoryFromResources(String directoryResourcePath) throws IOException {
+        var baos = new ByteArrayOutputStream();
+        var zos = new ZipOutputStream(baos);
+        ZipFile zipFile = new ZipFile(ResourceUtils.getFile(directoryResourcePath));
+        zipFile.stream().forEach(zn -> writeZipEntry(zn, zos));
+        zos.finish();
+        return baos.toByteArray();
+    }
+
+    @SneakyThrows
+    public static void writeZipEntry(ZipEntry zipEntry, ZipOutputStream zos) {
+        zos.putNextEntry(zipEntry);
+    }
+
+    public static byte[] zipRegularFilesFromResources(String... resourcePaths) {
         return zip(
                 Arrays.stream(resourcePaths)
-                        .map(path -> new StreamingResource(PathUtils.getFileName(path),
+                        .map(path -> new InputStreamResource(PathUtils.getFileName(path),
                                 ResourceUtils.getResourceAsStream(path)))
                         .collect(Collectors.toList()));
     }
 
-    public static <T extends StreamingResource> byte[] zip(List<T> streamingResources) {
+    public static <T extends InputStreamResource> byte[] zip(List<T> streamingResources) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (ZipOutputStream zipos = new ZipOutputStream(baos)) {
-            for (StreamingResource streamingResource : streamingResources) {
-                writeFileAsZipEntry(streamingResource.getFileName(), zipos,
-                        streamingResource.getInputStream());
+            for (InputStreamResource inputStreamResource : streamingResources) {
+                writeFileAsZipEntry(inputStreamResource.getFileName(), zipos,
+                        inputStreamResource.getInputStream());
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -65,15 +84,15 @@ public class ZipUtils {
     }
 
 
-    public static byte[] zip(StreamingResource... streamingResources) {
-        return zip(Arrays.asList(streamingResources));
+    public static byte[] zip(InputStreamResource... inputStreamResources) {
+        return zip(Arrays.asList(inputStreamResources));
     }
 
-    public static ByteArrayInputStream zipToStream(StreamingResource... multipartFiles) {
+    public static ByteArrayInputStream zipToStream(InputStreamResource... multipartFiles) {
         return new ByteArrayInputStream(zip(multipartFiles));
     }
 
-    public static <T extends StreamingResource> ByteArrayInputStream zipToStream(List<T> multipartFiles) {
+    public static <T extends InputStreamResource> ByteArrayInputStream zipToStream(List<T> multipartFiles) {
         return new ByteArrayInputStream(zip(multipartFiles));
     }
 
@@ -135,20 +154,52 @@ public class ZipUtils {
         }
     }
 
-    public static void zipToFile(File file, FileOutputStream fos, String... ignoredFileNames) {
-        zipToFile(new File[]{file}, fos, ignoredFileNames);
+    /**
+     * Zip the given file recursively (i.e. including all sub-directories)
+     * and write to the FileOutputStream, except those whose file names are contained in
+     * ignoredFileNames.
+     */
+    @SneakyThrows
+    public static void zip(File file, FileOutputStream fos, String... ignoredFileNames) {
+        zip(file.toURI().toURL(), fos, ignoredFileNames);
     }
 
     /**
      * Zip the given files recursively (i.e. including all sub-directories)
-     * through the given FileOutputStream, except those whose file names are contained in
+     * and write to the FileOutputStream, except those whose file names are contained in
      * ignoredFileNames.
      */
-    public static void zipToFile(File[] files, FileOutputStream fos, String... ignoredFileNames) {
+    @SneakyThrows
+    public static void zip(File[] files, FileOutputStream fos, String... ignoredFileNames) {
+        URL[] urls = new URL[files.length];
+        for (int i = 0; i < files.length; i++) {
+            urls[i] = files[i].toURI().toURL();
+        }
+        zip(urls, fos, ignoredFileNames);
+    }
+
+    /**
+     * Zip the given file (from the sourceURL) recursively (i.e. including all sub-directories)
+     * and write to the FileOutputStream, except those whose file names are contained in
+     * ignoredFileNames.
+     */
+    public static void zip(URL sourceURL, FileOutputStream fos, String... ignoredFileNames) {
+        zip(new URL[]{sourceURL}, fos, ignoredFileNames);
+    }
+
+    /**
+     * Zip the given files (from sourceURLs) recursively (i.e. including all sub-directories)
+     * and write to the FileOutputStream, except those whose file names are contained in
+     * ignoredFileNames.
+     */
+    public static void zip(URL[] sourceURLs, FileOutputStream fos, String... ignoredFileNames) {
         try (ZipOutputStream zos = new ZipOutputStream(fos)) {
-            for (File file : files) {
-                if (!ArrayUtils.contains(ignoredFileNames, file.getName())) {
-                    writeZipEntry(file, zos, ignoredFileNames);
+            for (URL url : sourceURLs) {
+                String path = url.getPath();
+                // remove the trailing separator '/' (in order to extract its file name)
+                path = removeTrailingSeparator(path);
+                if (!ArrayUtils.contains(ignoredFileNames, FilenameUtils.getName(path))) {
+                    writeZipEntry(url, zos, ignoredFileNames);
                 }
             }
         } catch (IOException e) {
@@ -156,27 +207,29 @@ public class ZipUtils {
         }
     }
 
-
-    private static void writeZipEntry(File file, ZipOutputStream zipos,
+    private static void writeZipEntry(URL sourceURL, ZipOutputStream zipos,
                                       String... ignoredFileNames) throws IOException {
-        writeZipEntry("", file, zipos, ignoredFileNames);
+        writeZipEntry("", sourceURL, zipos, ignoredFileNames);
     }
 
-    private static void writeZipEntry(String path, File file,
+    private static void writeZipEntry(String path, URL sourceURL,
                                       ZipOutputStream zipos, String... ignoredFileNames) throws IOException {
-        if (!ArrayUtils.contains(ignoredFileNames, file.getName())) {
-            if (file.isDirectory()) {
-                for (String fileName : requireNonNull(file.list())) {
+        String sourcePath = sourceURL.getPath();
+        // remove the trailing separator '/' (in order to extract its file name)
+        sourcePath = removeTrailingSeparator(sourcePath);
+        if (!ArrayUtils.contains(ignoredFileNames, FilenameUtils.getName(sourcePath))) {
+            File sourceFile = Paths.get(sourcePath).toFile();
+            if (sourceFile.isDirectory()) {
+                for (File file : requireNonNull(sourceFile.listFiles())) {
                     writeZipEntry(path + file.getName() + "/",
-                            new File(file, fileName), zipos, ignoredFileNames);
+                            file.toURI().toURL(), zipos, ignoredFileNames);
                 }
             } else {
-                writeFileAsZipEntry(path + file.getName(), zipos,
-                        new FileInputStream(file));
+                writeFileAsZipEntry(removeTrailingSeparator(path), zipos,
+                        new FileInputStream(sourceFile));
             }
         }
     }
-
 
     private static void writeFileAsZipEntry(String fileName,
                                             ZipOutputStream zipos, InputStream in) throws IOException {
@@ -185,6 +238,13 @@ public class ZipUtils {
         IOUtils.copy(in, zipos);
         in.close();
         zipos.closeEntry();
+    }
+
+    private static String removeTrailingSeparator(String path) {
+        if (path.charAt(path.length() - 1) == File.separatorChar) {
+            path = path.substring(0, path.length() - 1);
+        }
+        return path;
     }
 
 }

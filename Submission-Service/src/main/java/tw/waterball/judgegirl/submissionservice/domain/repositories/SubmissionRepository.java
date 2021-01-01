@@ -17,7 +17,7 @@
 package tw.waterball.judgegirl.submissionservice.domain.repositories;
 
 import tw.waterball.judgegirl.commons.models.files.FileResource;
-import tw.waterball.judgegirl.commons.models.files.StreamingResource;
+import tw.waterball.judgegirl.commons.models.files.InputStreamResource;
 import tw.waterball.judgegirl.entities.problem.JudgeStatus;
 import tw.waterball.judgegirl.entities.submission.Submission;
 import tw.waterball.judgegirl.entities.submission.SubmissionThrottling;
@@ -40,7 +40,7 @@ public interface SubmissionRepository {
 
     Submission save(Submission submission);
 
-    String saveZippedSubmittedCodesAndGetFileId(StreamingResource streamingResource) throws IOException;
+    String saveZippedSubmittedCodesAndGetFileId(InputStreamResource inputStreamResource) throws IOException;
 
     Optional<FileResource> downloadZippedSubmittedCodes(String submissionId);
 

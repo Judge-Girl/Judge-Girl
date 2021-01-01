@@ -19,7 +19,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.stereotype.Component;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
-import tw.waterball.judgegirl.commons.models.files.StreamingResource;
+import tw.waterball.judgegirl.commons.models.files.InputStreamResource;
 import tw.waterball.judgegirl.entities.problem.JudgeStatus;
 import tw.waterball.judgegirl.entities.submission.Submission;
 import tw.waterball.judgegirl.entities.submission.SubmissionThrottling;
@@ -87,9 +87,9 @@ public class MongoSubmissionRepository implements SubmissionRepository {
     }
 
     @Override
-    public String saveZippedSubmittedCodesAndGetFileId(StreamingResource streamingResource) throws IOException {
-        return gridFsTemplate.store(streamingResource.getInputStream(),
-                streamingResource.getFileName()).toString();
+    public String saveZippedSubmittedCodesAndGetFileId(InputStreamResource inputStreamResource) throws IOException {
+        return gridFsTemplate.store(inputStreamResource.getInputStream(),
+                inputStreamResource.getFileName()).toString();
     }
 
     @Override

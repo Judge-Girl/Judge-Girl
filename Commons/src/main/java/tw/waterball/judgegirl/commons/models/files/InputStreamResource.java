@@ -31,7 +31,7 @@ import java.util.Objects;
 @AllArgsConstructor
 @Getter
 @Setter
-public class StreamingResource {
+public class InputStreamResource {
     protected String fileName;
     protected InputStream inputStream;
 
@@ -39,7 +39,7 @@ public class StreamingResource {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        StreamingResource that = (StreamingResource) o;
+        InputStreamResource that = (InputStreamResource) o;
         try {
             //TODO reset the stream after this method ends
             return IOUtils.contentEquals(inputStream, that.inputStream);

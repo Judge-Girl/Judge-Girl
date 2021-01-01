@@ -29,7 +29,7 @@ import java.util.Objects;
  */
 @Getter
 @Setter
-public class FileResource extends StreamingResource {
+public class FileResource extends InputStreamResource {
     private long contentLength;
     private String mediaType;
 

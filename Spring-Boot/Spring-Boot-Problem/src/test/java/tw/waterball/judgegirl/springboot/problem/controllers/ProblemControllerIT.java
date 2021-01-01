@@ -110,7 +110,7 @@ class ProblemControllerIT {
 
     private byte[] givenProblemWithProvidedCodes(String... providedCodePaths) {
         final Problem savedProblem = Stubs.problemTemplateBuilder().build();
-        byte[] zippedProvidedCodesBytes = ZipUtils.zipFilesFromResources(providedCodePaths);
+        byte[] zippedProvidedCodesBytes = ZipUtils.zipRegularFilesFromResources(providedCodePaths);
         String fileId = gridFsTemplate.store(new ByteArrayInputStream(zippedProvidedCodesBytes),
                 savedProblem.getProvidedCodesFileName()).toString();
         savedProblem.setProvidedCodesFileId(fileId);
@@ -147,7 +147,7 @@ class ProblemControllerIT {
     @Test
     void testDownloadZippedTestCaseIOs() throws Exception {
         final Problem savedProblem = Stubs.problemTemplateBuilder().build();
-        byte[] bytes = ZipUtils.zipFilesFromResources("/stubs/in/", "/stubs/out/");
+        byte[] bytes = ZipUtils.zipRegularFilesFromResources("/stubs/in/", "/stubs/out/");
         String fileId = gridFsTemplate.store(new ByteArrayInputStream(bytes),
                 savedProblem.getTestCaseIOsFileName()).toString();
         savedProblem.setTestcaseIOsFileId(fileId);

@@ -2,7 +2,7 @@ package tw.waterball.judgegirl.submissionservice.domain.usecases;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import tw.waterball.judgegirl.commons.models.files.StreamingResource;
+import tw.waterball.judgegirl.commons.models.files.InputStreamResource;
 import tw.waterball.judgegirl.commons.utils.ZipUtils;
 import tw.waterball.judgegirl.entities.problem.Problem;
 import tw.waterball.judgegirl.entities.submission.Submission;
@@ -66,8 +66,8 @@ public class SubmitCodeUseCase {
         String fileName = String.format("%d_%s_%d.zip", request.studentId, request.problemId,
                 System.currentTimeMillis());
         InputStream zippedSubmittedCodesStream = ZipUtils.zipToStream(request.getFileResources());
-        StreamingResource streamingResource = new StreamingResource(fileName, zippedSubmittedCodesStream);
-        return submissionRepository.saveZippedSubmittedCodesAndGetFileId(streamingResource);
+        InputStreamResource inputStreamResource = new InputStreamResource(fileName, zippedSubmittedCodesStream);
+        return submissionRepository.saveZippedSubmittedCodesAndGetFileId(inputStreamResource);
     }
 
 }

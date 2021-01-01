@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Test;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -47,13 +48,31 @@ class ZipUtilsTest {
         File zip = File.createTempFile("judge-girl-test", ".zip");
         zip.deleteOnExit();
 
-        ZipUtils.zipToFile(file, new FileOutputStream(zip));
+        ZipUtils.zip(file, new FileOutputStream(zip));
 
         Path destinationPath = Files.createTempDirectory("judge-girl-test");
         ZipUtils.unzipToDestination(new FileInputStream(zip), destinationPath);
 
         assertTrue(DirectoryUtils.contentEquals(
-                file.toPath(), destinationPath.resolve("test")));
+                file.toPath(), destinationPath));
+
+        FileUtils.forceDelete(destinationPath.toFile());
+    }
+
+    @Test
+    void testZipToFile_withIgnoreFileNames() throws IOException {
+        File file = ResourceUtils.getFile("/test/ignore");
+        File zip = File.createTempFile("judge-girl-test", ".zip");
+        zip.deleteOnExit();
+
+        ZipUtils.zip(file, new FileOutputStream(zip), "ignored1", "ignored2");
+
+        Path destinationPath = Files.createTempDirectory("judge-girl-test");
+        ZipUtils.unzipToDestination(new FileInputStream(zip), destinationPath);
+
+        File[] unzippedFiles = destinationPath.toFile().listFiles();
+        assertTrue(Arrays.stream(unzippedFiles)
+                .allMatch(f -> f.getName().equals("a") || f.getName().equals("b")));
 
         FileUtils.forceDelete(destinationPath.toFile());
     }
@@ -61,7 +80,7 @@ class ZipUtilsTest {
     @Test
     void GivenZipFilesFromResources_thenUnzip_contentShouldEqualTheOriginalContent() throws IOException {
         byte[] bytes = IOUtils.toByteArray(ResourceUtils.getResourceAsStream("/test/A/debug.c"));
-        byte[] zip = ZipUtils.zipFilesFromResources("/test/A/debug.c");
+        byte[] zip = ZipUtils.zipRegularFilesFromResources("/test/A/debug.c");
         byte[] unzip = ZipUtils.unzipFirst(new ByteArrayInputStream(zip));
 
         assertArrayEquals(bytes, unzip);

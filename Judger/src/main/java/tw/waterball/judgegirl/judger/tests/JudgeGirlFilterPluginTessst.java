@@ -51,7 +51,7 @@ import static org.mockito.Mockito.*;
  *
  * @author - johnny850807@gmail.com (Waterball)
  */
-public class JudgeGirlFilterPluginTest {
+public class JudgeGirlFilterPluginTessst {
     private final static String zippedProvidedCodesFileName = "/judgeCases/prefixsum/provided.zip";
     private final static String zippedTestcaseIOsFileName = "/judgeCases/prefixsum/io.zip";
     private final static String zippedSubmittedCodesFileNameFormat = "/judgeCases/prefixsum/%s/submitted.zip";

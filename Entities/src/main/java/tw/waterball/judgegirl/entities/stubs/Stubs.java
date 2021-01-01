@@ -32,7 +32,7 @@ public class Stubs {
         return Problem.builder()
                 .id(STUB_ID)
                 .title("Title")
-                .markdownDescription("# Title \n ```\n Code \n ```")
+                .markdownDescription("# Template Description")
                 .judgeEnvSpec(new JudgeEnvSpec(Language.C, JudgeEnv.NORMAL, 0.5f, 0))
                 .outputMatchPolicyPluginTag(new JudgePluginTag(
                         JudgePluginTag.Type.OUTPUT_MATCH_POLICY, "group", "name", "1.0"))
