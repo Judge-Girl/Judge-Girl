@@ -18,23 +18,31 @@ import tw.waterball.judgegirl.entities.submission.CompositeReport;
 import java.util.Arrays;
 
 /**
+ * TODO add CodingStyleAnalyzeReport back
  * @author - johnny850807@gmail.com (Waterball)
  * @author - ryan01234keroro56789@gmail.com (Giver)
  * @author - edisonhello@hotmail.com (edisonhello)
  */
 public class CodeQualityInspectionReport extends CompositeReport {
     private CyclomaticComplexityReport ccReport;
-    private CodingStyleAnalyzeReport csaReport;
+//    private CodingStyleAnalyzeReport csaReport;
 
-    public CodeQualityInspectionReport(CyclomaticComplexityReport ccReport,
-                                       CodingStyleAnalyzeReport csaReport){
-        super("CodeQualityInspectionReport", Arrays.asList(ccReport, csaReport));
+    public CodeQualityInspectionReport(CyclomaticComplexityReport ccReport
+                                       /*, CodingStyleAnalyzeReport csaReport*/){
+        super("CodeQualityInspectionReport", Arrays.asList(ccReport/*, csaReport*/));
         this.ccReport = ccReport;
-        this.csaReport = csaReport;
+//        this.csaReport = csaReport;
     }
 
     public CyclomaticComplexityReport getCcReport() {return this.ccReport;}
 
-    public CodingStyleAnalyzeReport getCsaReport() { return this.csaReport; }
+//    public CodingStyleAnalyzeReport getCsaReport() { return this.csaReport; }
 
+
+    @Override
+    public String toString() {
+        return "CodeQualityInspectionReport{" +
+                "ccReport=" + ccReport +
+                '}';
+    }
 }

@@ -19,14 +19,10 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
 import tw.waterball.judgegirl.entities.problem.*;
-import tw.waterball.judgegirl.entities.submission.Report;
 import tw.waterball.judgegirl.entities.submission.Submission;
-import tw.waterball.judgegirl.entities.submission.VerdictIssuer;
 import tw.waterball.judgegirl.judger.CCJudger;
 import tw.waterball.judgegirl.judger.DefaultCCJudgerFactory;
-import tw.waterball.judgegirl.plugins.api.AbstractJudgeGirlPlugin;
-import tw.waterball.judgegirl.plugins.api.JudgeGirlVerdictFilterPlugin;
-import tw.waterball.judgegirl.plugins.api.codeinspection.JudgeGirlSourceCodeFilterPlugin;
+import tw.waterball.judgegirl.plugins.impl.cqi.CodeQualityInspectionPlugin;
 import tw.waterball.judgegirl.plugins.impl.match.AllMatchPolicyPlugin;
 import tw.waterball.judgegirl.problemapi.clients.ProblemServiceDriver;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
@@ -37,12 +33,10 @@ import tw.waterball.judgegirl.submissionapi.views.VerdictIssuedEvent;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
@@ -51,15 +45,14 @@ import static org.mockito.Mockito.*;
  *
  * @author - johnny850807@gmail.com (Waterball)
  */
-public class JudgeGirlFilterPluginTest {
+public class CodeQualityInspectionPluginTest {
     private final static String zippedProvidedCodesFileName = "/judgeCases/prefixsum/provided.zip";
     private final static String zippedTestcaseIOsFileName = "/judgeCases/prefixsum/io.zip";
     private final static String zippedSubmittedCodesFileNameFormat = "/judgeCases/prefixsum/%s/submitted.zip";
-    private final static TestFilterPlugin filterPlugin = new TestFilterPlugin();
-    ;
+
     private static int problemId = 1;
     private static int studentId = 1;
-    private static String submissionId = "JudgeGirlFilterPluginTest";
+    private static String submissionId = "CodeQualityInspectionPluginTest";
     private static Submission submission = new Submission(submissionId, studentId, problemId, "fileId");
     private ProblemServiceDriver problemServiceDriver;
     private SubmissionServiceDriver submissionServiceDriver;
@@ -71,7 +64,7 @@ public class JudgeGirlFilterPluginTest {
             .judgeEnvSpec(judgeEnvSpec)
             .outputMatchPolicyPluginTag(AllMatchPolicyPlugin.TAG)
             .tag("Ignored")
-            .filterPluginTag(filterPlugin.getTag())
+            .filterPluginTag(CodeQualityInspectionPlugin.TAG)
             .submittedCodeSpec(new SubmittedCodeSpec(Language.C, "prefixsum-seq.c"))
             .providedCodesFileId("providedCodesFileId")
             .testcaseIOsFileId("testcaseIOsFileId")
@@ -94,26 +87,28 @@ public class JudgeGirlFilterPluginTest {
         verdictPublisher = mock(VerdictPublisher.class);
 
         judger = DefaultCCJudgerFactory.create("/judger-layout.yaml",
-                problemServiceDriver, submissionServiceDriver, verdictPublisher, filterPlugin);
+                problemServiceDriver, submissionServiceDriver, verdictPublisher);
     }
 
 
+    @SuppressWarnings("unchecked")
     @Test
-    void GivenMyTestFilterPlugin_whenJudge_shouldInvokeFilter() throws IOException {
+    void testCodeQualityInspectionPlugin() throws IOException {
         mockServiceDrivers();
 
         judger.judge(studentId, problemId, submissionId);
 
-        assertTrue(filterPlugin.hasBeenInvokedSourceCodeFilter);
-        assertTrue(filterPlugin.hasBeenInvokedVerdictFilter);
-
         VerdictIssuedEvent event = captureVerdictIssuedEvent();
-        event.getJudges().forEach(judge ->
-                assertEquals(JudgeStatus.AC, judge.getStatus(), "The status must have been filtered with the new status AC.")
-        );
+        Map<String, ?> data = event.getReport().getRawData();
 
-        var data = event.getReport().getRawData();
-        assertEquals(filterPlugin.report.getRawData(), data.get(filterPlugin.report.getName()));
+        assertTrue(data.containsKey("CodeQualityInspectionReport"));
+        Map<String, ?> cqiReportData = (Map<String, ?>) data.get("CodeQualityInspectionReport");
+
+        assertTrue(cqiReportData.containsKey("CC-Report"));
+
+        Map<String, ?> ccReportData = (Map<String, ?>) cqiReportData.get("CC-Report");
+        Object ccScore = ccReportData.get("ccScore");
+        assertTrue(((int) ccScore) > 0);
     }
 
     private void mockServiceDrivers() throws IOException {
@@ -150,36 +145,5 @@ public class JudgeGirlFilterPluginTest {
         ArgumentCaptor<VerdictIssuedEvent> argumentCaptor = ArgumentCaptor.forClass(VerdictIssuedEvent.class);
         verify(verdictPublisher).publish(argumentCaptor.capture());
         return argumentCaptor.getValue();
-    }
-
-    public static class TestFilterPlugin extends AbstractJudgeGirlPlugin
-            implements JudgeGirlSourceCodeFilterPlugin, JudgeGirlVerdictFilterPlugin {
-        public boolean hasBeenInvokedSourceCodeFilter;
-        public boolean hasBeenInvokedVerdictFilter;
-        public Report report = new Report("TestReport",
-                Collections.singletonMap("my-data",
-                        Collections.singletonMap("Yo", "What's up")));
-
-        @Override
-        public void filter(Path sourceRootPath) {
-            hasBeenInvokedSourceCodeFilter = true;
-        }
-
-        @Override
-        public void filter(VerdictIssuer verdictIssuer) {
-            hasBeenInvokedVerdictFilter = true;
-            verdictIssuer.modifyJudges(j -> j.setStatus(JudgeStatus.AC))
-                    .addReport(report);
-        }
-
-        @Override
-        public String getDescription() {
-            return "SourceCodeFilteringPlugin for Testing";
-        }
-
-        @Override
-        public JudgePluginTag getTag() {
-            return new JudgePluginTag(JudgePluginTag.Type.FILTER, "test", "TestFilterPlugin", "1.0");
-        }
     }
 }

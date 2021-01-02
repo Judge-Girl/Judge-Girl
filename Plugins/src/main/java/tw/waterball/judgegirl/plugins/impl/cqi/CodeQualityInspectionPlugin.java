@@ -13,21 +13,30 @@
 
 package tw.waterball.judgegirl.plugins.impl.cqi;
 
+import lombok.SneakyThrows;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import tw.waterball.judgegirl.cqi.codingStyle.CodingStyleAnalyzer;
 import tw.waterball.judgegirl.cqi.codingStyle.CodingStyleAnalyzerImpl;
 import tw.waterball.judgegirl.cqi.cyclomatic.CyclomaticComplexityCalculator;
 import tw.waterball.judgegirl.cqi.cyclomatic.CyclomaticComplexityCalculatorImpl;
 import tw.waterball.judgegirl.entities.problem.JudgePluginTag;
-import tw.waterball.judgegirl.entities.submission.*;
+import tw.waterball.judgegirl.entities.problem.Language;
+import tw.waterball.judgegirl.entities.problem.Problem;
+import tw.waterball.judgegirl.entities.submission.VerdictIssuer;
 import tw.waterball.judgegirl.plugins.api.AbstractJudgeGirlPlugin;
 import tw.waterball.judgegirl.plugins.api.JudgeGirlVerdictFilterPlugin;
+import tw.waterball.judgegirl.plugins.api.ProblemAware;
 import tw.waterball.judgegirl.plugins.api.codeinspection.JudgeGirlSourceCodeFilterPlugin;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static java.util.Objects.requireNonNull;
 
@@ -36,7 +45,8 @@ import static java.util.Objects.requireNonNull;
  * @author - ryan01234keroro56789@gmail.com (Giver)
  */
 public class CodeQualityInspectionPlugin extends AbstractJudgeGirlPlugin
-        implements JudgeGirlSourceCodeFilterPlugin, JudgeGirlVerdictFilterPlugin {
+        implements ProblemAware, JudgeGirlSourceCodeFilterPlugin, JudgeGirlVerdictFilterPlugin {
+    private final static Logger logger = LogManager.getLogger(CodeQualityInspectionPlugin.class);
     public final static String GROUP = JUDGE_GIRL_GROUP;
     public final static String NAME = "CodeQualityInspection";
     public final static String DESCRIPTION = "Calculate cyclomatic complexity and perform code quality inspection" +
@@ -47,6 +57,7 @@ public class CodeQualityInspectionPlugin extends AbstractJudgeGirlPlugin
     private CyclomaticComplexityCalculator ccCalculator;
     private CodingStyleAnalyzer csAnalyzer;
     private CodeQualityInspectionReport report;
+    private Problem problem;
 
     public CodeQualityInspectionPlugin() {
         ccCalculator = new CyclomaticComplexityCalculatorImpl();
@@ -64,19 +75,42 @@ public class CodeQualityInspectionPlugin extends AbstractJudgeGirlPlugin
     }
 
     @Override
+    public void setProblem(Problem problem) {
+        this.problem = problem;
+    }
+
+    @Override
     public void filter(Path sourceRootPath) {
-        report = new CodeQualityInspectionReport(calcCyclomaticComplexity(sourceRootPath),
-                analyzeCodingStyle(sourceRootPath.toString(), Collections.emptyList()));
+        report = new CodeQualityInspectionReport(calcCyclomaticComplexity(sourceRootPath));
+        logger.info("Report: {}.", report);
     }
 
     private CyclomaticComplexityReport calcCyclomaticComplexity(Path sourceRootPath) {
         File folder = sourceRootPath.toFile();
         File[] fileList = folder.listFiles();
-        List<String> sourceCodes = new ArrayList<>();
+        List<String> sourceCodePaths = new ArrayList<>();
         for (File file : requireNonNull(fileList)) {
-            sourceCodes.add(file.getPath());
+            if (isSubmittedCode(file.getPath())) {
+                sourceCodePaths.add(file.getPath());
+            }
         }
-        return new CyclomaticComplexityReport(ccCalculator.calculate(sourceCodes).score);
+        logger.info("Inspecting the following source code: {}.", String.join(", ", sourceCodePaths));
+        List<String> sourceCodes = sourceCodePaths.stream()
+                .map(this::readSourceCode).collect(Collectors.toList());
+        var innerCcReport = ccCalculator.calculate(sourceCodes);
+        logger.info("CC-Score: {}", innerCcReport.score);
+        return new CyclomaticComplexityReport(innerCcReport.score);
+    }
+
+    @SneakyThrows
+    private String readSourceCode(String sourceCodePath) {
+        return Files.readString(Paths.get(sourceCodePath));
+    }
+
+    private boolean isSubmittedCode(String filePath) {
+        String extension = FilenameUtils.getExtension(filePath);
+        Language language = problem.getJudgeEnvSpec().getLanguage();
+        return language.getFileExtension().equals(extension);
     }
 
     private CodingStyleAnalyzeReport analyzeCodingStyle(String sourceRoot, List<String> variableWhitelist) {

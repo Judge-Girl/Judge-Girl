@@ -21,6 +21,7 @@ import com.github.dockerjava.core.DockerClientImpl;
 import com.github.dockerjava.jaxrs.JerseyDockerCmdExecFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -50,13 +51,15 @@ public class DockerDeployerAutoConfiguration {
     }
 
     @Bean
-    public JudgerDeployer kubernetesJudgerDeployer(DockerClient dockerClient,
+    public JudgerDeployer kubernetesJudgerDeployer(@Value("${judge-girl.judger.docker.dockerRemovalIntervalInMs}")
+                                                               int dockerRemovalIntervalInMs,
+                                                   DockerClient dockerClient,
                                                    ScheduledExecutorService scheduler,
                                                    ServiceProps.ProblemService problemServiceProps,
                                                    ServiceProps.SubmissionService submissionServiceProps,
                                                    JudgeGirlAmqpProps amqpProp,
                                                    JudgeGirlJudgerProps deployProps) {
-        return new DockerJudgerDeployer(dockerClient, scheduler,
+        return new DockerJudgerDeployer(dockerRemovalIntervalInMs, dockerClient, scheduler,
                 problemServiceProps, submissionServiceProps, amqpProp, deployProps);
     }
 

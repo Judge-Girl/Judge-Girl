@@ -38,4 +38,11 @@ public class CyclomaticComplexityReport extends Report {
     public Map<String, ?> getRawData() {
         return Collections.singletonMap("ccScore", ccScore);
     }
+
+    @Override
+    public String toString() {
+        return "CyclomaticComplexityReport{" +
+                "ccScore=" + ccScore +
+                '}';
+    }
 }
