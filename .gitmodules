@@ -1,0 +1,3 @@
+[submodule "Judger/Code-Quality-Inspection"]
+	path = Judger/Code-Quality-Inspection
+	url = git@github.com:Judge-Girl/Code-Quality-Inspection.git

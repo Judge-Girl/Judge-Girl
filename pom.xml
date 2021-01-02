@@ -21,6 +21,7 @@
         <module>Entities</module>
         <module>API</module>
         <module>Judger</module>
+        <module>Judger/Code-Quality-Inspection</module>
     </modules>
 
     <properties>
