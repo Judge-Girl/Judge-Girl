@@ -50,6 +50,10 @@ public class ReportView {
         this.rawData = rawData;
     }
 
+    public String getName() {
+        return name;
+    }
+
     public Map<String, ?> getRawData() {
         return rawData;
     }

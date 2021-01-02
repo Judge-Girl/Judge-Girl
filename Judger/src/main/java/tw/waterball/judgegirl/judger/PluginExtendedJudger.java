@@ -16,14 +16,15 @@ package tw.waterball.judgegirl.judger;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tw.waterball.judgegirl.entities.problem.JudgePluginTag;
+import tw.waterball.judgegirl.entities.problem.Problem;
 import tw.waterball.judgegirl.entities.problem.Testcase;
 import tw.waterball.judgegirl.entities.submission.VerdictIssuer;
-import tw.waterball.judgegirl.plugins.api.JudgeGirlPluginLocator;
-import tw.waterball.judgegirl.plugins.api.JudgeGirlVerdictFilterPlugin;
+import tw.waterball.judgegirl.plugins.api.*;
 import tw.waterball.judgegirl.plugins.api.codeinspection.JudgeGirlSourceCodeFilterPlugin;
 import tw.waterball.judgegirl.plugins.api.match.JudgeGirlMatchPolicyPlugin;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Map;
 
 /**
@@ -38,6 +39,26 @@ public abstract class PluginExtendedJudger extends Judger {
 
     public PluginExtendedJudger(JudgeGirlPluginLocator pluginLocator) {
         this.pluginLocator = pluginLocator;
+    }
+
+    @Override
+    protected void onJudgeContextSetup(JudgeContext judgeContext) {
+        Problem problem = judgeContext.getProblem();
+        var plugins = new ArrayList<JudgePluginTag>();
+        plugins.add(problem.getOutputMatchPolicyPluginTag());
+        plugins.addAll(problem.getFilterPluginTags());
+        for (JudgePluginTag tag : plugins) {
+            JudgeGirlPlugin plugin = pluginLocator.locate(tag);
+            if (plugin instanceof ProblemAware) {
+                ((ProblemAware) plugin).setProblem(problem);
+            }
+            if (plugin instanceof TestcasesAware) {
+                ((TestcasesAware) plugin).setTestcases(judgeContext.testcases);
+            }
+            if (plugin instanceof SubmissionAware) {
+                ((SubmissionAware) plugin).setSubmission(judgeContext.submission);
+            }
+        }
     }
 
     @Override

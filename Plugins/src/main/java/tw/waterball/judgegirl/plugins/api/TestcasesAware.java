@@ -11,35 +11,15 @@
  *   limitations under the License.
  */
 
-package tw.waterball.judgegirl.entities.problem;
+package tw.waterball.judgegirl.plugins.api;
+
+import tw.waterball.judgegirl.entities.problem.Testcase;
+
+import java.util.List;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
-public enum Language {
-    C(false, "c"),
-    OPEN_CL(true, "cl"),
-    CUDA(false, "cu"),
-
-    JAVA(false, "java");
-
-    private boolean interpretedLang;
-    private String fileExtension;
-
-    Language(boolean interpretedLang, String fileExtension) {
-        this.interpretedLang = interpretedLang;
-        this.fileExtension = fileExtension;
-    }
-
-    public boolean isInterpretedLang() {
-        return interpretedLang;
-    }
-
-    public boolean isCompiledLang() {
-        return !interpretedLang;
-    }
-
-    public String getFileExtension() {
-        return fileExtension;
-    }
+public interface TestcasesAware {
+    void setTestcases(List<Testcase> testcases);
 }

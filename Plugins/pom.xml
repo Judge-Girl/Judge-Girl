@@ -36,7 +36,7 @@
         <dependency>
             <groupId>tw.waterball.judge-girl</groupId>
             <artifactId>code-quality-inspection</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>1.0-alpha</version>
         </dependency>
         <dependency>
             <groupId>tw.waterball.judge-girl</groupId>

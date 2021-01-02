@@ -11,25 +11,38 @@
  *   limitations under the License.
  */
 
-package tw.waterball.judgegirl.entities.submission;
+package tw.waterball.judgegirl.plugins.impl.cqi;
+
+import tw.waterball.judgegirl.entities.submission.Report;
+
+import java.util.Collections;
+import java.util.Map;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  * @author - ryan01234keroro56789@gmail.com (Giver)
- * @author - edisonhello@hotmail.com (edisonhello)
  */
-public class CodeQualityInspectionReport extends Report {
-    private CyclomaticComplexityReport ccReport;
-    private CodingStyleAnalyzeReport csaReport;
+public class CyclomaticComplexityReport extends Report {
+    private int ccScore;
 
-    public CodeQualityInspectionReport(CyclomaticComplexityReport ccReport,
-                                       CodingStyleAnalyzeReport csaReport){
-        super("CodeQualityInspectionReport");
-        this.ccReport = ccReport;
-        this.csaReport = csaReport;
+    public CyclomaticComplexityReport(int ccScore) {
+        super("CC-Report");
+        this.ccScore = ccScore;
     }
 
-    public CyclomaticComplexityReport getCcReport() {return this.ccReport;}
+    public int getScore() {
+        return this.ccScore;
+    }
 
-    public CodingStyleAnalyzeReport getCsaReport() { return this.csaReport; }
+    @Override
+    public Map<String, ?> getRawData() {
+        return Collections.singletonMap("ccScore", ccScore);
+    }
+
+    @Override
+    public String toString() {
+        return "CyclomaticComplexityReport{" +
+                "ccScore=" + ccScore +
+                '}';
+    }
 }

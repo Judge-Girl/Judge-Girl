@@ -6,8 +6,17 @@ RUN apt-get update && apt-get install -y libseccomp-dev libseccomp2 seccomp
 RUN mkdir -p /etc/OpenCL/vendors && echo "libnvidia-opencl.so.1" >/etc/OpenCL/vendors/nvidia.icd
 
 RUN apt-get update && apt-get install -y openjdk-11-jdk
+### Setup CQI-required dependencies
+COPY Code-Quality-Inspection/requirements.txt /requirements.txt
+COPY Code-Quality-Inspection/src/main/python /python
+ENV csa_python_main_path=/python/code_style/main.py
+#### nltk (used in CSA) may require 'python3-dev' and 'musl-dev'
+RUN apt-get update && apt-get install -y cppcheck python3 python3-pip python3-dev musl-dev
+RUN pip3 install --upgrade pip
+RUN pip3 install -r requirements.txt
+RUN python3 -m nltk.downloader words
 
-# Prepare judger.jar
+## Prepare judger.jar
 COPY target/judger-0.0.1-SNAPSHOT-jar-with-dependencies.jar /judger.jar
 
 # Compile Profiler and copy it into judger home
@@ -22,3 +31,5 @@ CMD java -jar judger.jar
 
 
 
+
+#python-source-root-path='/python/code_style/main/py' java -cp judger.jar tw.waterball.judgegirl.cqi.main

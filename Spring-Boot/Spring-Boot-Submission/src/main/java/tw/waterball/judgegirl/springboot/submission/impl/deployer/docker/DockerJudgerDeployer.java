@@ -28,7 +28,10 @@ import tw.waterball.judgegirl.springboot.configs.properties.ServiceProps;
 import tw.waterball.judgegirl.submissionservice.ports.JudgerDeployer;
 
 import javax.annotation.PostConstruct;
-import java.util.*;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -41,6 +44,7 @@ import static java.util.Collections.singletonList;
  */
 public class DockerJudgerDeployer implements JudgerDeployer {
     private final static Logger logger = LogManager.getLogger();
+    private int dockerRemovalIntervalInMs;
     private DockerClient dockerClient;
     private ScheduledExecutorService scheduler;
     private ServiceProps.ProblemService problemServiceInstance;
@@ -48,12 +52,13 @@ public class DockerJudgerDeployer implements JudgerDeployer {
     private JudgeGirlAmqpProps amqpProps;
     private JudgeGirlJudgerProps judgerProps;
 
-    public DockerJudgerDeployer(DockerClient dockerClient,
+    public DockerJudgerDeployer(int dockerRemovalIntervalInMs, DockerClient dockerClient,
                                 ScheduledExecutorService scheduler,
                                 ServiceProps.ProblemService problemServiceInstance,
                                 ServiceProps.SubmissionService submissionServiceInstance,
                                 JudgeGirlAmqpProps amqpProps,
                                 JudgeGirlJudgerProps judgerProps) {
+        this.dockerRemovalIntervalInMs = dockerRemovalIntervalInMs;
         this.dockerClient = dockerClient;
         this.scheduler = scheduler;
         this.problemServiceInstance = problemServiceInstance;
@@ -97,7 +102,7 @@ public class DockerJudgerDeployer implements JudgerDeployer {
     @PostConstruct
     public void startJudgerAutoRemoval() {
         scheduler.scheduleAtFixedRate(this::removeAllExitedJudgerContainers,
-                5, 10, TimeUnit.SECONDS);
+                5000, dockerRemovalIntervalInMs, TimeUnit.MILLISECONDS);
     }
 
     private void removeAllExitedJudgerContainers() {

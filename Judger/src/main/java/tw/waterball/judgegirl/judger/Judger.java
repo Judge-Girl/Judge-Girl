@@ -68,13 +68,15 @@ public abstract class Judger {
         List<Testcase> testcases = findTestcasesByProblemId(problemId);
         Submission submission = findSubmissionByIds(studentId, problemId, submissionId);
         this.context = new JudgeContext(studentId, problem, testcases, submission);
+        onJudgeContextSetup(this.context);
     }
-
     protected abstract Problem findProblemById(int problemId);
 
     protected abstract List<Testcase> findTestcasesByProblemId(int problemId);
 
     protected abstract Submission findSubmissionByIds(int problemId, int studentId, String submissionId);
+
+    protected abstract void onJudgeContextSetup(JudgeContext judgeContext);
 
     protected abstract void setupJudgerFileLayout();
 

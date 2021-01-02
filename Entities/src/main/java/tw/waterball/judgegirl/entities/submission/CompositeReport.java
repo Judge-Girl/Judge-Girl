@@ -29,7 +29,11 @@ public class CompositeReport extends Report {
     }
 
     public CompositeReport(Collection<Report> reports) {
-        super("CompositeReport");
+        this("CompositeReport", reports);
+    }
+
+    public CompositeReport(String name, Collection<Report> reports) {
+        super(name);
         this.reports = reports;
     }
 
@@ -43,7 +47,7 @@ public class CompositeReport extends Report {
 
     @Override
     public Map<String, Map<String, ?>> getRawData() {
-         return reports.stream()
+        return reports.stream()
                 .collect(Collectors.toMap(Report::getName, Report::getRawData));
     }
 }
