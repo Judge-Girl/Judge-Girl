@@ -44,7 +44,6 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.requireNonNull;
@@ -135,26 +134,31 @@ public class MigrateOneProblem implements CommandLineRunner {
     }
 
     private void replaceExistingProblemIfAgree(List<Problem> problems) {
-        Optional<Problem> replacedProblemOptional = in.replaceExistingProblemOrNot(problems);
-        if (replacedProblemOptional.isPresent()) {
-            cleanProblem(replacedProblemOptional.get());
-            problems.remove(replacedProblemOptional.get());
-            problem.setId(replacedProblemOptional.get().getId());
-        } else {
-            int problemId = in.specifyProblemIdOrNot(problems)
-                    .orElseGet(() -> /* get the next maximum id by query*/
-                            problems.stream().max(Comparator.comparingInt(Problem::getId))
-                                    .map(Problem::getId).orElse(0) + 1);
-            problem.setId(problemId);
-        }
+        in.replaceExistingProblemOrNot(problems)
+                .ifPresentOrElse(p -> replaceExistingProblem(problems, p),
+                        () -> specifyProblemIdIfAgreeOtherwiseUseIncrementalId(problems));
     }
 
-    private void cleanProblem(Problem problem) {
+    private void replaceExistingProblem(List<Problem> problems, Problem newProblem) {
+        deleteProblemInDB(newProblem);
+        problems.remove(newProblem);
+        problem.setId(newProblem.getId());
+    }
+
+    private void deleteProblemInDB(Problem problem) {
         LanguageEnv langEnv = problem.getLanguageEnv(DEFAULT_LANGUAGE);
         mongoTemplate.remove(problem);
         mongoTemplate.remove(query(where("problemId").is(problem.getId())), Testcase.class);
         gridFsTemplate.delete(query(where("_id").is(langEnv.getProvidedCodesFileId())));
         gridFsTemplate.delete(query(where("_id").is(problem.getTestcaseIOsFileId())));
+    }
+
+    private void specifyProblemIdIfAgreeOtherwiseUseIncrementalId(List<Problem> problems) {
+        int problemId = in.specifyProblemIdOrNot(problems)
+                .orElseGet(() -> /* get the next maximum id by query*/
+                        problems.stream().max(Comparator.comparingInt(Problem::getId))
+                                .map(Problem::getId).orElse(0) + 1);
+        problem.setId(problemId);
     }
 
     private void saveProvidedCodes(Path problemDirPath) throws Exception {
