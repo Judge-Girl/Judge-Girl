@@ -16,7 +16,7 @@ package tw.waterball.judgegirl.judger.infra.compile;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tw.waterball.judgegirl.entities.problem.Compilation;
-import tw.waterball.judgegirl.judger.infra.AbstractProcessRunner;
+import tw.waterball.judgegirl.commons.helpers.process.AbstractProcessRunner;
 
 import java.nio.file.Files;
 import java.nio.file.Path;

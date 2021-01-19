@@ -23,6 +23,9 @@ import tw.waterball.judgegirl.entities.submission.Submission;
 import tw.waterball.judgegirl.judger.CCJudger;
 import tw.waterball.judgegirl.judger.DefaultCCJudgerFactory;
 import tw.waterball.judgegirl.plugins.impl.cqi.CodeQualityInspectionPlugin;
+import tw.waterball.judgegirl.plugins.impl.cqi.CodeQualityInspectionReport;
+import tw.waterball.judgegirl.plugins.impl.cqi.CodingStyleAnalyzeReport;
+import tw.waterball.judgegirl.plugins.impl.cqi.CyclomaticComplexityReport;
 import tw.waterball.judgegirl.plugins.impl.match.AllMatchPolicyPlugin;
 import tw.waterball.judgegirl.problemapi.clients.ProblemServiceDriver;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
@@ -101,14 +104,19 @@ public class CodeQualityInspectionPluginTest {
         VerdictIssuedEvent event = captureVerdictIssuedEvent();
         Map<String, ?> data = event.getReport().getRawData();
 
-        assertTrue(data.containsKey("CodeQualityInspectionReport"));
-        Map<String, ?> cqiReportData = (Map<String, ?>) data.get("CodeQualityInspectionReport");
+        assertTrue(data.containsKey(CodeQualityInspectionReport.NAME));
+        Map<String, ?> cqiReportData = (Map<String, ?>) data.get(CodeQualityInspectionReport.NAME);
 
-        assertTrue(cqiReportData.containsKey("CC-Report"));
+        assertTrue(cqiReportData.containsKey(CyclomaticComplexityReport.NAME));
 
-        Map<String, ?> ccReportData = (Map<String, ?>) cqiReportData.get("CC-Report");
+        Map<String, ?> ccReportData = (Map<String, ?>) cqiReportData.get(CyclomaticComplexityReport.NAME);
         Object ccScore = ccReportData.get("ccScore");
         assertTrue(((int) ccScore) > 0);
+
+
+        Map<String, ?> csaReportData = (Map<String, ?>) cqiReportData.get(CodingStyleAnalyzeReport.NAME);
+        Object csaScore = csaReportData.get("csaScore");
+        assertTrue(((int) csaScore) < 0, "There are global variables, so the score should be negative.");
     }
 
     private void mockServiceDrivers() throws IOException {

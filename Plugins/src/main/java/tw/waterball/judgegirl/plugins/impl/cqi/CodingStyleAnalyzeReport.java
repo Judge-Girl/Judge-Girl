@@ -13,57 +13,50 @@
 
 package tw.waterball.judgegirl.plugins.impl.cqi;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.xml.sax.InputSource;
 import tw.waterball.judgegirl.entities.submission.Report;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import java.io.StringReader;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class CodingStyleAnalyzeReport extends Report {
-    public String rawString;
-    private Document resultXml;
-    private Element xmlRootElement;
+    public static final String NAME = "CodingStyleAnalyzeReport";
+    private int csaScore;
+    private String formula;
+    private List<String> illegalNamingStyleList, globalVariableList;
 
-    public CodingStyleAnalyzeReport(String result) {
-        super("CSA-Report");
-        rawString = result;
-        resultXml = convertStringToXMLDocument(result);
-        xmlRootElement = resultXml.getDocumentElement();
+    public CodingStyleAnalyzeReport(int csaScore, String formula, List<String> illegalNamingStyleList, List<String> globalVariableList) {
+        super(NAME);
+        this.csaScore = csaScore;
+        this.formula = formula;
+        this.illegalNamingStyleList = illegalNamingStyleList;
+        this.globalVariableList = globalVariableList;
     }
 
-    public int getScore() {
-        return Integer.parseInt(xmlRootElement.getAttribute("score"));
+    public int getCsaScore() {
+        return csaScore;
     }
 
-    public List<String> getBadNamingStyleList() {
-        return Arrays.asList(xmlRootElement.getAttribute("bad_naming_style_list").split(","));
+    public String getFormula() {
+        return formula;
     }
 
-    public List<String> getGlobalVariableList() {
-        return Arrays.asList(xmlRootElement.getAttribute("global_variable_list").split(","));
+    public List<String> getIllegalNames() {
+        return illegalNamingStyleList;
     }
 
-    private Document convertStringToXMLDocument(String xmlString) {
-        try {
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder builder = factory.newDocumentBuilder();
-            return builder.parse(new InputSource(new StringReader(xmlString)));
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+    public List<String> getGlobalVariables() {
+        return globalVariableList;
     }
 
 
     @Override
     public Map<String, ?> getRawData() {
         var data = new HashMap<String, Object>();
-        data.put("score", getScore());
-        data.put("illegalName", getBadNamingStyleList());
-        data.put("globalVariable", getGlobalVariableList());
+        data.put("csaScore", getCsaScore());
+        data.put("formula", getFormula());
+        data.put("illegalNames", getIllegalNames());
+        data.put("globalVariables", getGlobalVariables());
         return data;
     }
 }

@@ -35,6 +35,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -81,11 +82,15 @@ public class CodeQualityInspectionPlugin extends AbstractJudgeGirlPlugin
 
     @Override
     public void filter(Path sourceRootPath) {
-        report = new CodeQualityInspectionReport(calcCyclomaticComplexity(sourceRootPath));
+        report = new CodeQualityInspectionReport(
+                calcCyclomaticComplexity(sourceRootPath),
+                analyzeCodingStyle(sourceRootPath.toAbsolutePath().toString(),
+                        /*TODO should have some default white list*/Collections.emptyList()));
         logger.info("Report: {}.", report);
     }
 
     private CyclomaticComplexityReport calcCyclomaticComplexity(Path sourceRootPath) {
+        // TODO recursively add all the child file paths
         File folder = sourceRootPath.toFile();
         File[] fileList = folder.listFiles();
         List<String> sourceCodePaths = new ArrayList<>();
@@ -115,7 +120,12 @@ public class CodeQualityInspectionPlugin extends AbstractJudgeGirlPlugin
 
     private CodingStyleAnalyzeReport analyzeCodingStyle(String sourceRoot, List<String> variableWhitelist) {
         var report = csAnalyzer.analyze(sourceRoot, variableWhitelist);
-        return new CodingStyleAnalyzeReport(report.rawString);
+        logger.info("CC-Score: {}", report.getScore());
+        return new CodingStyleAnalyzeReport(
+                report.getScore(),
+                report.getFormula(),
+                report.getIllegalNamingStyleList(),
+                report.getGlobalVariableList());
     }
 
     @Override

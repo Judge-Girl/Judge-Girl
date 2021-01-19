@@ -14,7 +14,7 @@
 package tw.waterball.judgegirl.judger.infra.compile;
 
 import tw.waterball.judgegirl.entities.problem.Compilation;
-import tw.waterball.judgegirl.judger.infra.ProcessRunner;
+import tw.waterball.judgegirl.commons.helpers.process.ProcessRunner;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
