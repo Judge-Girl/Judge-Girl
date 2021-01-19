@@ -23,10 +23,11 @@ import java.util.Map;
  * @author - ryan01234keroro56789@gmail.com (Giver)
  */
 public class CyclomaticComplexityReport extends Report {
+    public final static String NAME = "CyclomaticComplexityReport";
     private int ccScore;
 
     public CyclomaticComplexityReport(int ccScore) {
-        super("CC-Report");
+        super(NAME);
         this.ccScore = ccScore;
     }
 

@@ -13,7 +13,7 @@
 
 package tw.waterball.judgegirl.judger.infra.testexecutor;
 
-import tw.waterball.judgegirl.judger.infra.ProcessRunner;
+import tw.waterball.judgegirl.commons.helpers.process.ProcessRunner;
 
 import java.nio.file.Path;
 

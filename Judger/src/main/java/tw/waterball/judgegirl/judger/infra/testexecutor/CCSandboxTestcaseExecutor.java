@@ -17,7 +17,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tw.waterball.judgegirl.entities.problem.Testcase;
 import tw.waterball.judgegirl.entities.submission.ProgramProfile;
-import tw.waterball.judgegirl.judger.infra.AbstractProcessRunner;
+import tw.waterball.judgegirl.commons.helpers.process.AbstractProcessRunner;
 import tw.waterball.judgegirl.judger.layout.JudgerWorkspace;
 import tw.waterball.judgegirl.judger.layout.SandboxRoot;
 import tw.waterball.judgegirl.judger.layout.TestcaseHome;
