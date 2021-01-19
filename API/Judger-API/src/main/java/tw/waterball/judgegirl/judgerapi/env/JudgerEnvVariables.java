@@ -15,6 +15,8 @@ package tw.waterball.judgegirl.judgerapi.env;
 
 import lombok.Builder;
 import lombok.Value;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import tw.waterball.judgegirl.api.ServiceInstance;
 
 import static java.lang.Integer.parseInt;
@@ -23,6 +25,7 @@ import static java.lang.Integer.parseInt;
  * @author - johnny850807@gmail.com (Waterball)
  */
 public interface JudgerEnvVariables {
+    Logger logger = LogManager.getLogger(JudgerEnvVariables.class);
     // Judger-Job specific envs
     String ENV_STUDENT_ID = "studentId";
     String ENV_PROBLEM_ID = "problemId";
