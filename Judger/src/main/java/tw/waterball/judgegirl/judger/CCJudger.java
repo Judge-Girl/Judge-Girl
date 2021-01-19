@@ -52,12 +52,7 @@ import java.util.Map;
  */
 @SuppressWarnings("WeakerAccess")
 public class CCJudger extends PluginExtendedJudger {
-<<<<<<< HEAD
     private final static Logger logger = LogManager.getLogger(CCJudger.class);
-=======
-    private final static Logger logger = LogManager.getLogger();
-
->>>>>>> :construction: test spring.lazyInitialization
     private JudgerWorkspace judgerWorkspace;
     private ProblemServiceDriver problemServiceDriver;
     private SubmissionServiceDriver submissionServiceDriver;
