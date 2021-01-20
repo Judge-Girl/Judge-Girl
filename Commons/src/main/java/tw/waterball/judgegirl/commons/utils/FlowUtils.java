@@ -17,7 +17,7 @@ package tw.waterball.judgegirl.commons.utils;
  * @author - johnny850807@gmail.com (Waterball)
  */
 public class FlowUtils {
-    public static void repeatUntil(Runnable runnable, int repeat) throws IllegalStateException {
+    public static void repeat(Runnable runnable, int repeat) throws IllegalStateException {
         int count = 0;
         boolean success;
         do {

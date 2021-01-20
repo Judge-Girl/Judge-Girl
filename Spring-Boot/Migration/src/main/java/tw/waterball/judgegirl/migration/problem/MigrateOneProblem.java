@@ -26,11 +26,7 @@ import tw.waterball.judgegirl.commons.utils.ArrayUtils;
 import tw.waterball.judgegirl.commons.utils.FlowUtils;
 import tw.waterball.judgegirl.commons.utils.ZipUtils;
 import tw.waterball.judgegirl.commons.utils.functional.ErrConsumer;
-import tw.waterball.judgegirl.entities.problem.Language;
-import tw.waterball.judgegirl.entities.problem.LanguageEnv;
-import tw.waterball.judgegirl.entities.problem.Problem;
-import tw.waterball.judgegirl.entities.problem.Testcase;
-import tw.waterball.judgegirl.migration.problem.in.InputStrategy;
+import tw.waterball.judgegirl.entities.problem.*;
 import tw.waterball.judgegirl.plugins.api.match.JudgeGirlMatchPolicyPlugin;
 import tw.waterball.judgegirl.plugins.impl.match.AllMatchPolicyPlugin;
 import tw.waterball.judgegirl.plugins.impl.match.RegexMatchPolicyPlugin;
@@ -41,9 +37,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.requireNonNull;
@@ -61,7 +55,7 @@ public class MigrateOneProblem implements CommandLineRunner {
     public static final Language DEFAULT_LANGUAGE = Language.C;
     public static final String PROVIDED_CODES_FILE_NAME_PATTERN = "%d-%s-provided.zip";
     public static final String TESTCASES_IO_FILE_NAME_PATTERN = "%d-testcases.zip";
-    private static final Logger logger = LogManager.getLogger();
+    private static final Logger logger = LogManager.getLogger(MigrateOneProblem.class);
 
     private final InputStrategy in;
     private final MongoTemplate mongoTemplate;
@@ -95,8 +89,8 @@ public class MigrateOneProblem implements CommandLineRunner {
         this.execute(1);
     }
 
-    private void execute(int repeatOnFailureTime) {
-        FlowUtils.repeatUntil(() -> {
+    public void execute(int repeatOnFailureTime) {
+        FlowUtils.repeat(() -> {
             Path problemDirPath = Paths.get(in.problemDirPath());
             layoutManipulator.verifyProblemDirLayout(problemDirPath);
             problem = layoutManipulator.verifyAndReadProblem(problemDirPath);
@@ -228,5 +222,15 @@ public class MigrateOneProblem implements CommandLineRunner {
         logger.info("Saved testcases ...");
     }
 
+    public interface InputStrategy {
+        String problemDirPath();
 
+        ResourceSpec resourceSpec();
+
+        JudgeGirlMatchPolicyPlugin matchPolicyPlugin(JudgeGirlMatchPolicyPlugin[] matchPolicyPlugins);
+
+        Optional<Problem> replaceExistingProblemOrNot(List<Problem> existingProblems);
+
+        OptionalInt specifyProblemIdOrNot(List<Problem> existingProblems);
+    }
 }
