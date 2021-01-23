@@ -25,6 +25,7 @@ public class Inputs {
     private final static Scanner scanner = new Scanner(System.in);
 
     public static String inputLine(String message) {
+        System.out.println(message);
         String line = scanner.nextLine();
         return line.isEmpty() ? inputLine(message) : line;
     }
@@ -77,6 +78,10 @@ public class Inputs {
     public static int inputRangedInteger(String message, Collection<Integer> options) {
         return inputConditionalInteger(message, options::contains,
                 num -> String.format("The input number %d is not in the options.", num));
+    }
+
+    public static int inputZeroOrPositiveInteger(String message) {
+        return inputConditionalInteger(message, i -> i >= 0);
     }
 
     public static int inputConditionalInteger(String message, Predicate<Integer> predicate) {

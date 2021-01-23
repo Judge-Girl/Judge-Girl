@@ -14,6 +14,7 @@
 package tw.waterball.judgegirl.migration.problem;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
@@ -26,6 +27,7 @@ import tw.waterball.judgegirl.commons.utils.ToStringUtils;
 import tw.waterball.judgegirl.entities.problem.Problem;
 import tw.waterball.judgegirl.entities.problem.Testcase;
 
+import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.FileReader;
 import java.nio.file.Path;
@@ -53,6 +55,11 @@ public class NewJudgeGirlLayoutManipulator {
 
     public NewJudgeGirlLayoutManipulator(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
+    }
+
+    @PostConstruct
+    public void objectMapperConfig() {
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
     public void verifyProblemDirLayout(Path problemDirPath) {

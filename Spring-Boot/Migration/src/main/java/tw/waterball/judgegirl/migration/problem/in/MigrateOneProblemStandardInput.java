@@ -13,8 +13,6 @@
 
 package tw.waterball.judgegirl.migration.problem.in;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.stereotype.Component;
 import tw.waterball.judgegirl.commons.utils.Inputs;
 import tw.waterball.judgegirl.entities.problem.Problem;
 import tw.waterball.judgegirl.entities.problem.ResourceSpec;
@@ -32,9 +30,7 @@ import static java.lang.String.format;
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
-@ConditionalOnMissingBean(MigrateOneProblem.InputStrategy.class)
-@Component
-public class ScannerInputStrategy implements MigrateOneProblem.InputStrategy {
+public class MigrateOneProblemStandardInput implements MigrateOneProblem.Input {
     @Override
     public String problemDirPath() {
         return Inputs.inputLine("Input the problem directory path: ");

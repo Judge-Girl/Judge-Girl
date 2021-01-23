@@ -74,6 +74,10 @@ public class Inputs {
                 num -> String.format("The input number %d is not in the options.", num));
     }
 
+    public static int inputZeroOrPositiveInteger(String message) {
+        return inputConditionalInteger(message, i -> i >= 0);
+    }
+
     public static int inputConditionalInteger(String message, Predicate<Integer> predicate) {
         return inputConditionalInteger(message, predicate,
                 num -> String.format("The input number %d is invalid.", num));

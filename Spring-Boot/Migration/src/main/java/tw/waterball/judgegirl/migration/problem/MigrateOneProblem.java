@@ -13,8 +13,6 @@
 
 package tw.waterball.judgegirl.migration.problem;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.boot.CommandLineRunner;
@@ -31,7 +29,6 @@ import tw.waterball.judgegirl.plugins.api.match.JudgeGirlMatchPolicyPlugin;
 import tw.waterball.judgegirl.plugins.impl.match.AllMatchPolicyPlugin;
 import tw.waterball.judgegirl.plugins.impl.match.RegexMatchPolicyPlugin;
 
-import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -57,7 +54,7 @@ public class MigrateOneProblem implements CommandLineRunner {
     public static final String TESTCASES_IO_FILE_NAME_PATTERN = "%d-testcases.zip";
     private static final Logger logger = LogManager.getLogger(MigrateOneProblem.class);
 
-    private final InputStrategy in;
+    private final MigrateOneProblem.Input in;
     private final MongoTemplate mongoTemplate;
     private final GridFsTemplate gridFsTemplate;
     private final NewJudgeGirlLayoutManipulator layoutManipulator;
@@ -71,12 +68,7 @@ public class MigrateOneProblem implements CommandLineRunner {
         SpringApplication.run(MigrateOneProblem.class, args);
     }
 
-    @PostConstruct
-    public void objectMapperConfig(ObjectMapper objectMapper) {
-        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    }
-
-    public MigrateOneProblem(InputStrategy in, MongoTemplate mongoTemplate,
+    public MigrateOneProblem(Input in, MongoTemplate mongoTemplate,
                              GridFsTemplate gridFsTemplate, NewJudgeGirlLayoutManipulator layoutManipulator) {
         this.in = in;
         this.mongoTemplate = mongoTemplate;
@@ -222,7 +214,7 @@ public class MigrateOneProblem implements CommandLineRunner {
         logger.info("Saved testcases ...");
     }
 
-    public interface InputStrategy {
+    public interface Input {
         String problemDirPath();
 
         ResourceSpec resourceSpec();
