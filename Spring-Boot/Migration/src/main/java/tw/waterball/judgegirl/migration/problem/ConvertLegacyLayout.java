@@ -104,9 +104,7 @@ public class ConvertLegacyLayout implements CommandLineRunner {
         subtasks = pythonSubtasksToJsonString();
         addSubtasksAsTestcasesIntoProblem();
         makeTestcaseIOsLayout();
-
-        String problemJson = objectMapper.writeValueAsString(problem);
-        logger.info(problemJson);
+        outputProblemAsJson();
     }
 
     private void queryProblemFromDB() {
@@ -118,6 +116,13 @@ public class ConvertLegacyLayout implements CommandLineRunner {
     }
 
 
+    /**
+     * @return a list structure as below
+     * [
+     *    [  0, ['0.in', '0.out', 1, 64 << 20, 64 << 10]]
+     *    ...
+     * ]
+     */
     @SuppressWarnings("unchecked")
     private List<List> pythonSubtasksToJsonString() throws IOException {
         File subtasksPythonFile = testDataHome.resolve("subtasks.py").toFile();
@@ -135,12 +140,6 @@ public class ConvertLegacyLayout implements CommandLineRunner {
         return (List<List>) objectMapper.readValue(subtasksJson, Object.class);
     }
 
-    /**
-     * [
-     *  [  0, ['0.in', '0.out', 1, 64 << 20, 64 << 10]]
-     *  ...
-     * ]
-     */
     private void addSubtasksAsTestcasesIntoProblem() {
         for (List subtask : subtasks) {
             Testcase testcase = new Testcase();
@@ -184,9 +183,7 @@ public class ConvertLegacyLayout implements CommandLineRunner {
                     });
                 }
         );
-
     }
-
 
     private List<IoFilePair> getStdIoFilePairs() {
         Map<String, List<File>> stdIoPairByName = Arrays.stream(requireNonNull(testDataHome.toFile().listFiles()))
@@ -204,6 +201,13 @@ public class ConvertLegacyLayout implements CommandLineRunner {
                 .collect(Collectors.toList());
     }
 
+    private void outputProblemAsJson() throws IOException {
+        String problemJson = objectMapper
+                .writerWithDefaultPrettyPrinter().writeValueAsString(problem);
+        IOUtils.write(problemJson, new FileOutputStream(
+                outputDirectoryPath.resolve("problem.json").toFile()), StandardCharsets.UTF_8);
+        logger.info(problemJson);
+    }
 
     public class ProblemDTO {
         public int id;
