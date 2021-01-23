@@ -1,0 +1,103 @@
+{
+	"title": "Subset Sum",
+	"submittedCodeSpecs": [{
+		"language": "C",
+		"fileName": "a.c"
+	}],
+	"tags": ["Recursion"],
+	"compilation": {
+		"script": "gcc -std=c99 -O2 a.c -lm"
+	},
+	"inputFileNames": [],
+	"outputFileNames": [],
+	"testcases": [
+		{
+			"name": "0",
+			"timeLimit": 1000,
+			"memoryLimit": 67108846,
+			"outputLimit": 65536,
+			"threadNumberLimit": -1,
+			"grade": 0
+		},
+		{
+			"name": "1",
+			"timeLimit": 1000,
+			"memoryLimit": 67108846,
+			"outputLimit": 65536,
+			"threadNumberLimit": -1,
+			"grade": 10
+		},
+		{
+			"name": "2",
+			"timeLimit": 1000,
+			"memoryLimit": 67108846,
+			"outputLimit": 65536,
+			"threadNumberLimit": -1,
+			"grade": 10
+		},
+		{
+			"name": "3",
+			"timeLimit": 1000,
+			"memoryLimit": 67108846,
+			"outputLimit": 65536,
+			"threadNumberLimit": -1,
+			"grade": 10
+		},
+		{
+			"name": "4",
+			"timeLimit": 1000,
+			"memoryLimit": 67108846,
+			"outputLimit": 65536,
+			"threadNumberLimit": -1,
+			"grade": 10
+		},
+		{
+			"name": "5",
+			"timeLimit": 1000,
+			"memoryLimit": 67108846,
+			"outputLimit": 65536,
+			"threadNumberLimit": -1,
+			"grade": 10
+		},
+		{
+			"name": "6",
+			"timeLimit": 1000,
+			"memoryLimit": 67108846,
+			"outputLimit": 67108846,
+			"threadNumberLimit": -1,
+			"grade": 10
+		},
+		{
+			"name": "7",
+			"timeLimit": 1000,
+			"memoryLimit": 67108846,
+			"outputLimit": 67108846,
+			"threadNumberLimit": -1,
+			"grade": 10
+		},
+		{
+			"name": "8",
+			"timeLimit": 1000,
+			"memoryLimit": 67108846,
+			"outputLimit": 67108846,
+			"threadNumberLimit": -1,
+			"grade": 10
+		},
+		{
+			"name": "9",
+			"timeLimit": 1000,
+			"memoryLimit": 67108846,
+			"outputLimit": 67108846,
+			"threadNumberLimit": -1,
+			"grade": 10
+		},
+		{
+			"name": "10",
+			"timeLimit": 1000,
+			"memoryLimit": 67108846,
+			"outputLimit": 67108846,
+			"threadNumberLimit": -1,
+			"grade": 10
+		}
+	]
+}
