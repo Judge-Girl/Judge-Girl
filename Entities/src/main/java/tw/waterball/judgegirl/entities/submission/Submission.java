@@ -17,7 +17,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.Nullable;
-import tw.waterball.judgegirl.entities.problem.Problem;
 
 import java.util.Date;
 import java.util.Optional;
@@ -32,7 +31,6 @@ import java.util.function.Consumer;
 public class Submission {
     private String id;
     private int problemId;
-    private Problem problem;
     private int studentId;
     private String languageEnvName;
 
@@ -90,15 +88,6 @@ public class Submission {
         return problemId;
     }
 
-    public Problem getProblem() {
-        return problem;
-    }
-
-    public void setProblem(Problem problem) {
-        assert problemId == problem.getId();
-        this.problem = problem;
-    }
-
     public Optional<Verdict> getVerdict() {
         return Optional.ofNullable(verdict);
     }
@@ -129,5 +118,9 @@ public class Submission {
 
     public String getLanguageEnvName() {
         return languageEnvName;
+    }
+
+    public void setProblemId(Integer problemId) {
+        this.problemId = problemId;
     }
 }

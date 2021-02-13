@@ -15,11 +15,9 @@
  */
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.fridujo.rabbitmq.mock.MockConnectionFactory;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.amqp.core.AmqpAdmin;
@@ -29,9 +27,7 @@ import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.autoconfigure.data.mongo.AutoConfigureDataMongo;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -65,7 +61,7 @@ import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 import tw.waterball.judgegirl.submissionapi.views.VerdictIssuedEvent;
 import tw.waterball.judgegirl.submissionservice.domain.usecases.SubmitCodeUseCase;
 import tw.waterball.judgegirl.submissionservice.ports.JudgerDeployer;
-import tw.waterball.judgegirl.testkit.jupiter.ReplaceUnderscoresWithCamelCasesDisplayNameGenerators;
+import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
 import tw.waterball.judgegirl.testkit.resultmatchers.ZipResultMatcher;
 
 import java.util.*;
@@ -87,13 +83,10 @@ import static tw.waterball.judgegirl.testkit.resultmatchers.ZipResultMatcher.zip
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
-@SpringBootTest
 @ActiveProfiles({Profiles.PROD, Profiles.MONGO, Profiles.AMQP, Profiles.K8S})
 @AutoConfigureMockMvc
-@AutoConfigureDataMongo
 @ContextConfiguration(classes = {SpringBootSubmissionApplication.class, SubmissionControllerIT.TestConfig.class})
-@DisplayNameGeneration(ReplaceUnderscoresWithCamelCasesDisplayNameGenerators.class)
-public class SubmissionControllerIT {
+public class SubmissionControllerIT extends AbstractSpringBootTest {
     private final String API_PREFIX = "/api/problems/{problemId}/students/{studentId}/submissions";
     private final Problem problem = ProblemStubs.template().build();
     private final String SUBMISSION_EXCHANGE_NAME = "submissions";
@@ -136,9 +129,6 @@ public class SubmissionControllerIT {
 
     @Autowired
     SubmitCodeUseCase submitCodeUseCase;
-
-    @Autowired
-    ObjectMapper objectMapper;
 
     @Autowired
     VerdictPublisher verdictPublisher;
@@ -191,7 +181,7 @@ public class SubmissionControllerIT {
     }
 
     @Test
-    void TestSubmitAndThenDownload() throws Exception {
+    void testSubmitAndThenDownload() throws Exception {
         SubmissionView submissionView = givenSubmitCode(STUDENT1_ID, STUDENT1_TOKEN);
 
         requestGetSubmission(STUDENT1_ID, STUDENT1_TOKEN)
@@ -263,8 +253,6 @@ public class SubmissionControllerIT {
                 .report(ReportView.fromEntity(ProblemStubs.compositeReport()))
                 .build();
     }
-
-    private
 
     @Test
     void GivenStudent1Submission_WhenGetThatSubmissionUsingAdminToken_ShouldRespondSuccessfully() throws Exception {

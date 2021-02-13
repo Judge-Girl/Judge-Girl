@@ -18,7 +18,7 @@ import java.util.List;
 public class ProblemView {
     public Integer id;
     public String title;
-    public String markdownDescription;
+    public String description;
     public List<LanguageEnv> languageEnvs;
     public JudgePluginTag judgeMatchPolicyPluginTag;
     public Collection<JudgePluginTag> judgeFilterPluginTags;
@@ -42,17 +42,16 @@ public class ProblemView {
         var builder =  Problem.builder()
                 .id(view.getId())
                 .title(view.getTitle())
-                .description(view.markdownDescription)
+                .description(view.description)
                 .outputMatchPolicyPluginTag(view.judgeMatchPolicyPluginTag)
                 .tags(view.tags)
                 .testcaseIOsFileId(view.testcaseIOsFileId);
+        for (LanguageEnv languageEnv : view.languageEnvs) {
+            builder.languageEnv(languageEnv.getName(), languageEnv);
+        }
         if (view.judgeFilterPluginTags != null) {
             builder.filterPluginTags(view.judgeFilterPluginTags);
         }
-        Problem problem = builder.build();
-        for (LanguageEnv languageEnv : view.languageEnvs) {
-            problem.addLanguageEnv(languageEnv);
-        }
-        return problem;
+        return builder.build();
     }
 }

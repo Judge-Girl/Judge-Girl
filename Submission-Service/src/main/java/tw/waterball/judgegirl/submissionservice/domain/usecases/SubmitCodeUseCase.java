@@ -46,7 +46,7 @@ public class SubmitCodeUseCase {
         String submittedCodeFileId = zipAndSaveSubmittedCodesAndGetFileId(request);
         Problem problem = getProblem(request.problemId);
         Submission submission = new Submission(request.studentId, request.problemId, submittedCodeFileId);
-        submission.setProblem(problem);
+        submission.setProblemId(problem.getId());
 
         submission = submissionRepository.save(submission);
         logger.info("Saved submission: " + submission.getId());
