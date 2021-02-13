@@ -26,9 +26,9 @@ import javax.validation.constraints.NotNull;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-import static tw.waterball.judgegirl.entities.problem.JudgePluginTag.Type.*;
+import static tw.waterball.judgegirl.entities.problem.JudgePluginTag.Type.FILTER;
+import static tw.waterball.judgegirl.entities.problem.JudgePluginTag.Type.OUTPUT_MATCH_POLICY;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -119,12 +119,6 @@ public class Problem {
         return outputMatchPolicyPluginTag;
     }
 
-    public Collection<JudgePluginTag> getFilterPluginTagsOfType(JudgePluginTag.Type type) {
-        return filterPluginTags.stream()
-                .filter(tag -> tag.getType() == type)
-                .collect(Collectors.toSet());
-    }
-
     public Collection<JudgePluginTag> getFilterPluginTags() {
         return filterPluginTags;
     }
@@ -196,4 +190,6 @@ public class Problem {
     public void setOutputMatchPolicyPluginTag(JudgePluginTag outputMatchPolicyPluginTag) {
         this.outputMatchPolicyPluginTag = outputMatchPolicyPluginTag;
     }
+
+
 }

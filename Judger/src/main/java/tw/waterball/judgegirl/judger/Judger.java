@@ -22,7 +22,6 @@ import tw.waterball.judgegirl.entities.problem.Testcase;
 import tw.waterball.judgegirl.entities.submission.*;
 import tw.waterball.judgegirl.judger.infra.compile.CompileResult;
 import tw.waterball.judgegirl.judger.infra.testexecutor.TestcaseExecutionResult;
-import tw.waterball.judgegirl.plugins.api.JudgeGirlVerdictFilterPlugin;
 
 import java.io.IOException;
 import java.util.List;
@@ -130,14 +129,14 @@ public abstract class Judger {
     protected abstract boolean isProgramOutputAllCorrect(Testcase testcase);
 
     private void doSourceCodeFiltering() {
-        getProblem().getFilterPluginTagsOfType(JudgePluginTag.Type.FILTER)
+        getProblem().getFilterPluginTags()
                 .forEach(this::doSourceCodeFilteringForTag);
     }
 
     protected abstract void doSourceCodeFilteringForTag(JudgePluginTag pluginTag);
 
     private void doVerdictFiltering(VerdictIssuer verdictIssuer) {
-        getProblem().getFilterPluginTagsOfType(JudgeGirlVerdictFilterPlugin.TYPE)
+        getProblem().getFilterPluginTags()
                 .forEach(tag -> doVerdictFilteringForTag(verdictIssuer, tag));
     }
 

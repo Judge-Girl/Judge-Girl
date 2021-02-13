@@ -27,7 +27,6 @@ public interface VerdictIssuer {
         return new DefaultVerdictIssuer().setJudges(judges);
     }
 
-    VerdictIssuer setJudges(List<Judge> judges);
     VerdictIssuer modifyJudges(Consumer<? super JudgeModifier> judgeModifierConsumer);
     VerdictIssuer addReport(Report report);
     Verdict issue();
