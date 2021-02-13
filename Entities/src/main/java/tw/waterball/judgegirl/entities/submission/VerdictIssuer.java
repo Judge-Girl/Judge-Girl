@@ -24,7 +24,7 @@ import java.util.function.Consumer;
  */
 public interface VerdictIssuer {
     static VerdictIssuer fromJudges(List<Judge> judges) {
-        return new DefaultVerdictIssuer().setJudges(judges);
+        return new DefaultVerdictIssuer(judges);
     }
 
     VerdictIssuer modifyJudges(Consumer<? super JudgeModifier> judgeModifierConsumer);

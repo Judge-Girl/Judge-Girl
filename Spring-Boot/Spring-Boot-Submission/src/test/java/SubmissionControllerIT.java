@@ -50,7 +50,7 @@ import tw.waterball.judgegirl.commons.token.TokenService;
 import tw.waterball.judgegirl.commons.utils.Delay;
 import tw.waterball.judgegirl.entities.problem.JudgeStatus;
 import tw.waterball.judgegirl.entities.problem.Problem;
-import tw.waterball.judgegirl.entities.stubs.Stubs;
+import tw.waterball.judgegirl.entities.stubs.ProblemStubs;
 import tw.waterball.judgegirl.entities.submission.*;
 import tw.waterball.judgegirl.problemapi.clients.ProblemServiceDriver;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
@@ -95,7 +95,7 @@ import static tw.waterball.judgegirl.testkit.resultmatchers.ZipResultMatcher.zip
 @DisplayNameGeneration(ReplaceUnderscoresWithCamelCasesDisplayNameGenerators.class)
 public class SubmissionControllerIT {
     private final String API_PREFIX = "/api/problems/{problemId}/students/{studentId}/submissions";
-    private final Problem problem = Stubs.problemTemplateBuilder().build();
+    private final Problem problem = ProblemStubs.template().build();
     private final String SUBMISSION_EXCHANGE_NAME = "submissions";
 
     @Value("${spring.rabbitmq.username}")
@@ -169,7 +169,7 @@ public class SubmissionControllerIT {
                     "int minus(int a, int b) {return a - b;}".getBytes())};
     private String ADMIN_TOKEN;
 
-    private Report stubReport = Stubs.compositeReport();
+    private Report stubReport = ProblemStubs.compositeReport();
 
     @BeforeEach
     void setup() {
@@ -260,7 +260,7 @@ public class SubmissionControllerIT {
                 .judge(new Judge("t2", JudgeStatus.AC, new ProgramProfile(6, 6, ""), 30))
                 .judge(new Judge("t3", JudgeStatus.WA, new ProgramProfile(7, 7, ""), 0))
                 .issueTime(new Date())
-                .report(ReportView.fromEntity(Stubs.compositeReport()))
+                .report(ReportView.fromEntity(ProblemStubs.compositeReport()))
                 .build();
     }
 

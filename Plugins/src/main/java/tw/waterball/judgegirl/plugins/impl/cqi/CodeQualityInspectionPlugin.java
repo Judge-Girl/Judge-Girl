@@ -114,7 +114,7 @@ public class CodeQualityInspectionPlugin extends AbstractJudgeGirlPlugin
 
     private boolean isSubmittedCode(String filePath) {
         String extension = FilenameUtils.getExtension(filePath);
-        Language language = problem.getJudgeEnvSpec().getLanguage();
+        Language language = problem.getResourceSpec().getLanguage();
         return language.getFileExtension().equals(extension);
     }
 

@@ -18,7 +18,7 @@ public class ProblemView {
     public Integer id;
     public String title;
     public String markdownDescription;
-    public JudgeEnvSpec judgeEnvSpec;
+    public ResourceSpec resourceSpec;
     public JudgePluginTag judgeMatchPolicyPluginTag;
     public Collection<JudgePluginTag> judgeFilterPluginTags;
     public List<String> inputFileNames;
@@ -34,8 +34,8 @@ public class ProblemView {
         return new ProblemView(
                 problem.getId(),
                 problem.getTitle(),
-                problem.getMarkdownDescription(),
-                problem.getJudgeEnvSpec(),
+                problem.getDescription(),
+                problem.getResourceSpec(),
                 problem.getOutputMatchPolicyPluginTag(),
                 problem.getFilterPluginTags(),
                 problem.getInputFileNames(),
@@ -52,8 +52,8 @@ public class ProblemView {
         var builder =  Problem.builder()
                 .id(view.getId())
                 .title(view.getTitle())
-                .markdownDescription(view.markdownDescription)
-                .judgeEnvSpec(view.judgeEnvSpec)
+                .description(view.markdownDescription)
+                .resourceSpec(view.resourceSpec)
                 .outputMatchPolicyPluginTag(view.judgeMatchPolicyPluginTag)
                 .inputFileNames(view.inputFileNames)
                 .outputFileNames(view.outputFileNames)

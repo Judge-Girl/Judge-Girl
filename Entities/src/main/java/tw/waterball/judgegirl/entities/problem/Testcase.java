@@ -14,6 +14,11 @@
 package tw.waterball.judgegirl.entities.problem;
 
 import lombok.*;
+import tw.waterball.judgegirl.commons.utils.JSR380Utils;
+import tw.waterball.judgegirl.entities.problem.validators.PositiveOrNegativeOne;
+
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.PositiveOrZero;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -23,14 +28,20 @@ import lombok.*;
 @Getter
 @Setter
 @ToString
-
 public class Testcase {
+    @NotBlank
     private String name;
+    @PositiveOrZero
     private int problemId;
+    @PositiveOrNegativeOne
     private int timeLimit;
+    @PositiveOrNegativeOne
     private long memoryLimit;
+    @PositiveOrNegativeOne
     private long outputLimit;
+    @PositiveOrNegativeOne
     private int threadNumberLimit;
+    @PositiveOrZero
     private int grade;
 
     public Testcase(int problemId, int timeLimit, long memoryLimit, long outputLimit, int threadNumberLimit, int grade) {
@@ -40,5 +51,9 @@ public class Testcase {
         this.outputLimit = outputLimit;
         this.threadNumberLimit = threadNumberLimit;
         this.grade = grade;
+    }
+
+    public void validate() {
+        JSR380Utils.validate(this);
     }
 }

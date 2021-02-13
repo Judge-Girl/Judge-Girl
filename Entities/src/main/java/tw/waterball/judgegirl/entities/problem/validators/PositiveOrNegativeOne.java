@@ -11,22 +11,24 @@
  *   limitations under the License.
  */
 
-package tw.waterball.judgegirl.entities.problem;
+package tw.waterball.judgegirl.entities.problem.validators;
 
-import lombok.*;
-
-import javax.validation.constraints.NotBlank;
+import javax.validation.Constraint;
+import javax.validation.Payload;
+import java.lang.annotation.*;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
-@NoArgsConstructor
-@AllArgsConstructor
-@EqualsAndHashCode
-@ToString
-@Getter
-@Setter
-public class Compilation {
-    @NotBlank
-    private String script;
+@Documented
+@Constraint(validatedBy = PositiveOrNegativeOneValidator.class)
+@Target({ElementType.METHOD, ElementType.FIELD, ElementType.TYPE_USE})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface PositiveOrNegativeOne {
+
+    String message() default "Should be positive or negative one (indicate none)";
+
+    Class<?>[] groups() default {};
+
+    Class<? extends Payload>[] payload() default {};
 }

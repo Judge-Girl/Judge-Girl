@@ -35,7 +35,7 @@ public class StubProblemRepository implements ProblemRepository {
     private final static Problem PROBLEM_STUB = Problem.builder()
             .id(STUB_ID)
             .title("8 Queens")
-            .markdownDescription("<!-- Highest Discount Rate -->\n" +
+            .description("<!-- Highest Discount Rate -->\n" +
                     "\n" +
                     "## Task Description ##\n" +
                     "There is a sales coming. Every payment $p$ (a **positive integer**) will have a discount $d$ according to the following table.\n" +
@@ -76,7 +76,7 @@ public class StubProblemRepository implements ProblemRepository {
                     "Since we have not yet discuss the floating point numbers, so we compare two fractional" +
                     " numbers $a/b$ and $c/d$, by comparing $a \\* d$ and $b \\* c$ instead, when both $b$ and $d$ are positive integers.\n" +
                     "![Test Image](https://i.imgur.com/E9hmeDw.png)")
-            .judgeEnvSpec(new JudgeEnvSpec(Language.C, JudgeEnv.NORMAL, 0.5f, 0))
+            .resourceSpec(new ResourceSpec(Language.C, ServerEnv.NORMAL, 0.5f, 0))
             .outputMatchPolicyPluginTag(AllMatchPolicyPlugin.TAG)
             .tag("tag1").tag("tag2")
             .submittedCodeSpec(new SubmittedCodeSpec(Language.C, "main.c"))

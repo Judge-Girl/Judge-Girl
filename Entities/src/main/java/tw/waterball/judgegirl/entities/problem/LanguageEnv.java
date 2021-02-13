@@ -13,10 +13,37 @@
 
 package tw.waterball.judgegirl.entities.problem;
 
+import lombok.*;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import java.util.List;
+
 /**
+ * An environment for each language support.
  * @author - johnny850807@gmail.com (Waterball)
  */
-public enum JudgeEnv {
-    HADOOP, NORMAL
-}
+@Builder
+@Getter
+@Setter
+@AllArgsConstructor
+public class LanguageEnv {
+    @NotBlank
+    private String name;
 
+    @Valid
+    private Compilation compilation;
+
+    @Valid
+    @NotNull
+    private ResourceSpec resourceSpec;
+
+    @NotNull
+    @Singular
+    private List<@Valid SubmittedCodeSpec> submittedCodeSpecs;
+
+    @NotBlank
+    private String providedCodesFileId;
+
+}

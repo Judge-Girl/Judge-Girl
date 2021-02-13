@@ -28,14 +28,8 @@ public class DefaultVerdictIssuer implements VerdictIssuer {
     private final static Logger logger = LogManager.getLogger(DefaultVerdictIssuer.class);
     private Verdict verdict;
 
-    @Override
-    public VerdictIssuer setJudges(List<Judge> judges) {
-        if (verdict == null) {
-            verdict = new Verdict(judges);
-        } else {
-            throw new IllegalStateException("The verdict's judges can only be set once.");
-        }
-        return this;
+    public DefaultVerdictIssuer(List<Judge> judges) {
+        verdict = new Verdict(judges);
     }
 
     @Override

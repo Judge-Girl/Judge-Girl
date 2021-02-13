@@ -15,8 +15,6 @@ package tw.waterball.judgegirl.entities.problem;
 
 import lombok.*;
 
-import javax.validation.constraints.NotBlank;
-
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
@@ -26,7 +24,7 @@ import javax.validation.constraints.NotBlank;
 @ToString
 @Getter
 @Setter
-public class Compilation {
-    @NotBlank
-    private String script;
+public class ResourceSpec {
+    private float cpu;
+    private float gpu;
 }

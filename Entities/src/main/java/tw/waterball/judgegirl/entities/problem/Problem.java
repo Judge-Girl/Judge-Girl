@@ -25,6 +25,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static tw.waterball.judgegirl.entities.problem.JudgePluginTag.Type.FILTER;
@@ -38,15 +39,13 @@ import static tw.waterball.judgegirl.entities.problem.JudgePluginTag.Type.OUTPUT
 @Builder
 public class Problem {
     private Integer id;
-
     @NotBlank
     private String title;
     @NotBlank
-    private String markdownDescription;
+    private String description;  // markdown
 
-    @Valid
-    @NotNull
-    private JudgeEnvSpec judgeEnvSpec;
+    @Singular
+    private Map<String, @Valid LanguageEnv> languageEnvs;
 
     @Valid
     @NotNull
@@ -58,25 +57,15 @@ public class Problem {
             JudgePluginTag> filterPluginTags;
 
     @Singular
-    private List<@NotBlank String> inputFileNames;
-    @Singular
-    private List<@NotBlank String> outputFileNames;
-    @Singular
     private List<@NotBlank String> tags;
-    @Singular
-    private List<@Valid SubmittedCodeSpec> submittedCodeSpecs;
 
-    @Valid
-    private Compilation compilation;
-    private String providedCodesFileId;
+    @Singular
+    private List<@Valid Testcase> testcases;
+
     private String testcaseIOsFileId;
 
     public void validate() {
         JSR380Utils.validate(this);
-    }
-
-    public String getProvidedCodesFileName() {
-        return String.format("%d-%s-provided.zip", id, title);
     }
 
     public String getTestCaseIOsFileName() {
@@ -99,20 +88,12 @@ public class Problem {
         this.title = title;
     }
 
-    public String getMarkdownDescription() {
-        return markdownDescription;
+    public String getDescription() {
+        return description;
     }
 
-    public void setMarkdownDescription(String markdownDescription) {
-        this.markdownDescription = markdownDescription;
-    }
-
-    public JudgeEnvSpec getJudgeEnvSpec() {
-        return judgeEnvSpec;
-    }
-
-    public void setJudgeEnvSpec(JudgeEnvSpec judgeEnvSpec) {
-        this.judgeEnvSpec = judgeEnvSpec;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public JudgePluginTag getOutputMatchPolicyPluginTag() {
@@ -121,22 +102,6 @@ public class Problem {
 
     public Collection<JudgePluginTag> getFilterPluginTags() {
         return filterPluginTags;
-    }
-
-    public List<String> getInputFileNames() {
-        return inputFileNames;
-    }
-
-    public void setInputFileNames(List<String> inputFileNames) {
-        this.inputFileNames = inputFileNames;
-    }
-
-    public List<String> getOutputFileNames() {
-        return outputFileNames;
-    }
-
-    public void setOutputFileNames(List<String> outputFileNames) {
-        this.outputFileNames = outputFileNames;
     }
 
     public List<String> getTags() {
@@ -151,30 +116,6 @@ public class Problem {
         tags.add(tag);
     }
 
-    public List<SubmittedCodeSpec> getSubmittedCodeSpecs() {
-        return submittedCodeSpecs;
-    }
-
-    public void setSubmittedCodeSpecs(List<SubmittedCodeSpec> submittedCodeSpecs) {
-        this.submittedCodeSpecs = submittedCodeSpecs;
-    }
-
-    public Compilation getCompilation() {
-        return compilation;
-    }
-
-    public void setCompilation(Compilation compilation) {
-        this.compilation = compilation;
-    }
-
-    public String getProvidedCodesFileId() {
-        return providedCodesFileId;
-    }
-
-    public void setProvidedCodesFileId(String providedCodesFileId) {
-        this.providedCodesFileId = providedCodesFileId;
-    }
-
     public String getTestcaseIOsFileId() {
         return testcaseIOsFileId;
     }
@@ -183,12 +124,20 @@ public class Problem {
         this.testcaseIOsFileId = testcaseIOsFileId;
     }
 
-    public boolean isCompiledLanguage() {
-        return getJudgeEnvSpec().getLanguage().isCompiledLang();
-    }
-
     public void setOutputMatchPolicyPluginTag(JudgePluginTag outputMatchPolicyPluginTag) {
         this.outputMatchPolicyPluginTag = outputMatchPolicyPluginTag;
+    }
+
+    public void addLanguageEnv(LanguageEnv languageEnv) {
+        languageEnvs.put(languageEnv.getName(), languageEnv);
+    }
+
+    public LanguageEnv getLanguageEnv(Language language) {
+        return languageEnvs.get(language.toString());
+    }
+
+    public LanguageEnv getLanguageEnv(String name) {
+        return languageEnvs.get(name);
     }
 
 

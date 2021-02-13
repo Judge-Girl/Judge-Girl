@@ -14,7 +14,7 @@
 package tw.waterball.judgegirl.entities.problem;
 
 import org.junit.jupiter.api.Test;
-import tw.waterball.judgegirl.entities.stubs.Stubs;
+import tw.waterball.judgegirl.entities.stubs.ProblemStubs;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -22,13 +22,13 @@ class ProblemTest {
 
     @Test
     void GivenValidProblem_WhenValidate_ShouldPass() {
-        Problem problem = Stubs.problemTemplateBuilder().build();
+        Problem problem = ProblemStubs.template().build();
         problem.validate();
     }
 
     @Test
     void GivenProblemWithMatchPolicyPluginTagOfSourceCodeFilterType_WhenValidate_ShouldThrow() {
-        Problem problem = Stubs.problemTemplateBuilder()
+        Problem problem = ProblemStubs.template()
                 .outputMatchPolicyPluginTag(new JudgePluginTag(
                         JudgePluginTag.Type.FILTER,
                         "group", "name", "1.0"
@@ -40,7 +40,7 @@ class ProblemTest {
 
     @Test
     void GivenProblemWithCodeInspectionOfOutputMatchType_WhenValidate_ShouldThrow() {
-        Problem problem = Stubs.problemTemplateBuilder()
+        Problem problem = ProblemStubs.template()
                 .filterPluginTag(new JudgePluginTag(
                         JudgePluginTag.Type.OUTPUT_MATCH_POLICY,
                         "group", "name", "1.0"

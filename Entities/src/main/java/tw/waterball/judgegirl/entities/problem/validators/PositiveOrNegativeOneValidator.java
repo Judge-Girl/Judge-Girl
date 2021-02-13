@@ -11,22 +11,20 @@
  *   limitations under the License.
  */
 
-package tw.waterball.judgegirl.entities.problem;
+package tw.waterball.judgegirl.entities.problem.validators;
 
-import lombok.*;
+import javax.validation.ConstraintValidator;
+import javax.validation.ConstraintValidatorContext;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
-@NoArgsConstructor
-@AllArgsConstructor
-@EqualsAndHashCode
-@ToString
-@Getter
-@Setter
-public class JudgeEnvSpec {
-    private Language language;
-    private JudgeEnv environment;
-    private float cpu;
-    private float gpu;
+public class PositiveOrNegativeOneValidator implements
+        ConstraintValidator<PositiveOrNegativeOne, Number> {
+
+    @Override
+    public boolean isValid(Number number, ConstraintValidatorContext constraintValidatorContext) {
+        long v = number.longValue();
+        return v > 0 || v == -1;
+    }
 }

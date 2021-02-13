@@ -64,11 +64,11 @@ public class JudgeGirlFilterPluginTest {
     private ProblemServiceDriver problemServiceDriver;
     private SubmissionServiceDriver submissionServiceDriver;
     private final static int MEMORY_LIMIT = 128 << 20;
-    private static JudgeEnvSpec judgeEnvSpec = new JudgeEnvSpec(Language.C, JudgeEnv.NORMAL, 2f, 0);
+    private static ResourceSpec resourceSpec = new ResourceSpec(Language.C, ServerEnv.NORMAL, 2f, 0);
     private static Problem problem = Problem.builder()
             .id(problemId).title("Prefix Sum")
-            .markdownDescription("Ignored")
-            .judgeEnvSpec(judgeEnvSpec)
+            .description("Ignored")
+            .resourceSpec(resourceSpec)
             .outputMatchPolicyPluginTag(AllMatchPolicyPlugin.TAG)
             .tag("Ignored")
             .filterPluginTag(filterPlugin.getTag())

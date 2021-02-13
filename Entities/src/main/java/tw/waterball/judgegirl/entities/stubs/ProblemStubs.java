@@ -19,33 +19,36 @@ import tw.waterball.judgegirl.entities.submission.CompositeReport;
 import tw.waterball.judgegirl.entities.submission.Report;
 
 import static java.util.Collections.singletonMap;
+import static tw.waterball.judgegirl.entities.problem.JudgePluginTag.Type.OUTPUT_MATCH_POLICY;
+import static tw.waterball.judgegirl.entities.problem.Language.C;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
-public class Stubs {
-
+public class ProblemStubs {
     @SuppressWarnings("WeakerAccess")
     public final static int STUB_ID = 1;
 
-    public final static ProblemBuilder problemTemplateBuilder() {
+    public static ProblemBuilder template() {
         return Problem.builder()
                 .id(STUB_ID)
                 .title("Title")
-                .markdownDescription("# Title \n ```\n Code \n ```")
-                .judgeEnvSpec(new JudgeEnvSpec(Language.C, JudgeEnv.NORMAL, 0.5f, 0))
+                .description("# Title \n ```\n Code \n ```")
                 .outputMatchPolicyPluginTag(new JudgePluginTag(
-                        JudgePluginTag.Type.OUTPUT_MATCH_POLICY, "group", "name", "1.0"))
+                        OUTPUT_MATCH_POLICY, "group", "name", "1.0"))
                 .tag("tag1").tag("tag2")
-                .submittedCodeSpec(new SubmittedCodeSpec(Language.C, "main.c"))
-                .providedCodesFileId("providedCodesFileId")
                 .testcaseIOsFileId("testcaseIOsFileId")
-                .compilation(new Compilation("compilation script"))
-                .inputFileName("file.in")
-                .outputFileName("file.out");
+                .languageEnv(C.toString(),
+                        LanguageEnv.builder()
+                                .name(C.toString())
+                                .compilation(new Compilation("Compilation Script"))
+                                .resourceSpec(new ResourceSpec(0.5f, 0))
+                                .submittedCodeSpec(new SubmittedCodeSpec(C, "main.c"))
+                                .providedCodesFileId("providedCodesFileId")
+                                .build());
     }
 
-    public final static CompositeReport compositeReport() {
+    public static CompositeReport compositeReport() {
         CompositeReport compositeReport = new CompositeReport();
         compositeReport.addReport(new Report("A"));
         compositeReport.addReport(new Report("B"));

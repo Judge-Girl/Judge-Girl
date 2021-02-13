@@ -13,20 +13,10 @@
 
 package tw.waterball.judgegirl.entities.problem;
 
-import lombok.*;
-
-import javax.validation.constraints.NotBlank;
-
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
-@NoArgsConstructor
-@AllArgsConstructor
-@EqualsAndHashCode
-@ToString
-@Getter
-@Setter
-public class Compilation {
-    @NotBlank
-    private String script;
+public enum ServerEnv {
+    HADOOP, NORMAL
 }
+
