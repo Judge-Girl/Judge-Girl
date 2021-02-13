@@ -18,10 +18,7 @@ package tw.waterball.judgegirl.problemapi.clients;
 
 import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
-import tw.waterball.judgegirl.entities.problem.Testcase;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
-
-import java.util.List;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -29,8 +26,6 @@ import java.util.List;
 public interface ProblemServiceDriver {
 
     ProblemView getProblem(int problemId) throws NotFoundException;
-
-    List<Testcase> getTestcases(int problemId) throws NotFoundException;
 
     FileResource downloadProvidedCodes(int problemId, String languageEnvName, String providedCodesFileId) throws NotFoundException;
 

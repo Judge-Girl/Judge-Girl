@@ -40,21 +40,23 @@ public class Submission {
     private String submittedCodesFileId;
     private Date submissionTime = new Date();
 
-    public Submission(String id, int studentId, int problemId, String submittedCodesFileId, Date submissionTime) {
-        this(id, studentId, problemId, submittedCodesFileId);
+    public Submission(String id, int studentId, int problemId, String languageEnvName, String submittedCodesFileId, Date submissionTime) {
+        this(id, studentId, problemId, languageEnvName, submittedCodesFileId);
         this.submissionTime = submissionTime;
     }
 
-    public Submission(String id, int studentId, int problemId, String submittedCodesFileId) {
+    public Submission(String id, int studentId, int problemId, String languageEnvName, String submittedCodesFileId) {
         this.id = id;
         this.studentId = studentId;
         this.problemId = problemId;
+        this.languageEnvName = languageEnvName;
         this.submittedCodesFileId = submittedCodesFileId;
     }
 
-    public Submission(int studentId, int problemId, String submittedCodesFileId) {
+    public Submission(int studentId, int problemId, String languageEnvName, String submittedCodesFileId) {
         this.studentId = studentId;
         this.problemId = problemId;
+        this.languageEnvName = languageEnvName;
         this.submittedCodesFileId = submittedCodesFileId;
     }
 

@@ -40,6 +40,7 @@ public class DataMapper {
         return new SubmissionData(
                 submission.getId(),
                 submission.getProblemId(),
+                submission.getLanguageEnvName(),
                 submission.getStudentId(),
                 toData(verdict),
                 submission.getSubmittedCodesFileId(),
@@ -68,6 +69,7 @@ public class DataMapper {
                 data.getId(),
                 data.getStudentId(),
                 data.getProblemId(),
+                data.getLanguageEnvName(),
                 data.getSubmittedCodesFileId(),
                 data.getSubmissionTime()
         );

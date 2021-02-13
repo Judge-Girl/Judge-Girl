@@ -32,6 +32,7 @@ public class SubmissionData {
     @Id
     private String id;
     private int problemId;
+    private String languageEnvName;
     private int studentId;
     private VerdictData verdict;
     private String submittedCodesFileId;

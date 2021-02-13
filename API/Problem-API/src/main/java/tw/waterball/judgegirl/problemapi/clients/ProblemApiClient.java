@@ -10,11 +10,9 @@ import tw.waterball.judgegirl.api.retrofit.BaseRetrofitAPI;
 import tw.waterball.judgegirl.api.retrofit.RetrofitFactory;
 import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
-import tw.waterball.judgegirl.entities.problem.Testcase;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
 
 import javax.inject.Named;
-import java.util.List;
 
 import static tw.waterball.judgegirl.commons.utils.HttpHeaderUtils.createBearer;
 
@@ -39,16 +37,12 @@ public class ProblemApiClient extends BaseRetrofitAPI implements ProblemServiceD
         return errorHandlingGetBody(() -> api.getProblem(problemId).execute());
     }
 
-    @Override
-    public List<Testcase> getTestcases(int problemId) throws NotFoundException {
-        return errorHandlingGetBody(() -> api.getTestCases(problemId).execute());
-    }
 
     @Override
     public FileResource downloadProvidedCodes(int problemId, String languageEnvName, String providedCodesFileId) throws NotFoundException {
-        Response<ResponseBody> resp = errorHandlingGetResponse(() -> api.getZippedProvidedSourceCodes(
+        Response<ResponseBody> resp = errorHandlingGetResponse(() -> api.getZippedProvidedCodes(
                 createBearer(adminToken),
-                problemId, providedCodesFileId));
+                problemId, languageEnvName, providedCodesFileId));
         return parseDownloadedFileResource(resp);
 
     }
@@ -66,13 +60,11 @@ public class ProblemApiClient extends BaseRetrofitAPI implements ProblemServiceD
         @GET("/api/problems/{problemId}")
         Call<ProblemView> getProblem(@Path("problemId") int problemId) throws NotFoundException;
 
-        @GET("/api/problems/{problemId}/testcases")
-        Call<List<Testcase>> getTestCases(@Path("problemId") int problemId) throws NotFoundException;
-
-        @GET("/api/problems/{problemId}/providedCodes/{providedCodesFileId}")
-        Call<ResponseBody> getZippedProvidedSourceCodes(@Header("Authorization") String authorizationHeader,
-                                                        @Path("problemId") int problemId,
-                                                        @Path("providedCodesFileId") String providedCodesFileId) throws NotFoundException;
+        @GET("/api/problems/{problemId}/{langEnvName}/providedCodes/{providedCodesFileId}")
+        Call<ResponseBody> getZippedProvidedCodes(@Header("Authorization") String authorizationHeader,
+                                                  @Path("problemId") int problemId,
+                                                  @Path("langEnvName") String langEnvName,
+                                                  @Path("providedCodesFileId") String providedCodesFileId) throws NotFoundException;
 
         @GET("/api/problems/{problemId}/testcaseIOs/{testcaseIOsFileId}")
         Call<ResponseBody> getZippedTestCaseIOs(@Header("Authorization") String authorizationHeader,

@@ -106,6 +106,7 @@ public class MongoSubmissionRepository implements SubmissionRepository {
     @Override
     public List<Submission> find(SubmissionQueryParams params) {
         Query query = query(where("problemId").is(params.getProblemId())
+                .and("languageEnvName").is(params.getLanguageEnvName())
                 .and("studentId").is(params.getStudentId()));
         params.getPage().ifPresent(page -> query.skip(page * PAGE_SIZE).limit(PAGE_SIZE));
         List<SubmissionData> dataList = mongoTemplate.find(query, SubmissionData.class);

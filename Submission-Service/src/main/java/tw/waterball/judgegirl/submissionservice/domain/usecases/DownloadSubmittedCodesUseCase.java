@@ -40,16 +40,20 @@ public class DownloadSubmittedCodesUseCase extends BaseSubmissionUseCase {
     }
 
     private void validateRequest(Request request, Submission submission) {
-        if (!submission.getSubmittedCodesFileId()
-                .equals(request.submittedCodesFileId)) {
-            throw new IllegalArgumentException(
-                    String.format("Invalid submitted codes' file id: %s.", request.submittedCodesFileId));
+        if (!submission.getSubmittedCodesFileId().equals(request.submittedCodesFileId)) {
+            throw new NotFoundException(
+                    String.format("Submitted codes' file id: %s not found.", request.submittedCodesFileId));
+        }
+
+        if (!submission.getLanguageEnvName().equals(request.getLanguageEnvName())) {
+            throw new NotFoundException(submission.getId(), "submission");
         }
     }
 
     @Value
     public static class Request {
         public int studentId;
+        public String languageEnvName;
         public String submissionId;
         public String submittedCodesFileId;
     }

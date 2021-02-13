@@ -28,16 +28,22 @@ public class SubmissionQueryParams {
     @Nullable
     private Integer page;
     private int problemId;
+    private String languageEnvName;
     private int studentId;
 
-    public SubmissionQueryParams(@Nullable Integer page, int problemId, int studentId) {
+    public SubmissionQueryParams(@Nullable Integer page, int problemId, String languageEnvName, int studentId) {
         this.page = page;
         this.problemId = problemId;
+        this.languageEnvName = languageEnvName;
         this.studentId = studentId;
     }
 
     public Optional<Integer> getPage() {
         return Optional.ofNullable(page);
+    }
+
+    public String getLanguageEnvName() {
+        return languageEnvName;
     }
 
     public int getProblemId() {

@@ -25,14 +25,17 @@ public class GetSubmissionUseCase extends BaseSubmissionUseCase {
 
     private void validateRequest(Request request, Submission submission) {
         if (submission.getProblemId() != request.problemId) {
-            throw new NotFoundException("The submission is not under the problem " +
-                    "(problemId = " + request.problemId + ")");
+            throw new NotFoundException(submission.getId(), "submission");
+        }
+        if (!submission.getLanguageEnvName().equals(request.getLanguageEnvName())) {
+            throw new NotFoundException(submission.getId(), "submission");
         }
     }
 
     @Value
     public static class Request {
         public int problemId;
+        public String languageEnvName;
         public int studentId;
         public String submissionId;
     }

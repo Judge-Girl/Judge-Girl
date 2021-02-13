@@ -30,16 +30,18 @@ public class SubmissionView {
     public String id;
     public int studentId;
     public int problemId;
+    public String languageEnvName;
     public VerdictView verdict;
     public boolean isJudged;
     public String submittedCodesFileId;
     public Date submissionTime;
 
-    public SubmissionView(String id, int studentId, int problemId, VerdictView verdict,
-                          String submittedCodesFileId, Date submissionTime) {
+    public SubmissionView(String id, int studentId, int problemId, String languageEnvName,
+                          VerdictView verdict, String submittedCodesFileId, Date submissionTime) {
         this.id = id;
         this.studentId = studentId;
         this.problemId = problemId;
+        this.languageEnvName = languageEnvName;
         this.verdict = verdict;
         this.isJudged = verdict != null;
         this.submittedCodesFileId = submittedCodesFileId;
@@ -54,6 +56,7 @@ public class SubmissionView {
         return new SubmissionView(submission.getId(),
                 submission.getStudentId(),
                 submission.getProblemId(),
+                submission.getLanguageEnvName(),
                 VerdictView.fromEntity(verdict),
                 submission.getSubmittedCodesFileId(),
                 submission.getSubmissionTime());
@@ -68,6 +71,7 @@ public class SubmissionView {
         Submission submission = new Submission(submissionView.getId(),
                 submissionView.getStudentId(),
                 submissionView.getProblemId(),
+                submissionView.getLanguageEnvName(),
                 submissionView.getSubmittedCodesFileId());
 
         Verdict verdict = VerdictView.toEntity(verdictView);

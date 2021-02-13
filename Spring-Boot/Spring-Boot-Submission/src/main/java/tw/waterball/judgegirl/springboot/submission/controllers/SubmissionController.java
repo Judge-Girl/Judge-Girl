@@ -42,7 +42,7 @@ import java.util.stream.Collectors;
  */
 @CrossOrigin
 @RestController
-@RequestMapping("/api/problems/{problemId}/students/{studentId}/submissions")
+@RequestMapping("/api/problems/{problemId}/{langEnvName}/students/{studentId}/submissions")
 public class SubmissionController {
     public final static String SUBMIT_CODE_MULTIPART_KEY_NAME = "submittedCodes";
     private TokenService tokenService;
@@ -65,12 +65,14 @@ public class SubmissionController {
 
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity submit(@RequestHeader("Authorization") String bearerToken,
-                          @PathVariable int problemId, @PathVariable int studentId,
+                          @PathVariable int problemId,
+                          @PathVariable String langEnvName,
+                          @PathVariable int studentId,
                           @RequestParam(SUBMIT_CODE_MULTIPART_KEY_NAME) MultipartFile[] submittedCodes) {
         return validateIdentity(studentId, bearerToken, (token) -> {
             try {
                 boolean throttling = !token.isAdmin();
-                SubmitCodeRequest request = convertToSubmitCodeRequest(problemId, studentId, submittedCodes, throttling);
+                SubmitCodeRequest request = convertToSubmitCodeRequest(problemId, langEnvName, studentId, submittedCodes, throttling);
                 SubmissionPresenter presenter = new SubmissionPresenter();
                 submitCodeUseCase.execute(request, presenter);
                 return ResponseEntity.accepted().body(presenter.present());
@@ -80,9 +82,9 @@ public class SubmissionController {
         });
     }
 
-    private SubmitCodeRequest convertToSubmitCodeRequest(@PathVariable int problemId, @PathVariable int studentId, @RequestParam(SUBMIT_CODE_MULTIPART_KEY_NAME) MultipartFile[] submittedCodes, boolean throttling) {
+    private SubmitCodeRequest convertToSubmitCodeRequest(@PathVariable int problemId, String langEnvName, @PathVariable int studentId, @RequestParam(SUBMIT_CODE_MULTIPART_KEY_NAME) MultipartFile[] submittedCodes, boolean throttling) {
         return new SubmitCodeRequest(
-                throttling, studentId, problemId,
+                throttling, studentId, problemId, langEnvName,
                 Arrays.stream(submittedCodes)
                         .map(this::convertMultipartFileToFileResource)
                         .collect(Collectors.toList()));
@@ -101,13 +103,15 @@ public class SubmissionController {
     @GetMapping(value = "/{submissionId}",
             produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity getSubmission(@RequestHeader("Authorization") String bearerToken,
-                                 @PathVariable int problemId, @PathVariable int studentId,
+                                 @PathVariable int problemId,
+                                 @PathVariable String langEnvName,
+                                 @PathVariable int studentId,
                                  @PathVariable String submissionId) {
         return validateIdentity(studentId, bearerToken,
                 (token) -> {
                     SubmissionPresenter presenter = new SubmissionPresenter();
                     getSubmissionUseCase.execute(
-                            new GetSubmissionUseCase.Request(problemId, studentId, submissionId),
+                            new GetSubmissionUseCase.Request(problemId, langEnvName, studentId, submissionId),
                             presenter);
                     return ResponseEntity.ok(presenter.present());
                 });
@@ -116,11 +120,13 @@ public class SubmissionController {
     @GetMapping
     ResponseEntity getSubmissions(@RequestHeader("Authorization") String bearerToken,
                                   @RequestParam(value = "page", required = false) Integer page,
-                                  @PathVariable int problemId, @PathVariable int studentId) {
+                                  @PathVariable int problemId,
+                                  @PathVariable String langEnvName,
+                                  @PathVariable int studentId) {
         return validateIdentity(studentId, bearerToken,
                 (token) -> {
                     GetSubmissionsPresenterImpl presenter = new GetSubmissionsPresenterImpl();
-                    getSubmissionsUseCase.execute(new SubmissionQueryParams(page, problemId, studentId), presenter);
+                    getSubmissionsUseCase.execute(new SubmissionQueryParams(page, problemId, langEnvName, studentId), presenter);
                     return ResponseEntity.ok(presenter.present());
                 });
     }
@@ -128,13 +134,15 @@ public class SubmissionController {
     @GetMapping(value = "/{submissionId}/submittedCodes/{submittedCodesFileId}",
             produces = "application/zip")
     ResponseEntity downloadZippedSubmittedCodes(@RequestHeader("Authorization") String bearerToken,
-                                                @PathVariable int problemId, @PathVariable int studentId,
+                                                @PathVariable int problemId,
+                                                @PathVariable String langEnvName,
+                                                @PathVariable int studentId,
                                                 @PathVariable String submissionId,
                                                 @PathVariable String submittedCodesFileId) {
         return validateIdentity(studentId, bearerToken, (token) -> {
             FileResource fileResource = downloadSubmittedCodesUseCase.execute(
                     new DownloadSubmittedCodesUseCase.Request(
-                            studentId, submissionId, submittedCodesFileId)
+                            studentId, langEnvName, submissionId, submittedCodesFileId)
             );
             return ResponseEntityUtils.respondInputStreamResource(fileResource);
         });

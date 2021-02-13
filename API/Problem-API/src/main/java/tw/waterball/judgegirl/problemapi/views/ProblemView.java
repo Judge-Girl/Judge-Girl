@@ -3,7 +3,10 @@ package tw.waterball.judgegirl.problemapi.views;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import tw.waterball.judgegirl.entities.problem.*;
+import tw.waterball.judgegirl.entities.problem.JudgePluginTag;
+import tw.waterball.judgegirl.entities.problem.LanguageEnv;
+import tw.waterball.judgegirl.entities.problem.Problem;
+import tw.waterball.judgegirl.entities.problem.Testcase;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -24,6 +27,7 @@ public class ProblemView {
     public Collection<JudgePluginTag> judgeFilterPluginTags;
     public List<String> tags;
     public String testcaseIOsFileId;
+    public List<Testcase> testcases;
 
     public static ProblemView fromEntity(Problem problem) {
         return new ProblemView(
@@ -34,17 +38,19 @@ public class ProblemView {
                 problem.getOutputMatchPolicyPluginTag(),
                 problem.getFilterPluginTags(),
                 problem.getTags(),
-                problem.getTestcaseIOsFileId()
+                problem.getTestcaseIOsFileId(),
+                problem.getTestcases()
         );
     }
 
     public static Problem toEntity(ProblemView view) {
-        var builder =  Problem.builder()
+        var builder = Problem.builder()
                 .id(view.getId())
                 .title(view.getTitle())
                 .description(view.description)
                 .outputMatchPolicyPluginTag(view.judgeMatchPolicyPluginTag)
                 .tags(view.tags)
+                .testcases(view.testcases)
                 .testcaseIOsFileId(view.testcaseIOsFileId);
         for (LanguageEnv languageEnv : view.languageEnvs) {
             builder.languageEnv(languageEnv.getName(), languageEnv);

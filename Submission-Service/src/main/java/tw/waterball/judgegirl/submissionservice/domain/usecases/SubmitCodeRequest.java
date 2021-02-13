@@ -31,6 +31,7 @@ public class SubmitCodeRequest {
     public boolean throttle;
     public int studentId;
     public int problemId;
+    public String languageEnvName;
 
     public List<FileResource> fileResources;
 }

@@ -45,6 +45,7 @@ import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequ
 import tw.waterball.judgegirl.commons.token.TokenService;
 import tw.waterball.judgegirl.commons.utils.Delay;
 import tw.waterball.judgegirl.entities.problem.JudgeStatus;
+import tw.waterball.judgegirl.entities.problem.Language;
 import tw.waterball.judgegirl.entities.problem.Problem;
 import tw.waterball.judgegirl.entities.stubs.ProblemStubs;
 import tw.waterball.judgegirl.entities.submission.*;
@@ -87,7 +88,7 @@ import static tw.waterball.judgegirl.testkit.resultmatchers.ZipResultMatcher.zip
 @AutoConfigureMockMvc
 @ContextConfiguration(classes = {SpringBootSubmissionApplication.class, SubmissionControllerIT.TestConfig.class})
 public class SubmissionControllerIT extends AbstractSpringBootTest {
-    private final String API_PREFIX = "/api/problems/{problemId}/students/{studentId}/submissions";
+    private final String API_PREFIX = "/api/problems/{problemId}/" + Language.C.toString() + "/students/{studentId}/submissions";
     private final Problem problem = ProblemStubs.template().build();
     private final String SUBMISSION_EXCHANGE_NAME = "submissions";
 
@@ -186,7 +187,7 @@ public class SubmissionControllerIT extends AbstractSpringBootTest {
 
         requestGetSubmission(STUDENT1_ID, STUDENT1_TOKEN)
                 .andExpect(content().json(
-                        objectMapper.writeValueAsString(singletonList(submissionView))));
+                        toJson(singletonList(submissionView))));
 
         requestDownloadSubmittedCodes(STUDENT1_ID, STUDENT1_TOKEN, submissionView.id, submissionView.submittedCodesFileId);
     }
@@ -262,8 +263,7 @@ public class SubmissionControllerIT extends AbstractSpringBootTest {
         requestWithToken(() -> get(API_PREFIX, problem.getId(), STUDENT1_ID), adminToken)
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().json(
-                        objectMapper.writeValueAsString(Collections.singletonList(submissionView))));
+                .andExpect(content().json(toJson(singletonList(submissionView))));
 
         // verify download submitted codes
         requestWithToken(() -> get(API_PREFIX + "/{submissionId}/submittedCodes/{submittedCodesFileId}",
