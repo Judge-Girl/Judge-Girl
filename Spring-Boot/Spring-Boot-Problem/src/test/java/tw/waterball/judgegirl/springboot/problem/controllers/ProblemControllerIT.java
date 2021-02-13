@@ -17,6 +17,7 @@ package tw.waterball.judgegirl.springboot.problem.controllers;
 
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -80,7 +81,6 @@ class ProblemControllerIT extends AbstractSpringBootTest {
                 .testcase(new Testcase("2", ProblemStubs.ID, 5, 5, 5000, 1, 30))
                 .testcase(new Testcase("3", ProblemStubs.ID, 3, 4, 5000, 1, 50))
                 .build();
-        givenProblemSavedWithProvidedCodesAndTestcaseIOs(problem);
     }
 
     @AfterEach
@@ -89,8 +89,19 @@ class ProblemControllerIT extends AbstractSpringBootTest {
         mongoTemplate.dropCollection(Testcase.class);
     }
 
+    private void givenProblemSavedWithProvidedCodesAndTestcaseIOs() {
+        providedCodesZip = ZipUtils.zipFilesFromResources("/stubs/file1.c", "/stubs/file2.c");
+        testcaseIOsZip = ZipUtils.zipFilesFromResources("/stubs/in/", "/stubs/out/");
+
+        this.problem = problemRepository.save(problem,
+                singletonMap(problem.getLanguageEnv(Language.C), new ByteArrayInputStream(providedCodesZip))
+                , new ByteArrayInputStream(testcaseIOsZip));
+    }
+
     @Test
-    void testDownloadZippedProvidedCodes() throws Exception {
+    void GivenProblemSaved_DownloadZippedProvidedCodesShouldSucceed() throws Exception {
+        givenProblemSavedWithProvidedCodesAndTestcaseIOs();
+
         LanguageEnv languageEnv = problem.getLanguageEnv(Language.C);
         mockMvc.perform(get("/api/problems/{problemId}/{languageEnv}/providedCodes/{providedCodesFileId}",
                 problem.getId(), languageEnv.getName(), languageEnv.getProvidedCodesFileId()))
@@ -100,18 +111,9 @@ class ProblemControllerIT extends AbstractSpringBootTest {
                 .andExpect(content().bytes(providedCodesZip));
     }
 
-    private void givenProblemSavedWithProvidedCodesAndTestcaseIOs(Problem problem) {
-        providedCodesZip = ZipUtils.zipFilesFromResources("/stubs/file1.c", "/stubs/file2.c");
-        testcaseIOsZip = ZipUtils.zipFilesFromResources("/stubs/in/", "/stubs/out/");
-
-        problemRepository.save(problem,
-                singletonMap(problem.getLanguageEnv(Language.C), new ByteArrayInputStream(providedCodesZip))
-                , new ByteArrayInputStream(testcaseIOsZip));
-    }
-
     @Test
-    void GivenProblemSaved_WhenGetThatProblemById_ShouldRespondThatProblem() throws Exception {
-        givenProblemSaved();
+    void GivenProblemSaved_WhenGetProblemById_ShouldRespondThatProblem() throws Exception {
+        givenProblemSavedWithProvidedCodesAndTestcaseIOs();
 
         mockMvc.perform(get("/api/problems/{problemId}", problem.getId()))
                 .andExpect(status().isOk())
@@ -119,47 +121,33 @@ class ProblemControllerIT extends AbstractSpringBootTest {
                 .andExpect(content().json(toJson(ProblemView.fromEntity(problem))));
     }
 
-    private void givenProblemSaved() {
-        final Problem problem = ProblemStubs.template().build();
-        mongoTemplate.save(problem);
-    }
-
     @Test
-    void GivenTestcasesSaved_whenGetTestcasesByProblemId_shouldRespondTestCases() throws Exception {
-        mongoTemplate.insertAll(problem.getTestcases());
-
-        mockMvc.perform(get("/api/problems/{problemId}/testcases", problem.getId()))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().json(objectMapper.writeValueAsString(problem.getTestcases())));
-    }
-
-    @Test
-    void testDownloadZippedTestCaseIOs() throws Exception {
-        final Problem savedProblem = ProblemStubs.template().build();
-        byte[] bytes = ZipUtils.zipFilesFromResources("/stubs/in/", "/stubs/out/");
-        String fileId = gridFsTemplate.store(new ByteArrayInputStream(bytes),
-                savedProblem.getTestCaseIOsFileName()).toString();
-        savedProblem.setTestcaseIOsFileId(fileId);
-        this.problem = mongoTemplate.save(savedProblem);
+    void GivenProblemSaved_DownloadZippedTestCaseIOsShouldSucceed() throws Exception {
+        givenProblemSavedWithProvidedCodesAndTestcaseIOs();
 
         mockMvc.perform(get("/api/problems/{problemId}/testcaseIOs/{testcaseIOsFileId}",
-                savedProblem.getId(), problem.getTestcaseIOsFileId()))
+                problem.getId(), problem.getTestcaseIOsFileId()))
                 .andExpect(status().isOk())
-                .andExpect(header().longValue("Content-Length", bytes.length))
+                .andExpect(header().longValue("Content-Length", testcaseIOsZip.length))
                 .andExpect(content().contentType("application/zip"))
-                .andExpect(content().bytes(bytes));
+                .andExpect(content().bytes(testcaseIOsZip));
     }
 
     @Test
     void GivenTagsSaved_WhenGetAllTags_ShouldRespondAllTags() throws Exception {
-        final List<String> tags = asList("tag1", "tag2", "tag3");
-        mongoTemplate.save(new MongoProblemRepository.AllTags(tags));
+        final List<String> tags = givenTagsSaved("tag1", "tag2", "tag3");
 
         mockMvc.perform(get("/api/problems/tags"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().json(objectMapper.writeValueAsString(tags)));
+                .andExpect(content().json(toJson(tags)));
+    }
+
+    @NotNull
+    private List<String> givenTagsSaved(String ...tags) {
+        final List<String> tagList = asList(tags);
+        mongoTemplate.save(new MongoProblemRepository.AllTags(tagList));
+        return tagList;
     }
 
     @Test
