@@ -135,8 +135,7 @@ public class CCJudger extends PluginExtendedJudger {
         // here we copy the submitted codes into a temporary directory
         // for latter swapping back to override the source root.
         Path tempSubmittedCodesPath = submissionHome.getPath().resolve(TEMP_SUBMITTED_CODES_DIR_NAME);
-        FileUtils.copyDirectory(getSourceRootPath().toFile(),
-                tempSubmittedCodesPath.toFile());
+        FileUtils.copyDirectory(getSourceRootPath().toFile(), tempSubmittedCodesPath.toFile());
     }
 
     @Override

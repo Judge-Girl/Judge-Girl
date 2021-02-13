@@ -36,8 +36,9 @@ public abstract class Judger {
     public void judge(int studentId, int problemId, String submissionId) throws IOException {
         retrieveEntities(studentId, problemId, submissionId);
         setupJudgerFileLayout();
-        downloadProvidedCodes();
+        // the download's order should be fixed
         downloadSubmittedCodes();
+        downloadProvidedCodes();
         downloadTestcaseIOs();
 
         CompileResult compileResult = CompileResult.success();
