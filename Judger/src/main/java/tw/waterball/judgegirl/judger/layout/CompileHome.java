@@ -11,16 +11,16 @@
  *   limitations under the License.
  */
 
-package tw.waterball.judgegirl.judger.infra.compile;
+package tw.waterball.judgegirl.judger.layout;
 
 import java.nio.file.Path;
 
 /**
- * @author - Haribo
+ * @author - johnny850807@gmail.com (Waterball)
  */
-public class ShellCompilerFactory implements CompilerFactory {
-    @Override
-    public Compiler create(Path sourceRootPath) {
-        return new ShellCompiler(sourceRootPath);
-    }
+public interface CompileHome {
+    Path getCompileScriptPath();
+    Path getExecutablePath();
+    SourceRoot getSourceRoot();
+    Path getPath();
 }

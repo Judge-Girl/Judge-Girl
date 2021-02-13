@@ -9,8 +9,10 @@ root:
     profiler: "profiler"
     submissionHome:
       path: "${submission.id}"
-      sourceRoot:
-        path: "src"
+      compileHome:
+        path: "compile"
+        sourceRoot:
+          path: "src"
         compileScript: "compile.sh"
         executable: "a.out"
 

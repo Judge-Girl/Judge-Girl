@@ -61,14 +61,12 @@ public abstract class Judger {
 
     private void retrieveEntities(int studentId, int problemId, String submissionId) {
         Problem problem = findProblemById(problemId);
-        List<Testcase> testcases = findTestcasesByProblemId(problemId);
+        List<Testcase> testcases = problem.getTestcases();
         Submission submission = findSubmissionByIds(studentId, problemId, submissionId);
         this.context = new JudgeContext(studentId, problem, testcases, submission);
         onJudgeContextSetup(this.context);
     }
     protected abstract Problem findProblemById(int problemId);
-
-    protected abstract List<Testcase> findTestcasesByProblemId(int problemId);
 
     protected abstract Submission findSubmissionByIds(int problemId, int studentId, String submissionId);
 
@@ -96,12 +94,15 @@ public abstract class Judger {
     }
 
     protected abstract void onBeforeRunningTestcase(Testcase testcase);
+    protected abstract void onAfterRunningTestcase(Testcase testcase);
+
 
     protected List<Judge> runAndJudgeAllTestcases() {
         return getTestcases().stream()
                 .map(testcase -> {
                     onBeforeRunningTestcase(testcase);
                     TestcaseExecutionResult executionResult = runTestcase(testcase);
+                    onAfterRunningTestcase(testcase);
                     return judgeFromProgramExecutionResult(testcase, executionResult);
                 }).collect(Collectors.toList());
     }
@@ -152,8 +153,7 @@ public abstract class Judger {
     }
 
     protected boolean isCompiledLanguage() {
-        LanguageEnv languageEnv = getProblem().getLanguageEnv(getSubmission().getLanguageEnvName());
-        return languageEnv.isCompiledLanguage();
+        return getLanguageEnv().isCompiledLanguage();
     }
 
     protected int getStudent() {

@@ -13,7 +13,6 @@
 
 package tw.waterball.judgegirl.judger;
 
-import lombok.SneakyThrows;
 import tw.waterball.judgegirl.judger.filelayout.Directory;
 import tw.waterball.judgegirl.judger.filelayout.FileLayout;
 import tw.waterball.judgegirl.judger.filelayout.YAMLFileLayoutBuilder;
@@ -25,6 +24,8 @@ import java.nio.file.Path;
 import static java.util.Objects.requireNonNull;
 
 /**
+ * A facade that covers the layout produced by YAMLFileLayoutBuilder.
+ *
  * @author - johnny850807@gmail.com (Waterball)
  */
 public class YAMLJudgerWorkspace implements JudgerWorkspace {
@@ -36,11 +37,6 @@ public class YAMLJudgerWorkspace implements JudgerWorkspace {
         root = fileLayout.getRoot();
     }
 
-    @SneakyThrows
-    @Override
-    public void setupWholeLayout() {
-        fileLayout.setupLayout();
-    }
 
     @Override
     public Path getPath() {
@@ -78,9 +74,8 @@ public class YAMLJudgerWorkspace implements JudgerWorkspace {
         }
 
         @Override
-        public SourceRoot getSourceRoot() {
-            return new YAMLSourceRoot((Directory)
-                    submissionHome.getByKey("sourceRoot"));
+        public CompileHome getCompileHome() {
+            return new YAMLCompileHome((Directory) submissionHome.getByKey("compileHome"));
         }
 
         @Override
@@ -91,21 +86,40 @@ public class YAMLJudgerWorkspace implements JudgerWorkspace {
         }
     }
 
+    private static class YAMLCompileHome implements CompileHome {
+        private Directory compileHome;
+
+        public YAMLCompileHome(Directory compileHome) {
+            this.compileHome = compileHome;
+        }
+
+        @Override
+        public Path getCompileScriptPath() {
+            return compileHome.getByKey("compileScript").getAbsolutePath();
+        }
+
+        @Override
+        public Path getExecutablePath() {
+            return compileHome.getByKey("executable").getAbsolutePath();
+        }
+
+        @Override
+        public SourceRoot getSourceRoot() {
+            return new YAMLSourceRoot((Directory)
+                    compileHome.getByKey("sourceRoot"));
+        }
+
+        @Override
+        public Path getPath() {
+            return compileHome.getAbsolutePath();
+        }
+    }
+
     private static class YAMLSourceRoot implements SourceRoot {
         private Directory sourceRoot;
 
         YAMLSourceRoot(Directory sourceRoot) {
             this.sourceRoot = sourceRoot;
-        }
-
-        @Override
-        public Path getCompileScriptPath() {
-            return sourceRoot.getByKey("compileScript").getAbsolutePath();
-        }
-
-        @Override
-        public Path getExecutablePath() {
-            return sourceRoot.getByKey("executable").getAbsolutePath();
         }
 
         @Override

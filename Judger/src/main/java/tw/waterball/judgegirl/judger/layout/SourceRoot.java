@@ -19,7 +19,5 @@ import java.nio.file.Path;
  * @author - johnny850807@gmail.com (Waterball)
  */
 public interface SourceRoot {
-    Path getCompileScriptPath();
-    Path getExecutablePath();
     Path getPath();
 }

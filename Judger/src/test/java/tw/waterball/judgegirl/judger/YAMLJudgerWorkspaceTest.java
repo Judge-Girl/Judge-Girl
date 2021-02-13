@@ -32,10 +32,13 @@ public class YAMLJudgerWorkspaceTest {
         SubmissionHome submissionHome = workspace.getSubmissionHome("s");
         assertEquals("/judger/run/s", submissionHome.getPath().toString());
 
-        SourceRoot sourceRoot = submissionHome.getSourceRoot();
-        assertEquals("/judger/run/s/src", sourceRoot.getPath().toString());
-        assertEquals("/judger/run/s/src/compile.sh", sourceRoot.getCompileScriptPath().toString());
-        assertEquals("/judger/run/s/src/a.out", sourceRoot.getExecutablePath().toString());
+        CompileHome compileHome = submissionHome.getCompileHome();
+        assertEquals("/judger/run/s/compile", compileHome.getPath().toString());
+        assertEquals("/judger/run/s/compile/compile.sh", compileHome.getCompileScriptPath().toString());
+        assertEquals("/judger/run/s/compile/a.out", compileHome.getExecutablePath().toString());
+
+        SourceRoot sourceRoot = compileHome.getSourceRoot();
+        assertEquals("/judger/run/s/compile/src", sourceRoot.getPath().toString());
 
         TestcaseHome testcaseHome = submissionHome.getTestCaseHome("t");
         assertEquals("/judger/run/s/t", testcaseHome.getPath().toString());

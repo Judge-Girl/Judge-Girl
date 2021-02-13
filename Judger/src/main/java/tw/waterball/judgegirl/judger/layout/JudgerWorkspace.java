@@ -19,7 +19,6 @@ import java.nio.file.Path;
  * @author - johnny850807@gmail.com (Waterball)
  */
 public interface JudgerWorkspace {
-    void setupWholeLayout();
     Path getPath();
     Path getLogHomePath();
     Path getProfilerPath();

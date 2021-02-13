@@ -20,6 +20,6 @@ import java.nio.file.Path;
  */
 public interface SubmissionHome {
     Path getPath();
-    SourceRoot getSourceRoot();
+    CompileHome getCompileHome();
     TestcaseHome getTestCaseHome(String testcaseName);
 }

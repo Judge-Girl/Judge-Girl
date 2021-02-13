@@ -17,6 +17,7 @@ import lombok.SneakyThrows;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
 import tw.waterball.judgegirl.commons.utils.ZipUtils;
 import tw.waterball.judgegirl.entities.problem.LanguageEnv;
@@ -41,25 +42,40 @@ import tw.waterball.judgegirl.submissionapi.views.ReportView;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 import tw.waterball.judgegirl.submissionapi.views.VerdictIssuedEvent;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static java.util.Arrays.asList;
+import static java.util.Arrays.stream;
+import static java.util.Objects.requireNonNull;
 
 /**
+ * TODO: some drunk codes that ruins my perfectionism, require some talents to refactor it!
+ *  The main problem is regarding to the multiple languages' supporting,
+ *  every language should have its judge-flow customizable and
+ *  the current template method's used doesn't support it well.
+ *
  * @author - johnny850807@gmail.com (Waterball)
  */
 @SuppressWarnings("WeakerAccess")
 public class CCJudger extends PluginExtendedJudger {
     private final static Logger logger = LogManager.getLogger(CCJudger.class);
+    public static final String TEMP_SUBMITTED_CODES_DIR_NAME = "tempSubmittedCodes";
+    private static final String EXECUTABLE_NAME = "a.out";
     private JudgerWorkspace judgerWorkspace;
     private ProblemServiceDriver problemServiceDriver;
     private SubmissionServiceDriver submissionServiceDriver;
     private VerdictPublisher verdictPublisher;
     private CompilerFactory compilerFactory;
     private TestcaseExecutorFactory testcaseExecutorFactory;
+
+    private Set<String> filesWithinSandboxRootOtherThanOutFiles;
+    private Set<File> inFiles;
+    private Set<File> actualOutFiles;
 
     public CCJudger(JudgerWorkspace judgerWorkspace,
                     JudgeGirlPluginLocator pluginLocator,
@@ -85,11 +101,6 @@ public class CCJudger extends PluginExtendedJudger {
     }
 
     @Override
-    protected List<Testcase> findTestcasesByProblemId(int problemId) {
-        return problemServiceDriver.getTestcases(problemId);
-    }
-
-    @Override
     protected Submission findSubmissionByIds(int problemId, int studentId, String submissionId) {
         return SubmissionView.toEntity(submissionServiceDriver.getSubmission(studentId,
                 problemId, submissionId));
@@ -103,13 +114,11 @@ public class CCJudger extends PluginExtendedJudger {
 
     @Override
     protected void downloadProvidedCodes() throws IOException {
-        SubmissionHome submissionHome = judgerWorkspace.getSubmissionHome(getSubmission().getId());
         LanguageEnv languageEnv = getLanguageEnv();
         FileResource zip = problemServiceDriver.downloadProvidedCodes(
                 getProblem().getId(), languageEnv.getName(), languageEnv.getProvidedCodesFileId());
 
-        ZipUtils.unzipToDestination(zip.getInputStream(),
-                submissionHome.getSourceRoot().getPath());
+        ZipUtils.unzipToDestination(zip.getInputStream(), getSourceRootPath());
     }
 
     @Override
@@ -120,8 +129,14 @@ public class CCJudger extends PluginExtendedJudger {
                 getSubmission().getId(), getSubmission().getSubmittedCodesFileId()
         );
 
-        ZipUtils.unzipToDestination(zip.getInputStream(),
-                submissionHome.getSourceRoot().getPath());
+        ZipUtils.unzipToDestination(zip.getInputStream(), getSourceRootPath());
+
+        // Since we don't want the providedCodes stay in the source root after compilation (for some source code filtering reason),
+        // here we copy the submitted codes into a temporary directory
+        // for latter swapping back to override the source root.
+        Path tempSubmittedCodesPath = submissionHome.getPath().resolve(TEMP_SUBMITTED_CODES_DIR_NAME);
+        FileUtils.copyDirectory(getSourceRootPath().toFile(),
+                tempSubmittedCodesPath.toFile());
     }
 
     @Override
@@ -137,21 +152,64 @@ public class CCJudger extends PluginExtendedJudger {
     protected CompileResult doCompile() {
         String script = getLanguageEnv().getCompilation().getScript();
         Files.write(getCompileScriptPath(), script.getBytes());
-        Compiler compiler = compilerFactory.create(getSourceRoot().getPath());
-        return compiler.compile(getLanguageEnv().getCompilation());
+        Compiler compiler = compilerFactory.create(getSourceRootPath());
+        CompileResult result = compiler.compile(getLanguageEnv().getCompilation());
+        if (result.isSuccessful()) {
+            // bring the compiled executable out to the compileHome
+            FileUtils.copyFile(getSourceRootPath().resolve(EXECUTABLE_NAME).toFile(),
+                    getCompileHome().getExecutablePath().toFile());
+        }
+        remainOnlySubmittedCodesInSourceRoot();
+        return result;
     }
 
+    private void remainOnlySubmittedCodesInSourceRoot() throws IOException {
+        // first delete the source root
+        FileUtils.forceDelete(getSourceRootPath().toFile());
+        // and then swap back the temporary submitted code's dir
+        Path tempSubmittedCodesPath = getSubmissionHome().getPath().resolve(TEMP_SUBMITTED_CODES_DIR_NAME);
+        FileUtils.copyDirectory(tempSubmittedCodesPath.toFile(), getSourceRootPath().toFile());
+    }
 
     @Override
     @SneakyThrows
     protected void onBeforeRunningTestcase(Testcase testcase) {
+        Path sandboxRootPath = getSandboxRoot(testcase).getPath();
+        inFiles = filterInFilesFromSandboxRoot(sandboxRootPath);
+
+        /*
+          Ir order to filter for the out-files produced by the tested program,
+          we need to pre-record the files in the sandbox root,
+          and compare it after running the testcase.
+          (The files-difference must be 'std.out', 'std.err' and out-files)
+         */
+        filesWithinSandboxRootOtherThanOutFiles =
+                generateFilesOtherThanOutFilesFromSandboxRoot(sandboxRootPath);
+
         copyExecutableIntoSandboxRoot(testcase);
         // TODO should also copy provided codes, this will fail in an interpreted language case
         copyInterpretedSubmittedCodesIntoSandboxRoot(testcase);
     }
 
+    @NotNull
+    private Set<String> generateFilesOtherThanOutFilesFromSandboxRoot(Path sandboxRootPath) {
+        var files = stream(requireNonNull(sandboxRootPath.toFile().listFiles()))
+                .map(File::getName).collect(Collectors.toSet());
+        files.add("std.out");
+        files.add("std.err");
+        files.add(EXECUTABLE_NAME);
+        return files;
+    }
+
+    @NotNull
+    private Set<File> filterInFilesFromSandboxRoot(Path sandboxRootPath) {
+        return stream(requireNonNull(sandboxRootPath.toFile().listFiles()))
+                .filter(f -> !f.getName().equals("std.in") && !f.getName().equals(EXECUTABLE_NAME))
+                .collect(Collectors.toSet());
+    }
+
     private void copyExecutableIntoSandboxRoot(Testcase testcase) throws IOException {
-        Path executablePath = getSourceRoot().getExecutablePath();
+        Path executablePath = getCompileHome().getExecutablePath();
         Path sandboxRootPath = getSandboxRoot(testcase).getPath();
         FileUtils.copyFile(executablePath.toFile(),
                 sandboxRootPath.resolve(executablePath.getFileName()).toFile());
@@ -163,7 +221,7 @@ public class CCJudger extends PluginExtendedJudger {
         SandboxRoot sandboxRoot = getSandboxRoot(testcase);
         for (SubmittedCodeSpec submittedCodeSpec : getLanguageEnv().getSubmittedCodeSpecs()) {
             if (submittedCodeSpec.getFormat().isInterpretedLanguage()) {
-                Path interpretedSubmittedCodePath = getSourceRoot().getPath().resolve(submittedCodeSpec.getFileName());
+                Path interpretedSubmittedCodePath = getCompileHome().getPath().resolve(submittedCodeSpec.getFileName());
                 Path copyDestinationPath = sandboxRoot.getPath().resolve(submittedCodeSpec.getFileName());
                 FileUtils.copyFile(interpretedSubmittedCodePath.toFile(), copyDestinationPath.toFile());
             }
@@ -177,6 +235,13 @@ public class CCJudger extends PluginExtendedJudger {
                         testcase, judgerWorkspace);
         return testcaseExecutor.executeProgramByProfiler(
                 judgerWorkspace.getProfilerPath());
+    }
+
+    @Override
+    protected void onAfterRunningTestcase(Testcase testcase) {
+        actualOutFiles = new HashSet<>(
+                asList(requireNonNull(getSandboxRoot(testcase).getPath().toFile().listFiles())));
+        actualOutFiles.removeIf(f -> filesWithinSandboxRootOtherThanOutFiles.contains(f.getName()));
     }
 
     @Override
@@ -194,20 +259,12 @@ public class CCJudger extends PluginExtendedJudger {
     @Override
     protected Map<Path, Path> getActualToExpectOutputFilePathMap(Testcase testcase) {
         HashMap<Path, Path> mapping = new HashMap<>();
-        SandboxRoot sandboxRoot = getSandboxRoot(testcase);
         TestCaseOutputHome testCaseOutputHome = getTestcaseOutputHome(testcase);
-        // TODO out-files handling
-//        for (String outputFileName : getLanguageEnv().getOutputFileNames()) {
-//            mapping.put(
-//                    sandboxRoot.getPath().resolve(outputFileName),
-//                    testCaseOutputHome.getPath().resolve(outputFileName));
-//        }
+        for (File actualOutFile : actualOutFiles) {
+            String name = actualOutFile.getName();
+            mapping.put(actualOutFile.toPath(), testCaseOutputHome.getPath().resolve(name));
+        }
         return mapping;
-    }
-
-    @Override
-    protected Path getSourceRootPath() {
-        return getSourceRoot().getPath();
     }
 
     protected TestCaseOutputHome getTestcaseOutputHome(Testcase testcase) {
@@ -222,12 +279,21 @@ public class CCJudger extends PluginExtendedJudger {
         return getSubmissionHome().getTestCaseHome(testcase.getName());
     }
 
+    @Override
+    protected Path getSourceRootPath() {
+        return getSourceRoot().getPath();
+    }
+
     protected SourceRoot getSourceRoot() {
-        return getSubmissionHome().getSourceRoot();
+        return getCompileHome().getSourceRoot();
+    }
+
+    protected CompileHome getCompileHome() {
+        return getSubmissionHome().getCompileHome();
     }
 
     protected Path getCompileScriptPath() {
-        return getSubmissionHome().getSourceRoot().getCompileScriptPath();
+        return getSubmissionHome().getCompileHome().getCompileScriptPath();
     }
 
     protected SubmissionHome getSubmissionHome() {
@@ -252,6 +318,5 @@ public class CCJudger extends PluginExtendedJudger {
             FileUtils.forceMkdir(directoryPath.toFile());
         }
     }
-
 
 }

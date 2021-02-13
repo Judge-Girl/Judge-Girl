@@ -21,9 +21,9 @@ import java.nio.file.Path;
 public interface CompilerFactory {
 
     /**
-     * @param compileBoxPath
+     * @param sourceRootPath
      * @return a sandbox process's instance, note that
      * you need to invoke `SandboxProcess#execute` to run the sub-process.
      */
-    Compiler create(Path compileBoxPath);
+    Compiler create(Path sourceRootPath);
 }
