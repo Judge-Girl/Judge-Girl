@@ -34,6 +34,7 @@ public class Submission {
     private int problemId;
     private Problem problem;
     private int studentId;
+    private String languageEnvName;
 
     @Nullable
     private Verdict verdict;
@@ -126,4 +127,7 @@ public class Submission {
         return verdict == null ? null : verdict.getIssueTime();
     }
 
+    public String getLanguageEnvName() {
+        return languageEnvName;
+    }
 }

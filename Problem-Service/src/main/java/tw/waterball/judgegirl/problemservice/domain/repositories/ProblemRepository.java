@@ -17,9 +17,12 @@
 package tw.waterball.judgegirl.problemservice.domain.repositories;
 
 import tw.waterball.judgegirl.commons.models.files.FileResource;
+import tw.waterball.judgegirl.entities.problem.LanguageEnv;
 import tw.waterball.judgegirl.entities.problem.Problem;
 
+import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -29,7 +32,7 @@ public interface ProblemRepository {
 
     Optional<Problem> findProblemById(int problemId);
 
-    Optional<FileResource> downloadZippedProvidedCodes(int problemId);
+    Optional<FileResource> downloadProvidedCodes(int problemId, String languageEnvName);
 
     List<Problem> find(ProblemQueryParams params);
 
@@ -40,4 +43,5 @@ public interface ProblemRepository {
     int getPageSize();
 
     List<String> getTags();
+    Problem save(Problem problem, Map<LanguageEnv, InputStream> providedCodesZipMap, InputStream testcaseIOsZip);
 }

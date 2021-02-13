@@ -27,11 +27,11 @@ import static tw.waterball.judgegirl.entities.problem.Language.C;
  */
 public class ProblemStubs {
     @SuppressWarnings("WeakerAccess")
-    public final static int STUB_ID = 1;
+    public final static int ID = 1;
 
     public static ProblemBuilder template() {
         return Problem.builder()
-                .id(STUB_ID)
+                .id(ID)
                 .title("Title")
                 .description("# Title \n ```\n Code \n ```")
                 .outputMatchPolicyPluginTag(new JudgePluginTag(
@@ -40,12 +40,15 @@ public class ProblemStubs {
                 .testcaseIOsFileId("testcaseIOsFileId")
                 .languageEnv(C.toString(),
                         LanguageEnv.builder()
-                                .name(C.toString())
+                                .language(C)
                                 .compilation(new Compilation("Compilation Script"))
                                 .resourceSpec(new ResourceSpec(0.5f, 0))
                                 .submittedCodeSpec(new SubmittedCodeSpec(C, "main.c"))
                                 .providedCodesFileId("providedCodesFileId")
-                                .build());
+                                .build())
+                .testcase(new Testcase("1", ID, 5, 5, 5000, 1, 20))
+                .testcase(new Testcase("2", ID, 5, 5, 5000, 1, 30))
+                .testcase(new Testcase("3", ID, 3, 4, 5000, 1, 50));
     }
 
     public static CompositeReport compositeReport() {

@@ -23,16 +23,20 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.stereotype.Component;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
+import tw.waterball.judgegirl.entities.problem.LanguageEnv;
 import tw.waterball.judgegirl.entities.problem.Problem;
 import tw.waterball.judgegirl.problemservice.domain.repositories.ProblemQueryParams;
 import tw.waterball.judgegirl.problemservice.domain.repositories.ProblemRepository;
 import tw.waterball.judgegirl.springboot.profiles.productions.Mongo;
 import tw.waterball.judgegirl.springboot.utils.MongoUtils;
 
+import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
+import static java.lang.String.format;
 import static tw.waterball.judgegirl.springboot.utils.MongoUtils.downloadFileResourceByFileId;
 
 /**
@@ -56,13 +60,13 @@ public class MongoProblemRepository implements ProblemRepository {
     }
 
     @Override
-    public Optional<FileResource> downloadZippedProvidedCodes(int problemId) {
+    public Optional<FileResource> downloadProvidedCodes(int problemId, String languageEnvName) {
         return MongoUtils.query(mongoTemplate)
                 .fromDocument(Problem.class)
-                .selectOneField("providedCodesFileId")
+                .selectOneField(format("languageEnvs.%s.providedCodesFileId", languageEnvName))
                 .byId(problemId)
                 .execute()
-                .getField(Problem::getProvidedCodesFileId)
+                .getField(problem -> problem.getLanguageEnv(languageEnvName).getProvidedCodesFileId())
                 .map((fileId) -> downloadFileResourceByFileId(gridFsTemplate, fileId));
     }
 
@@ -94,6 +98,20 @@ public class MongoProblemRepository implements ProblemRepository {
         AllTags tags = mongoTemplate.findOne(
                 new Query(new Criteria()), AllTags.class);
         return tags == null ? Collections.emptyList() : tags.all;
+    }
+
+    @Override
+    public Problem save(Problem problem, Map<LanguageEnv, InputStream> providedCodesZipMap, InputStream testcaseIOsZip) {
+        // TODO atomicity problem
+        providedCodesZipMap.forEach((langEnv, zip) -> {
+            String providedCodesName = format("%d-%s-provided.zip", problem.getId(), langEnv.getName());
+            langEnv.setProvidedCodesFileId(
+                    gridFsTemplate.store(zip, providedCodesName).toString());
+        });
+        String testcaseIOsName = format("%d-testcases.zip", problem.getId());
+        problem.setTestcaseIOsFileId(
+                gridFsTemplate.store(testcaseIOsZip, testcaseIOsName).toString());
+        return mongoTemplate.save(problem);
     }
 
     @Document("tag")

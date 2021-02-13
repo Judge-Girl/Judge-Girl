@@ -31,11 +31,11 @@ public enum Language {
         this.fileExtension = fileExtension;
     }
 
-    public boolean isInterpretedLang() {
+    public boolean isInterpretedLanguage() {
         return interpretedLang;
     }
 
-    public boolean isCompiledLang() {
+    public boolean isCompiledLanguage() {
         return !interpretedLang;
     }
 

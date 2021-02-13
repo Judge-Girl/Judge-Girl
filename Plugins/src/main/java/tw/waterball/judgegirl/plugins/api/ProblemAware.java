@@ -19,5 +19,5 @@ import tw.waterball.judgegirl.entities.problem.Problem;
  * @author - johnny850807@gmail.com (Waterball)
  */
 public interface ProblemAware {
-    void setProblem(Problem problem);
+    void onProblem(Problem problem);
 }

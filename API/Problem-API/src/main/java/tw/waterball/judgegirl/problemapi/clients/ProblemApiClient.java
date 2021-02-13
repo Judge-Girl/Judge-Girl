@@ -45,7 +45,7 @@ public class ProblemApiClient extends BaseRetrofitAPI implements ProblemServiceD
     }
 
     @Override
-    public FileResource downloadProvidedCodes(int problemId, String providedCodesFileId) throws NotFoundException {
+    public FileResource downloadProvidedCodes(int problemId, String languageEnvName, String providedCodesFileId) throws NotFoundException {
         Response<ResponseBody> resp = errorHandlingGetResponse(() -> api.getZippedProvidedSourceCodes(
                 createBearer(adminToken),
                 problemId, providedCodesFileId));

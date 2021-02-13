@@ -19,6 +19,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
 import tw.waterball.judgegirl.commons.utils.ZipUtils;
+import tw.waterball.judgegirl.entities.problem.LanguageEnv;
 import tw.waterball.judgegirl.entities.problem.Problem;
 import tw.waterball.judgegirl.entities.problem.SubmittedCodeSpec;
 import tw.waterball.judgegirl.entities.problem.Testcase;
@@ -103,8 +104,9 @@ public class CCJudger extends PluginExtendedJudger {
     @Override
     protected void downloadProvidedCodes() throws IOException {
         SubmissionHome submissionHome = judgerWorkspace.getSubmissionHome(getSubmission().getId());
+        LanguageEnv languageEnv = getLanguageEnv();
         FileResource zip = problemServiceDriver.downloadProvidedCodes(
-                getProblem().getId(), getProblem().getProvidedCodesFileId());
+                getProblem().getId(), languageEnv.getName(), languageEnv.getProvidedCodesFileId());
 
         ZipUtils.unzipToDestination(zip.getInputStream(),
                 submissionHome.getSourceRoot().getPath());
@@ -133,10 +135,10 @@ public class CCJudger extends PluginExtendedJudger {
     @Override
     @SneakyThrows
     protected CompileResult doCompile() {
-        String script = getProblem().getCompilation().getScript();
+        String script = getLanguageEnv().getCompilation().getScript();
         Files.write(getCompileScriptPath(), script.getBytes());
         Compiler compiler = compilerFactory.create(getSourceRoot().getPath());
-        return compiler.compile(getProblem().getCompilation());
+        return compiler.compile(getLanguageEnv().getCompilation());
     }
 
 
@@ -159,8 +161,8 @@ public class CCJudger extends PluginExtendedJudger {
         // the program might execute the interpreted codes from the sandbox root
         // hence we must copy them to there
         SandboxRoot sandboxRoot = getSandboxRoot(testcase);
-        for (SubmittedCodeSpec submittedCodeSpec : getProblem().getSubmittedCodeSpecs()) {
-            if (submittedCodeSpec.getLanguage().isInterpretedLang()) {
+        for (SubmittedCodeSpec submittedCodeSpec : getLanguageEnv().getSubmittedCodeSpecs()) {
+            if (submittedCodeSpec.getFormat().isInterpretedLanguage()) {
                 Path interpretedSubmittedCodePath = getSourceRoot().getPath().resolve(submittedCodeSpec.getFileName());
                 Path copyDestinationPath = sandboxRoot.getPath().resolve(submittedCodeSpec.getFileName());
                 FileUtils.copyFile(interpretedSubmittedCodePath.toFile(), copyDestinationPath.toFile());
@@ -194,11 +196,12 @@ public class CCJudger extends PluginExtendedJudger {
         HashMap<Path, Path> mapping = new HashMap<>();
         SandboxRoot sandboxRoot = getSandboxRoot(testcase);
         TestCaseOutputHome testCaseOutputHome = getTestcaseOutputHome(testcase);
-        for (String outputFileName : getProblem().getOutputFileNames()) {
-            mapping.put(
-                    sandboxRoot.getPath().resolve(outputFileName),
-                    testCaseOutputHome.getPath().resolve(outputFileName));
-        }
+        // TODO out-files handling
+//        for (String outputFileName : getLanguageEnv().getOutputFileNames()) {
+//            mapping.put(
+//                    sandboxRoot.getPath().resolve(outputFileName),
+//                    testCaseOutputHome.getPath().resolve(outputFileName));
+//        }
         return mapping;
     }
 

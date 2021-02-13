@@ -19,5 +19,5 @@ import tw.waterball.judgegirl.entities.submission.Submission;
  * @author - johnny850807@gmail.com (Waterball)
  */
 public interface SubmissionAware {
-    void setSubmission(Submission submission);
+    void onSubmission(Submission submission);
 }

@@ -15,10 +15,7 @@ package tw.waterball.judgegirl.judger;
 
 import lombok.AllArgsConstructor;
 import lombok.Value;
-import tw.waterball.judgegirl.entities.problem.JudgePluginTag;
-import tw.waterball.judgegirl.entities.problem.JudgeStatus;
-import tw.waterball.judgegirl.entities.problem.Problem;
-import tw.waterball.judgegirl.entities.problem.Testcase;
+import tw.waterball.judgegirl.entities.problem.*;
 import tw.waterball.judgegirl.entities.submission.*;
 import tw.waterball.judgegirl.judger.infra.compile.CompileResult;
 import tw.waterball.judgegirl.judger.infra.testexecutor.TestcaseExecutionResult;
@@ -155,7 +152,8 @@ public abstract class Judger {
     }
 
     protected boolean isCompiledLanguage() {
-        return context.getProblem().isCompiledLanguage();
+        LanguageEnv languageEnv = getProblem().getLanguageEnv(getSubmission().getLanguageEnvName());
+        return languageEnv.isCompiledLanguage();
     }
 
     protected int getStudent() {
@@ -172,5 +170,10 @@ public abstract class Judger {
 
     protected Submission getSubmission() {
         return context.getSubmission();
+    }
+
+    protected LanguageEnv getLanguageEnv() {
+        return getProblem().getLanguageEnv(getSubmission().getLanguageEnvName());
+
     }
 }

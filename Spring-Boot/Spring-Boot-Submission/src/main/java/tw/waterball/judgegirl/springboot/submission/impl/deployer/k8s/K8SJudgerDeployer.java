@@ -20,6 +20,7 @@ import io.kubernetes.client.models.V1EnvVar;
 import io.kubernetes.client.models.V1Job;
 import io.kubernetes.client.models.V1JobBuilder;
 import io.kubernetes.client.models.V1LocalObjectReference;
+import tw.waterball.judgegirl.entities.problem.LanguageEnv;
 import tw.waterball.judgegirl.entities.problem.ResourceSpec;
 import tw.waterball.judgegirl.entities.problem.Problem;
 import tw.waterball.judgegirl.entities.submission.Submission;
@@ -58,7 +59,8 @@ public class K8SJudgerDeployer implements JudgerDeployer {
     }
 
     private V1Job createJob(Problem problem, int studentId, Submission submission) {
-        ResourceSpec resourceSpec = problem.getResourceSpec();
+        LanguageEnv languageEnv = problem.getLanguageEnv(submission.getLanguageEnvName());
+        ResourceSpec resourceSpec = languageEnv.getResourceSpec();
 
         return new V1JobBuilder()
                 .withKind("Job")

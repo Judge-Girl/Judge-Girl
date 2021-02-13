@@ -26,24 +26,39 @@ import java.util.List;
  */
 @Builder
 @Getter
-@Setter
 @AllArgsConstructor
 public class LanguageEnv {
-    @NotBlank
-    private String name;
+    @NotNull
+    private final Language language;
 
     @Valid
-    private Compilation compilation;
+    private final Compilation compilation;
 
     @Valid
     @NotNull
-    private ResourceSpec resourceSpec;
+    private final ResourceSpec resourceSpec;
 
     @NotNull
     @Singular
-    private List<@Valid SubmittedCodeSpec> submittedCodeSpecs;
+    private final List<@Valid SubmittedCodeSpec> submittedCodeSpecs;
 
     @NotBlank
     private String providedCodesFileId;
 
+    public boolean isCompiledLanguage() {
+        return language.isCompiledLanguage();
+    }
+
+    public String getName() {
+        return language.toString();
+    }
+
+    @Override
+    public String toString() {
+        return getName();
+    }
+
+    public void setProvidedCodesFileId(String providedCodesFileId) {
+        this.providedCodesFileId = providedCodesFileId;
+    }
 }

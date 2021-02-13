@@ -16,6 +16,7 @@ package tw.waterball.judgegirl.judger;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tw.waterball.judgegirl.entities.problem.JudgePluginTag;
+import tw.waterball.judgegirl.entities.problem.LanguageEnv;
 import tw.waterball.judgegirl.entities.problem.Problem;
 import tw.waterball.judgegirl.entities.problem.Testcase;
 import tw.waterball.judgegirl.entities.submission.VerdictIssuer;
@@ -50,13 +51,17 @@ public abstract class PluginExtendedJudger extends Judger {
         for (JudgePluginTag tag : plugins) {
             JudgeGirlPlugin plugin = pluginLocator.locate(tag);
             if (plugin instanceof ProblemAware) {
-                ((ProblemAware) plugin).setProblem(problem);
+                ((ProblemAware) plugin).onProblem(problem);
+            }
+            if (plugin instanceof LanguageEnvAware) {
+                LanguageEnv languageEnv = problem.getLanguageEnv(judgeContext.submission.getLanguageEnvName());
+                ((LanguageEnvAware) plugin).onLanguageEnv(languageEnv);
             }
             if (plugin instanceof TestcasesAware) {
-                ((TestcasesAware) plugin).setTestcases(judgeContext.testcases);
+                ((TestcasesAware) plugin).onTestcases(judgeContext.testcases);
             }
             if (plugin instanceof SubmissionAware) {
-                ((SubmissionAware) plugin).setSubmission(judgeContext.submission);
+                ((SubmissionAware) plugin).onSubmission(judgeContext.submission);
             }
         }
     }

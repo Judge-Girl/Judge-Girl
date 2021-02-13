@@ -140,5 +140,11 @@ public class Problem {
         return languageEnvs.get(name);
     }
 
+    public Collection<LanguageEnv> getLanguageEnvs() {
+        return languageEnvs.values();
+    }
 
+    public List<Testcase> getTestcases() {
+        return testcases;
+    }
 }

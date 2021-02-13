@@ -16,7 +16,7 @@
 
 package tw.waterball.judgegirl.springboot.problem.controllers;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -38,27 +38,14 @@ import java.util.stream.Collectors;
 @CrossOrigin
 @RestController
 @RequestMapping("/api/problems")
+@AllArgsConstructor
 public class ProblemController {
-    private GetProblemUseCase getProblemUseCase;
-    private GetProblemListUseCase getProblemListUseCase;
-    private DownloadProvidedCodesUseCase downloadProvidedCodesUseCase;
-    private DownloadTestCaseIOsUseCase downloadTestCaseIOsUseCase;
-    private GetAllTagsUseCase getAllTagsUseCase;
-    private GetTestCasesUseCase getTestCasesUseCase;
-
-    @Autowired
-    public ProblemController(GetProblemUseCase getProblemUseCase,
-                             GetProblemListUseCase getProblemListUseCase,
-                             DownloadProvidedCodesUseCase downloadProvidedCodesUseCase,
-                             DownloadTestCaseIOsUseCase downloadTestCaseIOsUseCase,
-                             GetAllTagsUseCase getAllTagsUseCase, GetTestCasesUseCase getTestCasesUseCase) {
-        this.downloadProvidedCodesUseCase = downloadProvidedCodesUseCase;
-        this.downloadTestCaseIOsUseCase = downloadTestCaseIOsUseCase;
-        this.getProblemUseCase = getProblemUseCase;
-        this.getProblemListUseCase = getProblemListUseCase;
-        this.getAllTagsUseCase = getAllTagsUseCase;
-        this.getTestCasesUseCase = getTestCasesUseCase;
-    }
+    private final GetProblemUseCase getProblemUseCase;
+    private final GetProblemListUseCase getProblemListUseCase;
+    private final DownloadProvidedCodesUseCase downloadProvidedCodesUseCase;
+    private final DownloadTestCaseIOsUseCase downloadTestCaseIOsUseCase;
+    private final GetAllTagsUseCase getAllTagsUseCase;
+    private final GetTestCasesUseCase getTestCasesUseCase;
 
     @GetMapping("/tags")
     public List<String> getTags() {
@@ -83,12 +70,13 @@ public class ProblemController {
     }
 
 
-    @GetMapping(value = "/{problemId}/providedCodes/{providedCodesFileId}",
+    @GetMapping(value = "/{problemId}/{langEnvName}/providedCodes/{providedCodesFileId}",
             produces = "application/zip")
-    public ResponseEntity<InputStreamResource> getZippedProvidedCodes(@PathVariable int problemId,
+    public ResponseEntity<InputStreamResource> downloadZippedProvidedCodes(@PathVariable int problemId,
+                                                                      @PathVariable String langEnvName,
                                                                       @PathVariable String providedCodesFileId) {
         FileResource fileResource = downloadProvidedCodesUseCase.execute(
-                new DownloadProvidedCodesUseCase.Request(problemId, providedCodesFileId));
+                new DownloadProvidedCodesUseCase.Request(problemId, langEnvName, providedCodesFileId));
         return ResponseEntityUtils.respondInputStreamResource(fileResource);
     }
 

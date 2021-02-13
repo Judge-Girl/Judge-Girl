@@ -25,6 +25,6 @@ import lombok.*;
 @Getter
 @Setter
 public class SubmittedCodeSpec {
-    private Language language;
+    private Language format;
     private String fileName;
 }

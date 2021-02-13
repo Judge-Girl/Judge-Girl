@@ -32,7 +32,7 @@ public interface ProblemServiceDriver {
 
     List<Testcase> getTestcases(int problemId) throws NotFoundException;
 
-    FileResource downloadProvidedCodes(int problemId, String providedCodesFileId) throws NotFoundException;
+    FileResource downloadProvidedCodes(int problemId, String languageEnvName, String providedCodesFileId) throws NotFoundException;
 
     FileResource downloadTestCaseIOs(int problemId, String testcaseIOsFileId) throws NotFoundException;
 }

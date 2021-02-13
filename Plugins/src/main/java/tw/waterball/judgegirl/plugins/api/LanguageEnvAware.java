@@ -13,13 +13,11 @@
 
 package tw.waterball.judgegirl.plugins.api;
 
-import tw.waterball.judgegirl.entities.problem.Testcase;
-
-import java.util.List;
+import tw.waterball.judgegirl.entities.problem.LanguageEnv;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
-public interface TestcasesAware {
-    void onTestcases(List<Testcase> testcases);
+public interface LanguageEnvAware {
+    void onLanguageEnv(LanguageEnv languageEnv);
 }

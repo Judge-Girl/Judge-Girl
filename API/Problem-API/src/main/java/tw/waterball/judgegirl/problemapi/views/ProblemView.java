@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import tw.waterball.judgegirl.entities.problem.*;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -18,32 +19,21 @@ public class ProblemView {
     public Integer id;
     public String title;
     public String markdownDescription;
-    public ResourceSpec resourceSpec;
+    public List<LanguageEnv> languageEnvs;
     public JudgePluginTag judgeMatchPolicyPluginTag;
     public Collection<JudgePluginTag> judgeFilterPluginTags;
-    public List<String> inputFileNames;
-    public List<String> outputFileNames;
     public List<String> tags;
-    public List<SubmittedCodeSpec> submittedCodeSpecs;
-    public Compilation compilation;
-    public String providedCodesFileId;
     public String testcaseIOsFileId;
-
 
     public static ProblemView fromEntity(Problem problem) {
         return new ProblemView(
                 problem.getId(),
                 problem.getTitle(),
                 problem.getDescription(),
-                problem.getResourceSpec(),
+                new ArrayList<>(problem.getLanguageEnvs()),
                 problem.getOutputMatchPolicyPluginTag(),
                 problem.getFilterPluginTags(),
-                problem.getInputFileNames(),
-                problem.getOutputFileNames(),
                 problem.getTags(),
-                problem.getSubmittedCodeSpecs(),
-                problem.getCompilation(),
-                problem.getProvidedCodesFileId(),
                 problem.getTestcaseIOsFileId()
         );
     }
@@ -53,18 +43,16 @@ public class ProblemView {
                 .id(view.getId())
                 .title(view.getTitle())
                 .description(view.markdownDescription)
-                .resourceSpec(view.resourceSpec)
                 .outputMatchPolicyPluginTag(view.judgeMatchPolicyPluginTag)
-                .inputFileNames(view.inputFileNames)
-                .outputFileNames(view.outputFileNames)
                 .tags(view.tags)
-                .submittedCodeSpecs(view.submittedCodeSpecs)
-                .compilation(view.compilation)
-                .providedCodesFileId(view.providedCodesFileId)
                 .testcaseIOsFileId(view.testcaseIOsFileId);
         if (view.judgeFilterPluginTags != null) {
             builder.filterPluginTags(view.judgeFilterPluginTags);
         }
-        return builder.build();
+        Problem problem = builder.build();
+        for (LanguageEnv languageEnv : view.languageEnvs) {
+            problem.addLanguageEnv(languageEnv);
+        }
+        return problem;
     }
 }
