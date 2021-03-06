@@ -25,7 +25,7 @@ public class Inputs {
     private final static Scanner scanner = new Scanner(System.in);
 
     public static String inputLine(String message) {
-        System.out.println(message);
+        System.out.println(message + ": ");
         String line = scanner.nextLine();
         return line.isEmpty() ? inputLine(message) : line;
     }
@@ -53,6 +53,11 @@ public class Inputs {
         }
         System.err.println("Please input 'y' or 'n'.");
         return inputForYesOrNo(message, defaultBoolean);
+    }
+
+    public static String[] inputMultipleStringSplitBy(String message, String delimiter) {
+        String line = inputLine(String.format("%s (split by %s)", message, delimiter));
+        return line.split(delimiter);
     }
 
     public static float inputRangedNumberOrDefault(String message, float defaultNum, float floor, float ceil) {

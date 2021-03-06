@@ -25,16 +25,26 @@ import java.nio.file.Paths;
 public class ConvertLegacyLayoutStandardInput implements ConvertLegacyLayout.Input {
     @Override
     public int problemId() {
-        return Inputs.inputZeroOrPositiveInteger("Problem Id: ");
+        return Inputs.inputZeroOrPositiveInteger("Problem Id");
     }
 
     @Override
     public Path legacyPackageRootPath() {
-        return Paths.get(Inputs.inputLine("Legacy package root path: "));
+        return Paths.get(Inputs.inputLine("Legacy package root path"));
     }
 
     @Override
     public Path outputDirectoryPath() {
-        return Paths.get(Inputs.inputLine("Output directory path: "));
+        return Paths.get(Inputs.inputLine("Output directory path"));
+    }
+
+    @Override
+    public String compilationScript() {
+        return Inputs.inputLine("Compilation Script");
+    }
+
+    @Override
+    public String[] tags() {
+        return Inputs.inputMultipleStringSplitBy("Tags", ",");
     }
 }

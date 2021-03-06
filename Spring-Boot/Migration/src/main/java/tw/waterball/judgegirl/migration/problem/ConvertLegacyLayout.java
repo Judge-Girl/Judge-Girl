@@ -15,25 +15,23 @@ package tw.waterball.judgegirl.migration.problem;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.jdbc.core.JdbcTemplate;
 import tw.waterball.judgegirl.commons.helpers.process.SimpleProcessRunner;
-import tw.waterball.judgegirl.entities.problem.Compilation;
-import tw.waterball.judgegirl.entities.problem.SubmittedCodeSpec;
-import tw.waterball.judgegirl.entities.problem.Testcase;
+import tw.waterball.judgegirl.entities.problem.*;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -52,24 +50,33 @@ import static tw.waterball.judgegirl.commons.utils.SneakyUtils.sneakyThrow;
  * @author - johnny850807@gmail.com (Waterball)
  */
 @SpringBootApplication
-public class ConvertLegacyLayout implements CommandLineRunner {
-    private static Logger logger = LogManager.getLogger(ConvertLegacyLayout.class);
+public class ConvertLegacyLayout {
+    public static final Language DEFAULT_LANGUAGE = Language.C;
+    private static final Logger logger = LogManager.getLogger(ConvertLegacyLayout.class);
+    public static final String DEFAULT_SUBMITTED_CODE_FILE_NAME = "a.c";
 
-    private Input in;
-    private ObjectMapper objectMapper;
-    private JdbcTemplate jdbcTemplate;
-    private ProblemDTO problem = new ProblemDTO();
+    private final Input in;
+    private final ObjectMapper objectMapper;
+    private final JdbcTemplate jdbcTemplate;
     private int problemId;
-    private Path legacyPackageRootPath;
+    private final Problem problem = new Problem();
     private Path outputDirectoryPath;
     private Path testDataHome;
-    private Path markdownDescriptionFilePath;
     private List<List> subtasks;
-    private Path outputProvidedCodesDirPath;
     private Path outputTestcasesDirPath;
+    private Path outputProvidedCodesDirPath;
 
     public static void main(String[] args) {
-        SpringApplication.run(ConvertLegacyLayout.class, args);
+        var context = SpringApplication.run(ConvertLegacyLayout.class, args);
+        try {
+            ConvertLegacyLayout convertLegacyLayout = context.getBean(ConvertLegacyLayout.class);
+            convertLegacyLayout.execute();
+            System.out.println("Completed");
+            SpringApplication.exit(context, () -> 1);
+        } catch (Exception err) {
+            err.printStackTrace();
+            SpringApplication.exit(context, () -> -1);
+        }
     }
 
     public ConvertLegacyLayout(Input in, ObjectMapper objectMapper,
@@ -79,21 +86,16 @@ public class ConvertLegacyLayout implements CommandLineRunner {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    @Override
-    public void run(String... args) throws Exception {
-        execute();
-    }
-
-    // /Users/johnny850807/Documents/Judge-Girl-Migration/package
     // testOutput
     public void execute() throws IOException {
         this.problemId = in.problemId();
-        this.problem.id = problemId;
-        this.legacyPackageRootPath = in.legacyPackageRootPath();
+        this.problem.setId(problemId);
+        problem.addLanguageEnv(new LanguageEnv(DEFAULT_LANGUAGE));
+        Path legacyPackageRootPath = in.legacyPackageRootPath();
         this.outputDirectoryPath = in.outputDirectoryPath();
         this.testDataHome = legacyPackageRootPath.resolve("testData")
                 .resolve(String.valueOf(problemId));
-        this.markdownDescriptionFilePath = legacyPackageRootPath
+        Path markdownDescriptionFilePath = legacyPackageRootPath
                 .resolve("source").resolve("md").resolve("problem")
                 .resolve(format("%d.md", problemId));
 
@@ -104,6 +106,10 @@ public class ConvertLegacyLayout implements CommandLineRunner {
         subtasks = pythonSubtasksToJsonString();
         addSubtasksAsTestcasesIntoProblem();
         makeTestcaseIOsLayout();
+        addSubmittedCodeSpecs();
+        migrateProvidedCodes();
+        problem.getLanguageEnv(DEFAULT_LANGUAGE).setCompilationScript(in.compilationScript());
+        problem.setTags(Arrays.asList(in.tags()));
         outputProblemAsJson();
     }
 
@@ -111,7 +117,7 @@ public class ConvertLegacyLayout implements CommandLineRunner {
         jdbcTemplate.query("select * from problems where pid=?",
                 new Object[]{problemId},
                 resultSet -> {
-                    problem.title = resultSet.getString("ttl");
+                    problem.setTitle(resultSet.getString("ttl"));
                 });
     }
 
@@ -119,8 +125,8 @@ public class ConvertLegacyLayout implements CommandLineRunner {
     /**
      * @return a list structure as below
      * [
-     *    [  0, ['0.in', '0.out', 1, 64 << 20, 64 << 10]]
-     *    ...
+     * [  0, ['0.in', '0.out', 1, 64 << 20, 64 << 10]]
+     * ...
      * ]
      */
     @SuppressWarnings("unchecked")
@@ -146,6 +152,9 @@ public class ConvertLegacyLayout implements CommandLineRunner {
             testcase.setGrade((int) subtask.get(0));
             List caseAttr = (List) subtask.get(1);
             String stdinFileName = (String) caseAttr.get(0);
+            if (!(caseAttr.get(1) instanceof String)) {
+                throw new IllegalStateException("Unexpected subtask's format.");
+            }
             String stdoutFileName = (String) caseAttr.get(1);
             assert getBaseName(stdinFileName).equals(getBaseName(stdoutFileName))
                     : "The testcase name cannot be derived since " +
@@ -156,14 +165,19 @@ public class ConvertLegacyLayout implements CommandLineRunner {
             testcase.setMemoryLimit(((Integer) caseAttr.get(3)).longValue());
             testcase.setOutputLimit(((Integer) caseAttr.get(4)).longValue());
             testcase.setThreadNumberLimit(-1);
-            problem.testcases.add(testcase);
+            problem.getTestcases().add(testcase);
         }
     }
 
-    private void setupOutputLayout() {
+    private void setupOutputLayout() throws IOException {
+        if (Files.exists(outputDirectoryPath)) {
+            FileUtils.deleteDirectory(outputDirectoryPath.toFile());
+        }
         outputProvidedCodesDirPath = outputDirectoryPath.resolve("providedCodes");
         outputTestcasesDirPath = outputDirectoryPath.resolve("testcases");
+        assert mkdirIfNotExists(outputDirectoryPath);
         assert mkdirIfNotExists(outputProvidedCodesDirPath);
+        assert mkdirIfNotExists(outputDirectoryPath.resolve("images"));
         assert mkdirIfNotExists(outputTestcasesDirPath);
     }
 
@@ -179,7 +193,7 @@ public class ConvertLegacyLayout implements CommandLineRunner {
                     assert mkdirIfNotExists(outPath);
                     sneakyThrow(() -> {
                         copyFile(stdIoFilePair.in, inPath.resolve("std.in").toFile());
-                        copyFile(stdIoFilePair.out, inPath.resolve("std.out").toFile());
+                        copyFile(stdIoFilePair.out, outPath.resolve("std.out").toFile());
                     });
                 }
         );
@@ -201,6 +215,33 @@ public class ConvertLegacyLayout implements CommandLineRunner {
                 .collect(Collectors.toList());
     }
 
+    private void addSubmittedCodeSpecs() throws IOException {
+        if (Files.exists(testDataHome.resolve("source.lst"))) {
+            Files.readAllLines(testDataHome.resolve("source.lst"))
+                    .forEach(submittedCodeFileName ->
+                            problem.getLanguageEnv(DEFAULT_LANGUAGE).getSubmittedCodeSpecs().add(new SubmittedCodeSpec(Language.C, submittedCodeFileName)));
+        } else {
+            problem.getLanguageEnv(DEFAULT_LANGUAGE).getSubmittedCodeSpecs().add(new SubmittedCodeSpec(Language.C, DEFAULT_SUBMITTED_CODE_FILE_NAME));
+        }
+
+    }
+
+    private void migrateProvidedCodes() throws IOException {
+        if (Files.exists(testDataHome.resolve("send.lst"))) {
+            String sendList = Files.readString(testDataHome.resolve("send.lst"));
+            Arrays.stream(sendList.split("\n"))
+                    .map(String::trim)
+                    .forEach(providedCodeName -> {
+                        try {
+                            FileUtils.copyFile(testDataHome.resolve(providedCodeName).toFile(),
+                                    outputProvidedCodesDirPath.resolve(providedCodeName).toFile());
+                        } catch (IOException e) {
+                            throw new IllegalStateException(e);
+                        }
+                    });
+        }
+    }
+
     private void outputProblemAsJson() throws IOException {
         String problemJson = objectMapper
                 .writerWithDefaultPrettyPrinter().writeValueAsString(problem);
@@ -209,16 +250,6 @@ public class ConvertLegacyLayout implements CommandLineRunner {
         logger.info(problemJson);
     }
 
-    public class ProblemDTO {
-        public int id;
-        public String title;
-        public List<SubmittedCodeSpec> submittedCodeSpecs = new ArrayList<>();
-        public List<String> tags = new ArrayList<>();
-        public Compilation compilation = new Compilation();
-        public List<String> inputFileNames = new ArrayList<>();
-        public List<String> outputFileNames = new ArrayList<>();
-        public List<Testcase> testcases = new ArrayList<>();
-    }
 
     public interface Input {
         int problemId();
@@ -226,10 +257,14 @@ public class ConvertLegacyLayout implements CommandLineRunner {
         Path legacyPackageRootPath();
 
         Path outputDirectoryPath();
+
+        String compilationScript();
+
+        String[] tags();
     }
 
     @AllArgsConstructor
-    public class IoFilePair {
+    public static class IoFilePair {
         public String name;
         public File in;
         public File out;

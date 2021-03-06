@@ -24,6 +24,8 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Component;
 import tw.waterball.judgegirl.commons.utils.DirectoryUtils;
 import tw.waterball.judgegirl.commons.utils.ToStringUtils;
+import tw.waterball.judgegirl.entities.problem.Language;
+import tw.waterball.judgegirl.entities.problem.LanguageEnv;
 import tw.waterball.judgegirl.entities.problem.Problem;
 import tw.waterball.judgegirl.entities.problem.Testcase;
 
@@ -51,7 +53,7 @@ public class NewJudgeGirlLayoutManipulator {
     public static final String PROBLEM_JSON = "problem.json";
     public static final String DESCRIPTION_MD = "description.md";
 
-    private ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper;
 
     public NewJudgeGirlLayoutManipulator(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
@@ -75,7 +77,7 @@ public class NewJudgeGirlLayoutManipulator {
         JsonNode jsonNode = objectMapper.readTree(new FileReader(problemDirPath.resolve(PROBLEM_JSON).toFile()));
         Problem problem = objectMapper.treeToValue(jsonNode, Problem.class);
         verifyProblemReadFromJson(problem);
-        problem.setMarkdownDescription(IOUtils.toString(new FileReader(
+        problem.setDescription(IOUtils.toString(new FileReader(
                 problemDirPath.resolve(DESCRIPTION_MD).toFile())));
         logger.info(problem);
         return problem;
@@ -98,15 +100,14 @@ public class NewJudgeGirlLayoutManipulator {
     }
 
     private void verifyProblemReadFromJson(Problem problem) {
+        LanguageEnv langEnv = problem.getLanguageEnv(Language.C);
         requireNonNull(problem.getTitle());
-        requireNonNull(problem.getSubmittedCodeSpecs());
-        if (problem.getSubmittedCodeSpecs().size() < 1) {
+        requireNonNull(langEnv.getSubmittedCodeSpecs());
+        if (langEnv.getSubmittedCodeSpecs().size() < 1) {
             throw new IllegalStateException("The problem has no submittedCodeSpecs, why?");
         }
         requireNonNull(problem.getTags());
-        requireNonNull(problem.getCompilation());
-        requireNonNull(problem.getInputFileNames());
-        requireNonNull(problem.getOutputFileNames());
+        requireNonNull(langEnv.getCompilation());
     }
 
     private void verifyTestcasesReadFromJson(List<Testcase> testcases) {
@@ -154,11 +155,5 @@ public class NewJudgeGirlLayoutManipulator {
         assertDirectoryExists(outputDirPath);
         assertFileExists(inputDirPath.resolve("std.in"));
         assertFileExists(outputDirPath.resolve("std.out"));
-        for (String inputFileName : problem.getInputFileNames()) {
-            assertFileExists(inputDirPath.resolve(inputFileName));
-        }
-        for (String outputFileName : problem.getOutputFileNames()) {
-            assertFileExists(outputDirPath.resolve(outputFileName));
-        }
     }
 }
