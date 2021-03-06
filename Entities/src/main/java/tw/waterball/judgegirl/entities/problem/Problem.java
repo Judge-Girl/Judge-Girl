@@ -23,10 +23,7 @@ import tw.waterball.judgegirl.entities.problem.validators.JudgePluginTagConstrai
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static tw.waterball.judgegirl.entities.problem.JudgePluginTag.Type.FILTER;
 import static tw.waterball.judgegirl.entities.problem.JudgePluginTag.Type.OUTPUT_MATCH_POLICY;
@@ -125,10 +122,16 @@ public class Problem {
     }
 
     public void addLanguageEnv(LanguageEnv languageEnv) {
+        if (languageEnvs == null) {
+            languageEnvs = new HashMap<>();
+        }
         languageEnvs.put(languageEnv.getName(), languageEnv);
     }
 
     public LanguageEnv getLanguageEnv(Language language) {
+        if (languageEnvs == null) {
+            return null;
+        }
         return languageEnvs.get(language.toString());
     }
 
@@ -136,11 +139,14 @@ public class Problem {
         return languageEnvs.get(name);
     }
 
-    public Collection<LanguageEnv> getLanguageEnvs() {
-        return languageEnvs.values();
+    public Map<String, LanguageEnv> getLanguageEnvs() {
+        return languageEnvs;
     }
 
     public List<Testcase> getTestcases() {
+        if (testcases == null) {
+            testcases = new LinkedList<>();
+        }
         return testcases;
     }
 }

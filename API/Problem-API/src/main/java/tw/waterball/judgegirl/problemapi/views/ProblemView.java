@@ -34,7 +34,7 @@ public class ProblemView {
                 problem.getId(),
                 problem.getTitle(),
                 problem.getDescription(),
-                new ArrayList<>(problem.getLanguageEnvs()),
+                new ArrayList<>(problem.getLanguageEnvs().values()),
                 problem.getOutputMatchPolicyPluginTag(),
                 problem.getFilterPluginTags(),
                 problem.getTags(),

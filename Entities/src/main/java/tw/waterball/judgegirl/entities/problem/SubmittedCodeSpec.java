@@ -29,7 +29,6 @@ public class SubmittedCodeSpec {
     private Language format;
     private String fileName;
 
-
     public String getFileExtension() {
         return FilenameUtils.getExtension(fileName);
     }

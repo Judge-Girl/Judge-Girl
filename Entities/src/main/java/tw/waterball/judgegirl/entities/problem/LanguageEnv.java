@@ -18,6 +18,7 @@ import lombok.*;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -26,24 +27,29 @@ import java.util.List;
  */
 @Builder
 @Getter
+@NoArgsConstructor
 @AllArgsConstructor
 public class LanguageEnv {
     @NotNull
-    private final Language language;
+    private Language language;
 
     @Valid
-    private final Compilation compilation;
+    private Compilation compilation;
 
     @Valid
     @NotNull
-    private final ResourceSpec resourceSpec;
+    private ResourceSpec resourceSpec;
 
     @NotNull
     @Singular
-    private final List<@Valid SubmittedCodeSpec> submittedCodeSpecs;
+    private List<@Valid SubmittedCodeSpec> submittedCodeSpecs;
 
     @NotBlank
     private String providedCodesFileId;
+
+    public LanguageEnv(@NotNull Language language) {
+        this.language = language;
+    }
 
     public boolean isCompiledLanguage() {
         return language.isCompiledLanguage();
@@ -60,5 +66,23 @@ public class LanguageEnv {
 
     public void setProvidedCodesFileId(String providedCodesFileId) {
         this.providedCodesFileId = providedCodesFileId;
+    }
+
+    public void setResourceSpec(ResourceSpec resourceSpec) {
+        this.resourceSpec = resourceSpec;
+    }
+
+    public void setCompilationScript(String compilationScript) {
+        if (compilation == null) {
+            compilation = new Compilation();
+        }
+        this.compilation.setScript(compilationScript);
+    }
+
+    public List<SubmittedCodeSpec> getSubmittedCodeSpecs() {
+        if (submittedCodeSpecs == null) {
+            submittedCodeSpecs = new LinkedList<>();
+        }
+        return submittedCodeSpecs;
     }
 }
