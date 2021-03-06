@@ -104,7 +104,9 @@ public class ZipUtils {
                 Path path = destinationPath.resolve(entry.getName());
                 FileUtils.forceMkdir(path.getParent().toFile());
                 if (entry.isDirectory()) {
-                    Files.createDirectory(path);
+                    if (!Files.exists(path)) {
+                        Files.createDirectory(path);
+                    }
                 } else {
                     try (FileOutputStream out = new FileOutputStream(path.toFile())) {
                         IOUtils.copy(zin, out);

@@ -21,6 +21,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.io.IOUtils;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Objects;
@@ -31,7 +32,7 @@ import java.util.Objects;
 @AllArgsConstructor
 @Getter
 @Setter
-public class StreamingResource {
+public class StreamingResource implements Closeable {
     protected String fileName;
     protected InputStream inputStream;
 
@@ -53,5 +54,10 @@ public class StreamingResource {
     @Override
     public int hashCode() {
         return Objects.hash(fileName, inputStream);
+    }
+
+    @Override
+    public void close() throws IOException {
+        inputStream.close();
     }
 }

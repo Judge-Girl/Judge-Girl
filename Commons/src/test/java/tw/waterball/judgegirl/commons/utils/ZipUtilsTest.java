@@ -29,14 +29,21 @@ class ZipUtilsTest {
     @Test
     void testUnzipToDestination() throws IOException {
         Path destinationPath = Files.createTempDirectory("judge-girl-test");
+        Path existingFile = destinationPath.resolve("this-file-cannot-be-removed");
+        Files.write(existingFile, "foo".getBytes());
+
         File destination = destinationPath.toFile();
 
         ZipUtils.unzipToDestination(
                 ResourceUtils.getResourceAsStream("/test.zip"), destinationPath);
 
+        assertTrue(Files.exists(existingFile));
+        Files.delete(existingFile);
+
         // test the unzipped artifact has the exact content to the original one
         assertTrue(DirectoryUtils.contentEquals(destination.toPath(),
                 ResourceUtils.getAbsolutePath("/test")));
+
 
         FileUtils.forceDelete(destination);
     }

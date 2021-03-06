@@ -33,3 +33,6 @@ build/
 
 ### Secret ###
 all-in-one.yaml
+
+### Temporary Output Files ###
+/temp

@@ -113,29 +113,35 @@ public class CCJudger extends PluginExtendedJudger {
     }
 
     @Override
-    protected void downloadProvidedCodes() throws IOException {
-        LanguageEnv languageEnv = getLanguageEnv();
-        FileResource zip = problemServiceDriver.downloadProvidedCodes(
-                getProblem().getId(), languageEnv.getName(), languageEnv.getProvidedCodesFileId());
-
-        ZipUtils.unzipToDestination(zip.getInputStream(), getSourceRootPath());
-    }
-
-    @Override
     protected void downloadSubmittedCodes() throws IOException {
         SubmissionHome submissionHome = judgerWorkspace.getSubmissionHome(getSubmission().getId());
-        FileResource zip = submissionServiceDriver.downloadSubmittedCodes(
+        try (FileResource zip = submissionServiceDriver.downloadSubmittedCodes(
                 getProblem().getId(), getStudent(),
                 getSubmission().getId(), getSubmission().getSubmittedCodesFileId()
-        );
+        )) {
+            ZipUtils.unzipToDestination(zip.getInputStream(), getSourceRootPath());
+        }
 
-        ZipUtils.unzipToDestination(zip.getInputStream(), getSourceRootPath());
+        logger.info("Source Code: {}", Files.readString(getSourceRootPath().resolve("prefixsum-seq.c")));
 
         // Since we don't want the providedCodes stay in the source root after compilation (for some source code filtering reason),
         // here we copy the submitted codes into a temporary directory
         // for latter swapping back to override the source root.
         Path tempSubmittedCodesPath = submissionHome.getPath().resolve(TEMP_SUBMITTED_CODES_DIR_NAME);
         FileUtils.copyDirectory(getSourceRootPath().toFile(), tempSubmittedCodesPath.toFile());
+
+        logger.info("<After downloadSubmittedCodes> Files under src: {}.", Arrays.stream(getSourceRootPath().toFile().listFiles()).map(f -> f.getName() + (f.isDirectory()?"/":"")).collect(Collectors.joining(",")));
+    }
+
+    @Override
+    protected void downloadProvidedCodes() throws IOException {
+        LanguageEnv languageEnv = getLanguageEnv();
+        try(FileResource zip = problemServiceDriver.downloadProvidedCodes(
+                getProblem().getId(), languageEnv.getName(), languageEnv.getProvidedCodesFileId())) {
+            ZipUtils.unzipToDestination(zip.getInputStream(), getSourceRootPath());
+        }
+
+        logger.info("<After downloadProvidedCodes> Files under src: {}.", Arrays.stream(getSourceRootPath().toFile().listFiles()).map(f -> f.getName() + (f.isDirectory()?"/":"")).collect(Collectors.joining(",")));
     }
 
     @Override
@@ -151,6 +157,7 @@ public class CCJudger extends PluginExtendedJudger {
     protected CompileResult doCompile() {
         String script = getLanguageEnv().getCompilation().getScript();
         Files.write(getCompileScriptPath(), script.getBytes());
+        logger.info("<After compile> Files under src: {}.", Arrays.stream(getSourceRootPath().toFile().listFiles()).map(f -> f.getName() + (f.isDirectory()?"/":"")).collect(Collectors.joining(",")));
         Compiler compiler = compilerFactory.create(getSourceRootPath());
         CompileResult result = compiler.compile(getLanguageEnv().getCompilation());
         if (result.isSuccessful()) {
@@ -309,6 +316,7 @@ public class CCJudger extends PluginExtendedJudger {
                         verdict.getIssueTime(),
                         ReportView.fromEntity(verdict.getReport()),
                         verdict.getJudges()));
+
     }
 
     @SneakyThrows
