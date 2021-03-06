@@ -24,7 +24,7 @@ import tw.waterball.judgegirl.entities.problem.LanguageEnv;
 import tw.waterball.judgegirl.entities.problem.ResourceSpec;
 import tw.waterball.judgegirl.entities.problem.Problem;
 import tw.waterball.judgegirl.entities.submission.Submission;
-import tw.waterball.judgegirl.submissionservice.ports.JudgerDeployer;
+import tw.waterball.judgegirl.submissionservice.deployer.JudgerDeployer;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)

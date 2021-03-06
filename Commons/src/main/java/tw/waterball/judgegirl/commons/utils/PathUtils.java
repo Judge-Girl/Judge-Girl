@@ -19,8 +19,10 @@ import java.nio.file.Paths;
  * @author - johnny850807@gmail.com (Waterball)
  */
 public class PathUtils {
-    private static final String FOLDER_SEPARATOR = "/";
 
+    /**
+     * Example: `/home/user/path/to/file.java`  -->  `file.java`
+     */
     public static String getFileName(String path) {
         return Paths.get(path).getFileName().toString();
     }

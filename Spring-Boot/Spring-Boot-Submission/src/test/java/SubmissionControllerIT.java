@@ -61,7 +61,7 @@ import tw.waterball.judgegirl.submissionapi.views.ReportView;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 import tw.waterball.judgegirl.submissionapi.views.VerdictIssuedEvent;
 import tw.waterball.judgegirl.submissionservice.domain.usecases.SubmitCodeUseCase;
-import tw.waterball.judgegirl.submissionservice.ports.JudgerDeployer;
+import tw.waterball.judgegirl.submissionservice.deployer.JudgerDeployer;
 import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
 import tw.waterball.judgegirl.testkit.resultmatchers.ZipResultMatcher;
 

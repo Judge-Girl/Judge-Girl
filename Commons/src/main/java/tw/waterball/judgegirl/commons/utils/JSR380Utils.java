@@ -43,7 +43,7 @@ public class JSR380Utils {
     }
 
     public static class EntityInvalidException extends IllegalArgumentException {
-        private Set<ConstraintViolation<Object>> violations;
+        private final Set<ConstraintViolation<Object>> violations;
 
         EntityInvalidException(Set<ConstraintViolation<Object>> violations) {
             super(violations.stream()

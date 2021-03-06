@@ -77,9 +77,6 @@ class ProblemControllerIT extends AbstractSpringBootTest {
     void setup() {
         problem = ProblemStubs
                 .template()
-                .testcase(new Testcase("1", ProblemStubs.ID, 5, 5, 5000, 1, 20))
-                .testcase(new Testcase("2", ProblemStubs.ID, 5, 5, 5000, 1, 30))
-                .testcase(new Testcase("3", ProblemStubs.ID, 3, 4, 5000, 1, 50))
                 .build();
     }
 
@@ -144,7 +141,7 @@ class ProblemControllerIT extends AbstractSpringBootTest {
     }
 
     @NotNull
-    private List<String> givenTagsSaved(String ...tags) {
+    private List<String> givenTagsSaved(String... tags) {
         final List<String> tagList = asList(tags);
         mongoTemplate.save(new MongoProblemRepository.AllTags(tagList));
         return tagList;
@@ -189,7 +186,7 @@ class ProblemControllerIT extends AbstractSpringBootTest {
 
     @Test
     void GivenProblemsSaved_WhenGetAllProblems_ShouldRespondAll() throws Exception {
-        List<Problem> problems = givenArbitraryProblemsSaved(10);
+        List<Problem> problems = givenProblemsSaved(10);
 
         // verify all problems will be found and projected into problem-items
         assertEquals(problems.stream()
@@ -199,14 +196,14 @@ class ProblemControllerIT extends AbstractSpringBootTest {
 
     @Test
     void GivenOneProblemSaved_WhenGetProblemsWithoutPageSpecified_ShouldRespondOnlyThatProblem() throws Exception {
-        Problem expectedProblem = givenArbitraryProblemsSaved(1).get(0);
+        Problem expectedProblem = givenProblemsSaved(1).get(0);
 
         assertEquals(ProblemItem.fromEntity(expectedProblem), requestGetProblems().get(0));
     }
 
     @Test
     void GivenManyProblemsSaved_WhenGetProblemsInPage_ShouldRespondOnlyThoseProblemsInThatPage() throws Exception {
-        List<Problem> expectedProblems = givenArbitraryProblemsSaved(200);
+        List<Problem> expectedProblems = givenProblemsSaved(200);
 
         // Strict pagination testing
         int page = 0;
@@ -237,7 +234,7 @@ class ProblemControllerIT extends AbstractSpringBootTest {
                 .andReturn();
 
         return objectMapper.readValue(result.getResponse().getContentAsString(),
-                new TypeReference<List<ProblemItem>>() {
+                new TypeReference<>() {
                 });
     }
 
@@ -251,7 +248,7 @@ class ProblemControllerIT extends AbstractSpringBootTest {
                 });
     }
 
-    private List<Problem> givenArbitraryProblemsSaved(int count) {
+    private List<Problem> givenProblemsSaved(int count) {
         Random random = new Random();
         List<Problem> problems = IntStream.range(0, count).mapToObj((id) ->
                 ProblemStubs.template().id(id)

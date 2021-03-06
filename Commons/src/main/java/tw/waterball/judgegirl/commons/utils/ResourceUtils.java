@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -35,13 +36,7 @@ public class ResourceUtils {
 
     public static Path getAbsolutePath(String resourcePath) {
         URL url = getURL(resourcePath);
-
-        try {
-            return Paths.get(URLDecoder.decode(url.getPath(), "UTF-8"));
-        } catch (UnsupportedEncodingException e) {
-            // If it's not supported, at least translate '%20's into spaces
-            return Paths.get(url.getPath().replaceAll("%20", " "));
-        }
+        return Paths.get(URLDecoder.decode(url.getPath(), StandardCharsets.UTF_8));
     }
 
     public static URL getURL(String resourcePath) {

@@ -23,8 +23,8 @@ public enum Language {
 
     JAVA(false, "java");
 
-    private boolean interpretedLang;
-    private String fileExtension;
+    private final boolean interpretedLang;
+    private final String fileExtension;
 
     Language(boolean interpretedLang, String fileExtension) {
         this.interpretedLang = interpretedLang;

@@ -25,7 +25,7 @@ import tw.waterball.judgegirl.judgerapi.env.JudgerEnvVariables;
 import tw.waterball.judgegirl.springboot.configs.properties.JudgeGirlAmqpProps;
 import tw.waterball.judgegirl.springboot.configs.properties.JudgeGirlJudgerProps;
 import tw.waterball.judgegirl.springboot.configs.properties.ServiceProps;
-import tw.waterball.judgegirl.submissionservice.ports.JudgerDeployer;
+import tw.waterball.judgegirl.submissionservice.deployer.JudgerDeployer;
 
 import javax.annotation.PostConstruct;
 import java.util.Arrays;

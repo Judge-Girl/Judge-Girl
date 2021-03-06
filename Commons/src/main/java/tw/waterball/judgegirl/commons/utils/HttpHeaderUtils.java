@@ -23,14 +23,14 @@ import tw.waterball.judgegirl.commons.exceptions.InvalidAuthorizationBearerExcep
  */
 public class HttpHeaderUtils {
 
-    public static String createBearer(String token) {
+    public static String bearerWithToken(String token) {
         return "Bearer " + token;
     }
 
     public static String parseBearerToken(String bearer) {
         bearer = bearer.trim();
         String[] split = bearer.split("\\s+");
-        if (split.length != 2 || !split[0].toLowerCase().equals("bearer")) {
+        if (split.length != 2 || !split[0].equalsIgnoreCase("bearer")) {
             throw new InvalidAuthorizationBearerException(bearer);
         }
         return split[1];

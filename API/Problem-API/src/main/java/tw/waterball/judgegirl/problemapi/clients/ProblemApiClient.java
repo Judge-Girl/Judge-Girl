@@ -14,7 +14,7 @@ import tw.waterball.judgegirl.problemapi.views.ProblemView;
 
 import javax.inject.Named;
 
-import static tw.waterball.judgegirl.commons.utils.HttpHeaderUtils.createBearer;
+import static tw.waterball.judgegirl.commons.utils.HttpHeaderUtils.bearerWithToken;
 
 /**
  * @author - johnny850807@gmail.com (Wateqrball)
@@ -41,7 +41,7 @@ public class ProblemApiClient extends BaseRetrofitAPI implements ProblemServiceD
     @Override
     public FileResource downloadProvidedCodes(int problemId, String languageEnvName, String providedCodesFileId) throws NotFoundException {
         Response<ResponseBody> resp = errorHandlingGetResponse(() -> api.getZippedProvidedCodes(
-                createBearer(adminToken),
+                bearerWithToken(adminToken),
                 problemId, languageEnvName, providedCodesFileId));
         return parseDownloadedFileResource(resp);
 
@@ -52,7 +52,7 @@ public class ProblemApiClient extends BaseRetrofitAPI implements ProblemServiceD
         System.out.printf("Problem Id: %d, Testcase IOs file id: %s.\n", problemId, testcaseIOsFileId);
         Response<ResponseBody> resp = errorHandlingGetResponse(() ->
                 api.getZippedTestCaseIOs(
-                createBearer(adminToken), problemId, testcaseIOsFileId));
+                bearerWithToken(adminToken), problemId, testcaseIOsFileId));
         return parseDownloadedFileResource(resp);
     }
 

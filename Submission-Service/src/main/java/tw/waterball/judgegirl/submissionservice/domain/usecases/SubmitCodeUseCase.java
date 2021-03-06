@@ -9,7 +9,7 @@ import tw.waterball.judgegirl.entities.submission.Submission;
 import tw.waterball.judgegirl.problemapi.clients.ProblemServiceDriver;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.submissionservice.domain.repositories.SubmissionRepository;
-import tw.waterball.judgegirl.submissionservice.ports.JudgerDeployer;
+import tw.waterball.judgegirl.submissionservice.deployer.JudgerDeployer;
 
 import javax.inject.Named;
 import java.io.IOException;

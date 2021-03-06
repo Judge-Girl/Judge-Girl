@@ -34,7 +34,7 @@ import java.util.zip.ZipOutputStream;
 import static java.util.Objects.requireNonNull;
 
 /**
- * TODO Test Coverage and make it cleaner
+ * TODO: make it cleaner
  *
  * @author - johnny850807@gmail.com (Waterball)
  */

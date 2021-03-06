@@ -14,18 +14,14 @@
  *    limitations under the License.
  */
 
-package tw.waterball.judgegirl.commons.utils;
+package tw.waterball.judgegirl.submissionservice.deployer;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import tw.waterball.judgegirl.entities.problem.Problem;
+import tw.waterball.judgegirl.entities.submission.Submission;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
-public class SetUtils {
-
-    public static <T> Set<T> ofSet(T... elements) {
-        return new HashSet<>(Arrays.asList(elements));
-    }
+public interface JudgerDeployer {
+    void deployJudger(Problem problem, int studentId, Submission submission);
 }

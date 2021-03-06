@@ -68,10 +68,6 @@ public class Problem {
         JSR380Utils.validate(this);
     }
 
-    public String getTestCaseIOsFileName() {
-        return String.format("%d-%s-IO.zip", id, title);
-    }
-
     public Integer getId() {
         return id;
     }

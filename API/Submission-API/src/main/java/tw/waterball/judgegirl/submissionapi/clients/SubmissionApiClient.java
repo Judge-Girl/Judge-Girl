@@ -34,7 +34,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static tw.waterball.judgegirl.commons.utils.HttpHeaderUtils.createBearer;
+import static tw.waterball.judgegirl.commons.utils.HttpHeaderUtils.bearerWithToken;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -54,7 +54,7 @@ public class SubmissionApiClient extends BaseRetrofitAPI implements SubmissionSe
 
     @Override
     public SubmissionView submit(SubmitCodeRequest submitCodeRequest) throws IOException {
-        return api.submit(createBearer(token),
+        return api.submit(bearerWithToken(token),
                 submitCodeRequest.problemId, submitCodeRequest.studentId,
                 submitCodeRequest.fileResources.stream()
                         .map(r -> MultipartBody.Part.createFormData("submittedCodes", r.getFileName(),
@@ -74,7 +74,7 @@ public class SubmissionApiClient extends BaseRetrofitAPI implements SubmissionSe
     @Override
     public SubmissionView getSubmission(int problemId, int studentId, String submissionId) throws NotFoundException {
         return errorHandlingGetBody(() -> api.getSubmission(
-                createBearer(token),
+                bearerWithToken(token),
                 problemId, studentId, submissionId).execute());
     }
 
@@ -83,7 +83,7 @@ public class SubmissionApiClient extends BaseRetrofitAPI implements SubmissionSe
                                                String submissionId, String submittedCodesFileId) throws NotFoundException {
         Response<ResponseBody> resp = errorHandlingGetResponse(() ->
                 api.getSubmittedCodes(
-                        createBearer(token),
+                        bearerWithToken(token),
                         problemId, studentId, submissionId, submittedCodesFileId));
         return parseDownloadedFileResource(resp);
     }
@@ -91,7 +91,7 @@ public class SubmissionApiClient extends BaseRetrofitAPI implements SubmissionSe
     @Override
     public List<SubmissionView> getSubmissions(int problemId, int studentId) {
         return errorHandlingGetBody(() -> api.getSubmissions(
-                createBearer(token),
+                bearerWithToken(token),
                 problemId, studentId).execute());
     }
 

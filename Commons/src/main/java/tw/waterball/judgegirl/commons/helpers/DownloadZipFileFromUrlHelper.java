@@ -29,20 +29,7 @@ import java.util.zip.ZipInputStream;
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
-public class ZipResourceAPI {
-
-    public static void main(String[] args) throws IOException {
-        ZipResourceAPI zipResourceAPI = new ZipResourceAPI();
-        ZipInputStream zipInputStream = zipResourceAPI.download(
-                "http://127.0.0.1:33002/api/problems/1/zippedTestCaseInputs", StandardCharsets.UTF_8);
-        ZipEntry zipEntry;
-        while ((zipEntry = zipInputStream.getNextEntry()) != null) {
-            String fileName = zipEntry.getName();
-            System.out.println(fileName);
-            System.out.println("=============================");
-            IOUtils.copy(zipInputStream, System.out);
-        }
-    }
+public class DownloadZipFileFromUrlHelper {
 
     /**
      * @return ZipInputStream that supports unzip-streaming from a url, note:
@@ -53,5 +40,16 @@ public class ZipResourceAPI {
         URL url = new URL(urlString);
         URLConnection urlConnection = url.openConnection();
         return new ZipInputStream(urlConnection.getInputStream(), charset);
+    }
+    
+    public void downloadAndPrint(String urlString, Charset charset) throws  IOException {
+        ZipInputStream zipInputStream = download(urlString, charset);
+        ZipEntry zipEntry;
+        while ((zipEntry = zipInputStream.getNextEntry()) != null) {
+            String fileName = zipEntry.getName();
+            System.out.println(fileName);
+            System.out.println("=============================");
+            IOUtils.copy(zipInputStream, System.out);
+        }
     }
 }

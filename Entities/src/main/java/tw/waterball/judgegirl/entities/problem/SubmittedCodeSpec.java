@@ -14,6 +14,7 @@
 package tw.waterball.judgegirl.entities.problem;
 
 import lombok.*;
+import org.apache.commons.io.FilenameUtils;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -27,4 +28,9 @@ import lombok.*;
 public class SubmittedCodeSpec {
     private Language format;
     private String fileName;
+
+
+    public String getFileExtension() {
+        return FilenameUtils.getExtension(fileName);
+    }
 }

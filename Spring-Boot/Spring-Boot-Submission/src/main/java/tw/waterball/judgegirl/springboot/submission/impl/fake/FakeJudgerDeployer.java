@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
 import tw.waterball.judgegirl.entities.problem.Problem;
 import tw.waterball.judgegirl.entities.submission.Submission;
 import tw.waterball.judgegirl.springboot.profiles.Dev;
-import tw.waterball.judgegirl.submissionservice.ports.JudgerDeployer;
+import tw.waterball.judgegirl.submissionservice.deployer.JudgerDeployer;
 
 import java.util.HashSet;
 import java.util.Optional;

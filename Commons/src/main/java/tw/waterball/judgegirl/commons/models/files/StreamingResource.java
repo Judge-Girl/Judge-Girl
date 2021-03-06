@@ -41,7 +41,8 @@ public class StreamingResource {
         if (o == null || getClass() != o.getClass()) return false;
         StreamingResource that = (StreamingResource) o;
         try {
-            //TODO reset the stream after this method ends
+            //TODO: `contentEquals` will consume and exhaust the stream,
+            //   we need to reset the stream to make the stream sill available
             return IOUtils.contentEquals(inputStream, that.inputStream);
         } catch (IOException e) {
             throw new RuntimeException("Error occurs during measuring the equality between " +

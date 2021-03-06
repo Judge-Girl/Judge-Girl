@@ -1,72 +1,55 @@
-///*
-// * Copyright 2020 Johnny850807 (Waterball) 潘冠辰
-// *   Licensed under the Apache License, Version 2.0 (the "License");
-// *   you may not use this file except in compliance with the License.
-// *   You may obtain a copy of the License at
-// *       http://www.apache.org/licenses/LICENSE-2.0
-// *   Unless required by applicable law or agreed to in writing, software
-// *   distributed under the License is distributed on an "AS IS" BASIS,
-// *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// *   See the License for the specific language governing permissions and
-// *   limitations under the License.
-// */
-//
-//package tw.waterball.judgegirl.migration;
-//
-//import com.fasterxml.jackson.core.type.TypeReference;
-//import com.fasterxml.jackson.databind.DeserializationFeature;
-//import com.fasterxml.jackson.databind.JsonNode;
-//import com.fasterxml.jackson.databind.ObjectMapper;
-//import org.apache.commons.io.IOUtils;
-//import org.springframework.boot.CommandLineRunner;
-//import org.springframework.boot.SpringApplication;
-//import org.springframework.boot.autoconfigure.SpringBootApplication;
-//import org.springframework.data.mongodb.core.MongoTemplate;
-//import org.springframework.data.mongodb.gridfs.GridFsTemplate;
-//import tw.waterball.judgegirl.commons.utils.ArrayUtils;
-//import tw.waterball.judgegirl.commons.utils.ZipUtils;
-//import tw.waterball.judgegirl.commons.utils.functional.ErrConsumer;
-//import tw.waterball.judgegirl.entities.problem.*;
-//import tw.waterball.judgegirl.plugins.api.match.JudgeGirlMatchPolicyPlugin;
-//import tw.waterball.judgegirl.plugins.impl.match.AllMatchPolicyPlugin;
-//import tw.waterball.judgegirl.plugins.impl.match.RegexMatchPolicyPlugin;
-//
-//import java.io.*;
-//import java.nio.file.Files;
-//import java.nio.file.InvalidPathException;
-//import java.nio.file.Path;
-//import java.nio.file.Paths;
-//import java.util.*;
-//import java.util.stream.Collectors;
-//
-//import static java.util.Objects.requireNonNull;
-//import static org.springframework.data.mongodb.core.query.Criteria.where;
-//import static org.springframework.data.mongodb.core.query.Query.query;
-//import static tw.waterball.judgegirl.migration.Inputs.*;
-//
-///**
-// * @author - johnny850807@gmail.com (Waterball)
-// */
-//@SpringBootApplication
-//public class MigrateOneProblem implements CommandLineRunner {
-//
-//    private static final String TESTCASES_HOME = "testcases";
-//    private static final String PROVIDED_CODES_DIR = "providedCodes";
-//    private static final String IMAGES_DIR = "images";
-//    private static final String PROBLEM_JSON = "problem.json";
-//    private static final String DESCRIPTION_MD = "description.md";
-//    private Problem problem;
-//    private List<Testcase> testcases;
-//    private Scanner scanner;
-//    private MongoTemplate mongoTemplate;
-//    private GridFsTemplate gridFsTemplate;
-//    private ObjectMapper objectMapper;
-//    private JudgeGirlMatchPolicyPlugin[] matchPolicyPlugins =
-//            {new AllMatchPolicyPlugin(), new RegexMatchPolicyPlugin()};
-//
-//    public static void main(String[] args) {
-//        SpringApplication.run(MigrateOneProblem.class, args);
-//    }
+/*
+ * Copyright 2020 Johnny850807 (Waterball) 潘冠辰
+ *   Licensed under the Apache License, Version 2.0 (the "License");
+ *   you may not use this file except in compliance with the License.
+ *   You may obtain a copy of the License at
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *   Unless required by applicable law or agreed to in writing, software
+ *   distributed under the License is distributed on an "AS IS" BASIS,
+ *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *   See the License for the specific language governing permissions and
+ *   limitations under the License.
+ */
+
+package tw.waterball.judgegirl.migration;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.gridfs.GridFsTemplate;
+import tw.waterball.judgegirl.entities.problem.Problem;
+import tw.waterball.judgegirl.entities.problem.Testcase;
+import tw.waterball.judgegirl.plugins.api.match.JudgeGirlMatchPolicyPlugin;
+import tw.waterball.judgegirl.plugins.impl.match.AllMatchPolicyPlugin;
+import tw.waterball.judgegirl.plugins.impl.match.RegexMatchPolicyPlugin;
+
+import java.util.List;
+import java.util.Scanner;
+
+/**
+ * @author - johnny850807@gmail.com (Waterball)
+ */
+@SpringBootApplication
+public class MigrateOneProblem /* implements CommandLineRunner */ {
+
+    private static final String TESTCASES_HOME = "testcases";
+    private static final String PROVIDED_CODES_DIR = "providedCodes";
+    private static final String IMAGES_DIR = "images";
+    private static final String PROBLEM_JSON = "problem.json";
+    private static final String DESCRIPTION_MD = "description.md";
+    private Problem problem;
+    private List<Testcase> testcases;
+    private Scanner scanner;
+    private MongoTemplate mongoTemplate;
+    private GridFsTemplate gridFsTemplate;
+    private ObjectMapper objectMapper;
+    private JudgeGirlMatchPolicyPlugin[] matchPolicyPlugins =
+            {new AllMatchPolicyPlugin(), new RegexMatchPolicyPlugin()};
+
+    public static void main(String[] args) {
+        SpringApplication.run(MigrateOneProblem.class, args);
+    }
 //
 //    public MigrateOneProblem(MongoTemplate mongoTemplate,
 //                             GridFsTemplate gridFsTemplate, ObjectMapper objectMapper) {
@@ -351,6 +334,6 @@
 //        }
 //        System.out.println("Saved testcases ...");
 //    }
-//
-//
-//}
+
+
+}
