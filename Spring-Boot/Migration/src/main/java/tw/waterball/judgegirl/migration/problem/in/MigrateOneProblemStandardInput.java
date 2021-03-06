@@ -1,82 +1,82 @@
-/*
- * Copyright 2020 Johnny850807 (Waterball) 潘冠辰
- *   Licensed under the Apache License, Version 2.0 (the "License");
- *   you may not use this file except in compliance with the License.
- *   You may obtain a copy of the License at
- *       http://www.apache.org/licenses/LICENSE-2.0
- *   Unless required by applicable law or agreed to in writing, software
- *   distributed under the License is distributed on an "AS IS" BASIS,
- *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *   See the License for the specific language governing permissions and
- *   limitations under the License.
- */
-
 package tw.waterball.judgegirl.migration.problem.in;
 
-import tw.waterball.judgegirl.commons.utils.Inputs;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import tw.waterball.judgegirl.entities.problem.Problem;
 import tw.waterball.judgegirl.entities.problem.ResourceSpec;
-import tw.waterball.judgegirl.migration.problem.MigrateOneProblem;
+import tw.waterball.judgegirl.migration.problem.ConvertLegacyLayout;
+import tw.waterball.judgegirl.migration.problem.PopulateOneProblem;
 import tw.waterball.judgegirl.plugins.api.match.JudgeGirlMatchPolicyPlugin;
 
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-
-import static java.lang.String.format;
+import java.util.function.Function;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
-public class MigrateOneProblemStandardInput implements MigrateOneProblem.Input {
+@Builder
+@AllArgsConstructor
+public class MigrateOneProblemStandardInput implements PopulateOneProblem.Input, ConvertLegacyLayout.Input {
+    private final int problemId;
+    private final Path legacyPackageRootPath;
+    private final Path outputDirectoryPath;
+    private final String compilationScript;
+    private final String[] tags;
+    private final ResourceSpec resourceSpec;
+    private final JudgeGirlMatchPolicyPlugin matchPolicyPlugin;
+    private final Function<List<Problem>, Optional<Problem>> replaceExistingProblemOrNot;
+    private final Function<List<Problem>, OptionalInt> specifyProblemIdOrNot;
+
+    @Override
+    public int problemId() {
+        return problemId;
+    }
+
+    @Override
+    public Path legacyPackageRootPath() {
+        return legacyPackageRootPath;
+    }
+
+    @Override
+    public Path outputDirectoryPath() {
+        return outputDirectoryPath;
+    }
+
+    @Override
+    public String compilationScript() {
+        return compilationScript;
+    }
+
+    @Override
+    public String[] tags() {
+        return tags;
+    }
+
     @Override
     public String problemDirPath() {
-        return Inputs.inputLine("Input the problem directory path: ");
+        return outputDirectoryPath.toAbsolutePath().toString();
     }
 
     @Override
     public ResourceSpec resourceSpec() {
-        return new ResourceSpec(
-                Inputs.inputRangedNumberOrDefault("Input allocated CPU ", 1f, 0.1f, 100),
-                Inputs.inputRangedNumberOrDefault("Input allocated GPU ", 0f, 0, 10));
+        return resourceSpec;
     }
 
     @Override
     public JudgeGirlMatchPolicyPlugin matchPolicyPlugin(JudgeGirlMatchPolicyPlugin[] matchPolicyPlugins) {
-        String message = "Please select the plugin: \n\n";
-        message += IntStream.range(0, matchPolicyPlugins.length)
-                .mapToObj(i -> format("[%d] -- %s", i, matchPolicyPlugins[i].getTag()))
-                .collect(Collectors.joining("\n"));
-
-        int index = Inputs.inputRangedIntegerOrDefault(message, 0, 0, matchPolicyPlugins.length - 1);
-        return matchPolicyPlugins[index];
+        return matchPolicyPlugin;
     }
 
     @Override
     public Optional<Problem> replaceExistingProblemOrNot(List<Problem> existingProblems) {
-        if (Inputs.inputForYesOrNo("Would you like to replace the existing problem?")) {
-            String options = existingProblems.stream().map(p -> format("[%d] %s", p.getId(), p.getTitle()))
-                    .collect(Collectors.joining("\n"));
-            List<Integer> idList = existingProblems.stream().map(Problem::getId).collect(Collectors.toList());
-            options += "\nPlease select a problem id";
-            int input = Inputs.inputRangedInteger(options, idList);
-            return existingProblems.stream().filter(p -> p.getId() == input).findFirst();
-        } else {
-            return Optional.empty();
-        }
+        return replaceExistingProblemOrNot.apply(existingProblems);
     }
 
     @Override
     public OptionalInt specifyProblemIdOrNot(List<Problem> existingProblems) {
-        if (Inputs.inputForYesOrNo("Would you like to specify the problem's id")) {
-            int problemId = Inputs.inputConditionalInteger("Input the problem's id",
-                    id -> id >= 0 && existingProblems.stream().noneMatch(p -> p.getId().equals(id)),
-                    id -> format("The input id %d must not exist and be positive.", id));
-            return OptionalInt.of(problemId);
-        } else {
-            return OptionalInt.empty();
-        }
+        return specifyProblemIdOrNot.apply(existingProblems);
     }
 }

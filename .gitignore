@@ -37,6 +37,8 @@ infra.yml
 ### Temporary Output Files ###
 /temp
 
+### mac ###
+**/.DS_Store
 
 ### Google Sheet API ###
 /tokens

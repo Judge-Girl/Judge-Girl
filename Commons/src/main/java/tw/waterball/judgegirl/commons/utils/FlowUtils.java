@@ -17,23 +17,23 @@ package tw.waterball.judgegirl.commons.utils;
  * @author - johnny850807@gmail.com (Waterball)
  */
 public class FlowUtils {
-    public static void repeat(Runnable runnable, int repeat) throws IllegalStateException {
+    public static void repeat(Runnable runnable, int repeat) throws Exception {
         int count = 0;
-        boolean success;
+        Exception err;
         do {
-            success = true;
+            err = null;
             try {
-                if (count++ >= repeat) {
-                    success = false;
+                runnable.run();
+            } catch (Exception e) {
+                err = e;
+                if (++count >= repeat) {
+                    err = new IllegalStateException("Failed over " + repeat + " times.", e);
                     break;
                 }
-                runnable.run();
-            } catch (Exception err) {
-                success = false;
             }
-        } while (!success);
-        if (!success) {
-            throw new IllegalStateException("Fail over " + repeat + "times, please re-run.");
+        } while (err != null);
+        if (err != null) {
+            throw err;
         }
     }
 }

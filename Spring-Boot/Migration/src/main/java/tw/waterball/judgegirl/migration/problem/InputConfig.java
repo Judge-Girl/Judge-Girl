@@ -16,7 +16,7 @@ package tw.waterball.judgegirl.migration.problem;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import tw.waterball.judgegirl.migration.problem.in.ConvertLegacyLayoutStandardInput;
-import tw.waterball.judgegirl.migration.problem.in.MigrateOneProblemStandardInput;
+import tw.waterball.judgegirl.migration.problem.in.PopulateOneProblemStandardInput;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -24,8 +24,8 @@ import tw.waterball.judgegirl.migration.problem.in.MigrateOneProblemStandardInpu
 @Configuration
 public class InputConfig {
     @Bean
-    public MigrateOneProblem.Input migrateOneProblem$input() {
-        return new MigrateOneProblemStandardInput();
+    public PopulateOneProblem.Input migrateOneProblem$input() {
+        return new PopulateOneProblemStandardInput();
     }
 
     @Bean
