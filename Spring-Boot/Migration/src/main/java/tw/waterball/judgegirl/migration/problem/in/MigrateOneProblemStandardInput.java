@@ -4,8 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import tw.waterball.judgegirl.entities.problem.Problem;
 import tw.waterball.judgegirl.entities.problem.ResourceSpec;
-import tw.waterball.judgegirl.migration.problem.ConvertLegacyLayout;
-import tw.waterball.judgegirl.migration.problem.PopulateOneProblem;
+import tw.waterball.judgegirl.migration.problem.MigrateOneProblem;
 import tw.waterball.judgegirl.plugins.api.match.JudgeGirlMatchPolicyPlugin;
 
 import java.nio.file.Path;
@@ -19,7 +18,7 @@ import java.util.function.Function;
  */
 @Builder
 @AllArgsConstructor
-public class MigrateOneProblemStandardInput implements PopulateOneProblem.Input, ConvertLegacyLayout.Input {
+public class MigrateOneProblemStandardInput implements MigrateOneProblem.Input {
     private final int problemId;
     private final Path legacyPackageRootPath;
     private final Path outputDirectoryPath;

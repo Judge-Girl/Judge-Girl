@@ -13,10 +13,6 @@ package tw.waterball.judgegirl.migration.problem;
  *   limitations under the License.
  */
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -34,7 +30,6 @@ import tw.waterball.judgegirl.plugins.api.match.JudgeGirlMatchPolicyPlugin;
 import tw.waterball.judgegirl.plugins.impl.match.AllMatchPolicyPlugin;
 import tw.waterball.judgegirl.plugins.impl.match.RegexMatchPolicyPlugin;
 
-import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -117,7 +112,6 @@ public class PopulateOneProblem {
 
         // save problem only after so the fileIds have been updated
         saveProblem();
-        saveTestcases();
 
         logger.info("Migration completed.");
     }
@@ -204,16 +198,6 @@ public class PopulateOneProblem {
         requireNonNull(problem.getTestcaseIOsFileId());
         problem = mongoTemplate.save(problem);
         logger.info("Saved problem, " + problem);
-    }
-
-    private void saveTestcases() {
-        logger.info("Saving testcases ...");
-        for (Testcase testcase : testcases) {
-            testcase.setProblemId(problem.getId());
-            Testcase saved = mongoTemplate.save(testcase);
-            logger.info("Saved testcase: " + saved);
-        }
-        logger.info("Saved testcases ...");
     }
 
 
