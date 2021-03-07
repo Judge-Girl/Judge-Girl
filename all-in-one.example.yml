@@ -40,7 +40,7 @@ services:
       - rabbitmq
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.student-service.rule=Host(`judgegirl.beta.pdlab.csie.ntu.edu.tw`) && PathPrefix(`/api/students`)"
+      - "traefik.http.routers.student-service.rule=PathPrefix(`/api/students`)"
       - "traefik.http.routers.student-service.entrypoints=web"
       - "traefik.http.routers.student-service.service=student-service"
       - "traefik.http.services.student-service.loadbalancer.server.port=80"
@@ -55,7 +55,7 @@ services:
       - rabbitmq
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.problem-service.rule=Host(`judgegirl.beta.pdlab.csie.ntu.edu.tw`) && PathPrefix(`/api/problems`)"
+      - "traefik.http.routers.problem-service.rule=PathPrefix(`/api/problems`)"
       - "traefik.http.routers.problem-service.entrypoints=web"
       - "traefik.http.routers.problem-service.service=problem-service"
       - "traefik.http.services.problem-service.loadbalancer.server.port=80"
@@ -74,7 +74,7 @@ services:
     command: "/bin/sh -c 'until nc -z -v -w30 rabbitmq 5672; do echo "Waiting for db..."; sleep 1; done && /usr/bin/java -jar /app.jar'"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.submission-service.rule=Host(`judgegirl.beta.pdlab.csie.ntu.edu.tw`) && PathPrefix(`/api/problems/{problemId:[a-z|0-9]+}/students/{studentId:[a-z|0-9]+}/submissions`)"
+      - "traefik.http.routers.submission-service.rule=PathPrefix(`/api/problems/{problemId:[a-z|0-9]+}/students/{studentId:[a-z|0-9]+}/submissions`)"
       - "traefik.http.routers.submission-service.entrypoints=web"
       - "traefik.http.routers.submission-service.service=submission-service"
       - "traefik.http.services.submission-service.loadbalancer.server.port=80"
