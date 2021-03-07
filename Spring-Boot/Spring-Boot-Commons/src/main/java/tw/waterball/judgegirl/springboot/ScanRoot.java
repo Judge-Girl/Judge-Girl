@@ -17,7 +17,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * Scan this class for injection.
+ * Scan this class for IoC.
  *
  * @author - johnny850807@gmail.com (Waterball)
  */

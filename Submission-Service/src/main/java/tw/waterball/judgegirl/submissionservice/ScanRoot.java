@@ -14,7 +14,7 @@
 package tw.waterball.judgegirl.submissionservice;
 
 /**
- * Scan this class for injection.
+ * Scan this class for IoC.
  *
  * @author - johnny850807@gmail.com (Waterball)
  */
