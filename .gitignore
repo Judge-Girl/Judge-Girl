@@ -32,7 +32,8 @@ build/
 
 
 ### Secret ###
-all-in-one.yaml
+all-in-one.example.yml
+all-in-one.yml
 
 ### Temporary Output Files ###
 /temp
