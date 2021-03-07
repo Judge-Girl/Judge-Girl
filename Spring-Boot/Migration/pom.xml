@@ -24,6 +24,10 @@
 
     <artifactId>migration</artifactId>
 
+    <properties>
+        <start-class>tw.waterball.judgegirl.migration.ci.CI</start-class>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>tw.waterball.judge-girl</groupId>
@@ -53,6 +57,18 @@
             <groupId>com.google.apis</groupId>
             <artifactId>google-api-services-sheets</artifactId>
             <version>v4-rev581-1.25.0</version>
+        </dependency>
+        <dependency>
+            <groupId>tw.waterball.judge-girl</groupId>
+            <artifactId>judger</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>tw.waterball.judge-girl</groupId>
+            <artifactId>spring-boot-problem</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>tw.waterball.judge-girl</groupId>
+            <artifactId>spring-boot-submission</artifactId>
         </dependency>
     </dependencies>
 </project>

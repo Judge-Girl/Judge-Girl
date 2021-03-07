@@ -30,4 +30,8 @@ public class MigrateOneProblem {
         }
     }
 
+    public interface Input extends ConvertLegacyLayout.Input, PopulateOneProblem.Input {
+
+    }
+
 }
