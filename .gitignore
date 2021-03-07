@@ -41,3 +41,6 @@ all-in-one.yml
 
 ### Google Sheet API ###
 /tokens
+
+### MAC ###
+.DS_Store
