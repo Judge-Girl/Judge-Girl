@@ -1,21 +1,5 @@
 version: '3.0'
 services:
-
-  mongodb:
-    image: mongo
-    command: --bind_ip 0.0.0.0
-    volumes:
-      - db-data:/data/db
-    ports:
-      - 127.0.0.1:27017:27017
-  rabbitmq:
-    image: rabbitmq
-    environment:
-      RABBITMQ_DEFAULT_USER: PLACEHOLDER
-      RABBITMQ_DEFAULT_PASS: PLACEHOLDER
-      RABBITMQ_DEFAULT_VHOST: /judge-girl
-    ports:
-      - 5672:5672
   reverse-proxy:
     image: traefik:v2.3
     command:
@@ -35,9 +19,6 @@ services:
       spring.profiles.active: prod
       judge-girl.mongo.host: mongodb
       judge-girl.amqp.host: rabbitmq
-    depends_on:
-      - mongodb
-      - rabbitmq
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.student-service.rule=PathPrefix(`/api/students`)"
@@ -50,9 +31,6 @@ services:
     environment:
       spring.profiles.active: prod,mongo
       judge-girl.mongo.host: mongodb
-    depends_on:
-      - mongodb
-      - rabbitmq
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.problem-service.rule=PathPrefix(`/api/problems`)"
@@ -68,10 +46,7 @@ services:
       judge-girl.amqp.host: rabbitmq
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock # docker-in-docker for running judger
-    depends_on:
-      - mongodb
-      - rabbitmq
-    command: "/bin/sh -c 'until nc -z -v -w30 rabbitmq 5672; do echo "Waiting for db..."; sleep 1; done && /usr/bin/java -jar /app.jar'"
+    command: "/bin/sh -c 'until nc -z -v -w30 rabbitmq 5672; do echo Waiting for RabbitMQ...; sleep 1; done && java -jar /app.jar'"
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.submission-service.rule=PathPrefix(`/api/problems/{problemId:[a-z|0-9]+}/students/{studentId:[a-z|0-9]+}/submissions`)"
@@ -81,3 +56,9 @@ services:
 
 volumes:
   db-data:
+
+
+networks:
+  default:
+    external:
+      name: judge-girl_judge-girl
