@@ -36,3 +36,7 @@ all-in-one.yaml
 
 ### Temporary Output Files ###
 /temp
+
+
+### Google Sheet API ###
+/tokens
