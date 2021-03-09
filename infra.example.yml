@@ -1,0 +1,27 @@
+version: '3.0'
+services:
+  mongodb:
+    image: mongo
+    command: --bind_ip 0.0.0.0
+    volumes:
+      - db-data:/data/db
+    ports:
+      - 127.0.0.1:27017:27017
+    networks:
+      - judge-girl
+  rabbitmq:
+    image: rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: PLACEHOLDER
+      RABBITMQ_DEFAULT_PASS: PLACEHOLDER
+      RABBITMQ_DEFAULT_VHOST: /judge-girl
+    ports:
+      - 5672:5672
+    networks:
+      - judge-girl
+
+volumes:
+  db-data:
+
+networks:
+  judge-girl:

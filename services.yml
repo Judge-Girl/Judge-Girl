@@ -1,21 +1,5 @@
 version: '3.0'
 services:
-
-  mongodb:
-    image: mongo
-    command: --bind_ip 0.0.0.0
-    volumes:
-      - db-data:/data/db
-    ports:
-      - 127.0.0.1:27017:27017
-  rabbitmq:
-    image: rabbitmq
-    environment:
-      RABBITMQ_DEFAULT_USER: PLACEHOLDER
-      RABBITMQ_DEFAULT_PASS: PLACEHOLDER
-      RABBITMQ_DEFAULT_VHOST: /judge-girl
-    ports:
-      - 5672:5672
   reverse-proxy:
     image: traefik:v2.3
     command:
@@ -35,12 +19,9 @@ services:
       spring.profiles.active: prod
       judge-girl.mongo.host: mongodb
       judge-girl.amqp.host: rabbitmq
-    depends_on:
-      - mongodb
-      - rabbitmq
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.student-service.rule=Host(`judgegirl.beta.pdlab.csie.ntu.edu.tw`) && PathPrefix(`/api/students`)"
+      - "traefik.http.routers.student-service.rule=PathPrefix(`/api/students`)"
       - "traefik.http.routers.student-service.entrypoints=web"
       - "traefik.http.routers.student-service.service=student-service"
       - "traefik.http.services.student-service.loadbalancer.server.port=80"
@@ -50,12 +31,9 @@ services:
     environment:
       spring.profiles.active: prod,mongo
       judge-girl.mongo.host: mongodb
-    depends_on:
-      - mongodb
-      - rabbitmq
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.problem-service.rule=Host(`judgegirl.beta.pdlab.csie.ntu.edu.tw`) && PathPrefix(`/api/problems`)"
+      - "traefik.http.routers.problem-service.rule=PathPrefix(`/api/problems`)"
       - "traefik.http.routers.problem-service.entrypoints=web"
       - "traefik.http.routers.problem-service.service=problem-service"
       - "traefik.http.services.problem-service.loadbalancer.server.port=80"
@@ -68,16 +46,19 @@ services:
       judge-girl.amqp.host: rabbitmq
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock # docker-in-docker for running judger
-    depends_on:
-      - mongodb
-      - rabbitmq
-    command: "/bin/sh -c 'until nc -z -v -w30 rabbitmq 5672; do echo "Waiting for db..."; sleep 1; done && /usr/bin/java -jar /app.jar'"
+    command: "/bin/sh -c 'until nc -z -v -w30 rabbitmq 5672; do echo Waiting for RabbitMQ...; sleep 1; done && java -jar /app.jar'"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.submission-service.rule=Host(`judgegirl.beta.pdlab.csie.ntu.edu.tw`) && PathPrefix(`/api/problems/{problemId:[a-z|0-9]+}/students/{studentId:[a-z|0-9]+}/submissions`)"
+      - "traefik.http.routers.submission-service.rule=PathPrefix(`/api/problems/{problemId:[a-z|0-9]+}/students/{studentId:[a-z|0-9]+}/submissions`)"
       - "traefik.http.routers.submission-service.entrypoints=web"
       - "traefik.http.routers.submission-service.service=submission-service"
       - "traefik.http.services.submission-service.loadbalancer.server.port=80"
 
 volumes:
   db-data:
+
+
+networks:
+  default:
+    external:
+      name: judge-girl_judge-girl

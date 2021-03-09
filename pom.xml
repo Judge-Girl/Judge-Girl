@@ -16,6 +16,7 @@
         <module>Commons</module>
         <module>Submission-Service</module>
         <module>Problem-Service</module>
+        <module>Exam-Service</module>
         <module>Plugins</module>
         <module>Spring-Boot</module>
         <module>Entities</module>
