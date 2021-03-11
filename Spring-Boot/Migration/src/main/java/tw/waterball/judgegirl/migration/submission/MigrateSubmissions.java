@@ -5,7 +5,7 @@ import lombok.SneakyThrows;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Profile;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import tw.waterball.judgegirl.commons.models.files.StreamingResource;
@@ -16,6 +16,7 @@ import tw.waterball.judgegirl.entities.submission.ProgramProfile;
 import tw.waterball.judgegirl.entities.submission.Submission;
 import tw.waterball.judgegirl.entities.submission.Verdict;
 import tw.waterball.judgegirl.migration.legacy.JudgeResultCodes;
+import tw.waterball.judgegirl.springboot.profiles.JudgeGirlApplication;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 import tw.waterball.judgegirl.submissionservice.domain.repositories.SubmissionRepository;
 
@@ -36,8 +37,9 @@ import static tw.waterball.judgegirl.commons.utils.ZipUtils.zipToFile;
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
+@Profile("migrateSubmissions")
 @Component
-@SpringBootApplication(scanBasePackages = "tw.waterball.judgegirl")
+@JudgeGirlApplication
 public class MigrateSubmissions {
     public static final Language DEFAULT_LANG = Language.C;
     private final JdbcTemplate jdbcTemplate;

@@ -25,7 +25,7 @@ public class FixedInputConfiguration {
                 .problemId(problemId)
                 .compilationScript("gcc -std=c99 -O2 intersection.c main.c -lm")
                 .tags(new String[]{"array", "loop", "function"})
-                .legacyPackageRootPath(Paths.get("/Users/johnny850807/Documents/Judge-Girl-Migration/package"))
+                .legacyPackageRootPath(Paths.get("/Volumes/Legacy-Judge-Girl-2021/package"))
                 .outputDirectoryPath(Paths.get("temp/migration/" + problemId))
                 .resourceSpec(new ResourceSpec(1, 0))
                 .matchPolicyPlugin(new AllMatchPolicyPlugin())

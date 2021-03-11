@@ -93,7 +93,7 @@ public class ConvertLegacyLayout {
         problem.addLanguageEnv(new LanguageEnv(DEFAULT_LANGUAGE));
         Path legacyPackageRootPath = in.legacyPackageRootPath();
         this.outputDirectoryPath = in.outputDirectoryPath();
-        this.testDataHome = legacyPackageRootPath.resolve("testData")
+        this.testDataHome = legacyPackageRootPath.resolve("testdata")
                 .resolve(String.valueOf(problemId));
         Path markdownDescriptionFilePath = legacyPackageRootPath
                 .resolve("source").resolve("md").resolve("problem")
