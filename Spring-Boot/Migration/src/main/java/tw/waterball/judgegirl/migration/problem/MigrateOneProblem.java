@@ -7,7 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = "tw.waterball.judgegirl")
 @AllArgsConstructor
 public class MigrateOneProblem {
     private final ConvertLegacyLayout convertLegacyLayout;
@@ -15,7 +15,7 @@ public class MigrateOneProblem {
 
     public void execute() throws Exception {
         convertLegacyLayout.execute();
-        populateOneProblem.execute(1);
+        populateOneProblem.execute();
     }
 
     public static void main(String[] args) {
@@ -26,6 +26,7 @@ public class MigrateOneProblem {
             System.out.println("Completed.");
             SpringApplication.exit(context, () -> 1);
         } catch (Exception err) {
+            err.printStackTrace();
             SpringApplication.exit(context, () -> -1);
         }
     }

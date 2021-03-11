@@ -21,7 +21,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import tw.waterball.judgegirl.commons.utils.ArrayUtils;
-import tw.waterball.judgegirl.commons.utils.FlowUtils;
 import tw.waterball.judgegirl.commons.utils.ZipUtils;
 import tw.waterball.judgegirl.commons.utils.functional.ErrConsumer;
 import tw.waterball.judgegirl.entities.problem.*;
@@ -70,7 +69,7 @@ public class PopulateOneProblem {
         var context = SpringApplication.run(MigrateOneProblem.class, args);
         try {
             PopulateOneProblem populateOneProblem = context.getBean(PopulateOneProblem.class);
-            populateOneProblem.execute(1);
+            populateOneProblem.execute();
             System.out.println("Completed.");
             SpringApplication.exit(context, () -> 1);
         } catch (Exception err) {
@@ -79,15 +78,13 @@ public class PopulateOneProblem {
         }
     }
 
-    public void execute(int repeatOnFailureTime) throws Exception {
-        FlowUtils.repeat(() -> {
-            Path problemDirPath = Paths.get(in.problemDirPath());
-            layoutManipulator.verifyProblemDirLayout(problemDirPath);
-            problem = layoutManipulator.verifyAndReadProblem(problemDirPath);
-            testcases = layoutManipulator.verifyAndReadTestcases(problemDirPath);
-            populateProblemAndTestcasesWithNewSchema();
-            migrateToJudgeGirlDatabase(problemDirPath);
-        }, repeatOnFailureTime);
+    public void execute() throws Exception {
+        Path problemDirPath = Paths.get(in.problemDirPath());
+        layoutManipulator.verifyProblemDirLayout(problemDirPath);
+        problem = layoutManipulator.verifyAndReadProblem(problemDirPath);
+        testcases = layoutManipulator.verifyAndReadTestcases(problemDirPath);
+        populateProblemAndTestcasesWithNewSchema();
+        migrateToJudgeGirlDatabase(problemDirPath);
     }
 
     private void populateProblemAndTestcasesWithNewSchema() {

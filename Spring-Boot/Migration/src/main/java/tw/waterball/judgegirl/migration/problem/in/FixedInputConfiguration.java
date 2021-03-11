@@ -8,7 +8,6 @@ import tw.waterball.judgegirl.entities.problem.ResourceSpec;
 import tw.waterball.judgegirl.plugins.impl.match.AllMatchPolicyPlugin;
 
 import java.nio.file.Paths;
-import java.util.Optional;
 import java.util.OptionalInt;
 
 /**
@@ -21,7 +20,7 @@ public class FixedInputConfiguration {
     @Bean
     @Primary
     public MigrateOneProblemStandardInput migrateOneProblemStandardInput() {
-        int problemId = 128;
+        int problemId = 3;
         return MigrateOneProblemStandardInput.builder()
                 .problemId(problemId)
                 .compilationScript("gcc -std=c99 -O2 intersection.c main.c -lm")
