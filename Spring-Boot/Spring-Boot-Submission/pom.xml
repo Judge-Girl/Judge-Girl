@@ -50,10 +50,6 @@
         </dependency>
         <dependency>
             <groupId>tw.waterball.judge-girl</groupId>
-            <artifactId>api-commons</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>tw.waterball.judge-girl</groupId>
             <artifactId>judger-api</artifactId>
         </dependency>
         <dependency>

@@ -60,8 +60,8 @@ import tw.waterball.judgegirl.submissionapi.clients.VerdictPublisher;
 import tw.waterball.judgegirl.submissionapi.views.ReportView;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 import tw.waterball.judgegirl.submissionapi.views.VerdictIssuedEvent;
-import tw.waterball.judgegirl.submissionservice.domain.usecases.SubmitCodeUseCase;
 import tw.waterball.judgegirl.submissionservice.deployer.JudgerDeployer;
+import tw.waterball.judgegirl.submissionservice.domain.usecases.SubmitCodeUseCase;
 import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
 import tw.waterball.judgegirl.testkit.resultmatchers.ZipResultMatcher;
 
@@ -358,6 +358,7 @@ public class SubmissionControllerIT extends AbstractSpringBootTest {
                         throw new RuntimeException(e);
                     }
                 }).collect(Collectors.toList());
+
     }
 
     private SubmissionView givenSubmitCode(int studentId, String token) throws Exception {

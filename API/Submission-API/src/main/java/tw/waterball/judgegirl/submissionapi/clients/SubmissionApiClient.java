@@ -29,7 +29,6 @@ import tw.waterball.judgegirl.commons.models.files.FileResource;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 import tw.waterball.judgegirl.submissionservice.domain.usecases.SubmitCodeRequest;
 
-import javax.inject.Named;
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -39,7 +38,6 @@ import static tw.waterball.judgegirl.commons.utils.HttpHeaderUtils.bearerWithTok
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
-@Named
 public class SubmissionApiClient extends BaseRetrofitAPI implements SubmissionServiceDriver {
     private API api;
     private String token;

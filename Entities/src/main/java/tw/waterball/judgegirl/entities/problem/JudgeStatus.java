@@ -54,6 +54,11 @@ public enum JudgeStatus {
     RE("Runtime Error"),
 
     /**
+     * Presentation Error
+     */
+    PE("Presentation Error"),
+
+    /**
      * Null Object
      */
     NONE("None"),

@@ -17,14 +17,12 @@
 package tw.waterball.judgegirl.commons.token;
 
 
-import javax.inject.Named;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
-@Named
 public class NaiveTokenService implements TokenService {
     private Date exp = new Date(TimeUnit.HOURS.toMillis(4));
 

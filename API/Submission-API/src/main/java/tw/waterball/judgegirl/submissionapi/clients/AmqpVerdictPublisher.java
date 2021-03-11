@@ -20,12 +20,9 @@ import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.core.TopicExchange;
 import tw.waterball.judgegirl.submissionapi.views.VerdictIssuedEvent;
 
-import javax.inject.Named;
-
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
-@Named
 public class AmqpVerdictPublisher implements VerdictPublisher {
     private AmqpTemplate amqpTemplate;
     private TopicExchange submissionTopicExchange;

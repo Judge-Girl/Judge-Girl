@@ -137,8 +137,8 @@ public class ZipUtils {
         }
     }
 
-    public static void zipToFile(File file, FileOutputStream fos, String... ignoredFileNames) {
-        zipToFile(new File[]{file}, fos, ignoredFileNames);
+    public static void zipToFile(File file, OutputStream out, String... ignoredFileNames) {
+        zipToFile(new File[]{file}, out, ignoredFileNames);
     }
 
     /**
@@ -146,8 +146,8 @@ public class ZipUtils {
      * through the given FileOutputStream, except those whose file names are contained in
      * ignoredFileNames.
      */
-    public static void zipToFile(File[] files, FileOutputStream fos, String... ignoredFileNames) {
-        try (ZipOutputStream zos = new ZipOutputStream(fos)) {
+    public static void zipToFile(File[] files, OutputStream out, String... ignoredFileNames) {
+        try (ZipOutputStream zos = new ZipOutputStream(out)) {
             for (File file : files) {
                 if (!ArrayUtils.contains(ignoredFileNames, file.getName())) {
                     writeZipEntry(file, zos, ignoredFileNames);
