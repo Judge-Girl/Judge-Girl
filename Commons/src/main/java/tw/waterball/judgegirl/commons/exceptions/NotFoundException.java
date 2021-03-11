@@ -19,6 +19,9 @@ import tw.waterball.judgegirl.commons.utils.StringUtils;
  * @author - johnny850807@gmail.com (Waterball)
  */
 public class NotFoundException extends RuntimeException {
+    public NotFoundException() {
+    }
+
     public NotFoundException(String message) {
         super(message);
     }

@@ -29,7 +29,8 @@ import java.util.stream.Collectors;
 public class DataMapper {
 
     public static List<Submission> toEntity(List<SubmissionData> dataList) {
-        return dataList.stream().map(DataMapper::toEntity).collect(Collectors.toList());
+        return dataList.stream().map(DataMapper::toEntity)
+                .collect(Collectors.toList());
     }
 
     public static SubmissionData toData(Submission submission) {

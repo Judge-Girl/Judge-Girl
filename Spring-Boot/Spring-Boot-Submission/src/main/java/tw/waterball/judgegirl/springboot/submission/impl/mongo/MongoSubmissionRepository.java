@@ -48,12 +48,19 @@ import static tw.waterball.judgegirl.springboot.utils.MongoUtils.downloadFileRes
 @Component
 public class MongoSubmissionRepository implements SubmissionRepository {
     private final static int PAGE_SIZE = 30;
-    private MongoTemplate mongoTemplate;
-    private GridFsTemplate gridFsTemplate;
+    private final MongoTemplate mongoTemplate;
+    private final GridFsTemplate gridFsTemplate;
 
     public MongoSubmissionRepository(MongoTemplate mongoTemplate, GridFsTemplate gridFsTemplate) {
         this.mongoTemplate = mongoTemplate;
         this.gridFsTemplate = gridFsTemplate;
+    }
+
+    @Override
+    public List<Submission> findByProblemIdAndJudgeStatus(int problemId, JudgeStatus judgeStatus) {
+        var data = mongoTemplate.find(query(where("problemId").is(problemId)
+        .and("verdict.summaryStatus").is(judgeStatus.toString())), SubmissionData.class);
+        return DataMapper.toEntity(data);
     }
 
     @Override
