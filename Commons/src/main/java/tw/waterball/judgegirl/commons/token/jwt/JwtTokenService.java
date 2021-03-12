@@ -24,13 +24,11 @@ import tw.waterball.judgegirl.commons.token.TokenInvalidException;
 import tw.waterball.judgegirl.commons.token.TokenService;
 
 import javax.crypto.SecretKey;
-import javax.inject.Named;
 import java.util.Date;
 
 /**
  * @author johnny850807@gmail.com (Waterball))
  */
-@Named
 public class JwtTokenService implements TokenService {
     private final SecretKey key;
     private final Date expiration;

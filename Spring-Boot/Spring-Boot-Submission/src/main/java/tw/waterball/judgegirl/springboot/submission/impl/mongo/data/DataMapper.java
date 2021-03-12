@@ -29,7 +29,8 @@ import java.util.stream.Collectors;
 public class DataMapper {
 
     public static List<Submission> toEntity(List<SubmissionData> dataList) {
-        return dataList.stream().map(DataMapper::toEntity).collect(Collectors.toList());
+        return dataList.stream().map(DataMapper::toEntity)
+                .collect(Collectors.toList());
     }
 
     public static SubmissionData toData(Submission submission) {
@@ -57,6 +58,7 @@ public class DataMapper {
                 verdict.getIssueTime(),
                 verdict.getTotalGrade(),
                 verdict.getSummaryStatus(),
+                verdict.getCompileErrorMessage(),
                 verdict.getReport().getRawData()
         );
     }
@@ -83,7 +85,10 @@ public class DataMapper {
         if (data == null) {
             return null;
         }
-        Verdict verdict = new Verdict(data.getJudges(), data.getIssueTime());
+
+        Verdict verdict = data.getCompileErrorMessage() == null ?
+                new Verdict(data.getJudges(), data.getIssueTime()) :
+                Verdict.compileError(data.getCompileErrorMessage(), data.getIssueTime());
         verdict.setReport(Report.fromData(data.getReportData()));
         return verdict;
     }

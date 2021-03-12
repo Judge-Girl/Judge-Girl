@@ -18,6 +18,7 @@ import org.jetbrains.annotations.Nullable;
 import tw.waterball.judgegirl.entities.exceptions.InvalidVerdictException;
 import tw.waterball.judgegirl.entities.problem.JudgeStatus;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -29,22 +30,41 @@ public class Verdict {
     private List<Judge> judges;
     @Nullable
     private String compileErrorMessage;
-    private Date issueTime = new Date();
+    private Date issueTime;
     private Report report = Report.EMPTY;
 
 
-    public Verdict(List<Judge> judges, Date issueTime) throws InvalidVerdictException {
-        this(judges);
-        this.issueTime = issueTime;
+    public Verdict(List<Judge> judges) throws InvalidVerdictException {
+        this(judges, new Date());
     }
 
-    public Verdict(List<Judge> judges) throws InvalidVerdictException {
+    public Verdict(List<Judge> judges, Date issueTime) throws InvalidVerdictException {
         this.judges = judges;
+        this.issueTime = issueTime;
         if (getSummaryStatus() == JudgeStatus.NONE) {
             throw new InvalidVerdictException("Verdict must not have a NONE summary status.");
         }
     }
 
+    public Verdict(String compileErrorMessage) throws InvalidVerdictException {
+        this(compileErrorMessage, new Date());
+    }
+
+    public Verdict(String compileErrorMessage, Date issueTime) throws InvalidVerdictException {
+        this.issueTime = issueTime;
+        this.judges = Collections.emptyList();
+        setCompileErrorMessage(compileErrorMessage);
+    }
+
+    public static Verdict compileError(String compileErrorMessage) {
+        return new Verdict(compileErrorMessage, new Date());
+    }
+
+    public static Verdict compileError(String compileErrorMessage, Date issueTime) {
+        return new Verdict(compileErrorMessage, issueTime);
+    }
+
+    @Deprecated
     public static Verdict compileError(String compileErrorMessage, List<Judge> judges) {
         Verdict verdict = new Verdict(judges);
         verdict.setCompileErrorMessage(compileErrorMessage);
@@ -53,13 +73,16 @@ public class Verdict {
 
     public Integer getTotalGrade() {
         if (judges.isEmpty()) {
-            return null;
+            return 0;
         }
         return judges.stream()
                 .mapToInt(Judge::getGrade).sum();
     }
 
     public JudgeStatus getSummaryStatus() {
+        if (compileErrorMessage != null && !compileErrorMessage.isEmpty()) {
+            return JudgeStatus.CE;
+        }
         return judges.stream().map(Judge::getStatus)
                 .min((s1, s2) -> {
                     if (s1 == JudgeStatus.AC) {

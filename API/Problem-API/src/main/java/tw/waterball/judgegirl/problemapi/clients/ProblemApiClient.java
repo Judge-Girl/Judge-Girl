@@ -12,14 +12,11 @@ import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
 
-import javax.inject.Named;
-
 import static tw.waterball.judgegirl.commons.utils.HttpHeaderUtils.bearerWithToken;
 
 /**
  * @author - johnny850807@gmail.com (Wateqrball)
  */
-@Named
 public class ProblemApiClient extends BaseRetrofitAPI implements ProblemServiceDriver {
     private Api api;
     private String adminToken;

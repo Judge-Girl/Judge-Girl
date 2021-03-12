@@ -14,21 +14,30 @@
 package tw.waterball.judgegirl.springboot.configs;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import tw.waterball.judgegirl.commons.token.NaiveTokenService;
+import tw.waterball.judgegirl.commons.token.TokenService;
 import tw.waterball.judgegirl.commons.token.jwt.JwtTokenService;
 import tw.waterball.judgegirl.springboot.profiles.productions.Jwt;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
-@Jwt
 @Configuration
-public class JwtConfiguration {
+public class TokenConfiguration {
 
+    @Jwt
     @Bean
     public JwtTokenService jwtTokenService(@Value("${jwt.secret}") String secret,
                                            @Value("${jwt.exp}") long expiration) {
         return new JwtTokenService(secret, expiration);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(TokenService.class)
+    public NaiveTokenService naiveTokenService() {
+        return new NaiveTokenService();
     }
 }

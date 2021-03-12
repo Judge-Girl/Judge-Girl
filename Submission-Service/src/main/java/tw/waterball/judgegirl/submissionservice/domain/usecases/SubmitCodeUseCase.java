@@ -8,8 +8,8 @@ import tw.waterball.judgegirl.entities.problem.Problem;
 import tw.waterball.judgegirl.entities.submission.Submission;
 import tw.waterball.judgegirl.problemapi.clients.ProblemServiceDriver;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
-import tw.waterball.judgegirl.submissionservice.domain.repositories.SubmissionRepository;
 import tw.waterball.judgegirl.submissionservice.deployer.JudgerDeployer;
+import tw.waterball.judgegirl.submissionservice.domain.repositories.SubmissionRepository;
 
 import javax.inject.Named;
 import java.io.IOException;
@@ -63,7 +63,7 @@ public class SubmitCodeUseCase {
 
     private String zipAndSaveSubmittedCodesAndGetFileId(SubmitCodeRequest request) throws IOException {
         // TODO: refactor, the data-storing related code should be encapsulated in the repository
-        String fileName = String.format("%d_%s_%d.zip", request.studentId, request.problemId,
+        String fileName = String.format("%d-%s-%d.zip", request.studentId, request.problemId,
                 System.currentTimeMillis());
         InputStream zippedSubmittedCodesStream = ZipUtils.zipToStream(request.getFileResources());
         StreamingResource streamingResource = new StreamingResource(fileName, zippedSubmittedCodesStream);

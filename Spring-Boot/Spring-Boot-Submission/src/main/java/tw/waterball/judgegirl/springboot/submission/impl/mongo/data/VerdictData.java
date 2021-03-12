@@ -35,5 +35,6 @@ public class VerdictData {
     private Date issueTime;
     private int totalGrade;
     private JudgeStatus summaryStatus;
+    private String compileErrorMessage;
     private Map<String, ?> reportData;
 }

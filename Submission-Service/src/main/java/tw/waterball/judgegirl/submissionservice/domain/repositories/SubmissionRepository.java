@@ -32,6 +32,8 @@ import java.util.Optional;
  * @author - johnny850807@gmail.com (Waterball)
  */
 public interface SubmissionRepository {
+    List<Submission> findByProblemIdAndJudgeStatus(int problemId, JudgeStatus judgeStatus);
+
     Optional<Submission> findOne(int studentId, String submissionId);
 
     void issueVerdictOfSubmission(String submissionId, Verdict verdict);

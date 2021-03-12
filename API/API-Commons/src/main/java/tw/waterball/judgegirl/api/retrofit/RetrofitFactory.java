@@ -18,13 +18,10 @@ import retrofit2.Retrofit;
 import retrofit2.converter.jackson.JacksonConverterFactory;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
-
-@Named
 public class RetrofitFactory {
     private ObjectMapper objectMapper;
 
