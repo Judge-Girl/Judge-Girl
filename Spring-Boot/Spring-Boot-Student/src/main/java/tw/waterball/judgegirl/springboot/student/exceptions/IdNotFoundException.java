@@ -7,24 +7,24 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  * @author chaoyulee chaoyu2330@gmail.com
  */
 @ResponseStatus(HttpStatus.NOT_FOUND)
-public class AccountNotFoundException extends RuntimeException{
-    public AccountNotFoundException() {
+public class IdNotFoundException extends RuntimeException{
+    public IdNotFoundException() {
         super();
     }
 
-    public AccountNotFoundException(String message) {
+    public IdNotFoundException(String message) {
         super(message);
     }
 
-    public AccountNotFoundException(String message, Throwable cause) {
+    public IdNotFoundException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public AccountNotFoundException(Throwable cause) {
+    public IdNotFoundException(Throwable cause) {
         super(cause);
     }
 
-    protected AccountNotFoundException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+    protected IdNotFoundException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
     }
 }

@@ -1,15 +1,14 @@
 package tw.waterball.judgegirl.springboot.student.controllers;
 
 import lombok.AllArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import tw.waterball.judgegirl.commons.token.TokenService;
 import tw.waterball.judgegirl.entities.Student;
-import tw.waterball.judgegirl.springboot.student.exceptions.AccountNotFoundException;
+import tw.waterball.judgegirl.springboot.student.exceptions.EmailNotFoundException;
+import tw.waterball.judgegirl.springboot.student.exceptions.IdNotFoundException;
 import tw.waterball.judgegirl.springboot.student.exceptions.PasswordIncorrectException;
 import tw.waterball.judgegirl.studentservice.domain.exceptions.StudentEmailNotFoundException;
+import tw.waterball.judgegirl.studentservice.domain.exceptions.StudentIdNotFoundException;
 import tw.waterball.judgegirl.studentservice.domain.exceptions.StudentPasswordIncorrectException;
 import tw.waterball.judgegirl.studentservice.domain.usecases.GetStudentUseCase;
 import tw.waterball.judgegirl.studentservice.domain.usecases.SignInUseCase;
@@ -24,6 +23,7 @@ import tw.waterball.judgegirl.studentservice.domain.usecases.SignUpUseCase;
 public class StudentController {
     private final SignInUseCase signInUseCase;
     private final SignUpUseCase signUpUseCase;
+    private final GetStudentUseCase getStudentUseCase;
     private final TokenService tokenService;
 
     @PostMapping("/signUp")
@@ -40,9 +40,20 @@ public class StudentController {
             signInUseCase.execute(request, presenter);
             return presenter.present();
         } catch (StudentEmailNotFoundException e) {
-            throw new AccountNotFoundException(e);
+            throw new EmailNotFoundException(e);
         } catch (StudentPasswordIncorrectException e) {
             throw new PasswordIncorrectException(e);
+        }
+    }
+
+    @GetMapping("{studentId}")
+    public Student getStudent(@PathVariable Integer studentId) {
+        GetStudentByIdPresenter presenter = new GetStudentByIdPresenter();
+        try {
+            getStudentUseCase.execute(new GetStudentUseCase.Request(studentId), presenter);
+            return presenter.present();
+        } catch (StudentIdNotFoundException e) {
+            throw new IdNotFoundException(e);
         }
     }
 }

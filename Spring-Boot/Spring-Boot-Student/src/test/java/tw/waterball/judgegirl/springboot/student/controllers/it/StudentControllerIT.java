@@ -4,8 +4,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
-import tw.waterball.judgegirl.commons.token.TokenService;
-import tw.waterball.judgegirl.commons.token.jwt.JwtTokenService;
 import tw.waterball.judgegirl.entities.Student;
 import tw.waterball.judgegirl.springboot.student.SpringBootProblemApplication;
 import tw.waterball.judgegirl.springboot.student.controllers.LoginResponse;
@@ -14,8 +12,8 @@ import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static tw.waterball.judgegirl.springboot.student.view.StudentView.toViewModel;
 
 
 /**
@@ -99,5 +97,22 @@ public class StudentControllerIT extends AbstractSpringBootTest {
                 .andExpect(status().isNotFound());
     }
 
+    @Test
+    void GivenExistedStudentId_WhenGetStudent_ShouldReturnStudent() throws Exception {
+        //TODO: sign up account dependency on the previous test case
+        Student body = getBody(mockMvc.perform(get("/api/students/1"))
+                .andExpect(status().isOk()), Student.class);
+
+        student.setId(body.getId());
+        assertEquals(student, body);
+//        assertEquals(toViewModel(student), toViewModel(body));
+    }
+
+    @Test
+    void GivenNotExistedStudentId_WhenGetStudent_ShouldReturn404() throws Exception {
+        //TODO: sign up account dependency on the previous test case
+        mockMvc.perform(get("/api/students/2"))
+                .andExpect(status().isNotFound());
+    }
 
 }
