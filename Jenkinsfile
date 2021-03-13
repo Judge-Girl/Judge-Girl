@@ -8,7 +8,12 @@ pipeline {
         }
         stage('Test') {
             steps {
-                sh "mvn -Dmaven.test.failure.ignore=true clean package"
+                sh "mvn clean test"
+            }
+        }
+        stage('Package') {
+            steps {
+                sh "mvn -DskipTests test"
             }
         }
     }

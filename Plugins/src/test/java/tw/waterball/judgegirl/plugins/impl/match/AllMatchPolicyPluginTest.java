@@ -21,6 +21,7 @@ import tw.waterball.judgegirl.commons.utils.ResourceUtils;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -62,12 +63,11 @@ class AllMatchPolicyPluginTest {
         // prepare files
         Map<Path, Path> actualToExpectOutputFileNameMap = new HashMap<>();
         File testDir = ResourceUtils.getAbsolutePath("/stub/test").toFile();
-        File[] testFiles = requireNonNull(testDir.listFiles());
+        File[] testFiles = Arrays.stream(requireNonNull(testDir.listFiles()))
+                .filter(File::isFile).toArray(File[]::new);
         for (File testFile : testFiles) {
-            if (!testDir.isDirectory()) {
-                actualToExpectOutputFileNameMap.put(
-                        testFile.toPath(), testFile.toPath());
-            }
+            actualToExpectOutputFileNameMap.put(
+                    testFile.toPath(), testFile.toPath());
         }
         // adjust to make only one of the output-file-pair match failed
         // this test aims at issuing whether this file-pair's match failure is accurately detected
