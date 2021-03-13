@@ -1,8 +1,5 @@
 pipeline {
     agent any
-    triggers {
-        githubPush()
-    }
     stages {
         stage('Prepare Files') {
             steps {
