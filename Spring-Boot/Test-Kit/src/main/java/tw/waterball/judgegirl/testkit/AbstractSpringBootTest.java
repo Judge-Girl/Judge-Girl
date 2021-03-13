@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 import tw.waterball.judgegirl.testkit.jupiter.ReplaceUnderscoresWithCamelCasesDisplayNameGenerators;
 
 /**
@@ -41,4 +42,17 @@ public abstract class AbstractSpringBootTest {
         return objectMapper.writeValueAsString(obj);
     }
 
+    @SneakyThrows
+    public <T> T fromJson(String json, Class<T> type) {
+        return objectMapper.readValue(json, type);
+    }
+
+    @SneakyThrows
+    protected <T> T getBody(ResultActions actions, Class<T> type) {
+        return fromJson(actions
+                        .andReturn()
+                        .getResponse()
+                        .getContentAsString(),
+                type);
+    }
 }

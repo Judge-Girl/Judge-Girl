@@ -29,7 +29,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class LoginResponse {
     public int id;
-    public String account;
+    public String email;
     public String token;
     public long expiryTime;
 }

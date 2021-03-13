@@ -1,98 +1,93 @@
-/*
- *  Copyright 2020 Johnny850807 (Waterball) 潘冠辰
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *        http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
- */
-
 package tw.waterball.judgegirl.springboot.student.controllers;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.web.bind.annotation.*;
-import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
-import tw.waterball.judgegirl.commons.utils.HttpHeaderUtils;
-import tw.waterball.judgegirl.entities.Student;
-import tw.waterball.judgegirl.springboot.student.api.LegacyStudentAPI;
-import tw.waterball.judgegirl.commons.token.TokenInvalidException;
+import lombok.AllArgsConstructor;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import tw.waterball.judgegirl.commons.token.TokenService;
-
-import java.util.Optional;
+import tw.waterball.judgegirl.entities.Student;
+import tw.waterball.judgegirl.springboot.student.exceptions.AccountNotFoundException;
+import tw.waterball.judgegirl.springboot.student.exceptions.PasswordIncorrectException;
+import tw.waterball.judgegirl.studentservice.domain.exceptions.StudentEmailNotFoundException;
+import tw.waterball.judgegirl.studentservice.domain.exceptions.StudentPasswordIncorrectException;
+import tw.waterball.judgegirl.studentservice.domain.usecases.GetStudentUseCase;
+import tw.waterball.judgegirl.studentservice.domain.usecases.SignInUseCase;
+import tw.waterball.judgegirl.studentservice.domain.usecases.SignUpUseCase;
 
 /**
- * @author - johnny850807@gmail.com (Waterball)
+ * @author chaoyulee chaoyu2330@gmail.com
  */
-@CrossOrigin
-@RestController
-@TestPropertySource(locations= "classpath:test.properties")
 @RequestMapping("/api/students")
+@RestController
+@AllArgsConstructor
 public class StudentController {
-    private LegacyStudentAPI studentAPI;
-    private TokenService tokenService;
+    private final SignInUseCase signInUseCase;
+    private final SignUpUseCase signUpUseCase;
+    private final TokenService tokenService;
 
-    @Autowired
-    public StudentController(LegacyStudentAPI studentAPI, TokenService tokenService) {
-        this.studentAPI = studentAPI;
+    @PostMapping("/signUp")
+    public Student signUp(@RequestBody SignUpUseCase.Request request) {
+        SignUpPresenter presenter = new SignUpPresenter();
+        signUpUseCase.execute(request, presenter);
+        return presenter.present();
+    }
+
+    @PostMapping("/login")
+    public LoginResponse login(@RequestBody SignInUseCase.Request request) {
+        SignInPresenter presenter = new SignInPresenter(tokenService);
+        try {
+            signInUseCase.execute(request, presenter);
+            return presenter.present();
+        } catch (StudentEmailNotFoundException e) {
+            throw new AccountNotFoundException(e);
+        } catch (StudentPasswordIncorrectException e) {
+            throw new PasswordIncorrectException(e);
+        }
+    }
+}
+
+class SignUpPresenter implements SignUpUseCase.Presenter {
+    private Student student;
+
+    @Override
+    public void setStudent(Student student) {
+        this.student = student;
+    }
+
+    Student present() {
+        return student;
+    }
+}
+
+class SignInPresenter implements SignInUseCase.Presenter {
+    private Student student;
+    private final TokenService tokenService;
+
+    public SignInPresenter(TokenService tokenService) {
         this.tokenService = tokenService;
     }
 
-    @PostMapping(path = "/auth")
-    public ResponseEntity auth(@RequestHeader("Authorization") String authorization) {
-        String tokenString = HttpHeaderUtils.parseBearerToken(authorization);
-        try {
-            TokenService.Token token = tokenService.parseAndValidate(tokenString);
-            Optional<Student> studentOptional = studentAPI.getStudentById(token.getStudentId());
-            if (studentOptional.isPresent()) {
-                return ResponseEntity.ok(new LoginResponse(token.getStudentId(), studentOptional.get().getAccount(),
-                        token.getToken(), token.getExpiration().getTime()));
-            }
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        } catch (TokenInvalidException err) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
+    @Override
+    public void setStudent(Student student) {
+        this.student = student;
     }
 
-    @PostMapping(path = "/login")
-    public LoginResponse login(@RequestParam String account, @RequestParam String password) {
-        int studentId = studentAPI.authenticate(account, password);
-        TokenService.Token token = tokenService.createToken(new TokenService.Identity(studentId));
-        return new LoginResponse(studentId, account, token.toString(), token.getExpiration().getTime());
+    LoginResponse present() {
+        TokenService.Token token = tokenService.createToken(new TokenService.Identity(student.getId()));
+        return new LoginResponse(student.getId(), student.getEmail(), token.toString(), token.getExpiration().getTime());
+    }
+}
+
+class GetStudentByIdPresenter implements GetStudentUseCase.Presenter {
+    private Student student;
+
+    @Override
+    public void setStudent(Student student) {
+        this.student = student;
     }
 
-    @GetMapping("/{studentId}")
-    public ResponseEntity<Student> getStudentById(@PathVariable int studentId,
-                                                  @RequestHeader("Authorization") String authorization) {
-        String tokenString = HttpHeaderUtils.parseBearerToken(authorization);
-        try {
-            TokenService.Token token = tokenService.parseAndValidate(tokenString);
-            if (token.getStudentId() == studentId) {
-                Optional<Student> studentOptional = studentAPI.getStudentById(studentId);
-                return studentOptional.map(ResponseEntity::ok)
-                        .orElseGet(() -> ResponseEntity.notFound().build());
-            }
-        } catch (TokenInvalidException err) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-
-        throw new RuntimeException("Should not reach here.");
+    Student present() {
+        return student;
     }
-
-    // TODO issue: cannot reuse spring-commons/CommonExceptionAdvices
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    @ExceptionHandler({NotFoundException.class})
-    public void handleExceptions() {
-        // Nothing to do
-    }
-
 }

@@ -21,16 +21,17 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.client.RestTemplate;
 import tw.waterball.judgegirl.springboot.utils.RestTemplates;
+import tw.waterball.judgegirl.studentservice.ScanRoot;
 
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 
-@SpringBootApplication
-public class StudentAdapterServiceApplication {
+@SpringBootApplication(scanBasePackageClasses = ScanRoot.class)
+public class SpringBootProblemApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(StudentAdapterServiceApplication.class, args);
+        SpringApplication.run(SpringBootProblemApplication.class, args);
     }
 
     @Bean

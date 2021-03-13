@@ -15,17 +15,25 @@ package tw.waterball.judgegirl.entities;
 
 import lombok.*;
 
+import java.util.Objects;
+
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
 @EqualsAndHashCode
 @AllArgsConstructor
 @NoArgsConstructor
-@Getter
-@Setter
+@Getter @Setter
 @ToString
 public class Student {
-    private int id;
-    private String account;
+    private Integer id;
     private String name;
+    private String email;
+    private String password;
+
+    public Student(String name, String email, String password) {
+        this.name = name;
+        this.email = email;
+        this.password = password;
+    }
 }
