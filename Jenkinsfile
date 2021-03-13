@@ -3,6 +3,13 @@ pipeline {
     stages {
         stage('Prepare Files') {
             steps {
+            sh '''
+                      curl -XPOST -H "Authorization: token $TOKEN" https://api.github.com/repos/Judge-Girl/Judge-Girl/statuses/$(git rev-parse HEAD) -d "{
+                            \\"state\\": \\"pending\\",
+                            \\"target_url\\": \\"${BUILD_URL}\\",
+                            \\"description\\": \\"The build has succeeded!\\"
+                          }"
+                          '''
                 sh "cp -r ../../judge-girl-secrets/* ./"
             }
         }
