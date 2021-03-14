@@ -25,6 +25,16 @@ pipeline {
                 sh "mvn -DskipTests test"
             }
         }
+        stage('<Beta> Deploy') {
+            when {
+                branch 'master'
+            }
+            steps {
+                sh 'docker-compose -f services.yml down'
+                sh 'docker-compose -f services.yml build'
+                sh 'docker-compose -f services.yml up -d'
+            }
+        }
     }
     post {
       success {
