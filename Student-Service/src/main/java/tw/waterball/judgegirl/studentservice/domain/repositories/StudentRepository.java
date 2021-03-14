@@ -17,4 +17,6 @@ public interface StudentRepository {
     boolean existsByEmail(String email);
 
     Student save(Student student);
+
+    void deleteAll();
 }

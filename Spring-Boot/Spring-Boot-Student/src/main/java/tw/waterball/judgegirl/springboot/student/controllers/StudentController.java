@@ -7,12 +7,15 @@ import tw.waterball.judgegirl.entities.Student;
 import tw.waterball.judgegirl.springboot.student.exceptions.EmailNotFoundException;
 import tw.waterball.judgegirl.springboot.student.exceptions.IdNotFoundException;
 import tw.waterball.judgegirl.springboot.student.exceptions.PasswordIncorrectException;
+import tw.waterball.judgegirl.springboot.student.view.StudentView;
 import tw.waterball.judgegirl.studentservice.domain.exceptions.StudentEmailNotFoundException;
 import tw.waterball.judgegirl.studentservice.domain.exceptions.StudentIdNotFoundException;
 import tw.waterball.judgegirl.studentservice.domain.exceptions.StudentPasswordIncorrectException;
 import tw.waterball.judgegirl.studentservice.domain.usecases.GetStudentUseCase;
 import tw.waterball.judgegirl.studentservice.domain.usecases.SignInUseCase;
 import tw.waterball.judgegirl.studentservice.domain.usecases.SignUpUseCase;
+
+import static tw.waterball.judgegirl.springboot.student.view.StudentView.toViewModel;
 
 /**
  * @author chaoyulee chaoyu2330@gmail.com
@@ -27,7 +30,7 @@ public class StudentController {
     private final TokenService tokenService;
 
     @PostMapping("/signUp")
-    public Student signUp(@RequestBody SignUpUseCase.Request request) {
+    public StudentView signUp(@RequestBody SignUpUseCase.Request request) {
         SignUpPresenter presenter = new SignUpPresenter();
         signUpUseCase.execute(request, presenter);
         return presenter.present();
@@ -47,7 +50,7 @@ public class StudentController {
     }
 
     @GetMapping("{studentId}")
-    public Student getStudent(@PathVariable Integer studentId) {
+    public StudentView getStudent(@PathVariable Integer studentId) {
         GetStudentByIdPresenter presenter = new GetStudentByIdPresenter();
         try {
             getStudentUseCase.execute(new GetStudentUseCase.Request(studentId), presenter);
@@ -66,8 +69,8 @@ class SignUpPresenter implements SignUpUseCase.Presenter {
         this.student = student;
     }
 
-    Student present() {
-        return student;
+    StudentView present() {
+        return toViewModel(student);
     }
 }
 
@@ -98,7 +101,7 @@ class GetStudentByIdPresenter implements GetStudentUseCase.Presenter {
         this.student = student;
     }
 
-    Student present() {
-        return student;
+    StudentView present() {
+        return toViewModel(student);
     }
 }

@@ -53,4 +53,9 @@ public class MongoStudentRepository implements StudentRepository {
         student.setId(data.getId());
         return student;
     }
+
+    @Override
+    public void deleteAll() {
+        jpaStudentDataPort.deleteAll();
+    }
 }

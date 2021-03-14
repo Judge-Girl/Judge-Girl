@@ -1,16 +1,26 @@
 package tw.waterball.judgegirl.springboot.student.view;
 
-import lombok.EqualsAndHashCode;
-import lombok.Value;
+import lombok.*;
 import tw.waterball.judgegirl.entities.Student;
 
 /**
  * @author chaoyulee chaoyu2330@gmail.com
  */
-@Value
+@EqualsAndHashCode
+@Builder
+@Getter @Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class StudentView {
+    private Integer id;
+    private String name;
+    private String email;
 
     public static StudentView toViewModel(Student student) {
-        return null;
+        return StudentView.builder()
+                .id(student.getId())
+                .name(student.getName())
+                .email(student.getEmail())
+                .build();
     }
 }
