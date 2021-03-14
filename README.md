@@ -9,10 +9,7 @@ Use `ssh` key (ssh is a MUST, or it will fail) to run the following command:
 and replace the PLACEHOLDERs with the values according to your environment.
 2. Copy `Spring-Boot/Spring-Boot-Student/src/main/resources/applicaton.example.yml` to the name `application.yml`
 and replace the PLACEHOLDERs with the values according to your environment.
-3. (Optional: only required to run the integration test) Copy `Spring-Boot/Spring-Boot-Student/src/test/resources/test.example.properties` file with its name changed to `test.properties`
-and replace the PLACEHOLDERs with the values according to your environment.
-4. Copy `all-in-one.example.yml` file its name changed to `all-in-one.yml` and replace the PLACEHOLDERs with the values according to your environment.
-
+3. Copy `all-in-one.example.yml` file its name changed to `all-in-one.yml` and replace the PLACEHOLDERs with the values according to your environment.
 4. Run the script to build up the project
 `sh run.sh`
 
