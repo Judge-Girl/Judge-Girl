@@ -1,8 +1,8 @@
 package tw.waterball.judgegirl.studentservice.domain.usecases;
 
 import lombok.Value;
+import tw.waterball.judgegirl.commons.token.TokenInvalidException;
 import tw.waterball.judgegirl.commons.token.TokenService;
-import tw.waterball.judgegirl.studentservice.domain.exceptions.StudentIdNotFoundException;
 import tw.waterball.judgegirl.studentservice.domain.repositories.StudentRepository;
 
 import javax.inject.Named;
@@ -20,12 +20,12 @@ public class AuthUseCase {
         this.tokenService = tokenService;
     }
 
-    public void execute(Request request, Presenter presenter) {
+    public void execute(Request request, Presenter presenter) throws TokenInvalidException {
         TokenService.Token token = tokenService.parseAndValidate(request.tokenString);
         presenter.setToken(tokenService.renewToken(token.getToken()));
         presenter.setEmail(studentRepository
                 .findStudentById(token.getStudentId())
-                .orElseThrow(StudentIdNotFoundException::new)
+                .orElseThrow(TokenInvalidException::new)
                 .getEmail());
     }
 
@@ -38,6 +38,4 @@ public class AuthUseCase {
         void setEmail(String email);
         void setToken(TokenService.Token token);
     }
-
-
 }

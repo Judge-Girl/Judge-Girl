@@ -38,7 +38,6 @@ public class StudentController {
         return presenter.present();
     }
 
-    //TODO: add auth
     @PostMapping("/login")
     public LoginResponse login(@RequestBody SignInUseCase.Request request) {
         SignInPresenter presenter = new SignInPresenter(tokenService);
@@ -47,9 +46,10 @@ public class StudentController {
     }
 
     @GetMapping("{studentId}")
-    public StudentView getStudent(@PathVariable Integer studentId) {
+    public StudentView getStudentById(@PathVariable Integer studentId, @RequestHeader("Authorization") String authorization) {
+        String tokenString = HttpHeaderUtils.parseBearerToken(authorization);
         GetStudentByIdPresenter presenter = new GetStudentByIdPresenter();
-        getStudentUseCase.execute(new GetStudentUseCase.Request(studentId), presenter);
+        getStudentUseCase.execute(new GetStudentUseCase.Request(studentId, tokenString), presenter);
         return presenter.present();
     }
 
