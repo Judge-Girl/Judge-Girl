@@ -24,7 +24,8 @@ import java.util.concurrent.TimeUnit;
  * @author - johnny850807@gmail.com (Waterball)
  */
 public class NaiveTokenService implements TokenService {
-    private Date exp = new Date(TimeUnit.HOURS.toMillis(4));
+    public static final String DELIMITER = ":";
+    private final Date exp = new Date(TimeUnit.HOURS.toMillis(4));
 
     @Override
     public Token createToken(Identity identity) {
@@ -33,7 +34,7 @@ public class NaiveTokenService implements TokenService {
         }
         Date expirationTime = new Date(System.currentTimeMillis() + this.exp.getTime());
         return Token.ofStudent(identity.getStudentId(),
-                String.format("%d:%d", identity.getStudentId(), expirationTime.getTime()),
+                String.format("%d" + DELIMITER + "%d", identity.getStudentId(), expirationTime.getTime()),
                 expirationTime);
     }
 
@@ -45,7 +46,7 @@ public class NaiveTokenService implements TokenService {
     @Override
     public Token parseAndValidate(String token) throws TokenInvalidException {
         try {
-            String[] splits = token.split(",");
+            String[] splits = token.split(DELIMITER);
             if (splits[0].equals("admin")) {
                 return Token.ofAdmin("admin");
             }

@@ -1,16 +1,17 @@
 package tw.waterball.judgegirl.springboot.student.controllers;
 
 import lombok.AllArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import tw.waterball.judgegirl.commons.token.TokenInvalidException;
 import tw.waterball.judgegirl.commons.token.TokenService;
+import tw.waterball.judgegirl.commons.utils.HttpHeaderUtils;
 import tw.waterball.judgegirl.entities.Student;
-import tw.waterball.judgegirl.springboot.student.exceptions.EmailNotFoundException;
-import tw.waterball.judgegirl.springboot.student.exceptions.IdNotFoundException;
-import tw.waterball.judgegirl.springboot.student.exceptions.PasswordIncorrectException;
 import tw.waterball.judgegirl.springboot.student.view.StudentView;
 import tw.waterball.judgegirl.studentservice.domain.exceptions.StudentEmailNotFoundException;
 import tw.waterball.judgegirl.studentservice.domain.exceptions.StudentIdNotFoundException;
 import tw.waterball.judgegirl.studentservice.domain.exceptions.StudentPasswordIncorrectException;
+import tw.waterball.judgegirl.studentservice.domain.usecases.AuthUseCase;
 import tw.waterball.judgegirl.studentservice.domain.usecases.GetStudentUseCase;
 import tw.waterball.judgegirl.studentservice.domain.usecases.SignInUseCase;
 import tw.waterball.judgegirl.studentservice.domain.usecases.SignUpUseCase;
@@ -27,6 +28,7 @@ public class StudentController {
     private final SignInUseCase signInUseCase;
     private final SignUpUseCase signUpUseCase;
     private final GetStudentUseCase getStudentUseCase;
+    private final AuthUseCase authUseCase;
     private final TokenService tokenService;
 
     @PostMapping("/signUp")
@@ -36,28 +38,43 @@ public class StudentController {
         return presenter.present();
     }
 
+    //TODO: add auth
     @PostMapping("/login")
     public LoginResponse login(@RequestBody SignInUseCase.Request request) {
         SignInPresenter presenter = new SignInPresenter(tokenService);
-        try {
-            signInUseCase.execute(request, presenter);
-            return presenter.present();
-        } catch (StudentEmailNotFoundException e) {
-            throw new EmailNotFoundException(e);
-        } catch (StudentPasswordIncorrectException e) {
-            throw new PasswordIncorrectException(e);
-        }
+        signInUseCase.execute(request, presenter);
+        return presenter.present();
     }
 
     @GetMapping("{studentId}")
     public StudentView getStudent(@PathVariable Integer studentId) {
         GetStudentByIdPresenter presenter = new GetStudentByIdPresenter();
-        try {
-            getStudentUseCase.execute(new GetStudentUseCase.Request(studentId), presenter);
-            return presenter.present();
-        } catch (StudentIdNotFoundException e) {
-            throw new IdNotFoundException(e);
-        }
+        getStudentUseCase.execute(new GetStudentUseCase.Request(studentId), presenter);
+        return presenter.present();
+    }
+
+    @PostMapping("/auth")
+    public LoginResponse auth(@RequestHeader("Authorization") String authorization) {
+        String tokenString = HttpHeaderUtils.parseBearerToken(authorization);
+        AuthPresenter presenter = new AuthPresenter();
+        authUseCase.execute(new AuthUseCase.Request(tokenString), presenter);
+
+        return presenter.present();
+    }
+
+    @ExceptionHandler({StudentPasswordIncorrectException.class})
+    public ResponseEntity<?> badRequestHandler(Exception err) {
+        return ResponseEntity.badRequest().build();
+    }
+
+    @ExceptionHandler({StudentIdNotFoundException.class, StudentEmailNotFoundException.class})
+    public ResponseEntity<?> notFoundHandler(Exception err) {
+        return ResponseEntity.notFound().build();
+    }
+
+    @ExceptionHandler({TokenInvalidException.class})
+    public ResponseEntity<?> unauthorizedHandler(Exception err) {
+        return ResponseEntity.status(401).build();
     }
 }
 
@@ -103,5 +120,24 @@ class GetStudentByIdPresenter implements GetStudentUseCase.Presenter {
 
     StudentView present() {
         return toViewModel(student);
+    }
+}
+
+class AuthPresenter implements AuthUseCase.Presenter {
+    private String email;
+    private TokenService.Token token;
+
+    @Override
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    @Override
+    public void setToken(TokenService.Token token) {
+        this.token = token;
+    }
+
+    LoginResponse present() {
+        return new LoginResponse(token.getStudentId(), email, token.toString(), token.getExpiration().getTime());
     }
 }
