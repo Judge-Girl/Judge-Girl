@@ -22,7 +22,7 @@ pipeline {
         }
         stage('Package') {
             steps {
-                sh "mvn -DskipTests test"
+                sh "mvn -DskipTests package"
             }
         }
         stage('<Beta> Deploy') {
@@ -31,6 +31,7 @@ pipeline {
             }
             steps {
                 sh 'docker-compose -f services.yml down'
+                sh 'cd Judger/ && docker build . -t judger -f Dockerfile.cqi && cd ..'
                 sh 'docker-compose -f services.yml build'
                 sh 'docker-compose -f services.yml up -d'
             }
