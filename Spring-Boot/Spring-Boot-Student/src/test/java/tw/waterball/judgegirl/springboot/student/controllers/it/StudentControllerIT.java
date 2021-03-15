@@ -11,7 +11,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import tw.waterball.judgegirl.commons.token.TokenService;
 import tw.waterball.judgegirl.entities.Student;
 import tw.waterball.judgegirl.springboot.profiles.Profiles;
-import tw.waterball.judgegirl.springboot.student.SpringBootProblemApplication;
+import tw.waterball.judgegirl.springboot.student.SpringBootStudentApplication;
 import tw.waterball.judgegirl.springboot.student.controllers.LoginResponse;
 import tw.waterball.judgegirl.springboot.student.repositories.jpa.JpaStudentDataPort;
 import tw.waterball.judgegirl.springboot.student.view.StudentView;
@@ -29,7 +29,7 @@ import static tw.waterball.judgegirl.springboot.student.view.StudentView.toViewM
  * @author chaoyulee chaoyu2330@gmail.com
  */
 @ActiveProfiles(Profiles.JWT)
-@ContextConfiguration(classes = SpringBootProblemApplication.class)
+@ContextConfiguration(classes = SpringBootStudentApplication.class)
 public class StudentControllerIT extends AbstractSpringBootTest {
     private Student student;
 

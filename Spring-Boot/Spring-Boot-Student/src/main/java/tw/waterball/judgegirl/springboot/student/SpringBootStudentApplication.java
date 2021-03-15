@@ -28,10 +28,10 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 
 @SpringBootApplication(scanBasePackageClasses = ScanRoot.class)
-public class SpringBootProblemApplication {
+public class SpringBootStudentApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(SpringBootProblemApplication.class, args);
+        SpringApplication.run(SpringBootStudentApplication.class, args);
     }
 
     @Bean
