@@ -39,6 +39,7 @@ import static tw.waterball.judgegirl.springboot.student.view.StudentView.toViewM
 /**
  * @author chaoyulee chaoyu2330@gmail.com
  */
+@CrossOrigin
 @RequestMapping("/api/students")
 @RestController
 @AllArgsConstructor
