@@ -40,3 +40,6 @@ infra.yml
 
 ### Google Sheet API ###
 /tokens
+
+### MAC ###
+.DS_Store

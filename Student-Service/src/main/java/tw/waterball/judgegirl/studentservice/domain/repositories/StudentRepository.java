@@ -11,19 +11,25 @@
  *   limitations under the License.
  */
 
-package tw.waterball.judgegirl.commons.token.jwt;
+package tw.waterball.judgegirl.studentservice.domain.repositories;
 
-import tw.waterball.judgegirl.commons.token.TokenService;
+import tw.waterball.judgegirl.entities.Student;
+
+import java.util.Optional;
 
 /**
- * @author - johnny850807@gmail.com (Waterball)
+ * @author chaoyulee chaoyu2330@gmail.com
  */
-public class Main {
+public interface StudentRepository {
+    Optional<Student> findByEmailAndPassword(String email, String pwd);
 
-    public static void main(String[] args) {
-        TokenService tokenService = new JwtTokenService("JudgeGirlIsAwesomeAndWaterballIsCute",
-                14400000);
-        TokenService.Token token = tokenService.createToken(TokenService.Identity.admin());
-        System.out.println(token);
-    }
+    Optional<Student> findByEmail(String email);
+
+    Optional<Student> findStudentById(Integer id);
+
+    boolean existsByEmail(String email);
+
+    Student save(Student student);
+
+    void deleteAll();
 }
