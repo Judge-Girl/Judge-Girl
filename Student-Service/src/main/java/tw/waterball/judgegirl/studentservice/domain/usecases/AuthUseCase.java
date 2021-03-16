@@ -3,6 +3,7 @@ package tw.waterball.judgegirl.studentservice.domain.usecases;
 import lombok.Value;
 import tw.waterball.judgegirl.commons.token.TokenInvalidException;
 import tw.waterball.judgegirl.commons.token.TokenService;
+import tw.waterball.judgegirl.entities.Student;
 import tw.waterball.judgegirl.studentservice.domain.repositories.StudentRepository;
 
 import javax.inject.Named;
@@ -13,29 +14,25 @@ import javax.inject.Named;
 @Named
 public class AuthUseCase {
     private final StudentRepository studentRepository;
-    private final TokenService tokenService;
 
-    public AuthUseCase(StudentRepository studentRepository, TokenService tokenService) {
+    public AuthUseCase(StudentRepository studentRepository) {
         this.studentRepository = studentRepository;
-        this.tokenService = tokenService;
     }
 
     public void execute(Request request, Presenter presenter) throws TokenInvalidException {
-        TokenService.Token token = tokenService.parseAndValidate(request.tokenString);
-        presenter.setToken(tokenService.renewToken(token.getToken()));
-        presenter.setEmail(studentRepository
-                .findStudentById(token.getStudentId())
-                .orElseThrow(TokenInvalidException::new)
-                .getEmail());
+        presenter.setStudent(studentRepository
+                .findStudentById(request.id)
+                .orElseThrow(TokenInvalidException::new));
     }
 
     @Value
     public static class Request {
-        public String tokenString;
+        public Integer id;
     }
 
     public interface Presenter {
-        void setEmail(String email);
+        void setStudent(Student student);
+
         void setToken(TokenService.Token token);
     }
 }

@@ -14,10 +14,10 @@ import static tw.waterball.judgegirl.springboot.student.repositories.jpa.Student
  * @author chaoyulee chaoyu2330@gmail.com
  */
 @Component
-public class MongoStudentRepository implements StudentRepository {
-    private JpaStudentDataPort jpaStudentDataPort;
+public class JpaStudentRepository implements StudentRepository {
+    private final JpaStudentDataPort jpaStudentDataPort;
 
-    public MongoStudentRepository(JpaStudentDataPort jpaStudentDataPort) {
+    public JpaStudentRepository(JpaStudentDataPort jpaStudentDataPort) {
         this.jpaStudentDataPort = jpaStudentDataPort;
     }
 

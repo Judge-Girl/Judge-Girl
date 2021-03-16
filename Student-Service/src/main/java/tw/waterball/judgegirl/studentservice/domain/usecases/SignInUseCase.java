@@ -27,12 +27,11 @@ public class SignInUseCase {
         Student student = studentRepository
                 .findByEmail(request.email)
                 .orElseThrow(StudentEmailNotFoundException::new);
-        passwordChecking(student.getPassword(), request.password);
+        validatePassword(student.getPassword(), request.password);
         presenter.setStudent(student);
-
     }
 
-    private void passwordChecking(String studentPwd, String requestPwd) throws StudentPasswordIncorrectException {
+    private void validatePassword(String studentPwd, String requestPwd) throws StudentPasswordIncorrectException {
         if (!studentPwd.equals(requestPwd)) {
             throw new StudentPasswordIncorrectException();
         }

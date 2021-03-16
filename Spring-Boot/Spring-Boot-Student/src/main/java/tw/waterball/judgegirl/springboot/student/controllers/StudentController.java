@@ -1,13 +1,16 @@
 package tw.waterball.judgegirl.springboot.student.controllers;
 
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import tw.waterball.judgegirl.commons.token.TokenInvalidException;
 import tw.waterball.judgegirl.commons.token.TokenService;
 import tw.waterball.judgegirl.commons.utils.HttpHeaderUtils;
 import tw.waterball.judgegirl.entities.Student;
 import tw.waterball.judgegirl.springboot.student.view.StudentView;
+import tw.waterball.judgegirl.studentservice.domain.exceptions.DuplicateEmailException;
 import tw.waterball.judgegirl.studentservice.domain.exceptions.StudentEmailNotFoundException;
 import tw.waterball.judgegirl.studentservice.domain.exceptions.StudentIdNotFoundException;
 import tw.waterball.judgegirl.studentservice.domain.exceptions.StudentPasswordIncorrectException;
@@ -15,6 +18,8 @@ import tw.waterball.judgegirl.studentservice.domain.usecases.AuthUseCase;
 import tw.waterball.judgegirl.studentservice.domain.usecases.GetStudentUseCase;
 import tw.waterball.judgegirl.studentservice.domain.usecases.SignInUseCase;
 import tw.waterball.judgegirl.studentservice.domain.usecases.SignUpUseCase;
+
+import javax.validation.Valid;
 
 import static tw.waterball.judgegirl.springboot.student.view.StudentView.toViewModel;
 
@@ -32,7 +37,7 @@ public class StudentController {
     private final TokenService tokenService;
 
     @PostMapping("/signUp")
-    public StudentView signUp(@RequestBody SignUpUseCase.Request request) {
+    public StudentView signUp(@Valid @RequestBody SignUpUseCase.Request request) {
         SignUpPresenter presenter = new SignUpPresenter();
         signUpUseCase.execute(request, presenter);
         return presenter.present();
@@ -40,29 +45,39 @@ public class StudentController {
 
     @PostMapping("/login")
     public LoginResponse login(@RequestBody SignInUseCase.Request request) {
-        SignInPresenter presenter = new SignInPresenter(tokenService);
+        SignInPresenter presenter = new SignInPresenter();
         signInUseCase.execute(request, presenter);
+        presenter.setToken(tokenService.createToken(new TokenService.Identity(presenter.getStudentId())));
         return presenter.present();
     }
 
     @GetMapping("{studentId}")
     public StudentView getStudentById(@PathVariable Integer studentId, @RequestHeader("Authorization") String authorization) {
         String tokenString = HttpHeaderUtils.parseBearerToken(authorization);
-        GetStudentByIdPresenter presenter = new GetStudentByIdPresenter();
-        getStudentUseCase.execute(new GetStudentUseCase.Request(studentId, tokenString), presenter);
-        return presenter.present();
+        TokenService.Token token = tokenService.parseAndValidate(tokenString);
+
+        if (token.getStudentId() == studentId) {
+            GetStudentByIdPresenter presenter = new GetStudentByIdPresenter();
+            getStudentUseCase.execute(new GetStudentUseCase.Request(studentId), presenter);
+            return presenter.present();
+        } else {
+            throw new RuntimeException("Should not reach here.");
+        }
     }
 
     @PostMapping("/auth")
     public LoginResponse auth(@RequestHeader("Authorization") String authorization) {
         String tokenString = HttpHeaderUtils.parseBearerToken(authorization);
+        TokenService.Token token = tokenService.parseAndValidate(tokenString);
+
         AuthPresenter presenter = new AuthPresenter();
-        authUseCase.execute(new AuthUseCase.Request(tokenString), presenter);
+        presenter.setToken(tokenService.renewToken(token.getToken()));
+        authUseCase.execute(new AuthUseCase.Request(token.getStudentId()), presenter);
 
         return presenter.present();
     }
 
-    @ExceptionHandler({StudentPasswordIncorrectException.class})
+    @ExceptionHandler({StudentPasswordIncorrectException.class, DuplicateEmailException.class, MethodArgumentNotValidException.class})
     public ResponseEntity<?> badRequestHandler(Exception err) {
         return ResponseEntity.badRequest().build();
     }
@@ -74,7 +89,7 @@ public class StudentController {
 
     @ExceptionHandler({TokenInvalidException.class})
     public ResponseEntity<?> unauthorizedHandler(Exception err) {
-        return ResponseEntity.status(401).build();
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 }
 
@@ -93,10 +108,10 @@ class SignUpPresenter implements SignUpUseCase.Presenter {
 
 class SignInPresenter implements SignInUseCase.Presenter {
     private Student student;
-    private final TokenService tokenService;
+    private TokenService.Token token;
 
-    public SignInPresenter(TokenService tokenService) {
-        this.tokenService = tokenService;
+    public void setToken(TokenService.Token token) {
+        this.token = token;
     }
 
     @Override
@@ -104,8 +119,11 @@ class SignInPresenter implements SignInUseCase.Presenter {
         this.student = student;
     }
 
+    Integer getStudentId() {
+        return student.getId();
+    }
+
     LoginResponse present() {
-        TokenService.Token token = tokenService.createToken(new TokenService.Identity(student.getId()));
         return new LoginResponse(student.getId(), student.getEmail(), token.toString(), token.getExpiration().getTime());
     }
 }
@@ -124,12 +142,12 @@ class GetStudentByIdPresenter implements GetStudentUseCase.Presenter {
 }
 
 class AuthPresenter implements AuthUseCase.Presenter {
-    private String email;
+    private Student student;
     private TokenService.Token token;
 
     @Override
-    public void setEmail(String email) {
-        this.email = email;
+    public void setStudent(Student student) {
+        this.student = student;
     }
 
     @Override
@@ -138,6 +156,6 @@ class AuthPresenter implements AuthUseCase.Presenter {
     }
 
     LoginResponse present() {
-        return new LoginResponse(token.getStudentId(), email, token.toString(), token.getExpiration().getTime());
+        return new LoginResponse(token.getStudentId(), student.getEmail(), token.toString(), token.getExpiration().getTime());
     }
 }
