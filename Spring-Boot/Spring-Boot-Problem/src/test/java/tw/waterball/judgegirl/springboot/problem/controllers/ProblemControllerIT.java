@@ -254,5 +254,17 @@ class ProblemControllerIT extends AbstractSpringBootTest {
         problems.forEach(mongoTemplate::save);
         return problems;
     }
+
+    @Test
+    void GivenProblemCreatedWithTitle_WhenQueryWithReturnedId_ShouldGetTheSameProblem() throws Exception {
+        Random random = new Random();
+        String randomTitle = String.valueOf(random.nextInt());
+        Problem problemWithRandomTitle = ProblemStubs.template().title(randomTitle).build();
+        int idReturned = problemRepository.createProblemAndGetId(problemWithRandomTitle);
+        mockMvc.perform(get("/api/problems/{problemId}", idReturned))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("title").value(randomTitle));
+    }
 }
 

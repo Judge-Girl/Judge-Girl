@@ -111,6 +111,12 @@ public class MongoProblemRepository implements ProblemRepository {
         return mongoTemplate.save(problem);
     }
 
+    @Override
+    public int createProblemAndGetId(Problem problem) {
+        mongoTemplate.save(problem);
+        return problem.getId();
+    }
+
     @Document("tag")
     public static class AllTags {
         public List<String> all;

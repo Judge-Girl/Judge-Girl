@@ -14,6 +14,7 @@
 package tw.waterball.judgegirl.springboot.problem.controllers;
 
 import lombok.AllArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -43,6 +44,7 @@ public class ProblemController {
     private final DownloadTestCaseIOsUseCase downloadTestCaseIOsUseCase;
     private final GetAllTagsUseCase getAllTagsUseCase;
     private final GetTestCasesUseCase getTestCasesUseCase;
+    private final CreateProblemWithTitleUseCase createProblemWithTitleUseCase;
 
     @GetMapping("/tags")
     public List<String> getTags() {
@@ -94,6 +96,12 @@ public class ProblemController {
                 .execute(new DownloadTestCaseIOsUseCase.Request(problemId, testcaseIOsFileId));
         return ResponseEntityUtils.respondInputStreamResource(fileResource);
     }
+
+    @PostMapping("/{title}")
+    public int createProblemWithTitle(@PathVariable String title) {
+        return createProblemWithTitleUseCase.execute(new CreateProblemWithTitleUseCase.Request(title));
+    }
+
 }
 
 class GetProblemPresenter implements GetProblemUseCase.Presenter {
