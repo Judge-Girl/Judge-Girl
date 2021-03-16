@@ -52,7 +52,7 @@ public class DockerDeployerAutoConfiguration {
 
     @Bean
     public JudgerDeployer kubernetesJudgerDeployer(@Value("${judge-girl.judger.docker.dockerRemovalIntervalInMs}")
-                                                               int dockerRemovalIntervalInMs,
+                                                           int dockerRemovalIntervalInMs,
                                                    DockerClient dockerClient,
                                                    ScheduledExecutorService scheduler,
                                                    ServiceProps.ProblemService problemServiceProps,

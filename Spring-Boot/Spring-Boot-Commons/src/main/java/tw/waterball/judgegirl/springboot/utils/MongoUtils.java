@@ -34,12 +34,12 @@ public class MongoUtils {
 
     /**
      * A fluent API that can be used as the following way:
-     *  String name = MongoUtils.query(mongoTemplate)
-     *                 .fromDocument(Employee.class)
-     *                 .selectOneField("name").byId(employeeId)
-     *                 .execute()
-     *                 .getField(Employee::getName)
-     *                 .orElse(null);
+     * String name = MongoUtils.query(mongoTemplate)
+     * .fromDocument(Employee.class)
+     * .selectOneField("name").byId(employeeId)
+     * .execute()
+     * .getField(Employee::getName)
+     * .orElse(null);
      */
     public static FileResource downloadFileResourceByFileId(GridFsTemplate gridFsTemplate, String fileId) {
         GridFSFile gridFsFile = gridFsTemplate.findOne(new Query(Criteria.where("_id").is(fileId)));

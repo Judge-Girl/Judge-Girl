@@ -13,6 +13,7 @@
 
 package tw.waterball.judgegirl.testkit;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.DisplayNameGeneration;
@@ -22,6 +23,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import tw.waterball.judgegirl.testkit.jupiter.ReplaceUnderscoresWithCamelCasesDisplayNameGenerators;
+
+import java.util.List;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -55,4 +58,10 @@ public abstract class AbstractSpringBootTest {
                         .getContentAsString(),
                 type);
     }
+    
+    @SneakyThrows
+    public <T> List<T> fromJson(String json, TypeReference<List<T>> type) {
+        return objectMapper.readValue(json, type);
+    }
+
 }

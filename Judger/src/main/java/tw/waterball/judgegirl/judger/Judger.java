@@ -67,6 +67,7 @@ public abstract class Judger {
         this.context = new JudgeContext(studentId, problem, testcases, submission);
         onJudgeContextSetup(this.context);
     }
+
     protected abstract Problem findProblemById(int problemId);
 
     protected abstract Submission findSubmissionByIds(int problemId, int studentId, String submissionId);
@@ -95,6 +96,7 @@ public abstract class Judger {
     }
 
     protected abstract void onBeforeRunningTestcase(Testcase testcase);
+
     protected abstract void onAfterRunningTestcase(Testcase testcase);
 
 

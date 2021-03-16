@@ -20,6 +20,8 @@ import java.nio.file.Path;
  */
 public interface TestcaseHome {
     Path getPath();
+
     SandboxRoot getSandboxRoot();
+
     TestCaseOutputHome getTestcaseOutputHome();
 }

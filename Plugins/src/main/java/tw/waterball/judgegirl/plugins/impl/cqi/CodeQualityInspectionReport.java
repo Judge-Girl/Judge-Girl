@@ -28,15 +28,19 @@ public class CodeQualityInspectionReport extends CompositeReport {
     private CodingStyleAnalyzeReport csaReport;
 
     public CodeQualityInspectionReport(CyclomaticComplexityReport ccReport
-                                       , CodingStyleAnalyzeReport csaReport){
+            , CodingStyleAnalyzeReport csaReport) {
         super(NAME, asList(ccReport, csaReport));
         this.ccReport = ccReport;
         this.csaReport = csaReport;
     }
 
-    public CyclomaticComplexityReport getCcReport() {return this.ccReport;}
+    public CyclomaticComplexityReport getCcReport() {
+        return this.ccReport;
+    }
 
-    public CodingStyleAnalyzeReport getCsaReport() { return this.csaReport; }
+    public CodingStyleAnalyzeReport getCsaReport() {
+        return this.csaReport;
+    }
 
     @Override
     public String toString() {

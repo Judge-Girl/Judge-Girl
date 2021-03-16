@@ -39,27 +39,32 @@ public class JudgeGirlJudgerProps {
     private Kubernetes kubernetes;
 
 
-    @Getter @Setter
+    @Getter
+    @Setter
     public static class Job {
         private String nameFormat;
     }
 
-    @Getter @Setter
+    @Getter
+    @Setter
     public static class Image {
         private String name;
     }
 
-    @Getter @Setter
+    @Getter
+    @Setter
     public static class Container {
         private String nameFormat;
     }
 
-    @Getter @Setter
+    @Getter
+    @Setter
     public static class Docker {
         private String network;
     }
 
-    @Getter @Setter
+    @Getter
+    @Setter
     public static class Kubernetes {
         private String imagePullSecret;
     }

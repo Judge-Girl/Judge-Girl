@@ -15,6 +15,7 @@ package tw.waterball.judgegirl.judger.filelayout;
 
 /**
  * Construct a yaml presentation while visiting a composite structure.
+ *
  * @author - johnny850807@gmail.com (Waterball)
  */
 public class YAMLPrintVisitor implements ItemVisitor {
