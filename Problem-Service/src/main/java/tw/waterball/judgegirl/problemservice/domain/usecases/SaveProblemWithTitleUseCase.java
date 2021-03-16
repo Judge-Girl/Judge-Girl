@@ -1,6 +1,5 @@
 package tw.waterball.judgegirl.problemservice.domain.usecases;
 
-import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.problemservice.domain.repositories.ProblemRepository;
 
 import javax.inject.Named;
@@ -11,7 +10,7 @@ public class SaveProblemWithTitleUseCase extends BaseProblemUseCase {
         super(problemRepository);
     }
 
-    public int execute(String title) throws NotFoundException {
+    public int execute(String title) {
         return problemRepository.saveProblemWithTitleAndGetId(title);
     }
 }

@@ -257,12 +257,14 @@ class ProblemControllerIT extends AbstractSpringBootTest {
     }
 
     @Test
-    void GivenProblemCreatedWithTitle_WhenPostWithTitle_ShouldReturnHTTPStatusOk() throws Exception {
+    void GivenDoPostApiProblemsTitle_WhenReturnHTTPStatusOk_ShouldExistInDatabase() throws Exception {
         Random random = new Random();
         String randomTitle = String.valueOf(random.nextInt());
         mockMvc.perform(post("/api/problems/title")
                 .contentType(MediaType.TEXT_PLAIN_VALUE).content(randomTitle))
                 .andExpect(status().isOk());
+        List<ProblemItem> problemList = requestGetProblems();
+        assertTrue(problemList.stream().anyMatch(problemItem -> problemItem.title.equals(randomTitle)));
     }
 }
 
