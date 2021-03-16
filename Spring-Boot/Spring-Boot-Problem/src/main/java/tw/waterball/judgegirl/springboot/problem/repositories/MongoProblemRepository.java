@@ -28,10 +28,7 @@ import tw.waterball.judgegirl.springboot.profiles.productions.Mongo;
 import tw.waterball.judgegirl.springboot.utils.MongoUtils;
 
 import java.io.InputStream;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static java.lang.String.format;
 import static tw.waterball.judgegirl.springboot.utils.MongoUtils.downloadFileResourceByFileId;
@@ -43,8 +40,8 @@ import static tw.waterball.judgegirl.springboot.utils.MongoUtils.downloadFileRes
 @Component
 public class MongoProblemRepository implements ProblemRepository {
     private final static int PAGE_SIZE = 50;
-    private MongoTemplate mongoTemplate;
-    private GridFsTemplate gridFsTemplate;
+    private final MongoTemplate mongoTemplate;
+    private final GridFsTemplate gridFsTemplate;
 
     public MongoProblemRepository(MongoTemplate mongoTemplate, GridFsTemplate gridFsTemplate) {
         this.mongoTemplate = mongoTemplate;
@@ -112,9 +109,15 @@ public class MongoProblemRepository implements ProblemRepository {
     }
 
     @Override
-    public int createProblemAndGetId(Problem problem) {
-        mongoTemplate.save(problem);
-        return problem.getId();
+    public int saveProblemWithTitleAndGetId(String title) {
+        Random random = new Random();
+        int id = random.nextInt();
+        Problem problem = Problem.builder()
+                .id(id)
+                .title(title)
+                .build();
+        mongoTemplate.insert(problem, "problem");
+        return id;
     }
 
     @Document("tag")

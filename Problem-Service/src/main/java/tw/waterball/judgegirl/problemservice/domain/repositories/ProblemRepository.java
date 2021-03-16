@@ -43,5 +43,5 @@ public interface ProblemRepository {
 
     Problem save(Problem problem, Map<LanguageEnv, InputStream> providedCodesZipMap, InputStream testcaseIOsZip);
 
-    int createProblemAndGetId(Problem problem);
+    int saveProblemWithTitleAndGetId(String title);
 }

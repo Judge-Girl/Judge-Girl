@@ -14,8 +14,8 @@
 package tw.waterball.judgegirl.springboot.problem.controllers;
 
 import lombok.AllArgsConstructor;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
  */
 @CrossOrigin
 @RestController
-@RequestMapping("/api/problems")
+@RequestMapping(value = "/api/problems", method = {RequestMethod.GET, RequestMethod.POST})
 @AllArgsConstructor
 public class ProblemController {
     private final GetProblemUseCase getProblemUseCase;
@@ -44,7 +44,7 @@ public class ProblemController {
     private final DownloadTestCaseIOsUseCase downloadTestCaseIOsUseCase;
     private final GetAllTagsUseCase getAllTagsUseCase;
     private final GetTestCasesUseCase getTestCasesUseCase;
-    private final CreateProblemWithTitleUseCase createProblemWithTitleUseCase;
+    private final SaveProblemWithTitleUseCase saveProblemWithTitleUseCase;
 
     @GetMapping("/tags")
     public List<String> getTags() {
@@ -97,9 +97,10 @@ public class ProblemController {
         return ResponseEntityUtils.respondInputStreamResource(fileResource);
     }
 
-    @PostMapping("/{title}")
-    public int createProblemWithTitle(@PathVariable String title) {
-        return createProblemWithTitleUseCase.execute(new CreateProblemWithTitleUseCase.Request(title));
+    @PostMapping(value = "/title", consumes = "text/plain")
+    @ResponseStatus(value = HttpStatus.OK)
+    public int saveProblemWithTitleAndGetId(@RequestBody String title) {
+        return saveProblemWithTitleUseCase.execute(title);
     }
 
 }

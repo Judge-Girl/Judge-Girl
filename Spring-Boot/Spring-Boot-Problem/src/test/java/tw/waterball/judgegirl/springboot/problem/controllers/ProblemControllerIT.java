@@ -50,6 +50,7 @@ import static java.util.Collections.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
@@ -256,15 +257,12 @@ class ProblemControllerIT extends AbstractSpringBootTest {
     }
 
     @Test
-    void GivenProblemCreatedWithTitle_WhenQueryWithReturnedId_ShouldGetTheSameProblem() throws Exception {
+    void GivenProblemCreatedWithTitle_WhenPostWithTitle_ShouldReturnHTTPStatusOk() throws Exception {
         Random random = new Random();
         String randomTitle = String.valueOf(random.nextInt());
-        Problem problemWithRandomTitle = ProblemStubs.template().title(randomTitle).build();
-        int idReturned = problemRepository.createProblemAndGetId(problemWithRandomTitle);
-        mockMvc.perform(get("/api/problems/{problemId}", idReturned))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("title").value(randomTitle));
+        mockMvc.perform(post("/api/problems/title")
+                .contentType(MediaType.TEXT_PLAIN_VALUE).content(randomTitle))
+                .andExpect(status().isOk());
     }
 }
 
