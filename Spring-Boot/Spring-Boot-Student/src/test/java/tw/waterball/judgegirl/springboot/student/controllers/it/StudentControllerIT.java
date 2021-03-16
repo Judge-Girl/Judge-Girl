@@ -70,27 +70,26 @@ public class StudentControllerIT extends AbstractSpringBootTest {
         assertEquals(toViewModel(student), body);
     }
 
-    //TODO
     @Test
-    void WhenSignUpWithEmptyName_ShouldRespondBadRequestAndErrorType() throws Exception {
+    void WhenSignUpWithEmptyName_ShouldRespondBadRequest() throws Exception {
         signUp("", "email@example.com", "password")
                 .andExpect(status().isBadRequest());
     }
 
     @Test
-    void WhenSignUpWithEmptyPassword_ShouldRespondBadRequestAndErrorType() throws Exception {
+    void WhenSignUpWithEmptyPassword_ShouldRespondBadRequest() throws Exception {
         signUp("name", "email@example.com", "")
                 .andExpect(status().isBadRequest());
     }
 
     @Test
-    void WhenSignUpWithIncorrectEmail_ShouldRespondBadRequestAndErrorType() throws Exception {
+    void WhenSignUpWithIncorrectEmail_ShouldRespondBadRequest() throws Exception {
         signUp("name", "email", "password")
                 .andExpect(status().isBadRequest());
     }
 
     @Test
-    void WhenSignUpWithExistingEmail_ShouldRespondBadRequestAndErrorType() throws Exception {
+    void GivenOneStudentSignedUp_WhenSignUpWithExistingEmail_ShouldRespondBadRequest() throws Exception {
         signUp(student);
         student = new Student("name", "email@example.com", "password");
         mockMvc.perform(post("/api/students/signUp")
@@ -100,7 +99,7 @@ public class StudentControllerIT extends AbstractSpringBootTest {
     }
 
     @Test
-    void GivenSignUpAccount_WhenLoginCorrectly_ShouldRespondLoginResponseWithCorrectToken() throws Exception {
+    void GivenOneStudentSignedUp_WhenLoginCorrectly_ShouldRespondLoginResponseWithCorrectToken() throws Exception {
         StudentView studentView = signUpAndGetResponseBody(student);
         LoginResponse body = signInAndGetResponseBody(this.student.getEmail(), this.student.getPassword());
 
@@ -128,7 +127,7 @@ public class StudentControllerIT extends AbstractSpringBootTest {
     }
 
     @Test
-    void GivenSignUpAccount_WhenLoginWithWrongPassword_ShouldRespondBadRequest() throws Exception {
+    void GivenOneStudentSignedUp_WhenLoginWithWrongPassword_ShouldRespondBadRequest() throws Exception {
         signUp(student);
 
         signIn(this.student.getEmail(), "wrongPassword")
@@ -136,7 +135,7 @@ public class StudentControllerIT extends AbstractSpringBootTest {
     }
 
     @Test
-    void GivenSignUpAccount_WhenLoginWithWrongEmail_ShouldRespondNotFound() throws Exception {
+    void GivenOneStudentSignedUp_WhenLoginWithWrongEmail_ShouldRespondNotFound() throws Exception {
         signUp(student);
 
         signIn("worngEmail@example.com", this.student.getPassword())
@@ -144,7 +143,7 @@ public class StudentControllerIT extends AbstractSpringBootTest {
     }
 
     @Test
-    void GivenSignUpAccount_WhenLoginWithWrongEmailAndPassword_ShouldRespondNotFound() throws Exception {
+    void GivenOneStudentSignedUp_WhenLoginWithWrongEmailAndPassword_ShouldRespondNotFound() throws Exception {
         signUp(student);
 
         signIn("worngEmail@example.com", "wrongPassword")
@@ -162,11 +161,11 @@ public class StudentControllerIT extends AbstractSpringBootTest {
     }
 
     @Test
-    void GivenOneStudentSignedUp_WhenGetStudent_ShouldRespondStudentView() throws Exception {
+    void GivenOneStudentSignedUp_WhenGetStudentById_ShouldRespondStudentView() throws Exception {
         StudentView student = signUpAndGetResponseBody(this.student);
         LoginResponse loginResponse = signInAndGetResponseBody(this.student.getEmail(), this.student.getPassword());
 
-        StudentView body = getBody(getStudent(student.getId(), loginResponse.token)
+        StudentView body = getBody(getStudentById(student.getId(), loginResponse.token)
                 .andExpect(status().isOk()), StudentView.class);
 
         this.student.setId(body.getId());
@@ -174,21 +173,21 @@ public class StudentControllerIT extends AbstractSpringBootTest {
     }
 
     @Test
-    void WhenGetStudentWithNonExistingStudentId_ShouldRespondNotFound() throws Exception {
+    void WhenGetStudentByNonExistingStudentId_ShouldRespondNotFound() throws Exception {
         int nonExistingStudentId = 123123;
         TokenService.Token token = tokenService.createToken(new TokenService.Identity(nonExistingStudentId));
 
-        getStudent(nonExistingStudentId, token.getToken())
+        getStudentById(nonExistingStudentId, token.getToken())
                 .andExpect(status().isNotFound());
     }
 
-    private ResultActions getStudent(Integer id, String tokenString) throws Exception {
+    private ResultActions getStudentById(Integer id, String tokenString) throws Exception {
         return mockMvc.perform(get("/api/students/" + id)
                 .header("Authorization", "bearer " + tokenString));
     }
 
     @Test
-    void GivenSignUpAccount_WhenAuth_ShouldRespondLoginResponseWithNewToken() throws Exception {
+    void GivenOneStudentSignedUp_WhenAuth_ShouldRespondLoginResponseWithNewToken() throws Exception {
         signUp(student);
         LoginResponse loginResponse = signInAndGetResponseBody(student.getEmail(), student.getPassword());
 

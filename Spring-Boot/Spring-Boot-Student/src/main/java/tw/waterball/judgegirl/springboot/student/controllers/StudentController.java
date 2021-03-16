@@ -74,7 +74,7 @@ public class StudentController {
             getStudentUseCase.execute(new GetStudentUseCase.Request(studentId), presenter);
             return presenter.present();
         } else {
-            throw new RuntimeException("Should not reach here.");
+            throw new TokenInvalidException();
         }
     }
 
