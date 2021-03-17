@@ -20,5 +20,6 @@ import java.nio.file.Path;
  */
 public interface TestCaseOutputHome {
     Path getPath();
+
     Path getExpectedStandardOutPath();
 }

@@ -58,7 +58,7 @@ public class AmqpConfiguration {
 
     @Bean
     public Binding binding(@Value("${judge-girl.amqp.verdict-issued-routing-key-format}")
-                           String verdictIssuedRoutingKeyFormat,
+                                   String verdictIssuedRoutingKeyFormat,
                            @Qualifier("verdictIssuedEventQueue") Queue queue,
                            @Qualifier("verdictIssuedExchange") TopicExchange exchange) {
         return BindingBuilder.bind(queue)

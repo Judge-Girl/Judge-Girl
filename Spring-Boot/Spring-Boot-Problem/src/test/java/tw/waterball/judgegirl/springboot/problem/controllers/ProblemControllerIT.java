@@ -241,7 +241,7 @@ class ProblemControllerIT extends AbstractSpringBootTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andReturn();
         return objectMapper.readValue(result.getResponse().getContentAsString(),
-                new TypeReference<List<ProblemItem>>() {
+                new TypeReference<>() {
                 });
     }
 

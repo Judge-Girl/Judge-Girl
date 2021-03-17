@@ -20,7 +20,9 @@ import java.nio.file.Path;
  */
 public interface JudgerWorkspace {
     Path getPath();
+
     Path getLogHomePath();
+
     Path getProfilerPath();
 
     SubmissionHome getSubmissionHome(String submissionId);

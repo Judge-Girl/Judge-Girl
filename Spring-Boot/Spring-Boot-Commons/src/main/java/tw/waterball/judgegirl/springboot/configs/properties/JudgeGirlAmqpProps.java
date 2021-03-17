@@ -20,7 +20,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
-@Getter @Setter
+@Getter
+@Setter
 @ConfigurationProperties("judge-girl.amqp")
 public class JudgeGirlAmqpProps {
     private String virtualHost;

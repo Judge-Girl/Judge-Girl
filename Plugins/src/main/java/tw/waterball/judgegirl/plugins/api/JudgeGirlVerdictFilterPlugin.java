@@ -19,6 +19,7 @@ import tw.waterball.judgegirl.entities.submission.VerdictIssuer;
 /**
  * The filter that add new runtime behaviors and modify some parts of the verdict.
  * The filter method will be invoked after the testcases execution and output matching has been completed.
+ *
  * @author - johnny850807@gmail.com (Waterball)
  */
 public interface JudgeGirlVerdictFilterPlugin extends JudgeGirlPlugin {

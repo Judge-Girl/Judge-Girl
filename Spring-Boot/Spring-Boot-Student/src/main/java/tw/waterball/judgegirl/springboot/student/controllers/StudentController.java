@@ -93,7 +93,7 @@ public class StudentController {
 
     @ExceptionHandler({StudentPasswordIncorrectException.class, DuplicateEmailException.class, MethodArgumentNotValidException.class})
     public ResponseEntity<?> badRequestHandler(Exception err) {
-        return ResponseEntity.badRequest().build();
+        return ResponseEntity.badRequest().body(err.getMessage());
     }
 
     @ExceptionHandler({StudentIdNotFoundException.class, StudentEmailNotFoundException.class})

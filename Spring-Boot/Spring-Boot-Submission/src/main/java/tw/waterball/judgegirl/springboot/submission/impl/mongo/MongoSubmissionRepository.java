@@ -59,7 +59,7 @@ public class MongoSubmissionRepository implements SubmissionRepository {
     @Override
     public List<Submission> findByProblemIdAndJudgeStatus(int problemId, JudgeStatus judgeStatus) {
         var data = mongoTemplate.find(query(where("problemId").is(problemId)
-        .and("verdict.summaryStatus").is(judgeStatus.toString())), SubmissionData.class);
+                .and("verdict.summaryStatus").is(judgeStatus.toString())), SubmissionData.class);
         return DataMapper.toEntity(data);
     }
 

@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -38,8 +37,8 @@ public class DownloadZipFileFromUrlHelper {
         URLConnection urlConnection = url.openConnection();
         return new ZipInputStream(urlConnection.getInputStream(), charset);
     }
-    
-    public void downloadAndPrint(String urlString, Charset charset) throws  IOException {
+
+    public void downloadAndPrint(String urlString, Charset charset) throws IOException {
         ZipInputStream zipInputStream = download(urlString, charset);
         ZipEntry zipEntry;
         while ((zipEntry = zipInputStream.getNextEntry()) != null) {

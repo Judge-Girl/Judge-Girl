@@ -43,11 +43,11 @@ public class K8SDeployerAutoConfiguration {
                                                    @Value("${judge-girl.judger.job.name-format}")
                                                            String judgerJobNameFormat,
                                                    @Value("${judge-girl.judger.image.name}")
-                                                               String judgerImageName,
+                                                           String judgerImageName,
                                                    @Value("${judge-girl.judger.container.name-format}")
-                                                               String judgerContainerNameFormat,
+                                                           String judgerContainerNameFormat,
                                                    @Value("${judge-girl.judger.kubernetes.image-pull-secret}")
-                                                               String judgerImagePullSecret) {
+                                                           String judgerImagePullSecret) {
         return new K8SJudgerDeployer(api, judgerJobNameFormat, judgerImageName, judgerContainerNameFormat, judgerImagePullSecret);
     }
 

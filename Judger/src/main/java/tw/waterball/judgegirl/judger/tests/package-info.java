@@ -13,7 +13,7 @@
 
 /**
  * The tests for a Judger.
- *
+ * <p>
  * There are reasons that we can't put these test classes into 'src/main/test':
  * - We put the test classes in the main source so that maven will
  * package them into the judger's jar, which will be run in the container

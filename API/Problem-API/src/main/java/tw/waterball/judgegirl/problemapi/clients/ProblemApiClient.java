@@ -62,7 +62,7 @@ public class ProblemApiClient extends BaseRetrofitAPI implements ProblemServiceD
         System.out.printf("Problem Id: %d, Testcase IOs file id: %s.\n", problemId, testcaseIOsFileId);
         Response<ResponseBody> resp = errorHandlingGetResponse(() ->
                 api.getZippedTestCaseIOs(
-                bearerWithToken(adminToken), problemId, testcaseIOsFileId));
+                        bearerWithToken(adminToken), problemId, testcaseIOsFileId));
         return parseDownloadedFileResource(resp);
     }
 

@@ -29,8 +29,8 @@ public interface JudgeGirlMatchPolicyPlugin extends JudgeGirlPlugin {
     /**
      * Judge for the status.
      *
-     * @param actualStandardOutputPath    the file name of whose stores the actual standard output
-     * @param expectStandardOutputPath    the file name of whose stores the expected standard output
+     * @param actualStandardOutputPath        the file name of whose stores the actual standard output
+     * @param expectStandardOutputPath        the file name of whose stores the expected standard output
      * @param actualToExpectOutputFilePathMap the mapping each entry maps the file name of whose stores one of the
      *                                        actual output to the file name of whose stores one of the
      * @return true if all actual-to-expect output files matched according to the policy

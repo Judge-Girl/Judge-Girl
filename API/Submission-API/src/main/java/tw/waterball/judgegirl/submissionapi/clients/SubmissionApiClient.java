@@ -97,21 +97,21 @@ public class SubmissionApiClient extends BaseRetrofitAPI implements SubmissionSe
         @Multipart
         @POST("/api/problems/{problemId}/students/{studentId}/submissions")
         Call<SubmissionView> submit(@Header("Authorization") String bearerToken,
-                                @Path("problemId") int problemId,
-                                @Path("studentId") int studentId,
-                                @Part List<MultipartBody.Part> submittedCodes);
+                                    @Path("problemId") int problemId,
+                                    @Path("studentId") int studentId,
+                                    @Part List<MultipartBody.Part> submittedCodes);
 
         @GET("/api/problems/{problemId}/students/{studentId}/submissions/{submissionId}")
         Call<SubmissionView> getSubmission(@Header("Authorization") String bearerToken,
-                                       @Path("problemId") int problemId,
-                                       @Path("studentId") int studentId,
-                                       @Path("submissionId") String submissionId);
+                                           @Path("problemId") int problemId,
+                                           @Path("studentId") int studentId,
+                                           @Path("submissionId") String submissionId);
 
 
         @GET("/api/problems/{problemId}/students/{studentId}/submissions")
         Call<List<SubmissionView>> getSubmissions(@Header("Authorization") String bearerToken,
-                                              @Path("problemId") int problemId,
-                                              @Path("studentId") int studentId);
+                                                  @Path("problemId") int problemId,
+                                                  @Path("studentId") int studentId);
 
         @GET("/api/problems/{problemId}/students/{studentId}/submissions/{submissionId}/submittedCodes/{submittedCodesFileId}")
         Call<ResponseBody> getSubmittedCodes(@Header("Authorization") String bearerToken,

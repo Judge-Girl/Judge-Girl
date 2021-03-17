@@ -22,8 +22,8 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 import tw.waterball.judgegirl.commons.utils.NotifyWaitLock;
 import tw.waterball.judgegirl.entities.submission.Verdict;
-import tw.waterball.judgegirl.submissionservice.domain.repositories.SubmissionRepository;
 import tw.waterball.judgegirl.submissionapi.views.VerdictIssuedEvent;
+import tw.waterball.judgegirl.submissionservice.domain.repositories.SubmissionRepository;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
