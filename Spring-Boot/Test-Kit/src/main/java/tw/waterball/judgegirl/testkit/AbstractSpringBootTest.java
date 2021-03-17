@@ -54,21 +54,20 @@ public abstract class AbstractSpringBootTest {
         return objectMapper.readValue(json, type);
     }
 
-    @SneakyThrows
     protected <T> T getBody(ResultActions actions, Class<T> type) {
-        return fromJson(actions
-                        .andReturn()
-                        .getResponse()
-                        .getContentAsString(),
-                type);
+        return fromJson(getContentAsString(actions), type);
+    }
+
+    protected <T> List<T> getBody(ResultActions actions, TypeReference<List<T>> type) {
+        return fromJson(getContentAsString(actions), type);
     }
 
     @SneakyThrows
-    protected <T> List<T> getBody(ResultActions actions, TypeReference<List<T>> type) {
-        return fromJson(actions
+    protected String getContentAsString(ResultActions actions) {
+        return actions
                 .andReturn()
                 .getResponse()
-                .getContentAsString(), type);
+                .getContentAsString();
     }
 
     @SneakyThrows

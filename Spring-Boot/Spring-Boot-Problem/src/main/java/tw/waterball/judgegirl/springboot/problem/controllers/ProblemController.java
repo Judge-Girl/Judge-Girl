@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
  */
 @CrossOrigin
 @RestController
-@RequestMapping("/api/problems")
+@RequestMapping(value = "/api/problems", method = {RequestMethod.GET, RequestMethod.POST})
 @AllArgsConstructor
 public class ProblemController {
     private final GetProblemUseCase getProblemUseCase;
@@ -43,6 +43,7 @@ public class ProblemController {
     private final DownloadTestCaseIOsUseCase downloadTestCaseIOsUseCase;
     private final GetAllTagsUseCase getAllTagsUseCase;
     private final GetTestCasesUseCase getTestCasesUseCase;
+    private final SaveProblemWithTitleUseCase saveProblemWithTitleUseCase;
 
     @GetMapping("/tags")
     public List<String> getTags() {
@@ -94,6 +95,12 @@ public class ProblemController {
                 .execute(new DownloadTestCaseIOsUseCase.Request(problemId, testcaseIOsFileId));
         return ResponseEntityUtils.respondInputStreamResource(fileResource);
     }
+
+    @PostMapping(consumes = "text/plain")
+    public int saveProblemWithTitleAndGetId(@RequestBody String title) {
+        return saveProblemWithTitleUseCase.execute(title);
+    }
+
 }
 
 class GetProblemPresenter implements GetProblemUseCase.Presenter {
