@@ -96,7 +96,7 @@ public class ProblemController {
         return ResponseEntityUtils.respondInputStreamResource(fileResource);
     }
 
-    @PostMapping(value = "/title", consumes = "text/plain")
+    @PostMapping(consumes = "text/plain")
     public int saveProblemWithTitleAndGetId(@RequestBody String title) {
         return saveProblemWithTitleUseCase.execute(title);
     }

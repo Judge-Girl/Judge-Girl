@@ -45,8 +45,10 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static java.lang.Integer.parseInt;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
+import static java.util.Objects.requireNonNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -257,15 +259,14 @@ class ProblemControllerIT extends AbstractSpringBootTest {
     }
 
     @Test
-    void GivenPostApiProblemsTitle_WhenReturnHttp200_ShouldProblemExistInDatabase() throws Exception {
-        String randomTitle = String.valueOf(new Random().nextInt());
-        int countProblemBefore = mongoTemplate.findAll(Problem.class).size();
-        mockMvc.perform(post("/api/problems/title")
-                .contentType(MediaType.TEXT_PLAIN_VALUE).content(randomTitle))
-                .andExpect(status().isOk());
-        int countProblemAfter = mongoTemplate.findAll(Problem.class).size();
-        assertTrue(countProblemAfter - countProblemBefore == 1);
-        assertTrue(requestGetProblems().stream().anyMatch(problemItem -> problemItem.title.equals(randomTitle)));
+    void WhenSaveProblemWithTitle_ProblemShouldBeSavedAndRespondItsId() throws Exception {
+        String randomTitle = UUID.randomUUID().toString();
+        int id = parseInt(getContentAsString(
+                mockMvc.perform(post("/api/problems")
+                        .contentType(MediaType.TEXT_PLAIN_VALUE).content(randomTitle))
+                        .andExpect(status().isOk())));
+
+        assertEquals(randomTitle, requireNonNull(mongoTemplate.findById(id, Problem.class)).getTitle());
     }
 }
 

@@ -13,6 +13,7 @@
 
 package tw.waterball.judgegirl.springboot.problem.repositories;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -34,16 +35,19 @@ import java.util.Map;
 import java.util.Optional;
 
 import static java.lang.String.format;
+import static org.springframework.data.mongodb.core.query.Criteria.where;
+import static org.springframework.data.mongodb.core.query.Query.query;
 import static tw.waterball.judgegirl.springboot.utils.MongoUtils.downloadFileResourceByFileId;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
+@Slf4j
 @Mongo
 @Component
 public class MongoProblemRepository implements ProblemRepository {
     private final static int PAGE_SIZE = 50;
-    private final static int OFFSET_NEW_PROBLEM_ID = 50000;
+    private final static int OFFSET_NEW_PROBLEM_ID = 70000;
     private final MongoTemplate mongoTemplate;
     private final GridFsTemplate gridFsTemplate;
 
@@ -114,13 +118,16 @@ public class MongoProblemRepository implements ProblemRepository {
 
     @Override
     public int saveProblemWithTitleAndGetId(String title) {
-        int totalProblemsCurrent = mongoTemplate.findAll(Problem.class).size();
-        int id = OFFSET_NEW_PROBLEM_ID + totalProblemsCurrent + 1;
+        long problemsCount = mongoTemplate.count(
+                query(where("title").exists(true)), Problem.class);
+        int id = (int) (OFFSET_NEW_PROBLEM_ID + problemsCount + 1);
         Problem problem = Problem.builder()
                 .id(id)
                 .title(title)
                 .build();
-        mongoTemplate.insert(problem, "problem");
+        Problem saved = mongoTemplate.save(problem);
+        log.info("New problem with title {} has been saved with id={}.",
+                saved.getTitle(), saved.getId());
         return id;
     }
 
