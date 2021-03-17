@@ -15,9 +15,9 @@ package tw.waterball.judgegirl.springboot.configs;
 
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
-import tw.waterball.judgegirl.springboot.configs.properties.ServiceProps;
 import tw.waterball.judgegirl.springboot.configs.properties.JudgeGirlAmqpProps;
 import tw.waterball.judgegirl.springboot.configs.properties.JudgeGirlJudgerProps;
+import tw.waterball.judgegirl.springboot.configs.properties.ServiceProps;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)

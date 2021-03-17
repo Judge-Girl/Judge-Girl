@@ -150,14 +150,14 @@ public class SubmissionControllerIT extends AbstractSpringBootTest {
     VerdictIssuedEventHandler verdictIssuedEventHandler;
 
     // For submission
-    private MockMultipartFile[] mockFiles = {
+    private final MockMultipartFile[] mockFiles = {
             new MockMultipartFile(SUBMIT_CODE_MULTIPART_KEY_NAME, "func1.c", "text/plain",
                     "int plus(int a, int b) {return a + b;}".getBytes()),
             new MockMultipartFile(SUBMIT_CODE_MULTIPART_KEY_NAME, "func2.c", "text/plain",
                     "int minus(int a, int b) {return a - b;}".getBytes())};
     private String ADMIN_TOKEN;
 
-    private Report stubReport = ProblemStubs.compositeReport();
+    private final Report stubReport = ProblemStubs.compositeReport();
 
     @BeforeEach
     void setup() {
@@ -389,7 +389,7 @@ public class SubmissionControllerIT extends AbstractSpringBootTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andReturn();
         return objectMapper.readValue(result.getResponse().getContentAsString(),
-                new TypeReference<List<SubmissionView>>() {
+                new TypeReference<>() {
                 });
     }
 

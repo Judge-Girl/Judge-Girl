@@ -18,3 +18,13 @@ and replace the PLACEHOLDERs with the values according to your environment.
        and replace the PLACEHOLDERs with the values according to your environment.
     2. run `docker-compose -f all-in-one.yml up`
 
+
+## Contributing
+
+Thanks to all the people who already contributed!
+
+
+
+<a href="https://github.com/Judge-Girl/Judge-Girl/graphs/contributors">
+  <img src="https://contributors-img.web.app/image?repo=Judge-Girl/Judge-Girl" />
+</a>

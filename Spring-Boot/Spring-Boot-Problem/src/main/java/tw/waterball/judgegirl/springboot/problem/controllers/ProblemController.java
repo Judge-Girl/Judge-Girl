@@ -70,8 +70,8 @@ public class ProblemController {
     @GetMapping(value = "/{problemId}/{langEnvName}/providedCodes/{providedCodesFileId}",
             produces = "application/zip")
     public ResponseEntity<InputStreamResource> downloadZippedProvidedCodes(@PathVariable int problemId,
-                                                                      @PathVariable String langEnvName,
-                                                                      @PathVariable String providedCodesFileId) {
+                                                                           @PathVariable String langEnvName,
+                                                                           @PathVariable String providedCodesFileId) {
         FileResource fileResource = downloadProvidedCodesUseCase.execute(
                 new DownloadProvidedCodesUseCase.Request(problemId, langEnvName, providedCodesFileId));
         return ResponseEntityUtils.respondInputStreamResource(fileResource);

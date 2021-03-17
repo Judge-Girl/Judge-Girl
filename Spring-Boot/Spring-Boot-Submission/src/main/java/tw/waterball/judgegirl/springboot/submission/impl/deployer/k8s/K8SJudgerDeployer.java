@@ -21,8 +21,8 @@ import io.kubernetes.client.models.V1Job;
 import io.kubernetes.client.models.V1JobBuilder;
 import io.kubernetes.client.models.V1LocalObjectReference;
 import tw.waterball.judgegirl.entities.problem.LanguageEnv;
-import tw.waterball.judgegirl.entities.problem.ResourceSpec;
 import tw.waterball.judgegirl.entities.problem.Problem;
+import tw.waterball.judgegirl.entities.problem.ResourceSpec;
 import tw.waterball.judgegirl.entities.submission.Submission;
 import tw.waterball.judgegirl.submissionservice.deployer.JudgerDeployer;
 

@@ -20,6 +20,7 @@ import java.util.function.Consumer;
 
 /**
  * The builder pattern adoption of Verdict
+ *
  * @author - johnny850807@gmail.com (Waterball)
  */
 public interface VerdictIssuer {
@@ -28,11 +29,14 @@ public interface VerdictIssuer {
     }
 
     VerdictIssuer modifyJudges(Consumer<? super JudgeModifier> judgeModifierConsumer);
+
     VerdictIssuer addReport(Report report);
+
     Verdict issue();
 
     interface JudgeModifier {
         JudgeModifier setStatus(JudgeStatus status);
+
         JudgeModifier setGrade(int grade);
     }
 }
