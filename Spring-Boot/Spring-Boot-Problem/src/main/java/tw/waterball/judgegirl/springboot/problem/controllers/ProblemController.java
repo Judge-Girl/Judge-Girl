@@ -15,7 +15,6 @@ package tw.waterball.judgegirl.springboot.problem.controllers;
 
 import lombok.AllArgsConstructor;
 import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
@@ -98,7 +97,6 @@ public class ProblemController {
     }
 
     @PostMapping(value = "/title", consumes = "text/plain")
-    @ResponseStatus(value = HttpStatus.OK)
     public int saveProblemWithTitleAndGetId(@RequestBody String title) {
         return saveProblemWithTitleUseCase.execute(title);
     }

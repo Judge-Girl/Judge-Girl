@@ -257,14 +257,15 @@ class ProblemControllerIT extends AbstractSpringBootTest {
     }
 
     @Test
-    void GivenDoPostApiProblemsTitle_WhenReturnHTTPStatusOk_ShouldExistInDatabase() throws Exception {
-        Random random = new Random();
-        String randomTitle = String.valueOf(random.nextInt());
+    void GivenPostApiProblemsTitle_WhenReturnHttp200_ShouldProblemExistInDatabase() throws Exception {
+        String randomTitle = String.valueOf(new Random().nextInt());
+        int countProblemBefore = mongoTemplate.findAll(Problem.class).size();
         mockMvc.perform(post("/api/problems/title")
                 .contentType(MediaType.TEXT_PLAIN_VALUE).content(randomTitle))
                 .andExpect(status().isOk());
-        List<ProblemItem> problemList = requestGetProblems();
-        assertTrue(problemList.stream().anyMatch(problemItem -> problemItem.title.equals(randomTitle)));
+        int countProblemAfter = mongoTemplate.findAll(Problem.class).size();
+        assertTrue(countProblemAfter - countProblemBefore == 1);
+        assertTrue(requestGetProblems().stream().anyMatch(problemItem -> problemItem.title.equals(randomTitle)));
     }
 }
 
