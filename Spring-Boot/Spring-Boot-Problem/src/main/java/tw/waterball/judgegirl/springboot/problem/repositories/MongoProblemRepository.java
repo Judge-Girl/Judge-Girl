@@ -43,7 +43,7 @@ import static tw.waterball.judgegirl.springboot.utils.MongoUtils.downloadFileRes
 @Component
 public class MongoProblemRepository implements ProblemRepository {
     private final static int PAGE_SIZE = 50;
-    private final static int OFFSET_NET_PROBLEM_ID = 50000;
+    private final static int OFFSET_NEW_PROBLEM_ID = 50000;
     private final MongoTemplate mongoTemplate;
     private final GridFsTemplate gridFsTemplate;
 
@@ -115,7 +115,7 @@ public class MongoProblemRepository implements ProblemRepository {
     @Override
     public int saveProblemWithTitleAndGetId(String title) {
         int totalProblemsCurrent = mongoTemplate.findAll(Problem.class).size();
-        int id = OFFSET_NET_PROBLEM_ID + totalProblemsCurrent + 1;
+        int id = OFFSET_NEW_PROBLEM_ID + totalProblemsCurrent + 1;
         Problem problem = Problem.builder()
                 .id(id)
                 .title(title)
