@@ -24,7 +24,11 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import tw.waterball.judgegirl.testkit.jupiter.ReplaceUnderscoresWithCamelCasesDisplayNameGenerators;
 
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -58,10 +62,22 @@ public abstract class AbstractSpringBootTest {
                         .getContentAsString(),
                 type);
     }
-    
+
+    @SneakyThrows
+    protected <T> List<T> getBody(ResultActions actions, TypeReference<List<T>> type) {
+        return fromJson(actions
+                .andReturn()
+                .getResponse()
+                .getContentAsString(), type);
+    }
+
     @SneakyThrows
     public <T> List<T> fromJson(String json, TypeReference<List<T>> type) {
         return objectMapper.readValue(json, type);
+    }
+
+    public void assertEqualsIgnoreOrder(Collection<?> expected, Collection<?> actual) {
+        assertEquals(new HashSet<>(expected), new HashSet<>(actual));
     }
 
 }

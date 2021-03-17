@@ -27,5 +27,4 @@ public class SpringBootExamApplication {
         SpringApplication.run(SpringBootExamApplication.class, args);
     }
 
-
 }
