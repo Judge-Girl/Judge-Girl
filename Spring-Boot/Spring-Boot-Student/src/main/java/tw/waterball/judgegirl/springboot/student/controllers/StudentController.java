@@ -16,7 +16,6 @@ package tw.waterball.judgegirl.springboot.student.controllers;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import tw.waterball.judgegirl.commons.token.TokenInvalidException;
 import tw.waterball.judgegirl.commons.token.TokenService;
@@ -27,12 +26,7 @@ import tw.waterball.judgegirl.studentservice.domain.exceptions.DuplicateEmailExc
 import tw.waterball.judgegirl.studentservice.domain.exceptions.StudentEmailNotFoundException;
 import tw.waterball.judgegirl.studentservice.domain.exceptions.StudentIdNotFoundException;
 import tw.waterball.judgegirl.studentservice.domain.exceptions.StudentPasswordIncorrectException;
-import tw.waterball.judgegirl.studentservice.domain.usecases.AuthUseCase;
-import tw.waterball.judgegirl.studentservice.domain.usecases.GetStudentUseCase;
-import tw.waterball.judgegirl.studentservice.domain.usecases.SignInUseCase;
-import tw.waterball.judgegirl.studentservice.domain.usecases.SignUpUseCase;
-
-import javax.validation.Valid;
+import tw.waterball.judgegirl.studentservice.domain.usecases.*;
 
 import static tw.waterball.judgegirl.springboot.student.view.StudentView.toViewModel;
 
@@ -48,10 +42,11 @@ public class StudentController {
     private final SignUpUseCase signUpUseCase;
     private final GetStudentUseCase getStudentUseCase;
     private final AuthUseCase authUseCase;
+    private final ChangePasswordUseCase changePasswordUseCase;
     private final TokenService tokenService;
 
     @PostMapping("/signUp")
-    public StudentView signUp(@Valid @RequestBody SignUpUseCase.Request request) {
+    public StudentView signUp(@RequestBody SignUpUseCase.Request request) {
         SignUpPresenter presenter = new SignUpPresenter();
         signUpUseCase.execute(request, presenter);
         return presenter.present();
@@ -67,8 +62,7 @@ public class StudentController {
 
     @GetMapping("{studentId}")
     public StudentView getStudentById(@PathVariable Integer studentId, @RequestHeader("Authorization") String authorization) {
-        String tokenString = HttpHeaderUtils.parseBearerToken(authorization);
-        TokenService.Token token = tokenService.parseAndValidate(tokenString);
+        TokenService.Token token = parseBearerTokenAndValidate(authorization);
 
         if (token.getStudentId() == studentId) {
             GetStudentByIdPresenter presenter = new GetStudentByIdPresenter();
@@ -81,8 +75,7 @@ public class StudentController {
 
     @PostMapping("/auth")
     public LoginResponse auth(@RequestHeader("Authorization") String authorization) {
-        String tokenString = HttpHeaderUtils.parseBearerToken(authorization);
-        TokenService.Token token = tokenService.parseAndValidate(tokenString);
+        TokenService.Token token = parseBearerTokenAndValidate(authorization);
 
         AuthPresenter presenter = new AuthPresenter();
         presenter.setToken(tokenService.renewToken(token.getToken()));
@@ -91,7 +84,28 @@ public class StudentController {
         return presenter.present();
     }
 
-    @ExceptionHandler({StudentPasswordIncorrectException.class, DuplicateEmailException.class, MethodArgumentNotValidException.class})
+    @PatchMapping("/{studentId}/password")
+    public void changePassword(
+            @PathVariable Integer studentId,
+            @RequestBody ChangePasswordUseCase.Request request,
+            @RequestHeader("Authorization") String authorization) {
+        TokenService.Token token = parseBearerTokenAndValidate(authorization);
+
+        if (token.getStudentId() == studentId) {
+            GetStudentByIdPresenter presenter = new GetStudentByIdPresenter();
+            getStudentUseCase.execute(new GetStudentUseCase.Request(studentId), presenter);
+            changePasswordUseCase.execute(request, presenter.getStudent());
+        } else {
+            throw new TokenInvalidException();
+        }
+    }
+
+    private TokenService.Token parseBearerTokenAndValidate(String authorization) {
+        String tokenString = HttpHeaderUtils.parseBearerToken(authorization);
+        return tokenService.parseAndValidate(tokenString);
+    }
+
+    @ExceptionHandler({StudentPasswordIncorrectException.class, DuplicateEmailException.class, IllegalArgumentException.class})
     public ResponseEntity<?> badRequestHandler(Exception err) {
         return ResponseEntity.badRequest().body(err.getMessage());
     }
@@ -124,6 +138,7 @@ class SignInPresenter implements SignInUseCase.Presenter {
     private Student student;
     private TokenService.Token token;
 
+    @Override
     public void setToken(TokenService.Token token) {
         this.token = token;
     }
@@ -148,6 +163,10 @@ class GetStudentByIdPresenter implements GetStudentUseCase.Presenter {
     @Override
     public void setStudent(Student student) {
         this.student = student;
+    }
+
+    Student getStudent() {
+        return student;
     }
 
     StudentView present() {

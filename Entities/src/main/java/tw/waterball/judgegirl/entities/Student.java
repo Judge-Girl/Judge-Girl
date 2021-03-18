@@ -13,26 +13,64 @@
 
 package tw.waterball.judgegirl.entities;
 
-import lombok.*;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
+import tw.waterball.judgegirl.commons.utils.JSR380Utils;
+
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
 @EqualsAndHashCode
-@AllArgsConstructor
 @NoArgsConstructor
 @Getter
-@Setter
 @ToString
 public class Student {
-    private Integer id;
-    private String name;
-    private String email;
-    private String password;
+    protected Integer id;
+    @NotBlank
+    protected String name;
+    @Email
+    protected String email;
+    @NotBlank
+    protected String password;
+
+    protected boolean isAdmin = false;
+
 
     public Student(String name, String email, String password) {
         this.name = name;
         this.email = email;
         this.password = password;
+    }
+
+    public Student(Integer id, String name, String email, String password) {
+        this.id = id;
+        this.name = name;
+        this.email = email;
+        this.password = password;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public void validate() {
+        JSR380Utils.validate(this);
     }
 }

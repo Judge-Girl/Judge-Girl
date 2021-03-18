@@ -16,6 +16,7 @@ package tw.waterball.judgegirl.studentservice.domain.usecases;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import tw.waterball.judgegirl.commons.token.TokenService;
 import tw.waterball.judgegirl.entities.Student;
 import tw.waterball.judgegirl.studentservice.domain.exceptions.StudentEmailNotFoundException;
 import tw.waterball.judgegirl.studentservice.domain.exceptions.StudentPasswordIncorrectException;
@@ -58,6 +59,8 @@ public class SignInUseCase {
     }
 
     public interface Presenter {
+        void setToken(TokenService.Token token);
+
         void setStudent(Student student);
     }
 }
