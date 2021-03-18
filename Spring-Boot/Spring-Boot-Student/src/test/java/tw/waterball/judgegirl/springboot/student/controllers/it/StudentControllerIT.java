@@ -226,7 +226,7 @@ public class StudentControllerIT extends AbstractSpringBootTest {
     }
 
     @Test
-    void GivenOneStudentSignedUp_WhenChangePasswordWithCorrectCurrentPassword_ShouldRespondSucceed() throws Exception {
+    void GivenOneStudentSignedUp_WhenChangePasswordWithCorrectCurrentPassword_ShouldSucceed() throws Exception {
         signUp(student);
         LoginResponse body = signInAndGetResponseBody(student.getEmail(), student.getPassword());
 
