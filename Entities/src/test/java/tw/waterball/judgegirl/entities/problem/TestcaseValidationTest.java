@@ -31,21 +31,25 @@ class TestcaseValidationTest {
         Testcase testcase = new Testcase("name", 0, 0, 3, 3, -1, 50);
         assertThrows(EntityInvalidException.class, testcase::validate);
     }
+
     @Test
     public void givenZeroMemoryLimit_ShouldBeInvalid() {
         Testcase testcase = new Testcase("name", 0, 3, 0, 3, -1, 50);
         assertThrows(EntityInvalidException.class, testcase::validate);
     }
+
     @Test
     public void givenZeroOutputLimit_ShouldBeInvalid() {
         Testcase testcase = new Testcase("name", 0, -1, 3, 0, -1, 50);
         assertThrows(EntityInvalidException.class, testcase::validate);
     }
+
     @Test
     public void givenZeroThreadLimit_ShouldBeInvalid() {
         Testcase testcase = new Testcase("name", 0, 3, -1, 3, 0, 50);
         assertThrows(EntityInvalidException.class, testcase::validate);
     }
+
     @Test
     public void givenNegativeGrade_ShouldBeInvalid() {
         Testcase testcase = new Testcase("name", 0, 3, -1, 3, 3, -1);

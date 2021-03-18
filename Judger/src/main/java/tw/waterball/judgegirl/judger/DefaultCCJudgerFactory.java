@@ -43,6 +43,7 @@ import static java.util.Arrays.asList;
 /**
  * Provide different basic ways to construct a CCJudger.
  * (Either from env variables or customizing it)
+ *
  * @author - johnny850807@gmail.com (Waterball)
  */
 public class DefaultCCJudgerFactory {

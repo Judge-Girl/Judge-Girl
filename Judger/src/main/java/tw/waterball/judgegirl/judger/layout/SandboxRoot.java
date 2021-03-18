@@ -20,8 +20,12 @@ import java.nio.file.Path;
  */
 public interface SandboxRoot {
     Path getPath();
+
     Path getActualStandardErrPath();
+
     Path getActualStandardOutPath();
+
     Path getStandardInPath();
+
     Path getExecutablePath();
 }

@@ -18,14 +18,17 @@ package tw.waterball.judgegirl.judger.filelayout;
  */
 public interface ItemVisitor {
     void visit(OrdinaryFile ordinaryFile);
+
     void visit(Directory directory);
 
 
     class Default implements ItemVisitor {
         @Override
-        public void visit(OrdinaryFile ordinaryFile) { }
+        public void visit(OrdinaryFile ordinaryFile) {
+        }
 
         @Override
-        public void visit(Directory directory) { }
+        public void visit(Directory directory) {
+        }
     }
 }

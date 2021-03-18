@@ -37,6 +37,7 @@
         <commons-io.version>2.6</commons-io.version>
         <jsonwebtoken.jjwt.version>0.11.0</jsonwebtoken.jjwt.version>
         <fridujo.rabbitmq-mock.version>1.0.14</fridujo.rabbitmq-mock.version>
+        <h2database.version>1.4.200</h2database.version>
         <spring-boot-dependencies.version>2.3.0.RELEASE</spring-boot-dependencies.version>
     </properties>
 
@@ -66,6 +67,11 @@
             <dependency>
                 <groupId>tw.waterball.judge-girl</groupId>
                 <artifactId>exam-service</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>tw.waterball.judge-girl</groupId>
+                <artifactId>student-service</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -244,6 +250,13 @@
                 <groupId>io.jsonwebtoken</groupId>
                 <artifactId>jjwt-jackson</artifactId>
                 <version>${jsonwebtoken.jjwt.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.h2database</groupId>
+                <artifactId>h2</artifactId>
+                <version>${h2database.version}</version>
+                <scope>runtime</scope>
             </dependency>
 
             <!-- Start of Spring Boot Components -->

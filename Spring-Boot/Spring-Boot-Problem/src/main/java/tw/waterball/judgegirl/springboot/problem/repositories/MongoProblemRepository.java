@@ -1,21 +1,19 @@
 /*
- *  Copyright 2020 Johnny850807 (Waterball) 潘冠辰
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *        http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
+ * Copyright 2020 Johnny850807 (Waterball) 潘冠辰
+ *   Licensed under the Apache License, Version 2.0 (the "License");
+ *   you may not use this file except in compliance with the License.
+ *   You may obtain a copy of the License at
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *   Unless required by applicable law or agreed to in writing, software
+ *   distributed under the License is distributed on an "AS IS" BASIS,
+ *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *   See the License for the specific language governing permissions and
+ *   limitations under the License.
  */
 
 package tw.waterball.judgegirl.springboot.problem.repositories;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -37,17 +35,21 @@ import java.util.Map;
 import java.util.Optional;
 
 import static java.lang.String.format;
+import static org.springframework.data.mongodb.core.query.Criteria.where;
+import static org.springframework.data.mongodb.core.query.Query.query;
 import static tw.waterball.judgegirl.springboot.utils.MongoUtils.downloadFileResourceByFileId;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
+@Slf4j
 @Mongo
 @Component
 public class MongoProblemRepository implements ProblemRepository {
     private final static int PAGE_SIZE = 50;
-    private MongoTemplate mongoTemplate;
-    private GridFsTemplate gridFsTemplate;
+    private final static int OFFSET_NEW_PROBLEM_ID = 70000;
+    private final MongoTemplate mongoTemplate;
+    private final GridFsTemplate gridFsTemplate;
 
     public MongoProblemRepository(MongoTemplate mongoTemplate, GridFsTemplate gridFsTemplate) {
         this.mongoTemplate = mongoTemplate;
@@ -112,6 +114,21 @@ public class MongoProblemRepository implements ProblemRepository {
         problem.setTestcaseIOsFileId(
                 gridFsTemplate.store(testcaseIOsZip, testcaseIOsName).toString());
         return mongoTemplate.save(problem);
+    }
+
+    @Override
+    public int saveProblemWithTitleAndGetId(String title) {
+        long problemsCount = mongoTemplate.count(
+                query(where("title").exists(true)), Problem.class);
+        int id = (int) (OFFSET_NEW_PROBLEM_ID + problemsCount + 1);
+        Problem problem = Problem.builder()
+                .id(id)
+                .title(title)
+                .build();
+        Problem saved = mongoTemplate.save(problem);
+        log.info("New problem with title {} has been saved with id={}.",
+                saved.getTitle(), saved.getId());
+        return id;
     }
 
     @Document("tag")

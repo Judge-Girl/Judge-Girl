@@ -57,8 +57,7 @@ services:
 volumes:
   db-data:
 
-
 networks:
   default:
     external:
-      name: judge-girl_judge-girl
+      name: judge-girl

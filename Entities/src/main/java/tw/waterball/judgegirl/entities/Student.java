@@ -25,7 +25,14 @@ import lombok.*;
 @Setter
 @ToString
 public class Student {
-    private int id;
-    private String account;
+    private Integer id;
     private String name;
+    private String email;
+    private String password;
+
+    public Student(String name, String email, String password) {
+        this.name = name;
+        this.email = email;
+        this.password = password;
+    }
 }

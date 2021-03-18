@@ -20,7 +20,10 @@ import java.nio.file.Path;
  */
 public interface CompileHome {
     Path getCompileScriptPath();
+
     Path getExecutablePath();
+
     SourceRoot getSourceRoot();
+
     Path getPath();
 }

@@ -1,17 +1,14 @@
 /*
- *  Copyright 2020 Johnny850807 (Waterball) 潘冠辰
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *        http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
+ * Copyright 2020 Johnny850807 (Waterball) 潘冠辰
+ *   Licensed under the Apache License, Version 2.0 (the "License");
+ *   you may not use this file except in compliance with the License.
+ *   You may obtain a copy of the License at
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *   Unless required by applicable law or agreed to in writing, software
+ *   distributed under the License is distributed on an "AS IS" BASIS,
+ *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *   See the License for the specific language governing permissions and
+ *   limitations under the License.
  */
 package tw.waterball.judgegirl.springboot.problem.controllers;
 
@@ -48,11 +45,14 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static java.lang.Integer.parseInt;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
+import static java.util.Objects.requireNonNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
@@ -244,7 +244,7 @@ class ProblemControllerIT extends AbstractSpringBootTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andReturn();
         return objectMapper.readValue(result.getResponse().getContentAsString(),
-                new TypeReference<List<ProblemItem>>() {
+                new TypeReference<>() {
                 });
     }
 
@@ -256,6 +256,17 @@ class ProblemControllerIT extends AbstractSpringBootTest {
                 .collect(Collectors.toList());
         problems.forEach(mongoTemplate::save);
         return problems;
+    }
+
+    @Test
+    void WhenSaveProblemWithTitle_ProblemShouldBeSavedAndRespondItsId() throws Exception {
+        String randomTitle = UUID.randomUUID().toString();
+        int id = parseInt(getContentAsString(
+                mockMvc.perform(post("/api/problems")
+                        .contentType(MediaType.TEXT_PLAIN_VALUE).content(randomTitle))
+                        .andExpect(status().isOk())));
+
+        assertEquals(randomTitle, requireNonNull(mongoTemplate.findById(id, Problem.class)).getTitle());
     }
 }
 

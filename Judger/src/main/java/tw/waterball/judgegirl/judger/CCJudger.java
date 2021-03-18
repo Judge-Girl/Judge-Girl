@@ -55,9 +55,9 @@ import static java.util.Objects.requireNonNull;
 
 /**
  * TODO: some drunk codes that ruins my perfectionism, require some talents to refactor it!
- *  The main problem is regarding to the multiple languages' supporting,
- *  every language should have its judge-flow customizable and
- *  the current template method's used doesn't support it well.
+ * The main problem is regarding to the multiple languages' supporting,
+ * every language should have its judge-flow customizable and
+ * the current template method's used doesn't support it well.
  *
  * @author - johnny850807@gmail.com (Waterball)
  */
@@ -130,18 +130,18 @@ public class CCJudger extends PluginExtendedJudger {
         Path tempSubmittedCodesPath = submissionHome.getPath().resolve(TEMP_SUBMITTED_CODES_DIR_NAME);
         FileUtils.copyDirectory(getSourceRootPath().toFile(), tempSubmittedCodesPath.toFile());
 
-        logger.info("<After downloadSubmittedCodes> Files under src: {}.", Arrays.stream(getSourceRootPath().toFile().listFiles()).map(f -> f.getName() + (f.isDirectory()?"/":"")).collect(Collectors.joining(",")));
+        logger.info("<After downloadSubmittedCodes> Files under src: {}.", Arrays.stream(getSourceRootPath().toFile().listFiles()).map(f -> f.getName() + (f.isDirectory() ? "/" : "")).collect(Collectors.joining(",")));
     }
 
     @Override
     protected void downloadProvidedCodes() throws IOException {
         LanguageEnv languageEnv = getLanguageEnv();
-        try(FileResource zip = problemServiceDriver.downloadProvidedCodes(
+        try (FileResource zip = problemServiceDriver.downloadProvidedCodes(
                 getProblem().getId(), languageEnv.getName(), languageEnv.getProvidedCodesFileId())) {
             ZipUtils.unzipToDestination(zip.getInputStream(), getSourceRootPath());
         }
 
-        logger.info("<After downloadProvidedCodes> Files under src: {}.", Arrays.stream(getSourceRootPath().toFile().listFiles()).map(f -> f.getName() + (f.isDirectory()?"/":"")).collect(Collectors.joining(",")));
+        logger.info("<After downloadProvidedCodes> Files under src: {}.", Arrays.stream(getSourceRootPath().toFile().listFiles()).map(f -> f.getName() + (f.isDirectory() ? "/" : "")).collect(Collectors.joining(",")));
     }
 
     @Override
@@ -157,7 +157,7 @@ public class CCJudger extends PluginExtendedJudger {
     protected CompileResult doCompile() {
         String script = getLanguageEnv().getCompilation().getScript();
         Files.write(getCompileScriptPath(), script.getBytes());
-        logger.info("<After compile> Files under src: {}.", Arrays.stream(getSourceRootPath().toFile().listFiles()).map(f -> f.getName() + (f.isDirectory()?"/":"")).collect(Collectors.joining(",")));
+        logger.info("<After compile> Files under src: {}.", Arrays.stream(getSourceRootPath().toFile().listFiles()).map(f -> f.getName() + (f.isDirectory() ? "/" : "")).collect(Collectors.joining(",")));
         Compiler compiler = compilerFactory.create(getSourceRootPath());
         CompileResult result = compiler.compile(getLanguageEnv().getCompilation());
         if (result.isSuccessful()) {

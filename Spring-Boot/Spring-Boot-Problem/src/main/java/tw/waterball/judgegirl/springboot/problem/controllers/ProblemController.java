@@ -1,17 +1,14 @@
 /*
- *  Copyright 2020 Johnny850807 (Waterball) 潘冠辰
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *        http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
+ * Copyright 2020 Johnny850807 (Waterball) 潘冠辰
+ *   Licensed under the Apache License, Version 2.0 (the "License");
+ *   you may not use this file except in compliance with the License.
+ *   You may obtain a copy of the License at
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *   Unless required by applicable law or agreed to in writing, software
+ *   distributed under the License is distributed on an "AS IS" BASIS,
+ *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *   See the License for the specific language governing permissions and
+ *   limitations under the License.
  */
 
 package tw.waterball.judgegirl.springboot.problem.controllers;
@@ -37,7 +34,7 @@ import java.util.stream.Collectors;
  */
 @CrossOrigin
 @RestController
-@RequestMapping("/api/problems")
+@RequestMapping(value = "/api/problems", method = {RequestMethod.GET, RequestMethod.POST})
 @AllArgsConstructor
 public class ProblemController {
     private final GetProblemUseCase getProblemUseCase;
@@ -46,6 +43,7 @@ public class ProblemController {
     private final DownloadTestCaseIOsUseCase downloadTestCaseIOsUseCase;
     private final GetAllTagsUseCase getAllTagsUseCase;
     private final GetTestCasesUseCase getTestCasesUseCase;
+    private final SaveProblemWithTitleUseCase saveProblemWithTitleUseCase;
 
     @GetMapping("/tags")
     public List<String> getTags() {
@@ -73,8 +71,8 @@ public class ProblemController {
     @GetMapping(value = "/{problemId}/{langEnvName}/providedCodes/{providedCodesFileId}",
             produces = "application/zip")
     public ResponseEntity<InputStreamResource> downloadZippedProvidedCodes(@PathVariable int problemId,
-                                                                      @PathVariable String langEnvName,
-                                                                      @PathVariable String providedCodesFileId) {
+                                                                           @PathVariable String langEnvName,
+                                                                           @PathVariable String providedCodesFileId) {
         FileResource fileResource = downloadProvidedCodesUseCase.execute(
                 new DownloadProvidedCodesUseCase.Request(problemId, langEnvName, providedCodesFileId));
         return ResponseEntityUtils.respondInputStreamResource(fileResource);
@@ -97,6 +95,12 @@ public class ProblemController {
                 .execute(new DownloadTestCaseIOsUseCase.Request(problemId, testcaseIOsFileId));
         return ResponseEntityUtils.respondInputStreamResource(fileResource);
     }
+
+    @PostMapping(consumes = "text/plain")
+    public int saveProblemWithTitleAndGetId(@RequestBody String title) {
+        return saveProblemWithTitleUseCase.execute(title);
+    }
+
 }
 
 class GetProblemPresenter implements GetProblemUseCase.Presenter {
