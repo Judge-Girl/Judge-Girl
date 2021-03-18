@@ -19,7 +19,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tw.waterball.judgegirl.commons.token.TokenInvalidException;
 import tw.waterball.judgegirl.commons.token.TokenService;
-import tw.waterball.judgegirl.commons.utils.HttpHeaderUtils;
 import tw.waterball.judgegirl.entities.Student;
 import tw.waterball.judgegirl.springboot.student.view.StudentView;
 import tw.waterball.judgegirl.studentservice.domain.exceptions.DuplicateEmailException;
@@ -62,20 +61,17 @@ public class StudentController {
 
     @GetMapping("{studentId}")
     public StudentView getStudentById(@PathVariable Integer studentId, @RequestHeader("Authorization") String authorization) {
-        TokenService.Token token = parseBearerTokenAndValidate(authorization);
-
-        if (token.getStudentId() == studentId) {
-            GetStudentByIdPresenter presenter = new GetStudentByIdPresenter();
-            getStudentUseCase.execute(new GetStudentUseCase.Request(studentId), presenter);
-            return presenter.present();
-        } else {
-            throw new TokenInvalidException();
-        }
+        return tokenService.returnIfTokenValid(studentId, authorization,
+                token -> {
+                    GetStudentByIdPresenter presenter = new GetStudentByIdPresenter();
+                    getStudentUseCase.execute(studentId, presenter);
+                    return presenter.present();
+                });
     }
 
     @PostMapping("/auth")
     public LoginResponse auth(@RequestHeader("Authorization") String authorization) {
-        TokenService.Token token = parseBearerTokenAndValidate(authorization);
+        TokenService.Token token = tokenService.parseBearerTokenAndValidate(authorization);
 
         AuthPresenter presenter = new AuthPresenter();
         presenter.setToken(tokenService.renewToken(token.getToken()));
@@ -89,21 +85,11 @@ public class StudentController {
             @PathVariable Integer studentId,
             @RequestBody ChangePasswordUseCase.Request request,
             @RequestHeader("Authorization") String authorization) {
-        TokenService.Token token = parseBearerTokenAndValidate(authorization);
-
-        if (token.getStudentId() == studentId) {
-            GetStudentByIdPresenter presenter = new GetStudentByIdPresenter();
-            getStudentUseCase.execute(new GetStudentUseCase.Request(studentId), presenter);
-            changePasswordUseCase.execute(request, presenter.getStudent());
-        } else {
-            throw new TokenInvalidException();
-        }
+        request.studentId = studentId;
+        tokenService.ifTokenValid(studentId, authorization,
+                token -> changePasswordUseCase.execute(request));
     }
 
-    private TokenService.Token parseBearerTokenAndValidate(String authorization) {
-        String tokenString = HttpHeaderUtils.parseBearerToken(authorization);
-        return tokenService.parseAndValidate(tokenString);
-    }
 
     @ExceptionHandler({StudentPasswordIncorrectException.class, DuplicateEmailException.class, IllegalArgumentException.class})
     public ResponseEntity<?> badRequestHandler(Exception err) {

@@ -13,7 +13,6 @@
 
 package tw.waterball.judgegirl.studentservice.domain.usecases;
 
-import lombok.Value;
 import tw.waterball.judgegirl.entities.Student;
 import tw.waterball.judgegirl.studentservice.domain.exceptions.StudentIdNotFoundException;
 import tw.waterball.judgegirl.studentservice.domain.repositories.StudentRepository;
@@ -31,15 +30,16 @@ public class GetStudentUseCase {
         this.studentRepository = studentRepository;
     }
 
-    public void execute(Request request, Presenter presenter) {
+    public void execute(int studentId, Presenter presenter) {
         presenter.setStudent(studentRepository
-                .findStudentById(request.id)
+                .findStudentById(studentId)
                 .orElseThrow(StudentIdNotFoundException::new));
     }
 
-    @Value
-    public static class Request {
-        public Integer id;
+    public Student execute(int studentId) {
+        DefaultGetStudentPresenter presenter = new DefaultGetStudentPresenter();
+        execute(studentId, presenter);
+        return presenter.getStudent();
     }
 
     public interface Presenter {

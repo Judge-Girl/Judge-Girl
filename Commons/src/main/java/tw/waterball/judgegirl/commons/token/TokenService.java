@@ -15,9 +15,12 @@ package tw.waterball.judgegirl.commons.token;
 
 import lombok.Getter;
 import lombok.Setter;
+import tw.waterball.judgegirl.commons.utils.HttpHeaderUtils;
 
 import java.util.Date;
 import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 import static java.util.Collections.singletonMap;
 import static tw.waterball.judgegirl.commons.utils.DateUtils.NEVER_EXPIRED_IN_LIFETIME_DATE;
@@ -31,6 +34,29 @@ public interface TokenService {
     Token renewToken(String token) throws TokenInvalidException;
 
     Token parseAndValidate(String token) throws TokenInvalidException;
+
+    default <T> T returnIfTokenValid(int studentId, String authorization, Function<Token, T> tokenFunction) {
+        TokenService.Token token = parseBearerTokenAndValidate(authorization);
+        if (token.getStudentId() == studentId) {
+            return tokenFunction.apply(token);
+        } else {
+            throw new TokenInvalidException("Authentication failed.");
+        }
+    }
+
+    default void ifTokenValid(int studentId, String authorization, Consumer<Token> tokenConsumer) {
+        TokenService.Token token = parseBearerTokenAndValidate(authorization);
+        if (token.getStudentId() == studentId) {
+            tokenConsumer.accept(token);
+        } else {
+            throw new TokenInvalidException("Authentication failed.");
+        }
+    }
+
+    default TokenService.Token parseBearerTokenAndValidate(String authorization) {
+        String tokenString = HttpHeaderUtils.parseBearerToken(authorization);
+        return parseAndValidate(tokenString);
+    }
 
     @Getter
     @Setter

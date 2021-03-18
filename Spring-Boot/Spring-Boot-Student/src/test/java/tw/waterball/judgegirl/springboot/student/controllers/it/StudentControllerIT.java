@@ -185,7 +185,7 @@ public class StudentControllerIT extends AbstractSpringBootTest {
 
     private ResultActions getStudentById(Integer id, String tokenString) throws Exception {
         return mockMvc.perform(get("/api/students/" + id)
-                .header("Authorization", "bearer " + tokenString));
+                .header("Authorization", bearerWithToken(tokenString)));
     }
 
     @Test
@@ -216,17 +216,17 @@ public class StudentControllerIT extends AbstractSpringBootTest {
 
     private LoginResponse authAndGetResponseBody(String tokenString) throws Exception {
         return getBody(mockMvc.perform(post("/api/students/auth")
-                .header("Authorization", "bearer " + tokenString))
+                .header("Authorization", bearerWithToken(tokenString)))
                 .andExpect(status().isOk()), LoginResponse.class);
     }
 
     private ResultActions auth(String tokenString) throws Exception {
         return mockMvc.perform(post("/api/students/auth")
-                .header("Authorization", "bearer " + tokenString));
+                .header("Authorization", bearerWithToken(tokenString)));
     }
 
     @Test
-    void GivenOneStudentSignedUp_WhenChangePassword_ShouldResponseOK() throws Exception {
+    void GivenOneStudentSignedUp_WhenChangePasswordWithCorrectCurrentPassword_ShouldRespondSucceed() throws Exception {
         signUp(student);
         LoginResponse body = signInAndGetResponseBody(student.getEmail(), student.getPassword());
 
@@ -239,7 +239,7 @@ public class StudentControllerIT extends AbstractSpringBootTest {
     }
 
     @Test
-    void GivenOneStudentSignedUp_WhenChangePasswordWithWrongCurrentPassword_ShouldResponseBadRequest() throws Exception {
+    void GivenOneStudentSignedUp_WhenChangePasswordWithWrongCurrentPassword_ShouldRejectWithBadRequest() throws Exception {
         signUp(student);
         LoginResponse body = signInAndGetResponseBody(student.getEmail(), student.getPassword());
 
@@ -253,7 +253,7 @@ public class StudentControllerIT extends AbstractSpringBootTest {
     }
 
     private ResultActions changePassword(String password, String newPassword, int id, String token) throws Exception {
-        ChangePasswordUseCase.Request request = new ChangePasswordUseCase.Request(password, newPassword);
+        ChangePasswordUseCase.Request request = new ChangePasswordUseCase.Request(id, password, newPassword);
         return mockMvc.perform(patch("/api/students/" + id + "/password")
                 .header("Authorization", bearerWithToken(token))
                 .contentType(MediaType.APPLICATION_JSON)

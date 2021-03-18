@@ -26,14 +26,13 @@ import javax.inject.Named;
  * @author chaoyulee chaoyu2330@gmail.com
  */
 @Named
+@AllArgsConstructor
 public class ChangePasswordUseCase {
+    private final GetStudentUseCase getStudentUseCase;
     private final StudentRepository studentRepository;
 
-    public ChangePasswordUseCase(StudentRepository studentRepository) {
-        this.studentRepository = studentRepository;
-    }
-
-    public void execute(Request request, Student student) {
+    public void execute(Request request) {
+        Student student = getStudentUseCase.execute(request.studentId);
         validatePassword(request.currentPwd, student.getPassword());
         student.setPassword(request.newPwd);
         studentRepository.save(student);
@@ -49,7 +48,9 @@ public class ChangePasswordUseCase {
     @AllArgsConstructor
     @NoArgsConstructor
     public static class Request {
+        public int studentId;
         public String currentPwd;
         public String newPwd;
     }
+
 }
