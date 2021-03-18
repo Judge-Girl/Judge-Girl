@@ -15,15 +15,14 @@ package tw.waterball.judgegirl.entities;
 
 import lombok.*;
 
-import java.util.Objects;
-
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
 @EqualsAndHashCode
 @AllArgsConstructor
 @NoArgsConstructor
-@Getter @Setter
+@Getter
+@Setter
 @ToString
 public class Student {
     private Integer id;

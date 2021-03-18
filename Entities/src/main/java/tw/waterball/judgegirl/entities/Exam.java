@@ -1,4 +1,4 @@
-package tw.waterball.judgegirl.springboot.exam;
+package tw.waterball.judgegirl.entities;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -6,10 +6,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import tw.waterball.judgegirl.commons.utils.JSR380Utils;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.Date;
@@ -19,11 +15,8 @@ import java.util.Objects;
 @NoArgsConstructor
 @Getter
 @Setter
-@Entity
 public class Exam {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Integer id = null;
 
     @NotBlank
