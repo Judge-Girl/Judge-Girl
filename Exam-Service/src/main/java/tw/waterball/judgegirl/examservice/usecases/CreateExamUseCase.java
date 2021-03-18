@@ -29,13 +29,9 @@ public class CreateExamUseCase {
     }
 
     @Data
-    @NoArgsConstructor
     public static class Request {
-        @NotBlank
         public String name;
-        @NotNull
         public Date startTime;
-        @NotNull
         public Date endTime;
     }
 

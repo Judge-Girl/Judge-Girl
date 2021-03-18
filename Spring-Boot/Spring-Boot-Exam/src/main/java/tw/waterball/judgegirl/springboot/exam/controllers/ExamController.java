@@ -5,7 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tw.waterball.judgegirl.entities.Exam;
 import tw.waterball.judgegirl.examservice.usecases.CreateExamUseCase;
-import tw.waterball.judgegirl.examservice.usecases.GetUpcomingExamUseCase;
+import tw.waterball.judgegirl.examservice.usecases.GetUpcomingExamsUseCase;
 import tw.waterball.judgegirl.springboot.exam.view.ExamView;
 
 import javax.validation.Valid;
@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 @RestController
 public class ExamController {
     private final CreateExamUseCase createExamUseCase;
-    private final GetUpcomingExamUseCase getUpcomingExamUseCase;
+    private final GetUpcomingExamsUseCase getUpcomingExamUseCase;
 
     @PostMapping("/api/exams")
     public ExamView createExam(@Valid @RequestBody CreateExamUseCase.Request request) {
@@ -30,7 +30,7 @@ public class ExamController {
     public List<ExamView> getExams(@PathVariable Integer studentId, @RequestParam String type) {
         if (type.equals("upcoming")) {
             GetUpcomingExamPresenter presenter = new GetUpcomingExamPresenter();
-            getUpcomingExamUseCase.execute(new GetUpcomingExamUseCase.Request(studentId), presenter);
+            getUpcomingExamUseCase.execute(new GetUpcomingExamsUseCase.Request(studentId), presenter);
             return presenter.present();
         } else {
             throw new IllegalArgumentException("Type: " + type + " not supported.");
@@ -56,7 +56,7 @@ class CreateExamPresenter implements CreateExamUseCase.Presenter {
     }
 }
 
-class GetUpcomingExamPresenter implements GetUpcomingExamUseCase.Presenter {
+class GetUpcomingExamPresenter implements GetUpcomingExamsUseCase.Presenter {
     private List<Exam> exams;
 
     @Override

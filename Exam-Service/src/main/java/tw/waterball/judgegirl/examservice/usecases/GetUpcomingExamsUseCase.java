@@ -14,11 +14,11 @@ import java.util.List;
 import static java.util.stream.Collectors.toList;
 
 @Named
-public class GetUpcomingExamUseCase {
+public class GetUpcomingExamsUseCase {
     private final ExamRepository examRepository;
     private final ExamParticipationRepository examParticipationRepository;
 
-    public GetUpcomingExamUseCase(ExamRepository examRepository, ExamParticipationRepository examParticipationRepository) {
+    public GetUpcomingExamsUseCase(ExamRepository examRepository, ExamParticipationRepository examParticipationRepository) {
         this.examRepository = examRepository;
         this.examParticipationRepository = examParticipationRepository;
     }
@@ -43,7 +43,6 @@ public class GetUpcomingExamUseCase {
 
     @Value
     public static class Request {
-        @NotNull
         public int studentId;
     }
 
