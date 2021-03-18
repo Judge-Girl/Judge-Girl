@@ -33,8 +33,8 @@ public class ChangePasswordUseCase {
 
     public void execute(Request request) {
         Student student = getStudentUseCase.execute(request.studentId);
-        validatePassword(request.currentPwd, student.getPassword());
-        student.setPassword(request.newPwd);
+        validatePassword(request.currentPassword, student.getPassword());
+        student.setPassword(request.newPassword);
         studentRepository.save(student);
     }
 
@@ -49,8 +49,8 @@ public class ChangePasswordUseCase {
     @NoArgsConstructor
     public static class Request {
         public int studentId;
-        public String currentPwd;
-        public String newPwd;
+        public String currentPassword;
+        public String newPassword;
     }
 
 }
