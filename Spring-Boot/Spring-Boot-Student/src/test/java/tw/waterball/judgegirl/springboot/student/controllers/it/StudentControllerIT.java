@@ -28,14 +28,16 @@ import tw.waterball.judgegirl.springboot.student.SpringBootStudentApplication;
 import tw.waterball.judgegirl.springboot.student.controllers.LoginResponse;
 import tw.waterball.judgegirl.springboot.student.repositories.jpa.JpaStudentDataPort;
 import tw.waterball.judgegirl.springboot.student.view.StudentView;
+import tw.waterball.judgegirl.studentservice.domain.exceptions.StudentIdNotFoundException;
+import tw.waterball.judgegirl.studentservice.domain.usecases.ChangePasswordUseCase;
 import tw.waterball.judgegirl.studentservice.domain.usecases.SignInUseCase;
 import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static tw.waterball.judgegirl.commons.utils.HttpHeaderUtils.bearerWithToken;
 import static tw.waterball.judgegirl.springboot.student.view.StudentView.toViewModel;
 
 
@@ -183,7 +185,7 @@ public class StudentControllerIT extends AbstractSpringBootTest {
 
     private ResultActions getStudentById(Integer id, String tokenString) throws Exception {
         return mockMvc.perform(get("/api/students/" + id)
-                .header("Authorization", "bearer " + tokenString));
+                .header("Authorization", bearerWithToken(tokenString)));
     }
 
     @Test
@@ -214,13 +216,48 @@ public class StudentControllerIT extends AbstractSpringBootTest {
 
     private LoginResponse authAndGetResponseBody(String tokenString) throws Exception {
         return getBody(mockMvc.perform(post("/api/students/auth")
-                .header("Authorization", "bearer " + tokenString))
+                .header("Authorization", bearerWithToken(tokenString)))
                 .andExpect(status().isOk()), LoginResponse.class);
     }
 
     private ResultActions auth(String tokenString) throws Exception {
         return mockMvc.perform(post("/api/students/auth")
-                .header("Authorization", "bearer " + tokenString));
+                .header("Authorization", bearerWithToken(tokenString)));
+    }
+
+    @Test
+    void GivenOneStudentSignedUp_WhenChangePasswordWithCorrectCurrentPassword_ShouldSucceed() throws Exception {
+        signUp(student);
+        LoginResponse body = signInAndGetResponseBody(student.getEmail(), student.getPassword());
+
+        String newPassword = "newPassword";
+        changePassword(student.getPassword(), newPassword, body.id, body.token).andExpect(status().isOk());
+
+        Student student = studentRepository.findStudentById(body.getId())
+                .orElseThrow(StudentIdNotFoundException::new).toEntity();
+        assertEquals(newPassword, student.getPassword());
+    }
+
+    @Test
+    void GivenOneStudentSignedUp_WhenChangePasswordWithWrongCurrentPassword_ShouldRejectWithBadRequest() throws Exception {
+        signUp(student);
+        LoginResponse body = signInAndGetResponseBody(student.getEmail(), student.getPassword());
+
+        String wrongPassword = "wrongPassword";
+        String newPassword = "newPassword";
+        changePassword(wrongPassword, newPassword, body.id, body.token).andExpect(status().isBadRequest());
+
+        Student student = studentRepository.findStudentById(body.getId())
+                .orElseThrow(StudentIdNotFoundException::new).toEntity();
+        assertEquals(student.getPassword(), student.getPassword());
+    }
+
+    private ResultActions changePassword(String password, String newPassword, int id, String token) throws Exception {
+        ChangePasswordUseCase.Request request = new ChangePasswordUseCase.Request(id, password, newPassword);
+        return mockMvc.perform(patch("/api/students/" + id + "/password")
+                .header("Authorization", bearerWithToken(token))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(toJson(request)));
     }
 
 }
