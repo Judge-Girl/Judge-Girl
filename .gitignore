@@ -33,7 +33,6 @@ build/
 
 ### Secret ###
 infra.yml
-Spring-Boot/Spring-Boot-Exam/src/main/resources/application.yml
 
 
 ### Temporary Output Files ###
