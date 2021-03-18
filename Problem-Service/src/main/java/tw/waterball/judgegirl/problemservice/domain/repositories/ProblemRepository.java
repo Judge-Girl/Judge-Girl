@@ -42,4 +42,6 @@ public interface ProblemRepository {
     List<String> getTags();
 
     Problem save(Problem problem, Map<LanguageEnv, InputStream> providedCodesZipMap, InputStream testcaseIOsZip);
+
+    int saveProblemWithTitleAndGetId(String title);
 }
