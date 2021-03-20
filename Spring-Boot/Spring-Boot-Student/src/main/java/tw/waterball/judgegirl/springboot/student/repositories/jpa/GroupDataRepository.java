@@ -9,6 +9,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface GroupDataRepository extends JpaRepository<GroupData, Integer> {
 
-    boolean existsGroupDataByTitle(String title);
+    boolean existsGroupDataByName(String title);
 
 }

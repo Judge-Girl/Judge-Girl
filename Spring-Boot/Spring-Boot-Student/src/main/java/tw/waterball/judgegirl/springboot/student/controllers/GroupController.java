@@ -21,16 +21,16 @@ public class GroupController {
 
     @PostMapping("/api/groups")
     public GroupData createGroup(@RequestBody GroupCreateRequest request) {
-        String title = request.getTitle();
-        if (repository.existsGroupDataByTitle(title)) {
-            throw new DuplicateGroupTitleException();
+        String name = request.getName();
+        if (repository.existsGroupDataByName(name)) {
+            throw new DuplicateGroupNameException();
         }
         GroupData groupData = GroupData.builder()
-                .title(title).build();
+                .name(name).build();
         return repository.saveAndFlush(groupData);
     }
 
-    @ExceptionHandler({DuplicateGroupTitleException.class})
+    @ExceptionHandler({DuplicateGroupNameException.class})
     public ResponseEntity<?> badRequestHandler(Exception err) {
         return ResponseEntity.badRequest().body(err.getMessage());
     }

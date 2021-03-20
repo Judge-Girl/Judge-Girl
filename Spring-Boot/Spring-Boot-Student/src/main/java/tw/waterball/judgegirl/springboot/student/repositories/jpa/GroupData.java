@@ -22,6 +22,6 @@ public class GroupData {
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Integer id;
 
-    private String title;
+    private String name;
 
 }

@@ -25,7 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ContextConfiguration(classes = SpringBootStudentApplication.class)
 public class GroupControllerIT extends AbstractSpringBootTest {
 
-    private static final String TEST_TITLE = "title";
+    private static final String TEST_NAME = "name";
 
     @Autowired
     private GroupDataRepository repository;
@@ -36,22 +36,22 @@ public class GroupControllerIT extends AbstractSpringBootTest {
     }
 
     @Test
-    public void GiveOneUserCreateGroup_WhenGroupTitleUnique_ShouldCreateSuccessfully() throws Exception {
+    public void WhenCreateGroupWithUniqueName_ShouldCreateSuccessfully() throws Exception {
         ResultActions resultActions = createGroupRequest()
                 .andExpect(status().isOk());
         GroupData groupData = getBody(resultActions, GroupData.class);
-        assertEquals(TEST_TITLE, groupData.getTitle());
+        assertEquals(TEST_NAME, groupData.getName());
     }
 
     @Test
-    public void GiveOneUserCreateGroup_WhenGroupTitleExist_ShouldCreateFailed() throws Exception {
+    public void GiveOneGroupCreated_WhenCreateGroupWithDuplicateName_ShouldRejectWithBadRequest() throws Exception {
         createGroupRequest();
         createGroupRequest()
                 .andExpect(status().isBadRequest());
     }
 
     private ResultActions createGroupRequest() throws Exception {
-        GroupCreateRequest request = GroupCreateRequest.builder().title(TEST_TITLE).build();
+        GroupCreateRequest request = GroupCreateRequest.builder().name(TEST_NAME).build();
         return mockMvc.perform(post("/api/groups")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(request)));

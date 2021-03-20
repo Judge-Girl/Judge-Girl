@@ -12,5 +12,5 @@ import lombok.*;
 @AllArgsConstructor
 public class GroupCreateRequest {
 
-    private String title;
+    private String name;
 }
