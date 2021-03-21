@@ -21,7 +21,7 @@ services:
       judge-girl.amqp.host: rabbitmq
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.student-service.rule=PathPrefix(`/api/students`)"
+      - "traefik.http.routers.student-service.rule=PathPrefix(`/api/students`) || PathPrefix(`/api/groups`)"
       - "traefik.http.routers.student-service.entrypoints=web"
       - "traefik.http.routers.student-service.service=student-service"
       - "traefik.http.services.student-service.loadbalancer.server.port=80"
