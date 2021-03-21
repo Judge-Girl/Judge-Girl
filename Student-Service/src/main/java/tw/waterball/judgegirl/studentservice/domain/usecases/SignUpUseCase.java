@@ -14,6 +14,7 @@
 package tw.waterball.judgegirl.studentservice.domain.usecases;
 
 import lombok.Data;
+import tw.waterball.judgegirl.entities.Admin;
 import tw.waterball.judgegirl.entities.Student;
 import tw.waterball.judgegirl.studentservice.domain.exceptions.DuplicateEmailException;
 import tw.waterball.judgegirl.studentservice.domain.repositories.StudentRepository;
@@ -36,9 +37,17 @@ public class SignUpUseCase {
         if (studentRepository.existsByEmail(request.getEmail())) {
             throw new DuplicateEmailException("Duplicate email");
         }
-        Student student = new Student(request.name, request.email, request.password);
+        Student student = createStudent(request);
         student.validate();
         presenter.setStudent(studentRepository.save(student));
+    }
+
+    private Student createStudent(Request request) {
+        if (request.isAdmin) {
+            return new Admin(request.name, request.email, request.password);
+        } else {
+            return new Student(request.name, request.email, request.password);
+        }
     }
 
     public interface Presenter {
@@ -50,5 +59,6 @@ public class SignUpUseCase {
         public String name;
         public String email;
         public String password;
+        public boolean isAdmin;
     }
 }

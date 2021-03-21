@@ -13,7 +13,10 @@
 
 package tw.waterball.judgegirl.springboot.student.view;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import tw.waterball.judgegirl.entities.Student;
 
 /**
@@ -21,20 +24,20 @@ import tw.waterball.judgegirl.entities.Student;
  */
 @EqualsAndHashCode
 @Builder
-@Getter
-@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class StudentView {
-    private Integer id;
-    private String name;
-    private String email;
+    public Integer id;
+    public String name;
+    public String email;
+    public boolean isAdmin;
 
     public static StudentView toViewModel(Student student) {
         return StudentView.builder()
                 .id(student.getId())
                 .name(student.getName())
                 .email(student.getEmail())
+                .isAdmin(student.isAdmin())
                 .build();
     }
 }
