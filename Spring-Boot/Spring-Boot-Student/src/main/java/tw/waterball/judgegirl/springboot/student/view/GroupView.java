@@ -3,13 +3,9 @@ package tw.waterball.judgegirl.springboot.student.view;
 import lombok.*;
 import tw.waterball.judgegirl.entities.Group;
 
-import javax.validation.constraints.NotBlank;
-
 /**
  * @author - wally55077@gmail.com
  */
-@Setter
-@Getter
 @Builder
 @ToString
 @EqualsAndHashCode
@@ -17,12 +13,11 @@ import javax.validation.constraints.NotBlank;
 @AllArgsConstructor
 public class GroupView {
 
-    protected Integer id;
+    public int id;
 
-    @NotBlank
-    protected String name;
+    public String name;
 
-    public GroupView(@NotBlank String name) {
+    public GroupView(String name) {
         this.name = name;
     }
 

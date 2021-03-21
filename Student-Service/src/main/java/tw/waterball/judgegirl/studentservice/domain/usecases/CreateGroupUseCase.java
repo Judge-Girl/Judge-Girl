@@ -1,8 +1,6 @@
 package tw.waterball.judgegirl.studentservice.domain.usecases;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
 import lombok.NoArgsConstructor;
 import tw.waterball.judgegirl.entities.Group;
 import tw.waterball.judgegirl.studentservice.domain.exceptions.DuplicateGroupNameException;
@@ -38,11 +36,9 @@ public class CreateGroupUseCase {
         void setGroup(Group group);
     }
 
-    @Data
-    @Builder
     @NoArgsConstructor
     @AllArgsConstructor
     public static class Request {
-        private String name;
+        public String name;
     }
 }

@@ -9,8 +9,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.ResultActions;
 import tw.waterball.judgegirl.springboot.profiles.Profiles;
 import tw.waterball.judgegirl.springboot.student.SpringBootStudentApplication;
-import tw.waterball.judgegirl.springboot.student.repositories.jpa.JpaGroupDataDataPort;
 import tw.waterball.judgegirl.springboot.student.view.GroupView;
+import tw.waterball.judgegirl.studentservice.domain.repositories.GroupRepository;
 import tw.waterball.judgegirl.studentservice.domain.usecases.CreateGroupUseCase;
 import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
 
@@ -29,7 +29,7 @@ public class GroupControllerIT extends AbstractSpringBootTest {
     private static final String TEST_NAME = "name";
 
     @Autowired
-    private JpaGroupDataDataPort repository;
+    private GroupRepository repository;
 
     @AfterEach
     void cleanUp() {
@@ -41,7 +41,7 @@ public class GroupControllerIT extends AbstractSpringBootTest {
         ResultActions resultActions = createGroupRequest()
                 .andExpect(status().isOk());
         GroupView groupView = getBody(resultActions, GroupView.class);
-        assertEquals(TEST_NAME, groupView.getName());
+        assertEquals(TEST_NAME, groupView.name);
         assertTrue(repository.existsByName(TEST_NAME));
     }
 
@@ -53,7 +53,7 @@ public class GroupControllerIT extends AbstractSpringBootTest {
     }
 
     private ResultActions createGroupRequest() throws Exception {
-        CreateGroupUseCase.Request request = CreateGroupUseCase.Request.builder().name(TEST_NAME).build();
+        CreateGroupUseCase.Request request = new CreateGroupUseCase.Request(TEST_NAME);
         return mockMvc.perform(post("/api/groups")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(request)));

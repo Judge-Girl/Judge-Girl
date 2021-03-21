@@ -8,4 +8,5 @@ public interface GroupRepository {
 
     Group save(Group group);
 
+    void deleteAll();
 }
