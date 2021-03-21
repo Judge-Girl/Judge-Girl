@@ -3,6 +3,7 @@ package tw.waterball.judgegirl.studentservice.domain.repositories;
 import tw.waterball.judgegirl.entities.Group;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface GroupRepository {
 
@@ -12,7 +13,7 @@ public interface GroupRepository {
 
     void deleteAll();
 
-    Group findGroupById(Integer groupId);
+    Optional<Group> findGroupById(Integer groupId);
 
     boolean existsById(Integer id);
 

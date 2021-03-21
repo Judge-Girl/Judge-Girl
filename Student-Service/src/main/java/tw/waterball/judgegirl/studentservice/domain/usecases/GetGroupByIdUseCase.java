@@ -17,14 +17,8 @@ public class GetGroupByIdUseCase {
     private final GroupRepository groupRepository;
 
     public void execute(Integer groupId, Presenter presenter) throws NotFoundException {
-        validateGroupIdExist(groupId);
-        presenter.setGroup(groupRepository.findGroupById(groupId));
-    }
-
-    private void validateGroupIdExist(Integer id) throws NotFoundException {
-        if (!groupRepository.existsById(id)) {
-            throw new NotFoundException();
-        }
+        presenter.setGroup(groupRepository.findGroupById(groupId)
+                .orElseThrow(NotFoundException::new));
     }
 
     public interface Presenter {

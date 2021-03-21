@@ -22,6 +22,10 @@ public class NotFoundException extends RuntimeException {
     public NotFoundException() {
     }
 
+    public NotFoundException(Throwable cause) {
+        super(cause);
+    }
+
     public NotFoundException(String message) {
         super(message);
     }
@@ -40,7 +44,7 @@ public class NotFoundException extends RuntimeException {
     }
 
     public static class NotFoundExceptionBuilder {
-        private String resourceName;
+        private final String resourceName;
 
         public NotFoundExceptionBuilder(String resourceName) {
             this.resourceName = resourceName;

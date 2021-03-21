@@ -85,8 +85,8 @@ public class GroupControllerIT extends AbstractSpringBootTest {
 
     @Test
     public void WhenGetGroupByNonExistingGroupId_ShouldRespondNotFound() throws Exception {
-        int nonExistingStudentId = 123123;
-        getGroupById(nonExistingStudentId).andExpect(status().isNotFound());
+        int nonExistingGroupId = 123123;
+        getGroupById(nonExistingGroupId).andExpect(status().isNotFound());
     }
 
     @Test
@@ -103,8 +103,8 @@ public class GroupControllerIT extends AbstractSpringBootTest {
 
     @Test
     public void WhenDeleteGroupByNonExistingGroupId_ShouldRespondNotFound() throws Exception {
-        int nonExistingStudentId = 123123;
-        deleteGroupById(nonExistingStudentId)
+        int nonExistingGroupId = 123123;
+        deleteGroupById(nonExistingGroupId)
                 .andExpect(status().isNotFound());
     }
 
