@@ -139,7 +139,8 @@ class SignInPresenter implements SignInUseCase.Presenter {
     }
 
     LoginResponse present() {
-        return new LoginResponse(student.getId(), student.getEmail(), token.toString(), token.getExpiration().getTime());
+        return new LoginResponse(student.getId(), student.getEmail(), token.toString(),
+                token.getExpiration().getTime(), student.isAdmin());
     }
 }
 
@@ -149,10 +150,6 @@ class GetStudentByIdPresenter implements GetStudentUseCase.Presenter {
     @Override
     public void setStudent(Student student) {
         this.student = student;
-    }
-
-    Student getStudent() {
-        return student;
     }
 
     StudentView present() {
@@ -175,6 +172,7 @@ class AuthPresenter implements AuthUseCase.Presenter {
     }
 
     LoginResponse present() {
-        return new LoginResponse(token.getStudentId(), student.getEmail(), token.toString(), token.getExpiration().getTime());
+        return new LoginResponse(token.getStudentId(), student.getEmail(), token.toString(),
+                token.getExpiration().getTime(), student.isAdmin());
     }
 }

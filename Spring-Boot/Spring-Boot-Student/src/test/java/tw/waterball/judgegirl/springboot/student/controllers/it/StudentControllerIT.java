@@ -22,6 +22,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.ResultActions;
 import tw.waterball.judgegirl.commons.token.TokenService;
+import tw.waterball.judgegirl.entities.Admin;
 import tw.waterball.judgegirl.entities.Student;
 import tw.waterball.judgegirl.springboot.profiles.Profiles;
 import tw.waterball.judgegirl.springboot.student.SpringBootStudentApplication;
@@ -48,6 +49,7 @@ import static tw.waterball.judgegirl.springboot.student.view.StudentView.toViewM
 @ContextConfiguration(classes = SpringBootStudentApplication.class)
 public class StudentControllerIT extends AbstractSpringBootTest {
     private Student student;
+    private Student admin;
 
     @Autowired
     private JpaStudentDataPort studentRepository;
@@ -58,6 +60,7 @@ public class StudentControllerIT extends AbstractSpringBootTest {
     @BeforeEach
     void setup() {
         student = new Student("name", "email@example.com", "password");
+        admin = new Admin("adminName", "admin@example.com", "adminPassword");
     }
 
     @AfterEach
@@ -66,10 +69,17 @@ public class StudentControllerIT extends AbstractSpringBootTest {
     }
 
     @Test
-    void WhenSignUpCorrectly_ShouldRespondStudentView() throws Exception {
+    void WhenStudentSignUpCorrectly_ShouldRespondStudentView() throws Exception {
         StudentView body = signUpAndGetResponseBody(student);
-        student.setId(body.getId());
+        student.setId(body.id);
         assertEquals(toViewModel(student), body);
+    }
+
+    @Test
+    void WhenAdminSignUpCorrectly_ShouldRespondStudentView() throws Exception {
+        StudentView body = signUpAndGetResponseBody(admin);
+        admin.setId(body.id);
+        assertEquals(toViewModel(admin), body);
     }
 
     @Test
@@ -100,17 +110,6 @@ public class StudentControllerIT extends AbstractSpringBootTest {
                 .andExpect(status().isBadRequest());
     }
 
-    @Test
-    void GivenOneStudentSignedUp_WhenLoginCorrectly_ShouldRespondLoginResponseWithCorrectToken() throws Exception {
-        StudentView studentView = signUpAndGetResponseBody(student);
-        LoginResponse body = signInAndGetResponseBody(this.student.getEmail(), this.student.getPassword());
-
-        assertEquals(studentView.getId(), body.id);
-        assertEquals(studentView.getEmail(), body.email);
-        TokenService.Token token = tokenService.parseAndValidate(body.token);
-        assertEquals(studentView.getId(), token.getStudentId());
-    }
-
     private StudentView signUpAndGetResponseBody(Student student) throws Exception {
         return getBody(signUp(student).andExpect(status().isOk()), StudentView.class);
     }
@@ -126,6 +125,30 @@ public class StudentControllerIT extends AbstractSpringBootTest {
         return mockMvc.perform(post("/api/students/signUp")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(newStudent)));
+    }
+
+    @Test
+    void GivenOneStudentSignedUp_WhenStudentLoginCorrectly_ShouldRespondLoginResponseWithCorrectToken() throws Exception {
+        StudentView studentView = signUpAndGetResponseBody(student);
+        LoginResponse body = signInAndGetResponseBody(this.student.getEmail(), this.student.getPassword());
+
+        testStudentSignUp(studentView, body);
+    }
+
+    @Test
+    void GivenOneAdminSignedUp_WhenAdminLoginCorrectly_ShouldRespondLoginResponseWithCorrectToken() throws Exception {
+        StudentView studentView = signUpAndGetResponseBody(admin);
+        LoginResponse body = signInAndGetResponseBody(this.admin.getEmail(), this.admin.getPassword());
+
+        testStudentSignUp(studentView, body);
+    }
+
+    private void testStudentSignUp(StudentView view, LoginResponse body) {
+        assertEquals(view.id, body.id);
+        assertEquals(view.email, body.email);
+        TokenService.Token token = tokenService.parseAndValidate(body.token);
+        assertEquals(view.id, token.getStudentId());
+        assertEquals(view.isAdmin, body.isAdmin);
     }
 
     @Test
@@ -167,10 +190,10 @@ public class StudentControllerIT extends AbstractSpringBootTest {
         StudentView student = signUpAndGetResponseBody(this.student);
         LoginResponse loginResponse = signInAndGetResponseBody(this.student.getEmail(), this.student.getPassword());
 
-        StudentView body = getBody(getStudentById(student.getId(), loginResponse.token)
+        StudentView body = getBody(getStudentById(student.id, loginResponse.token)
                 .andExpect(status().isOk()), StudentView.class);
 
-        this.student.setId(body.getId());
+        this.student.setId(body.id);
         assertEquals(toViewModel(this.student), body);
     }
 
