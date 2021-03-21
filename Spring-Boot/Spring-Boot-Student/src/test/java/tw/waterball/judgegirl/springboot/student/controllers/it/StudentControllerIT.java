@@ -256,7 +256,7 @@ public class StudentControllerIT extends AbstractSpringBootTest {
         String newPassword = "newPassword";
         changePassword(student.getPassword(), newPassword, body.id, body.token).andExpect(status().isOk());
 
-        Student student = studentRepository.findStudentById(body.getId())
+        Student student = studentRepository.findStudentById(body.id)
                 .orElseThrow(StudentIdNotFoundException::new).toEntity();
         assertEquals(newPassword, student.getPassword());
     }
@@ -270,7 +270,7 @@ public class StudentControllerIT extends AbstractSpringBootTest {
         String newPassword = "newPassword";
         changePassword(wrongPassword, newPassword, body.id, body.token).andExpect(status().isBadRequest());
 
-        Student student = studentRepository.findStudentById(body.getId())
+        Student student = studentRepository.findStudentById(body.id)
                 .orElseThrow(StudentIdNotFoundException::new).toEntity();
         assertEquals(student.getPassword(), student.getPassword());
     }
