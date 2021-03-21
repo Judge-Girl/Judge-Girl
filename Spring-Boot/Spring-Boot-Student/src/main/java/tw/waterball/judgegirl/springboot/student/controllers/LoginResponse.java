@@ -15,13 +15,11 @@ package tw.waterball.judgegirl.springboot.student.controllers;
 
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
-@Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class LoginResponse {
