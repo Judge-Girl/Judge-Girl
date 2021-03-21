@@ -9,12 +9,13 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.ResultActions;
 import tw.waterball.judgegirl.springboot.profiles.Profiles;
 import tw.waterball.judgegirl.springboot.student.SpringBootStudentApplication;
-import tw.waterball.judgegirl.springboot.student.controllers.GroupCreateRequest;
-import tw.waterball.judgegirl.springboot.student.repositories.jpa.GroupData;
-import tw.waterball.judgegirl.springboot.student.repositories.jpa.GroupDataRepository;
+import tw.waterball.judgegirl.springboot.student.view.GroupView;
+import tw.waterball.judgegirl.studentservice.domain.repositories.GroupRepository;
+import tw.waterball.judgegirl.studentservice.domain.usecases.CreateGroupUseCase;
 import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -28,7 +29,7 @@ public class GroupControllerIT extends AbstractSpringBootTest {
     private static final String TEST_NAME = "name";
 
     @Autowired
-    private GroupDataRepository repository;
+    private GroupRepository repository;
 
     @AfterEach
     void cleanUp() {
@@ -39,8 +40,9 @@ public class GroupControllerIT extends AbstractSpringBootTest {
     public void WhenCreateGroupWithUniqueName_ShouldCreateSuccessfully() throws Exception {
         ResultActions resultActions = createGroupRequest()
                 .andExpect(status().isOk());
-        GroupData groupData = getBody(resultActions, GroupData.class);
-        assertEquals(TEST_NAME, groupData.getName());
+        GroupView groupView = getBody(resultActions, GroupView.class);
+        assertEquals(TEST_NAME, groupView.name);
+        assertTrue(repository.existsByName(TEST_NAME));
     }
 
     @Test
@@ -51,7 +53,7 @@ public class GroupControllerIT extends AbstractSpringBootTest {
     }
 
     private ResultActions createGroupRequest() throws Exception {
-        GroupCreateRequest request = GroupCreateRequest.builder().name(TEST_NAME).build();
+        CreateGroupUseCase.Request request = new CreateGroupUseCase.Request(TEST_NAME);
         return mockMvc.perform(post("/api/groups")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(request)));

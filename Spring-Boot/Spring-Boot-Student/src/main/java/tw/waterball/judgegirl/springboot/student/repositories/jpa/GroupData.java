@@ -1,6 +1,7 @@
 package tw.waterball.judgegirl.springboot.student.repositories.jpa;
 
 import lombok.*;
+import tw.waterball.judgegirl.entities.Group;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -10,9 +11,9 @@ import javax.persistence.Id;
 /**
  * @author - wally55077@gmail.com
  */
-@Builder
-@Getter
 @Setter
+@Getter
+@Builder
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
@@ -23,5 +24,11 @@ public class GroupData {
     private Integer id;
 
     private String name;
+
+    public static GroupData toData(Group group) {
+        return GroupData.builder()
+                .name(group.getName())
+                .build();
+    }
 
 }
