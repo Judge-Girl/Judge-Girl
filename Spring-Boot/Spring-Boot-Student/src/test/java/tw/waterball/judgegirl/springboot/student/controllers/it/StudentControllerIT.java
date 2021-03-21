@@ -34,7 +34,8 @@ import tw.waterball.judgegirl.studentservice.domain.usecases.ChangePasswordUseCa
 import tw.waterball.judgegirl.studentservice.domain.usecases.SignInUseCase;
 import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static tw.waterball.judgegirl.commons.utils.HttpHeaderUtils.bearerWithToken;
@@ -131,11 +132,7 @@ public class StudentControllerIT extends AbstractSpringBootTest {
         StudentView studentView = signUpAndGetResponseBody(student);
         LoginResponse body = signInAndGetResponseBody(this.student.getEmail(), this.student.getPassword());
 
-        assertEquals(studentView.id, body.id);
-        assertEquals(studentView.email, body.email);
-        TokenService.Token token = tokenService.parseAndValidate(body.token);
-        assertEquals(studentView.id, token.getStudentId());
-        assertFalse(body.isAdmin);
+        testStudentSignUp(studentView, body);
     }
 
     @Test
@@ -143,11 +140,15 @@ public class StudentControllerIT extends AbstractSpringBootTest {
         StudentView studentView = signUpAndGetResponseBody(admin);
         LoginResponse body = signInAndGetResponseBody(this.admin.getEmail(), this.admin.getPassword());
 
-        assertEquals(studentView.id, body.id);
-        assertEquals(studentView.email, body.email);
+        testStudentSignUp(studentView, body);
+    }
+
+    private void testStudentSignUp(StudentView view, LoginResponse body) {
+        assertEquals(view.id, body.id);
+        assertEquals(view.email, body.email);
         TokenService.Token token = tokenService.parseAndValidate(body.token);
-        assertEquals(studentView.id, token.getStudentId());
-        assertTrue(body.isAdmin);
+        assertEquals(view.id, token.getStudentId());
+        assertEquals(view.isAdmin, body.isAdmin);
     }
 
     @Test

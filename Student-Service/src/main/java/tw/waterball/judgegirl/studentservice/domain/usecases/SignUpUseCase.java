@@ -43,11 +43,8 @@ public class SignUpUseCase {
     }
 
     private Student createStudent(Request request) {
-        if (request.isAdmin) {
-            return new Admin(request.name, request.email, request.password);
-        } else {
-            return new Student(request.name, request.email, request.password);
-        }
+        return request.isAdmin ? new Admin(request.name, request.email, request.password) :
+                new Student(request.name, request.email, request.password);
     }
 
     public interface Presenter {
