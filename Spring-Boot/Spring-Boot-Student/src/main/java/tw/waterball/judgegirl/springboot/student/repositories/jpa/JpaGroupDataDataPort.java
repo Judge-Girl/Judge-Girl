@@ -7,8 +7,8 @@ import org.springframework.stereotype.Repository;
  * @author - wally55077@gmail.com
  */
 @Repository
-public interface GroupDataRepository extends JpaRepository<GroupData, Integer> {
+public interface JpaGroupDataDataPort extends JpaRepository<GroupData, Integer> {
 
-    boolean existsGroupDataByName(String name);
+    boolean existsByName(String name);
 
 }

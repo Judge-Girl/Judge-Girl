@@ -1,4 +1,4 @@
-package tw.waterball.judgegirl.springboot.student.controllers;
+package tw.waterball.judgegirl.studentservice.domain.exceptions;
 
 /**
  * @author - wally55077@gmail.com
