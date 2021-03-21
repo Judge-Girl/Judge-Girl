@@ -14,6 +14,7 @@
 package tw.waterball.judgegirl.springboot.student.repositories.jpa;
 
 import lombok.*;
+import tw.waterball.judgegirl.entities.Admin;
 import tw.waterball.judgegirl.entities.Student;
 
 import javax.persistence.Entity;
@@ -38,9 +39,14 @@ public class StudentData {
     private String name;
     private String email;
     private String password;
+    private boolean isAdmin;
 
     public Student toEntity() {
-        return new Student(id, name, email, password);
+        if (isAdmin) {
+            return new Admin(id, name, email, password);
+        } else {
+            return new Student(id, name, email, password);
+        }
     }
 
     public static StudentData toData(Student student) {
@@ -49,7 +55,7 @@ public class StudentData {
                 .name(student.getName())
                 .email(student.getEmail())
                 .password(student.getPassword())
+                .isAdmin(student.isAdmin())
                 .build();
     }
-
 }

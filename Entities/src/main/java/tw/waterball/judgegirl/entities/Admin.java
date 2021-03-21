@@ -11,23 +11,20 @@
  *   limitations under the License.
  */
 
-package tw.waterball.judgegirl.springboot.student.controllers;
-
-
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+package tw.waterball.judgegirl.entities;
 
 /**
- * @author - johnny850807@gmail.com (Waterball)
+ * @author chaoyulee chaoyu2330@gmail.com
  */
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class LoginResponse {
-    public int id;
-    public String email;
-    public String token;
-    public long expiryTime;
-    public boolean isAdmin;
+public class Admin extends Student {
+
+    public Admin(String name, String email, String password) {
+        super(name, email, password);
+        this.isAdmin = true;
+    }
+
+    public Admin(Integer id, String name, String email, String password) {
+        super(id, name, email, password);
+        this.isAdmin = true;
+    }
 }
