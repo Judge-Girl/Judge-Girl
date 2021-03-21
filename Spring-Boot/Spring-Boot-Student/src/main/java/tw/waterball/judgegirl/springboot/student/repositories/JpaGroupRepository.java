@@ -42,25 +42,25 @@ public class JpaGroupRepository implements GroupRepository {
     }
 
     @Override
-    public Optional<Group> findGroupById(Integer groupId) {
+    public Optional<Group> findGroupById(int groupId) {
         return jpaGroupDataPort.findById(groupId)
-                .map(groupData -> new Group(groupData.getId(), groupData.getName()));
+                .map(GroupData::toEntity);
     }
 
     @Override
-    public boolean existsById(Integer id) {
+    public boolean existsById(int id) {
         return jpaGroupDataPort.existsById(id);
     }
 
     @Override
     public List<Group> findAllGroup() {
         return jpaGroupDataPort.findAll().stream()
-                .map(groupData -> new Group(groupData.getId(), groupData.getName()))
+                .map(GroupData::toEntity)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public void deleteGroupById(Integer groupId) {
+    public void deleteGroupById(int groupId) {
         try {
             jpaGroupDataPort.deleteById(groupId);
         } catch (EmptyResultDataAccessException e) {

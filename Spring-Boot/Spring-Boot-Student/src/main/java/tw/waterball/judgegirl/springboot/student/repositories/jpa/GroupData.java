@@ -31,4 +31,8 @@ public class GroupData {
                 .build();
     }
 
+    public static Group toEntity(GroupData groupData) {
+        return new Group(groupData.getId(), groupData.getName());
+    }
+
 }

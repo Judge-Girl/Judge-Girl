@@ -13,11 +13,11 @@ public interface GroupRepository {
 
     void deleteAll();
 
-    Optional<Group> findGroupById(Integer groupId);
+    Optional<Group> findGroupById(int groupId);
 
-    boolean existsById(Integer id);
+    boolean existsById(int id);
 
     List<Group> findAllGroup();
 
-    void deleteGroupById(Integer groupId);
+    void deleteGroupById(int groupId);
 }

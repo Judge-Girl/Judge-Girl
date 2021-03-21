@@ -15,7 +15,7 @@ public class DeleteGroupByIdUseCase {
 
     private final GroupRepository groupRepository;
 
-    public void execute(Integer groupId) throws NotFoundException {
+    public void execute(int groupId) throws NotFoundException {
         groupRepository.deleteGroupById(groupId);
     }
 

@@ -16,7 +16,7 @@ public class GetGroupByIdUseCase {
 
     private final GroupRepository groupRepository;
 
-    public void execute(Integer groupId, Presenter presenter) throws NotFoundException {
+    public void execute(int groupId, Presenter presenter) throws NotFoundException {
         presenter.setGroup(groupRepository.findGroupById(groupId)
                 .orElseThrow(NotFoundException::new));
     }
