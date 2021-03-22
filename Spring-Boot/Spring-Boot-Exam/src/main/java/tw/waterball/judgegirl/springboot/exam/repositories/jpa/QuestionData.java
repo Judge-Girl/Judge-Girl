@@ -4,7 +4,9 @@ package tw.waterball.judgegirl.springboot.exam.repositories.jpa;
 import lombok.*;
 import tw.waterball.judgegirl.entities.Question;
 
-import javax.persistence.*;
+import javax.persistence.Embeddable;
+import javax.persistence.EmbeddedId;
+import javax.persistence.Entity;
 import java.io.Serializable;
 
 @Builder
@@ -28,7 +30,7 @@ public class QuestionData {
 
     public static QuestionData toData(Question question) {
         return QuestionData.builder()
-                .id(new Id(question.getId().getExamId(),question.getId().getProblemId()))
+                .id(new Id(question.getId().getExamId(), question.getId().getProblemId()))
                 .quota(question.getQuota())
                 .score(question.getScore())
                 .questionOrder(question.getQuestionOrder())
@@ -43,5 +45,4 @@ public class QuestionData {
         private int examId;
         private int problemId;
     }
-
 }

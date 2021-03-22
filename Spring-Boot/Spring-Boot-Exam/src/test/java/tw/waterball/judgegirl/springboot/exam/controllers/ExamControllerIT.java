@@ -15,7 +15,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.ResultActions;
 import tw.waterball.judgegirl.entities.Exam;
 import tw.waterball.judgegirl.entities.ExamParticipation;
-import tw.waterball.judgegirl.entities.Question;
 import tw.waterball.judgegirl.examservice.repositories.ExamParticipationRepository;
 import tw.waterball.judgegirl.examservice.repositories.ExamRepository;
 import tw.waterball.judgegirl.examservice.repositories.QuestionRepository;
@@ -127,7 +126,7 @@ class ExamControllerIT extends AbstractSpringBootTest {
                 .andExpect(jsonPath("problemId").value(2))
                 .andExpect(jsonPath("quota").value(5))
                 .andExpect(jsonPath("score").value(100));
-        Assertions.assertEquals(getExamOverview(examView.getId()).getQuestionViews().size(),1);
+        Assertions.assertEquals(getExamOverview(examView.getId()).getQuestionViews().size(), 1);
     }
 
     @Test
@@ -149,14 +148,14 @@ class ExamControllerIT extends AbstractSpringBootTest {
         QuestionView question = createQuestionAndGet(new CreateQuestionUseCase.Request(examView.getId(), 2, 5, 100, 1));
         deleteQuestion(examView.getId(), 2)
                 .andExpect(status().isOk());
-        Assertions.assertEquals(getExamOverview(examView.getId()).getQuestionViews().size(),0);
+        Assertions.assertEquals(getExamOverview(examView.getId()).getQuestionViews().size(), 0);
     }
 
     @Test
     void whenDeleteQuestionWithNonExistingExam_shouldRespondBadRequest() throws Exception {
         ExamView examView = createExamAndGet(new Date(), new Date(), "sample-exam");
         QuestionView question = createQuestionAndGet(new CreateQuestionUseCase.Request(examView.getId(), 2, 5, 100, 1));
-        deleteQuestion(examView.getId()+1, 2)
+        deleteQuestion(examView.getId() + 1, 2)
                 .andExpect(status().isBadRequest());
     }
 
@@ -183,6 +182,7 @@ class ExamControllerIT extends AbstractSpringBootTest {
         Assertions.assertEquals(examOverview.getQuestionViews().size(), 2);
         Assertions.assertEquals(examOverview.getTotalScore(), 100);
     }
+
 
     private ExamView createExamAndGet(Date startTime, Date endTime, String name) throws Exception {
         return getBody(createExam(new Exam(name, startTime, endTime, "problem statement"))
@@ -230,7 +230,6 @@ class ExamControllerIT extends AbstractSpringBootTest {
         problemView.setId(3);
         problemServiceDriver.addProblemView(problemView);
     }
-
 
     @AfterEach
     void cleanup() {
