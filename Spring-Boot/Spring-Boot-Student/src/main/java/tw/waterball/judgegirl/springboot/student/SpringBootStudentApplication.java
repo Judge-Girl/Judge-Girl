@@ -15,14 +15,7 @@ package tw.waterball.judgegirl.springboot.student;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
-import org.springframework.web.client.RestTemplate;
-import tw.waterball.judgegirl.springboot.utils.RestTemplates;
 import tw.waterball.judgegirl.studentservice.ScanRoot;
-
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
 
 @SpringBootApplication(scanBasePackageClasses = ScanRoot.class)
 public class SpringBootStudentApplication {
@@ -31,8 +24,4 @@ public class SpringBootStudentApplication {
         SpringApplication.run(SpringBootStudentApplication.class, args);
     }
 
-    @Bean
-    public RestTemplate restTemplate() throws KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
-        return RestTemplates.ignoreCertificationRestTemplate();
-    }
 }

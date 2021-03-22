@@ -19,6 +19,7 @@ import lombok.NoArgsConstructor;
 import tw.waterball.judgegirl.entities.Student;
 import tw.waterball.judgegirl.studentservice.domain.exceptions.StudentPasswordIncorrectException;
 import tw.waterball.judgegirl.studentservice.domain.repositories.StudentRepository;
+import tw.waterball.judgegirl.studentservice.ports.PasswordEncoder;
 
 import javax.inject.Named;
 
@@ -30,16 +31,18 @@ import javax.inject.Named;
 public class ChangePasswordUseCase {
     private final GetStudentUseCase getStudentUseCase;
     private final StudentRepository studentRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public void execute(Request request) {
         Student student = getStudentUseCase.execute(request.studentId);
         validatePassword(request.currentPassword, student.getPassword());
-        student.setPassword(request.newPassword);
+        String encodedNewPassword = passwordEncoder.encode(request.newPassword);
+        student.setPassword(encodedNewPassword);
         studentRepository.save(student);
     }
 
-    private void validatePassword(String studentPwd, String requestPwd) throws StudentPasswordIncorrectException {
-        if (!studentPwd.equals(requestPwd)) {
+    private void validatePassword(String rawPassword, String encodedPassword) throws StudentPasswordIncorrectException {
+        if (!passwordEncoder.matches(rawPassword, encodedPassword)) {
             throw new StudentPasswordIncorrectException();
         }
     }

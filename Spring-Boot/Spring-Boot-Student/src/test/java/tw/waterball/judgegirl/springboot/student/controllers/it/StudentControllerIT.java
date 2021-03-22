@@ -216,9 +216,13 @@ public class StudentControllerIT extends AbstractSpringBootTest {
         signUp(student);
         LoginResponse loginResponse = signInAndGetResponseBody(student.getEmail(), student.getPassword());
 
+        // we must delay certain seconds so that our token's expiry date
+        // will increase enough to make differences in its produced token
+        Thread.sleep(2000);
+
         LoginResponse authResponse = authAndGetResponseBody(loginResponse.token);
 
-        assertEquals(loginResponse.token, authResponse.token);
+        assertNotEquals(loginResponse.token, authResponse.token, "The renewed token must be different from the original one.");
         assertNotEquals(loginResponse.expiryTime, authResponse.expiryTime);
         assertEquals(loginResponse.id, authResponse.id);
         assertEquals(loginResponse.email, authResponse.email);
@@ -258,7 +262,7 @@ public class StudentControllerIT extends AbstractSpringBootTest {
 
         Student student = studentRepository.findStudentById(body.id)
                 .orElseThrow(StudentIdNotFoundException::new).toEntity();
-        assertEquals(newPassword, student.getPassword());
+        assertNotEquals(newPassword, student.getPassword());
     }
 
     @Test
