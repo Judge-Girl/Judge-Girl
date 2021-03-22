@@ -5,5 +5,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface JpaQuestionDataPort extends CrudRepository<QuestionData, Integer> {
-    int deleteByIdAndExamId(Integer questionId, Integer examId);
+    long deleteByIdAndExamId(int questionId, int examId);
 }

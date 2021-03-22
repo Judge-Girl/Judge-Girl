@@ -10,11 +10,11 @@ import tw.waterball.judgegirl.entities.Question;
 @AllArgsConstructor
 @NoArgsConstructor
 public class QuestionView {
-    private Integer id;
-    private Integer examId;
-    private Integer problemId;
-    private Integer quota;
-    private Integer score;
+    private int id;
+    private int examId;
+    private int problemId;
+    private int quota;
+    private int score;
 
     public static QuestionView toViewModel(Question question) {
         return QuestionView.builder()

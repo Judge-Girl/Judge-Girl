@@ -4,7 +4,7 @@ import tw.waterball.judgegirl.entities.Question;
 
 public interface QuestionRepository {
 
-    int deleteByIdAndExamId(Integer questionId, Integer examId);
+    long deleteByIdAndExamId(int questionId, int examId);
 
     Question save(Question question);
 

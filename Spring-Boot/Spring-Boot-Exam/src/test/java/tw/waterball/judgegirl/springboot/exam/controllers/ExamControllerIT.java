@@ -10,11 +10,12 @@ import org.springframework.test.web.servlet.ResultActions;
 import tw.waterball.judgegirl.entities.Exam;
 import tw.waterball.judgegirl.entities.ExamParticipation;
 import tw.waterball.judgegirl.entities.Question;
+import tw.waterball.judgegirl.examservice.repositories.ExamParticipationRepository;
+import tw.waterball.judgegirl.examservice.repositories.ExamRepository;
+import tw.waterball.judgegirl.examservice.repositories.QuestionRepository;
 import tw.waterball.judgegirl.springboot.exam.SpringBootExamApplication;
-import tw.waterball.judgegirl.springboot.exam.repositories.jpa.JpaExamDataPort;
-import tw.waterball.judgegirl.springboot.exam.repositories.jpa.JpaExamParticipationDataPort;
-import tw.waterball.judgegirl.springboot.exam.repositories.jpa.JpaQuestionDataPort;
 import tw.waterball.judgegirl.springboot.exam.view.ExamView;
+import tw.waterball.judgegirl.springboot.exam.view.QuestionView;
 import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
 
 import java.util.Calendar;
@@ -29,17 +30,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static tw.waterball.judgegirl.commons.utils.DateUtils.afterCurrentTime;
 import static tw.waterball.judgegirl.commons.utils.DateUtils.beforeCurrentTime;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
-import static tw.waterball.judgegirl.springboot.exam.repositories.jpa.ExamParticipationData.toData;
 
 @ContextConfiguration(classes = SpringBootExamApplication.class)
 class ExamControllerIT extends AbstractSpringBootTest {
 
     @Autowired
-    JpaExamDataPort examRepository;
+    ExamRepository examRepository;
     @Autowired
-    JpaExamParticipationDataPort examParticipationRepository;
+    ExamParticipationRepository examParticipationRepository;
     @Autowired
-    JpaQuestionDataPort questionRepository;
+    QuestionRepository questionRepository;
 
     @Test
     void whenCreateExamWithEndTimeAfterStartTime_shouldSucceed() throws Exception {
@@ -93,7 +93,7 @@ class ExamControllerIT extends AbstractSpringBootTest {
     }
 
     @Test
-    void whenCreateQuestion_shouldSucceed() throws Exception {
+    void givenOneQuestionCreated_whenDeleteTheQuestion_shouldSucceed() throws Exception {
         createQuestion(new Question(1, 2, 5, 100))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("id").exists())
@@ -105,10 +105,16 @@ class ExamControllerIT extends AbstractSpringBootTest {
 
     @Test
     void whenDeleteExistedQuestion_shouldSucceed() throws Exception {
-        createQuestion(new Question(1, 2, 5, 100))
-                .andExpect(status().isOk());
-        deleteQuestion(1, 2)
-                .andExpect(status().isOk());
+        QuestionView question=createQuestionAndGet(new Question(1, 2, 5, 100));
+        deleteQuestion(question.getId(), 1)
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void whenDeleteNonExistedQuestion_shouldRespondBadRequest() throws Exception {
+        QuestionView question=createQuestionAndGet(new Question(1, 2, 5, 100));
+        deleteQuestion(question.getId(), 2)
+                .andExpect(status().isBadRequest());
     }
 
     private ExamView createExamAndGet(Date startTime, Date endTime, String upcoming1) throws Exception {
@@ -127,13 +133,18 @@ class ExamControllerIT extends AbstractSpringBootTest {
     }
 
     private void createExamParticipation(ExamParticipation examParticipation) {
-        examParticipationRepository.save(toData(examParticipation));
+        examParticipationRepository.save(examParticipation);
     }
 
     private ResultActions createQuestion(Question question) throws Exception {
         return mockMvc.perform(post("/api/exams/{examId}/questions", question.getExamId())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(question)));
+    }
+
+    private QuestionView createQuestionAndGet(Question question) throws Exception {
+        return getBody(createQuestion(question)
+                .andExpect(status().isOk()), QuestionView.class);
     }
 
     private ResultActions deleteQuestion(int questionId, int examId) throws Exception {

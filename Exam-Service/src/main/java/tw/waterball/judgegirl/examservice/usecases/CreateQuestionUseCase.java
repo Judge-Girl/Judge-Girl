@@ -25,10 +25,10 @@ public class CreateQuestionUseCase {
 
     @Data
     public static class Request {
-        public Integer examId = null;
-        public Integer problemId = null;
-        public Integer quota = null;
-        public Integer score = null;
+        public int examId;
+        public int problemId;
+        public int quota;
+        public int score;
     }
 
 }

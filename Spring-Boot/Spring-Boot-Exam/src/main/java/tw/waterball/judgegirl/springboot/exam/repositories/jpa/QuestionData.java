@@ -21,10 +21,10 @@ public class QuestionData {
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Integer id;
 
-    private Integer examId = null;
-    private Integer problemId = null;
-    private Integer quota = null;
-    private Integer score = null;
+    private int examId;
+    private int problemId;
+    private int quota;
+    private int score;
 
     public Question toEntity() {
         return new Question(id, examId, problemId, quota, score);

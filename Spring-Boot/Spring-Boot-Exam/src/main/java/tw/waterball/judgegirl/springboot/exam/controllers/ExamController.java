@@ -3,6 +3,7 @@ package tw.waterball.judgegirl.springboot.exam.controllers;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.entities.Exam;
 import tw.waterball.judgegirl.entities.Question;
 import tw.waterball.judgegirl.examservice.usecases.CreateExamUseCase;
@@ -12,7 +13,6 @@ import tw.waterball.judgegirl.examservice.usecases.GetUpcomingExamsUseCase;
 import tw.waterball.judgegirl.springboot.exam.view.ExamView;
 import tw.waterball.judgegirl.springboot.exam.view.QuestionView;
 
-import javax.validation.Valid;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,7 +26,7 @@ public class ExamController {
     private final DeleteQuestionUseCase deleteQuestionUseCase;
 
     @PostMapping("/api/exams")
-    public ExamView createExam(@Valid @RequestBody CreateExamUseCase.Request request) {
+    public ExamView createExam(@RequestBody CreateExamUseCase.Request request) {
         CreateExamPresenter presenter = new CreateExamPresenter();
         createExamUseCase.execute(request, presenter);
         return presenter.present();
@@ -44,7 +44,7 @@ public class ExamController {
     }
 
     @PostMapping("/api/exams/{examId}/questions")
-    public QuestionView createQuestion(@PathVariable Integer examId, @Valid @RequestBody CreateQuestionUseCase.Request request) {
+    public QuestionView createQuestion(@PathVariable int examId, @RequestBody CreateQuestionUseCase.Request request) {
         request.setExamId(examId);
         CreateQuestionPresenter presenter = new CreateQuestionPresenter();
         addQuestionUseCase.execute(request, presenter);
@@ -52,11 +52,11 @@ public class ExamController {
     }
 
     @DeleteMapping("/api/exams/{examId}/questions/{questionId}")
-    public void deleteQuestion(@PathVariable Integer examId, @PathVariable Integer questionId) {
+    public void deleteQuestion(@PathVariable int examId, @PathVariable int questionId) {
         deleteQuestionUseCase.execute(new DeleteQuestionUseCase.Request(examId, questionId));
     }
 
-    @ExceptionHandler({IllegalStateException.class, IllegalArgumentException.class})
+    @ExceptionHandler({IllegalStateException.class, IllegalArgumentException.class, NotFoundException.class})
     public ResponseEntity<?> errorHandler(Exception err) {
         return ResponseEntity.badRequest().body(err.getMessage());
     }

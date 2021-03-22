@@ -18,7 +18,7 @@ public class JpaQuestionRepository implements QuestionRepository {
     }
 
     @Override
-    public int deleteByIdAndExamId(Integer questionId, Integer examId) {
+    public long deleteByIdAndExamId(int questionId, int examId) {
         return jpaQuestionDataPort.deleteByIdAndExamId(questionId, examId);
     }
 
