@@ -4,9 +4,13 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tw.waterball.judgegirl.entities.Exam;
+import tw.waterball.judgegirl.entities.Question;
 import tw.waterball.judgegirl.examservice.usecases.CreateExamUseCase;
+import tw.waterball.judgegirl.examservice.usecases.CreateQuestionUseCase;
+import tw.waterball.judgegirl.examservice.usecases.DeleteQuestionUseCase;
 import tw.waterball.judgegirl.examservice.usecases.GetUpcomingExamsUseCase;
 import tw.waterball.judgegirl.springboot.exam.view.ExamView;
+import tw.waterball.judgegirl.springboot.exam.view.QuestionView;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -18,6 +22,8 @@ import java.util.stream.Collectors;
 public class ExamController {
     private final CreateExamUseCase createExamUseCase;
     private final GetUpcomingExamsUseCase getUpcomingExamUseCase;
+    private final CreateQuestionUseCase addQuestionUseCase;
+    private final DeleteQuestionUseCase deleteQuestionUseCase;
 
     @PostMapping("/api/exams")
     public ExamView createExam(@Valid @RequestBody CreateExamUseCase.Request request) {
@@ -35,6 +41,19 @@ public class ExamController {
         } else {
             throw new IllegalArgumentException("Type: " + type + " not supported.");
         }
+    }
+
+    @PostMapping("/api/exams/{examId}/questions")
+    public QuestionView createQuestion(@PathVariable Integer examId, @Valid @RequestBody CreateQuestionUseCase.Request request) {
+        request.setExamId(examId);
+        CreateQuestionPresenter presenter = new CreateQuestionPresenter();
+        addQuestionUseCase.execute(request, presenter);
+        return presenter.present();
+    }
+
+    @DeleteMapping("/api/exams/{examId}/questions/{questionId}")
+    public void deleteQuestion(@PathVariable Integer examId, @PathVariable Integer questionId) {
+        deleteQuestionUseCase.execute(new DeleteQuestionUseCase.Request(examId, questionId));
     }
 
     @ExceptionHandler({IllegalStateException.class, IllegalArgumentException.class})
@@ -66,5 +85,18 @@ class GetUpcomingExamPresenter implements GetUpcomingExamsUseCase.Presenter {
 
     public List<ExamView> present() {
         return exams.stream().map(ExamView::toViewModel).collect(Collectors.toList());
+    }
+}
+
+class CreateQuestionPresenter implements CreateQuestionUseCase.Presenter {
+    private Question question;
+
+    @Override
+    public void setQuestion(Question question) {
+        this.question = question;
+    }
+
+    public QuestionView present() {
+        return QuestionView.toViewModel(question);
     }
 }

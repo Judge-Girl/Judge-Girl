@@ -1,13 +1,10 @@
 package tw.waterball.judgegirl.examservice.usecases;
 
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import tw.waterball.judgegirl.entities.Exam;
 import tw.waterball.judgegirl.examservice.repositories.ExamRepository;
 
 import javax.inject.Named;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import java.util.Date;
 
 @Named

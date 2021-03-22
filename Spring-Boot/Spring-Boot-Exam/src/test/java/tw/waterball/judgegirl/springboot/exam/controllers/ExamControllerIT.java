@@ -9,9 +9,11 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.ResultActions;
 import tw.waterball.judgegirl.entities.Exam;
 import tw.waterball.judgegirl.entities.ExamParticipation;
+import tw.waterball.judgegirl.entities.Question;
 import tw.waterball.judgegirl.springboot.exam.SpringBootExamApplication;
 import tw.waterball.judgegirl.springboot.exam.repositories.jpa.JpaExamDataPort;
 import tw.waterball.judgegirl.springboot.exam.repositories.jpa.JpaExamParticipationDataPort;
+import tw.waterball.judgegirl.springboot.exam.repositories.jpa.JpaQuestionDataPort;
 import tw.waterball.judgegirl.springboot.exam.view.ExamView;
 import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
 
@@ -21,8 +23,7 @@ import java.util.List;
 
 import static java.util.Arrays.asList;
 import static java.util.concurrent.TimeUnit.HOURS;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static tw.waterball.judgegirl.commons.utils.DateUtils.afterCurrentTime;
@@ -37,7 +38,8 @@ class ExamControllerIT extends AbstractSpringBootTest {
     JpaExamDataPort examRepository;
     @Autowired
     JpaExamParticipationDataPort examParticipationRepository;
-
+    @Autowired
+    JpaQuestionDataPort questionRepository;
 
     @Test
     void whenCreateExamWithEndTimeAfterStartTime_shouldSucceed() throws Exception {
@@ -90,6 +92,25 @@ class ExamControllerIT extends AbstractSpringBootTest {
         assertEqualsIgnoreOrder(expectExamIdSet, actualExamIdSet);
     }
 
+    @Test
+    void whenCreateQuestion_shouldSucceed() throws Exception {
+        createQuestion(new Question(1, 2, 5, 100))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("id").exists())
+                .andExpect(jsonPath("examId").value(1))
+                .andExpect(jsonPath("problemId").value(2))
+                .andExpect(jsonPath("quota").value(5))
+                .andExpect(jsonPath("score").value(100));
+    }
+
+    @Test
+    void whenDeleteExistedQuestion_shouldSucceed() throws Exception {
+        createQuestion(new Question(1, 2, 5, 100))
+                .andExpect(status().isOk());
+        deleteQuestion(1, 2)
+                .andExpect(status().isOk());
+    }
+
     private ExamView createExamAndGet(Date startTime, Date endTime, String upcoming1) throws Exception {
         return getBody(createExam(new Exam(upcoming1, startTime, endTime))
                 .andExpect(status().isOk()), ExamView.class);
@@ -102,18 +123,28 @@ class ExamControllerIT extends AbstractSpringBootTest {
     }
 
     private ResultActions getExams(int studentId, String type) throws Exception {
-        return mockMvc.perform(get("/api/students/{studentId}/exams?type=" + type, studentId)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(toJson(studentId)));
+        return mockMvc.perform(get("/api/students/{studentId}/exams?type=" + type, studentId));
     }
 
     private void createExamParticipation(ExamParticipation examParticipation) {
         examParticipationRepository.save(toData(examParticipation));
     }
 
+    private ResultActions createQuestion(Question question) throws Exception {
+        return mockMvc.perform(post("/api/exams/{examId}/questions", question.getExamId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(toJson(question)));
+    }
+
+    private ResultActions deleteQuestion(int questionId, int examId) throws Exception {
+        return mockMvc.perform(delete("/api/exams/{examId}/questions/{questionId}", examId, questionId));
+    }
+
     @AfterEach
     void cleanup() {
+        examRepository.deleteAll();
         examParticipationRepository.deleteAll();
+        questionRepository.deleteAll();
     }
 
 }
