@@ -5,14 +5,12 @@ import lombok.Value;
 import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.entities.Exam;
 import tw.waterball.judgegirl.examservice.repositories.ExamRepository;
-import tw.waterball.judgegirl.examservice.repositories.QuestionRepository;
 
 import javax.inject.Named;
 
 @Named
 @AllArgsConstructor
 public class DeleteQuestionUseCase {
-    private final QuestionRepository questionRepository;
     private final ExamRepository examRepository;
 
     public void execute(Request request) throws NotFoundException {

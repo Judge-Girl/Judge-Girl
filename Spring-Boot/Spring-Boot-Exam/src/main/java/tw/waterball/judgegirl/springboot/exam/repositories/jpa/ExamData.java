@@ -24,12 +24,13 @@ public class ExamData {
     private String name;
     private Date startTime;
     private Date endTime;
+    private String description;
 
     @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
     private List<QuestionData> questions = new ArrayList<>();
 
     public Exam toEntity() {
-        return new Exam(id, name, startTime, endTime, questions.stream().map(QuestionData::toEntity).collect(Collectors.toList()));
+        return new Exam(id, name, startTime, endTime, description, questions.stream().map(QuestionData::toEntity).collect(Collectors.toList()));
     }
 
     public static ExamData toData(Exam exam) {
@@ -38,6 +39,7 @@ public class ExamData {
                 .name(exam.getName())
                 .startTime(exam.getStartTime())
                 .endTime(exam.getEndTime())
+                .description(exam.getDescription())
                 .questions(exam.getQuestions().stream().map(QuestionData::toData).collect(Collectors.toList()))
                 .build();
     }

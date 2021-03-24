@@ -6,10 +6,8 @@ import org.springframework.web.bind.annotation.*;
 import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.entities.Exam;
 import tw.waterball.judgegirl.entities.Question;
-import tw.waterball.judgegirl.examservice.usecases.CreateExamUseCase;
-import tw.waterball.judgegirl.examservice.usecases.CreateQuestionUseCase;
-import tw.waterball.judgegirl.examservice.usecases.DeleteQuestionUseCase;
-import tw.waterball.judgegirl.examservice.usecases.GetUpcomingExamsUseCase;
+import tw.waterball.judgegirl.examservice.usecases.*;
+import tw.waterball.judgegirl.springboot.exam.view.ExamOverview;
 import tw.waterball.judgegirl.springboot.exam.view.ExamView;
 import tw.waterball.judgegirl.springboot.exam.view.QuestionView;
 
@@ -24,6 +22,7 @@ public class ExamController {
     private final GetUpcomingExamsUseCase getUpcomingExamUseCase;
     private final CreateQuestionUseCase addQuestionUseCase;
     private final DeleteQuestionUseCase deleteQuestionUseCase;
+    private final GetExamUseCase getExamUseCase;
 
     @PostMapping("/api/exams")
     public ExamView createExam(@RequestBody CreateExamUseCase.Request request) {
@@ -54,6 +53,13 @@ public class ExamController {
     @DeleteMapping("/api/exams/{examId}/questions/{questionId}")
     public void deleteQuestion(@PathVariable int examId, @PathVariable int questionId) {
         deleteQuestionUseCase.execute(new DeleteQuestionUseCase.Request(examId, questionId));
+    }
+
+    @GetMapping("/api/exams/{examId}/overview")
+    public ExamOverview getExamOverview(@PathVariable int examId) {
+        GetExamPresenter presenter = new GetExamPresenter();
+        getExamUseCase.execute(new GetExamUseCase.Request(examId), presenter);
+        return presenter.present();
     }
 
     @ExceptionHandler({IllegalStateException.class, IllegalArgumentException.class, NotFoundException.class})
@@ -99,4 +105,19 @@ class CreateQuestionPresenter implements CreateQuestionUseCase.Presenter {
     public QuestionView present() {
         return QuestionView.toViewModel(question);
     }
+}
+
+class GetExamPresenter implements GetExamUseCase.Presenter {
+
+    private Exam exam;
+
+    @Override
+    public void setExam(Exam exam) {
+        this.exam = exam;
+    }
+
+    public ExamOverview present() {
+        return ExamOverview.toViewModel(exam);
+    }
+
 }

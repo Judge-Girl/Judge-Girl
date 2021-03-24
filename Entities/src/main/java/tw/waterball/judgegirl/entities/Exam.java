@@ -30,12 +30,16 @@ public class Exam {
     @NotNull
     private Date endTime;
 
+    @NotNull
+    private String description;
+
     private List<Question> questions = new ArrayList<>();
 
-    public Exam(String name, Date startTime, Date endTime) {
+    public Exam(String name, Date startTime, Date endTime, String description) {
         this.name = name;
         this.startTime = startTime;
         this.endTime = endTime;
+        this.description = description;
     }
 
     public void validate() {
@@ -53,7 +57,8 @@ public class Exam {
         return Objects.equals(id, exam.id) &&
                 name.equals(exam.name) &&
                 startTime.equals(exam.startTime) &&
-                endTime.equals(exam.endTime);
+                endTime.equals(exam.endTime) &&
+                description.equals(exam.description);
     }
 
     @Override
