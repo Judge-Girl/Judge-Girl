@@ -13,11 +13,13 @@
 
 package tw.waterball.judgegirl.studentservice.domain.usecases;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import tw.waterball.judgegirl.entities.Admin;
 import tw.waterball.judgegirl.entities.Student;
 import tw.waterball.judgegirl.studentservice.domain.exceptions.DuplicateEmailException;
 import tw.waterball.judgegirl.studentservice.domain.repositories.StudentRepository;
+import tw.waterball.judgegirl.studentservice.ports.PasswordEncoder;
 
 import javax.inject.Named;
 
@@ -26,25 +28,28 @@ import javax.inject.Named;
  * @author chaoyulee chaoyu2330@gmail.com
  */
 @Named
+@AllArgsConstructor
 public class SignUpUseCase {
     private final StudentRepository studentRepository;
-
-    public SignUpUseCase(StudentRepository studentRepository) {
-        this.studentRepository = studentRepository;
-    }
+    private final PasswordEncoder passwordEncoder;
 
     public void execute(Request request, Presenter presenter) {
-        if (studentRepository.existsByEmail(request.getEmail())) {
-            throw new DuplicateEmailException("Duplicate email");
-        }
-        Student student = createStudent(request);
+        validateEmail(request);
+        String encodedPassword = passwordEncoder.encode(request.password);
+        Student student = createStudent(request, encodedPassword);
         student.validate();
         presenter.setStudent(studentRepository.save(student));
     }
 
-    private Student createStudent(Request request) {
-        return request.isAdmin ? new Admin(request.name, request.email, request.password) :
-                new Student(request.name, request.email, request.password);
+    private void validateEmail(Request request) {
+        if (studentRepository.existsByEmail(request.getEmail())) {
+            throw new DuplicateEmailException("Duplicate email");
+        }
+    }
+
+    private Student createStudent(Request request, String encodedPassword) {
+        return request.isAdmin ? new Admin(request.name, request.email, encodedPassword) :
+                new Student(request.name, request.email, encodedPassword);
     }
 
     public interface Presenter {

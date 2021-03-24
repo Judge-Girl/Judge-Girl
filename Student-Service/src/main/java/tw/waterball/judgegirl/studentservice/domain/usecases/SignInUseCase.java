@@ -21,6 +21,7 @@ import tw.waterball.judgegirl.entities.Student;
 import tw.waterball.judgegirl.studentservice.domain.exceptions.StudentEmailNotFoundException;
 import tw.waterball.judgegirl.studentservice.domain.exceptions.StudentPasswordIncorrectException;
 import tw.waterball.judgegirl.studentservice.domain.repositories.StudentRepository;
+import tw.waterball.judgegirl.studentservice.ports.PasswordEncoder;
 
 import javax.inject.Named;
 
@@ -28,12 +29,10 @@ import javax.inject.Named;
  * @author chaoyulee chaoyu2330@gmail.com
  */
 @Named
+@AllArgsConstructor
 public class SignInUseCase {
     private final StudentRepository studentRepository;
-
-    public SignInUseCase(StudentRepository studentRepository) {
-        this.studentRepository = studentRepository;
-    }
+    private final PasswordEncoder passwordEncoder;
 
     public void execute(Request request, Presenter presenter)
             throws StudentEmailNotFoundException, StudentPasswordIncorrectException {
@@ -41,12 +40,12 @@ public class SignInUseCase {
         Student student = studentRepository
                 .findByEmail(request.email)
                 .orElseThrow(StudentEmailNotFoundException::new);
-        validatePassword(student.getPassword(), request.password);
+        validatePassword(request.password, student.getPassword());
         presenter.setStudent(student);
     }
 
-    private void validatePassword(String studentPwd, String requestPwd) throws StudentPasswordIncorrectException {
-        if (!studentPwd.equals(requestPwd)) {
+    private void validatePassword(String rawPassword, String encodedPassword) throws StudentPasswordIncorrectException {
+        if (!passwordEncoder.matches(rawPassword, encodedPassword)) {
             throw new StudentPasswordIncorrectException();
         }
     }
