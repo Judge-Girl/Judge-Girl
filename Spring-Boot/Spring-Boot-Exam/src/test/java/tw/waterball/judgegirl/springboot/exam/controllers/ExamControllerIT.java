@@ -2,8 +2,12 @@ package tw.waterball.judgegirl.springboot.exam.controllers;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.ResultActions;
@@ -14,6 +18,9 @@ import tw.waterball.judgegirl.examservice.repositories.ExamParticipationReposito
 import tw.waterball.judgegirl.examservice.repositories.ExamRepository;
 import tw.waterball.judgegirl.examservice.repositories.QuestionRepository;
 import tw.waterball.judgegirl.examservice.usecases.CreateExamUseCase;
+import tw.waterball.judgegirl.problemapi.clients.FakeProblemServiceDriver;
+import tw.waterball.judgegirl.problemapi.clients.ProblemServiceDriver;
+import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.springboot.exam.SpringBootExamApplication;
 import tw.waterball.judgegirl.springboot.exam.view.ExamView;
 import tw.waterball.judgegirl.springboot.exam.view.QuestionView;
@@ -43,6 +50,17 @@ class ExamControllerIT extends AbstractSpringBootTest {
     ExamParticipationRepository examParticipationRepository;
     @Autowired
     QuestionRepository questionRepository;
+    @Autowired
+    FakeProblemServiceDriver problemServiceDriver;
+
+    @Configuration
+    public static class TestConfig {
+        @Bean
+        @Primary
+        public FakeProblemServiceDriver fakeProblemServiceDriver(){
+            return new FakeProblemServiceDriver();
+        }
+    }
 
     @Test
     void whenCreateExamWithEndTimeAfterStartTime_shouldSucceed() throws Exception {
@@ -114,6 +132,13 @@ class ExamControllerIT extends AbstractSpringBootTest {
     }
 
     @Test
+    void whenCreateQuestionForNonExistedProblem_shouldBadRequest() throws Exception {
+        ExamView examView = createExamAndGet(new Date(), new Date(), "sample-exam");
+        createQuestion(new Question(examView.getId(),1,5,100,1))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void givenOneExamAndOneQuestionCreated_whenDeleteTheQuestion_shouldSucceed() throws Exception {
         ExamView examView = createExamAndGet(new Date(), new Date(), "sample-exam");
         QuestionView question = createQuestionAndGet(new Question(examView.getId(), 2, 5, 100, 1));
@@ -162,6 +187,14 @@ class ExamControllerIT extends AbstractSpringBootTest {
     private ResultActions deleteQuestion(int questionId, int examId) throws Exception {
         return mockMvc.perform(delete("/api/exams/{examId}/questions/{questionId}", examId, questionId));
     }
+
+    @BeforeEach
+    void setup(){
+        ProblemView problemView = new ProblemView();
+        problemView.setId(2);
+        problemServiceDriver.addProblemView(problemView);
+    }
+
 
     @AfterEach
     void cleanup() {

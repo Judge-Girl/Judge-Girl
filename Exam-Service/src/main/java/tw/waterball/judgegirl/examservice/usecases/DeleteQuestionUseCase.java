@@ -15,7 +15,7 @@ public class DeleteQuestionUseCase {
     private final QuestionRepository questionRepository;
     private final ExamRepository examRepository;
 
-    public void execute(Request request) {
+    public void execute(Request request) throws NotFoundException {
         Exam exam = examRepository.findById(request.examId).orElseThrow(NotFoundException::new);
         if (!exam.getQuestions().removeIf(question -> question.getId() == request.questionId && question.getExamId() == request.examId)) {
             throw new NotFoundException();
