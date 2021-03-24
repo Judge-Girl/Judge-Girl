@@ -10,6 +10,7 @@ import tw.waterball.judgegirl.entities.Question;
 @AllArgsConstructor
 @NoArgsConstructor
 public class QuestionOverview {
+
     private int examId;
     private int problemId;
     private int quota;

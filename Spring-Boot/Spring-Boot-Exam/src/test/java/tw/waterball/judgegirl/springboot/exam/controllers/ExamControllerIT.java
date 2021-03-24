@@ -188,7 +188,6 @@ class ExamControllerIT extends AbstractSpringBootTest {
         Assertions.assertEquals(examOverview.getTotalScore(), 100);
     }
 
-
     private ExamView createExamAndGet(Date startTime, Date endTime, String name) throws Exception {
         return getBody(createExam(new Exam(name, startTime, endTime, "problem statement"))
                 .andExpect(status().isOk()), ExamView.class);
