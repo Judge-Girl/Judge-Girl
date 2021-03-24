@@ -141,6 +141,13 @@ class ExamControllerIT extends AbstractSpringBootTest {
     }
 
     @Test
+    void whenCreateQuestionForNonExistedProblem_shouldBadRequest() throws Exception {
+        ExamView examView = createExamAndGet(new Date(), new Date(), "sample-exam");
+        createQuestion(new CreateQuestionUseCase.Request(examView.getId(), 1, 5, 100, 1))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void givenOneExamAndOneQuestionCreated_whenDeleteTheQuestion_shouldSucceed() throws Exception {
         ExamView examView = createExamAndGet(new Date(), new Date(), "sample-exam");
         QuestionView question = createQuestionAndGet(new CreateQuestionUseCase.Request(examView.getId(), 2, 5, 100, 1));
@@ -228,6 +235,7 @@ class ExamControllerIT extends AbstractSpringBootTest {
         problemView.setId(3);
         problemServiceDriver.addProblemView(problemView);
     }
+
 
     @AfterEach
     void cleanup() {
