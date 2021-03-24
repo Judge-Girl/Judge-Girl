@@ -15,6 +15,7 @@ public class QuestionView {
     private int problemId;
     private int quota;
     private int score;
+    private int questionOrder;
 
     public static QuestionView toViewModel(Question question) {
         return QuestionView.builder()
@@ -23,6 +24,7 @@ public class QuestionView {
                 .problemId(question.getProblemId())
                 .quota(question.getQuota())
                 .score(question.getScore())
+                .questionOrder(question.getQuestionOrder())
                 .build();
     }
 }

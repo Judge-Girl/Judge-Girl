@@ -18,14 +18,9 @@ public class JpaQuestionRepository implements QuestionRepository {
     }
 
     @Override
-    public long deleteByIdAndExamId(int questionId, int examId) {
-        return jpaQuestionDataPort.deleteByIdAndExamId(questionId, examId);
-    }
-
-    @Override
     public Question save(Question question) {
         QuestionData data = jpaQuestionDataPort.save(toData(question));
-        question.setId(data.getId());
+        question = data.toEntity();
         return question;
     }
 

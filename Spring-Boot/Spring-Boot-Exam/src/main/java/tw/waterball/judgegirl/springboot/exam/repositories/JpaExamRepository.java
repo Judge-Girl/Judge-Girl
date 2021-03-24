@@ -8,6 +8,7 @@ import tw.waterball.judgegirl.springboot.exam.repositories.jpa.JpaExamDataPort;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
 import static tw.waterball.judgegirl.springboot.exam.repositories.jpa.ExamData.toData;
@@ -22,6 +23,11 @@ public class JpaExamRepository implements ExamRepository {
     }
 
     @Override
+    public Optional<Exam> findById(int examId) {
+        return jpaExamDataPort.findById(examId).map(ExamData::toEntity);
+    }
+
+    @Override
     public List<Exam> findByIdIn(Collection<Integer> examIds) {
         return jpaExamDataPort.findByIdIn(examIds).stream().map(ExamData::toEntity).collect(toList());
     }
@@ -29,7 +35,7 @@ public class JpaExamRepository implements ExamRepository {
     @Override
     public Exam save(Exam exam) {
         ExamData data = jpaExamDataPort.save(toData(exam));
-        exam.setId(data.getId());
+        exam = data.toEntity();
         return exam;
     }
 

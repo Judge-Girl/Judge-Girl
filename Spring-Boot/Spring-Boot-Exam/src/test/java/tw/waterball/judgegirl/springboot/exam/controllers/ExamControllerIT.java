@@ -13,11 +13,13 @@ import tw.waterball.judgegirl.entities.Question;
 import tw.waterball.judgegirl.examservice.repositories.ExamParticipationRepository;
 import tw.waterball.judgegirl.examservice.repositories.ExamRepository;
 import tw.waterball.judgegirl.examservice.repositories.QuestionRepository;
+import tw.waterball.judgegirl.examservice.usecases.CreateExamUseCase;
 import tw.waterball.judgegirl.springboot.exam.SpringBootExamApplication;
 import tw.waterball.judgegirl.springboot.exam.view.ExamView;
 import tw.waterball.judgegirl.springboot.exam.view.QuestionView;
 import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
 
+import javax.transaction.Transactional;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -31,6 +33,7 @@ import static tw.waterball.judgegirl.commons.utils.DateUtils.afterCurrentTime;
 import static tw.waterball.judgegirl.commons.utils.DateUtils.beforeCurrentTime;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
 
+@Transactional
 @ContextConfiguration(classes = SpringBootExamApplication.class)
 class ExamControllerIT extends AbstractSpringBootTest {
 
@@ -93,8 +96,9 @@ class ExamControllerIT extends AbstractSpringBootTest {
     }
 
     @Test
-    void givenOneQuestionCreated_whenDeleteTheQuestion_shouldSucceed() throws Exception {
-        createQuestion(new Question(1, 2, 5, 100))
+    void givenOneExam_whenCreateQuestionForExistedExam_shouldSucceed() throws Exception {
+        ExamView examView = createExamAndGet(new Date(), new Date(), "sample-exam");
+        createQuestion(new Question(examView.getId(), 2, 5, 100, 1))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("id").exists())
                 .andExpect(jsonPath("examId").value(1))
@@ -104,28 +108,36 @@ class ExamControllerIT extends AbstractSpringBootTest {
     }
 
     @Test
-    void whenDeleteExistedQuestion_shouldSucceed() throws Exception {
-        QuestionView question=createQuestionAndGet(new Question(1, 2, 5, 100));
-        deleteQuestion(question.getId(), 1)
+    void whenCreateQuestionForNonExistedExam_shouldBadRequest() throws Exception {
+        createQuestion(new Question(1, 2, 5, 100, 1))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
+    void givenOneExamAndOneQuestionCreated_whenDeleteTheQuestion_shouldSucceed() throws Exception {
+        ExamView examView = createExamAndGet(new Date(), new Date(), "sample-exam");
+        QuestionView question = createQuestionAndGet(new Question(examView.getId(), 2, 5, 100, 1));
+        deleteQuestion(question.getId(), examView.getId())
+                .andExpect(status().isOk());
+    }
+
+    @Test
     void whenDeleteNonExistedQuestion_shouldRespondBadRequest() throws Exception {
-        QuestionView question=createQuestionAndGet(new Question(1, 2, 5, 100));
-        deleteQuestion(question.getId(), 2)
+        ExamView examView = createExamAndGet(new Date(), new Date(), "sample-exam");
+        QuestionView question = createQuestionAndGet(new Question(examView.getId(), 2, 5, 100, 1));
+        deleteQuestion(question.getId(), examView.getId() + 1)
                 .andExpect(status().isBadRequest());
     }
 
-    private ExamView createExamAndGet(Date startTime, Date endTime, String upcoming1) throws Exception {
-        return getBody(createExam(new Exam(upcoming1, startTime, endTime))
+    private ExamView createExamAndGet(Date startTime, Date endTime, String name) throws Exception {
+        return getBody(createExam(new Exam(name, startTime, endTime))
                 .andExpect(status().isOk()), ExamView.class);
     }
 
     private ResultActions createExam(Exam exam) throws Exception {
         return mockMvc.perform(post("/api/exams")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(toJson(exam)));
+                .content(toJson(new CreateExamUseCase.Request(exam.getName(), exam.getStartTime(), exam.getEndTime()))));
     }
 
     private ResultActions getExams(int studentId, String type) throws Exception {

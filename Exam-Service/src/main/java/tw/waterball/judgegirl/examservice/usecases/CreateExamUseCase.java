@@ -1,6 +1,8 @@
 package tw.waterball.judgegirl.examservice.usecases;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import tw.waterball.judgegirl.entities.Exam;
 import tw.waterball.judgegirl.examservice.repositories.ExamRepository;
 
@@ -26,6 +28,8 @@ public class CreateExamUseCase {
     }
 
     @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
     public static class Request {
         public String name;
         public Date startTime;

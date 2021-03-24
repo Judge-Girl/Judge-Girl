@@ -25,9 +25,10 @@ public class QuestionData {
     private int problemId;
     private int quota;
     private int score;
+    private int questionOrder;
 
     public Question toEntity() {
-        return new Question(id, examId, problemId, quota, score);
+        return new Question(id, examId, problemId, quota, score, questionOrder);
     }
 
     public static QuestionData toData(Question question) {
@@ -37,6 +38,7 @@ public class QuestionData {
                 .problemId(question.getProblemId())
                 .quota(question.getQuota())
                 .score(question.getScore())
+                .questionOrder(question.getQuestionOrder())
                 .build();
     }
 

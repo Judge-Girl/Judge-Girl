@@ -27,10 +27,14 @@ public class Question {
     @NotNull
     private int score;
 
-    public Question(int examId, int problemId, int quota, int score) {
+    @NotNull
+    private int questionOrder;
+
+    public Question(int examId, int problemId, int quota, int score, int questionOrder) {
         this.examId = examId;
         this.problemId = problemId;
         this.quota = quota;
         this.score = score;
+        this.questionOrder = questionOrder;
     }
 }

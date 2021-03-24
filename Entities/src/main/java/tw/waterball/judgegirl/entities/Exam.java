@@ -8,7 +8,9 @@ import tw.waterball.judgegirl.commons.utils.JSR380Utils;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 
 @AllArgsConstructor
@@ -27,6 +29,8 @@ public class Exam {
 
     @NotNull
     private Date endTime;
+
+    private List<Question> questions = new ArrayList<>();
 
     public Exam(String name, Date startTime, Date endTime) {
         this.name = name;
