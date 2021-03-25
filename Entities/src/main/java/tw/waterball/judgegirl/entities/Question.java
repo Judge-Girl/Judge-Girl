@@ -1,9 +1,6 @@
 package tw.waterball.judgegirl.entities;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import javax.validation.constraints.NotNull;
 
@@ -13,13 +10,7 @@ import javax.validation.constraints.NotNull;
 @Setter
 public class Question {
 
-    private Integer id = null;
-
-    @NotNull
-    private int examId;
-
-    @NotNull
-    private int problemId;
+    private QuestionId id = null;
 
     @NotNull
     private int quota;
@@ -31,10 +22,17 @@ public class Question {
     private int questionOrder;
 
     public Question(int examId, int problemId, int quota, int score, int questionOrder) {
-        this.examId = examId;
-        this.problemId = problemId;
+        this.id = new QuestionId(examId, problemId);
         this.quota = quota;
         this.score = score;
         this.questionOrder = questionOrder;
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class QuestionId {
+        private Integer examId;
+        private Integer problemId;
     }
 }

@@ -2,6 +2,7 @@ package tw.waterball.judgegirl.examservice.usecases;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.entities.Exam;
 import tw.waterball.judgegirl.entities.Question;
@@ -34,6 +35,8 @@ public class CreateQuestionUseCase {
     }
 
     @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class Request {
         public int examId;
         public int problemId;

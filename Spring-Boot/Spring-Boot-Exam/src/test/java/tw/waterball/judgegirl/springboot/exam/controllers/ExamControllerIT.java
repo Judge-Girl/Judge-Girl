@@ -20,6 +20,7 @@ import tw.waterball.judgegirl.examservice.repositories.ExamParticipationReposito
 import tw.waterball.judgegirl.examservice.repositories.ExamRepository;
 import tw.waterball.judgegirl.examservice.repositories.QuestionRepository;
 import tw.waterball.judgegirl.examservice.usecases.CreateExamUseCase;
+import tw.waterball.judgegirl.examservice.usecases.CreateQuestionUseCase;
 import tw.waterball.judgegirl.problemapi.clients.FakeProblemServiceDriver;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.springboot.exam.SpringBootExamApplication;
@@ -120,9 +121,8 @@ class ExamControllerIT extends AbstractSpringBootTest {
     @Test
     void givenOneExam_whenCreateQuestionForExistingExam_shouldRespondCreatedQuestion() throws Exception {
         ExamView examView = createExamAndGet(new Date(), new Date(), "sample-exam");
-        createQuestion(new Question(examView.getId(), 2, 5, 100, 1))
+        createQuestion(new CreateQuestionUseCase.Request(examView.getId(), 2, 5, 100, 1))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("id").exists())
                 .andExpect(jsonPath("examId").value(1))
                 .andExpect(jsonPath("problemId").value(2))
                 .andExpect(jsonPath("quota").value(5))
@@ -131,30 +131,38 @@ class ExamControllerIT extends AbstractSpringBootTest {
 
     @Test
     void whenCreateQuestionForNonExistingExam_shouldRespondBadRequest() throws Exception {
-        createQuestion(new Question(1, 2, 5, 100, 1))
+        createQuestion(new CreateQuestionUseCase.Request(1, 2, 5, 100, 1))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
     void whenCreateQuestionForNonExistingProblem_shouldRespondBadRequest() throws Exception {
         ExamView examView = createExamAndGet(new Date(), new Date(), "sample-exam");
-        createQuestion(new Question(examView.getId(), 1, 5, 100, 1))
+        createQuestion(new CreateQuestionUseCase.Request(examView.getId(), 1, 5, 100, 1))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
     void givenOneExamAndOneQuestionCreated_whenDeleteTheQuestion_shouldSucceed() throws Exception {
         ExamView examView = createExamAndGet(new Date(), new Date(), "sample-exam");
-        QuestionView question = createQuestionAndGet(new Question(examView.getId(), 2, 5, 100, 1));
-        deleteQuestion(question.getId(), examView.getId())
+        QuestionView question = createQuestionAndGet(new CreateQuestionUseCase.Request(examView.getId(), 2, 5, 100, 1));
+        deleteQuestion(examView.getId(), 2)
                 .andExpect(status().isOk());
     }
 
     @Test
-    void whenDeleteNonExistingQuestion_shouldRespondBadRequest() throws Exception {
+    void whenDeleteQuestionWithNonExistingExam_shouldRespondBadRequest() throws Exception {
         ExamView examView = createExamAndGet(new Date(), new Date(), "sample-exam");
-        QuestionView question = createQuestionAndGet(new Question(examView.getId(), 2, 5, 100, 1));
-        deleteQuestion(question.getId(), examView.getId() + 1)
+        QuestionView question = createQuestionAndGet(new CreateQuestionUseCase.Request(examView.getId(), 2, 5, 100, 1));
+        deleteQuestion(examView.getId()+1, 2)
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void whenDeleteQuestionWithNonExistingProblem_shouldRespondBadRequest() throws Exception {
+        ExamView examView = createExamAndGet(new Date(), new Date(), "sample-exam");
+        QuestionView question = createQuestionAndGet(new CreateQuestionUseCase.Request(examView.getId(), 2, 5, 100, 1));
+        deleteQuestion(examView.getId(), 3)
                 .andExpect(status().isBadRequest());
     }
 
@@ -162,9 +170,10 @@ class ExamControllerIT extends AbstractSpringBootTest {
     void whenGetExistingExamOverview_shouldRespondTheOverview() throws Exception {
         Date current = new Date();
         ExamView examView = createExamAndGet(current, current, "sample-exam");
-        createQuestion(new Question(examView.getId(), 2, 5, 30, 1)).andExpect(status().isOk());
-        createQuestion(new Question(examView.getId(), 2, 5, 70, 2)).andExpect(status().isOk());
+        createQuestion(new CreateQuestionUseCase.Request(examView.getId(), 2, 5, 30, 1)).andExpect(status().isOk());
+        createQuestion(new CreateQuestionUseCase.Request(examView.getId(), 3, 5, 70, 2)).andExpect(status().isOk());
         ExamOverview examOverview = getExamOverview(examView.getId());
+        Assertions.assertEquals(examOverview.getId(), examView.getId());
         Assertions.assertEquals(examOverview.getName(), "sample-exam");
         Assertions.assertEquals(examOverview.getStartTime(), current);
         Assertions.assertEquals(examOverview.getEndTime(), current);
@@ -196,25 +205,27 @@ class ExamControllerIT extends AbstractSpringBootTest {
         examParticipationRepository.save(examParticipation);
     }
 
-    private ResultActions createQuestion(Question question) throws Exception {
+    private ResultActions createQuestion(CreateQuestionUseCase.Request question) throws Exception {
         return mockMvc.perform(post("/api/exams/{examId}/questions", question.getExamId())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(question)));
     }
 
-    private QuestionView createQuestionAndGet(Question question) throws Exception {
+    private QuestionView createQuestionAndGet(CreateQuestionUseCase.Request question) throws Exception {
         return getBody(createQuestion(question)
                 .andExpect(status().isOk()), QuestionView.class);
     }
 
-    private ResultActions deleteQuestion(int questionId, int examId) throws Exception {
-        return mockMvc.perform(delete("/api/exams/{examId}/questions/{questionId}", examId, questionId));
+    private ResultActions deleteQuestion(int examId, int problemId) throws Exception {
+        return mockMvc.perform(delete("/api/exams/{examId}/questions/{problemId}", examId, problemId));
     }
 
     @BeforeEach
     void setup() {
         ProblemView problemView = new ProblemView();
         problemView.setId(2);
+        problemServiceDriver.addProblemView(problemView);
+        problemView.setId(3);
         problemServiceDriver.addProblemView(problemView);
     }
 
