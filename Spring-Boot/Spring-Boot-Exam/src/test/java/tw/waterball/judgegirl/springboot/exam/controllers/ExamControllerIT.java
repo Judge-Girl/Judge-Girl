@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.ResultActions;
 import tw.waterball.judgegirl.entities.Exam;
@@ -41,6 +42,7 @@ import static tw.waterball.judgegirl.commons.utils.DateUtils.afterCurrentTime;
 import static tw.waterball.judgegirl.commons.utils.DateUtils.beforeCurrentTime;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
 
+@ActiveProfiles("")
 @Transactional
 @ContextConfiguration(classes = SpringBootExamApplication.class)
 class ExamControllerIT extends AbstractSpringBootTest {
@@ -137,13 +139,7 @@ class ExamControllerIT extends AbstractSpringBootTest {
     void whenCreateQuestionForNonExistingProblem_shouldRespondBadRequest() throws Exception {
         ExamView examView = createExamAndGet(new Date(), new Date(), "sample-exam");
         createQuestion(new CreateQuestionUseCase.Request(examView.getId(), 1, 5, 100, 1))
-                .andExpect(status().isBadRequest());
-    }
 
-    @Test
-    void whenCreateQuestionForNonExistedProblem_shouldBadRequest() throws Exception {
-        ExamView examView = createExamAndGet(new Date(), new Date(), "sample-exam");
-        createQuestion(new CreateQuestionUseCase.Request(examView.getId(), 1, 5, 100, 1))
                 .andExpect(status().isBadRequest());
     }
 
