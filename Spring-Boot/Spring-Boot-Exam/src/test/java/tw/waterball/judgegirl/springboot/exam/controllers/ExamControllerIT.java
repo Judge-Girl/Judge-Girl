@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.ResultActions;
 import tw.waterball.judgegirl.entities.Exam;
@@ -41,6 +42,7 @@ import static tw.waterball.judgegirl.commons.utils.DateUtils.afterCurrentTime;
 import static tw.waterball.judgegirl.commons.utils.DateUtils.beforeCurrentTime;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
 
+@ActiveProfiles("")
 @Transactional
 @ContextConfiguration(classes = SpringBootExamApplication.class)
 class ExamControllerIT extends AbstractSpringBootTest {
@@ -116,7 +118,7 @@ class ExamControllerIT extends AbstractSpringBootTest {
     }
 
     @Test
-    void givenOneExam_whenCreateQuestionForExistedExam_shouldSucceed() throws Exception {
+    void givenOneExam_whenCreateQuestionForExistingExam_shouldRespondCreatedQuestion() throws Exception {
         ExamView examView = createExamAndGet(new Date(), new Date(), "sample-exam");
         createQuestion(new Question(examView.getId(), 2, 5, 100, 1))
                 .andExpect(status().isOk())
@@ -128,13 +130,13 @@ class ExamControllerIT extends AbstractSpringBootTest {
     }
 
     @Test
-    void whenCreateQuestionForNonExistedExam_shouldBadRequest() throws Exception {
+    void whenCreateQuestionForNonExistingExam_shouldRespondBadRequest() throws Exception {
         createQuestion(new Question(1, 2, 5, 100, 1))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
-    void whenCreateQuestionForNonExistedProblem_shouldBadRequest() throws Exception {
+    void whenCreateQuestionForNonExistingProblem_shouldRespondBadRequest() throws Exception {
         ExamView examView = createExamAndGet(new Date(), new Date(), "sample-exam");
         createQuestion(new Question(examView.getId(), 1, 5, 100, 1))
                 .andExpect(status().isBadRequest());
@@ -149,7 +151,7 @@ class ExamControllerIT extends AbstractSpringBootTest {
     }
 
     @Test
-    void whenDeleteNonExistedQuestion_shouldRespondBadRequest() throws Exception {
+    void whenDeleteNonExistingQuestion_shouldRespondBadRequest() throws Exception {
         ExamView examView = createExamAndGet(new Date(), new Date(), "sample-exam");
         QuestionView question = createQuestionAndGet(new Question(examView.getId(), 2, 5, 100, 1));
         deleteQuestion(question.getId(), examView.getId() + 1)
@@ -157,7 +159,7 @@ class ExamControllerIT extends AbstractSpringBootTest {
     }
 
     @Test
-    void whenGetExistedExamOverview_shouldSucceed() throws Exception {
+    void whenGetExistingExamOverview_shouldRespondTheOverview() throws Exception {
         Date current = new Date();
         ExamView examView = createExamAndGet(current, current, "sample-exam");
         createQuestion(new Question(examView.getId(), 2, 5, 30, 1)).andExpect(status().isOk());

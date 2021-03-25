@@ -9,6 +9,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
+
 @Builder
 @Getter
 @Setter
@@ -40,7 +42,7 @@ public class ExamData {
                 .startTime(exam.getStartTime())
                 .endTime(exam.getEndTime())
                 .description(exam.getDescription())
-                .questions(exam.getQuestions().stream().map(QuestionData::toData).collect(Collectors.toList()))
+                .questions(mapToList(exam.getQuestions(),QuestionData::toData))
                 .build();
     }
 }

@@ -25,12 +25,12 @@ public class FakeProblemServiceDriver implements ProblemServiceDriver {
     }
 
     @Override
-    public FileResource downloadProvidedCodes(int problemId, String languageEnvName, String providedCodesFileId) throws NotFoundException {
-        return null;
+    public FileResource downloadProvidedCodes(int problemId, String languageEnvName, String providedCodesFileId) throws UnsupportedOperationException {
+        throw new UnsupportedOperationException();
     }
 
     @Override
-    public FileResource downloadTestCaseIOs(int problemId, String testcaseIOsFileId) throws NotFoundException {
-        return null;
+    public FileResource downloadTestCaseIOs(int problemId, String testcaseIOsFileId) throws UnsupportedOperationException {
+        throw new UnsupportedOperationException();
     }
 }

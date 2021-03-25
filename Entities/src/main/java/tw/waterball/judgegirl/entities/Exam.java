@@ -48,21 +48,4 @@ public class Exam {
             throw new IllegalStateException();
         }
     }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Exam exam = (Exam) o;
-        return Objects.equals(id, exam.id) &&
-                name.equals(exam.name) &&
-                startTime.equals(exam.startTime) &&
-                endTime.equals(exam.endTime) &&
-                description.equals(exam.description);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, name, startTime, endTime);
-    }
 }
