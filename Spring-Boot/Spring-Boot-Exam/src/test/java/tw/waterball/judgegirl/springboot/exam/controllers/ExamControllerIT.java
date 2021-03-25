@@ -139,7 +139,6 @@ class ExamControllerIT extends AbstractSpringBootTest {
     void whenCreateQuestionForNonExistingProblem_shouldRespondBadRequest() throws Exception {
         ExamView examView = createExamAndGet(new Date(), new Date(), "sample-exam");
         createQuestion(new CreateQuestionUseCase.Request(examView.getId(), 1, 5, 100, 1))
-
                 .andExpect(status().isBadRequest());
     }
 

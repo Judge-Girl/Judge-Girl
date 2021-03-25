@@ -31,6 +31,7 @@ public class QuestionData {
     public static QuestionData toData(Question question) {
         return QuestionData.builder()
                 .id(new Id(question.getId().getExamId(), question.getId().getProblemId()))
+
                 .quota(question.getQuota())
                 .score(question.getScore())
                 .questionOrder(question.getQuestionOrder())
