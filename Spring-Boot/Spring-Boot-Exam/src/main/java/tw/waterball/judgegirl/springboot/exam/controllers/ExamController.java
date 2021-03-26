@@ -24,7 +24,7 @@ public class ExamController {
     private final GetUpcomingExamsUseCase getUpcomingExamUseCase;
     private final CreateQuestionUseCase addQuestionUseCase;
     private final DeleteQuestionUseCase deleteQuestionUseCase;
-    private final GetExamUseCase getExamUseCase;
+    private final GetExamOverviewUseCase getExamOverviewUseCase;
 
     @PostMapping("/api/exams")
     public ExamView createExam(@RequestBody CreateExamUseCase.Request request) {
@@ -59,8 +59,8 @@ public class ExamController {
 
     @GetMapping("/api/exams/{examId}/overview")
     public ExamOverview getExamOverview(@PathVariable int examId) {
-        GetExamPresenter presenter = new GetExamPresenter();
-        getExamUseCase.execute(new GetExamUseCase.Request(examId), presenter);
+        GetExamOverviewPresenter presenter = new GetExamOverviewPresenter();
+        getExamOverviewUseCase.execute(new GetExamOverviewUseCase.Request(examId), presenter);
         return presenter.present();
     }
 
@@ -109,7 +109,7 @@ class CreateQuestionPresenter implements CreateQuestionUseCase.Presenter {
     }
 }
 
-class GetExamPresenter implements GetExamUseCase.Presenter {
+class GetExamOverviewPresenter implements GetExamOverviewUseCase.Presenter {
 
     private Exam exam;
 
@@ -121,7 +121,7 @@ class GetExamPresenter implements GetExamUseCase.Presenter {
     }
 
     @Override
-    public void addProblems(ProblemView problemView) {
+    public void addProblem(ProblemView problemView) {
         problemViews.add(problemView);
     }
 

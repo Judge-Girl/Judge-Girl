@@ -13,23 +13,24 @@ import javax.inject.Named;
 
 @Named
 @AllArgsConstructor
-public class GetExamUseCase {
+public class GetExamOverviewUseCase {
     private final ExamRepository examRepository;
     private final ProblemServiceDriver problemServiceDriver;
 
     public void execute(Request request, Presenter presenter) {
         Exam exam = examRepository.findById(request.examId).orElseThrow(NotFoundException::new);
         presenter.setExam(exam);
+        // TODO: should be improved to fetch all the problems in one query
         for (Question question : exam.getQuestions()) {
             ProblemView problemView = problemServiceDriver.getProblem(question.getId().getProblemId());
-            presenter.addProblems(problemView);
+            presenter.addProblem(problemView);
         }
     }
 
     public interface Presenter {
         void setExam(Exam exam);
 
-        void addProblems(ProblemView problemView);
+        void addProblem(ProblemView problemView);
     }
 
     @Data

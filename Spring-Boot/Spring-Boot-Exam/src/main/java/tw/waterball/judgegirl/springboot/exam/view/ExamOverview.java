@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import static tw.waterball.judgegirl.commons.utils.StreamUtils.zipToList;
+
 @EqualsAndHashCode
 @Builder
 @Getter
@@ -24,18 +26,14 @@ public class ExamOverview {
     private int totalScore;
 
     public static ExamOverview toViewModel(Exam exam, List<ProblemView> problemViews) {
-        ExamOverview examOverview = ExamOverview.builder()
+        return ExamOverview.builder()
                 .id(exam.getId())
                 .name(exam.getName())
                 .startTime(exam.getStartTime())
                 .endTime(exam.getEndTime())
                 .description(exam.getDescription())
-                .questionViews(new ArrayList<>())
+                .questionViews(zipToList(exam.getQuestions(), problemViews, QuestionOverview::toViewModel))
                 .totalScore(exam.getQuestions().stream().mapToInt(question -> question.getScore()).sum())
                 .build();
-        for (int i = 0; i < exam.getQuestions().size(); i++) {
-            examOverview.questionViews.add(QuestionOverview.toViewModel(exam.getQuestions().get(i), problemViews.get(i)));
-        }
-        return examOverview;
     }
 }
