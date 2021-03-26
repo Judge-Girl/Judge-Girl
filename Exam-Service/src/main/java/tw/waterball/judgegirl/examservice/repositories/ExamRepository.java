@@ -12,7 +12,7 @@ public interface ExamRepository {
 
     List<Exam> findByIdIn(Collection<Integer> examIds);
 
-    boolean deleteQuestionById(int examId, int problemId);
+    void deleteQuestionById(int examId, int problemId);
 
     Exam save(Exam exam);
 

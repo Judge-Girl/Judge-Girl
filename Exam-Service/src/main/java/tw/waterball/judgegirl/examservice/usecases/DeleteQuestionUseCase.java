@@ -13,9 +13,7 @@ public class DeleteQuestionUseCase {
     private final ExamRepository examRepository;
 
     public void execute(Request request) throws NotFoundException {
-        if (!examRepository.deleteQuestionById(request.examId, request.problemId)) {
-            throw new NotFoundException();
-        }
+        examRepository.deleteQuestionById(request.examId, request.problemId);
     }
 
     @Value

@@ -32,7 +32,7 @@ public class Question {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class Id {
-        private Integer examId;
-        private Integer problemId;
+        private int examId;
+        private int problemId;
     }
 }

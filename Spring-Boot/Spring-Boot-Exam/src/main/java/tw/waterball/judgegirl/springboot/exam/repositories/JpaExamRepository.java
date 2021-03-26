@@ -1,11 +1,14 @@
 package tw.waterball.judgegirl.springboot.exam.repositories;
 
+import lombok.AllArgsConstructor;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Component;
 import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.entities.Exam;
 import tw.waterball.judgegirl.examservice.repositories.ExamRepository;
 import tw.waterball.judgegirl.springboot.exam.repositories.jpa.ExamData;
 import tw.waterball.judgegirl.springboot.exam.repositories.jpa.JpaExamDataPort;
+import tw.waterball.judgegirl.springboot.exam.repositories.jpa.JpaQuestionDataPort;
 
 import java.util.Collection;
 import java.util.List;
@@ -15,13 +18,12 @@ import static java.util.stream.Collectors.toList;
 import static tw.waterball.judgegirl.springboot.exam.repositories.jpa.ExamData.toData;
 
 @Component
+@AllArgsConstructor
 public class JpaExamRepository implements ExamRepository {
 
     private final JpaExamDataPort jpaExamDataPort;
 
-    public JpaExamRepository(JpaExamDataPort jpaExamDataPort) {
-        this.jpaExamDataPort = jpaExamDataPort;
-    }
+    private final JpaQuestionRepository jpaQuestionRepository;
 
     @Override
     public Optional<Exam> findById(int examId) {
@@ -34,11 +36,12 @@ public class JpaExamRepository implements ExamRepository {
     }
 
     @Override
-    public boolean deleteQuestionById(int examId, int problemId) {
-        ExamData exam = jpaExamDataPort.findById(examId).orElseThrow(NotFoundException::new);
-        boolean success = exam.getQuestions().removeIf(question -> question.getId().getProblemId() == problemId);
-        jpaExamDataPort.save(exam);
-        return success;
+    public void deleteQuestionById(int examId, int problemId) {
+        try {
+            jpaQuestionRepository.deleteByIdExamIdAndIdProblemId(examId, problemId);
+        } catch (IllegalArgumentException  e) {
+            throw new NotFoundException(e);
+        }
     }
 
     @Override
