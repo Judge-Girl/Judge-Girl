@@ -181,6 +181,8 @@ class ExamControllerIT extends AbstractSpringBootTest {
         Assertions.assertEquals(examOverview.getDescription(), "problem statement");
         Assertions.assertEquals(examOverview.getQuestionViews().size(), 2);
         Assertions.assertEquals(examOverview.getTotalScore(), 100);
+        Assertions.assertEquals(examOverview.getQuestionViews().get(0).getProblemTitle(), "problem1");
+        Assertions.assertEquals(examOverview.getQuestionViews().get(1).getProblemTitle(), "problem2");
     }
 
     private ExamView createExamAndGet(Date startTime, Date endTime, String name) throws Exception {
@@ -225,8 +227,11 @@ class ExamControllerIT extends AbstractSpringBootTest {
     void setup() {
         ProblemView problemView = new ProblemView();
         problemView.setId(2);
+        problemView.setTitle("problem1");
         problemServiceDriver.addProblemView(problemView);
+        problemView = new ProblemView();
         problemView.setId(3);
+        problemView.setTitle("problem2");
         problemServiceDriver.addProblemView(problemView);
     }
 

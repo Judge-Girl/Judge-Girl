@@ -2,10 +2,11 @@ package tw.waterball.judgegirl.springboot.exam.view;
 
 import lombok.*;
 import tw.waterball.judgegirl.entities.Exam;
+import tw.waterball.judgegirl.problemapi.views.ProblemView;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @EqualsAndHashCode
 @Builder
@@ -22,15 +23,19 @@ public class ExamOverview {
     private List<QuestionOverview> questionViews;
     private int totalScore;
 
-    public static ExamOverview toViewModel(Exam exam) {
-        return ExamOverview.builder()
+    public static ExamOverview toViewModel(Exam exam, List<ProblemView> problemViews) {
+        ExamOverview examOverview = ExamOverview.builder()
                 .id(exam.getId())
                 .name(exam.getName())
                 .startTime(exam.getStartTime())
                 .endTime(exam.getEndTime())
                 .description(exam.getDescription())
-                .questionViews(exam.getQuestions().stream().map(QuestionOverview::toViewModel).collect(Collectors.toList()))
+                .questionViews(new ArrayList<>())
                 .totalScore(exam.getQuestions().stream().mapToInt(question -> question.getScore()).sum())
                 .build();
+        for (int i = 0; i < exam.getQuestions().size(); i++) {
+            examOverview.questionViews.add(QuestionOverview.toViewModel(exam.getQuestions().get(i), problemViews.get(i)));
+        }
+        return examOverview;
     }
 }

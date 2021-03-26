@@ -7,10 +7,12 @@ import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.entities.Exam;
 import tw.waterball.judgegirl.entities.Question;
 import tw.waterball.judgegirl.examservice.usecases.*;
+import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.springboot.exam.view.ExamOverview;
 import tw.waterball.judgegirl.springboot.exam.view.ExamView;
 import tw.waterball.judgegirl.springboot.exam.view.QuestionView;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -111,13 +113,20 @@ class GetExamPresenter implements GetExamUseCase.Presenter {
 
     private Exam exam;
 
+    private List<ProblemView> problemViews = new ArrayList<>();
+
     @Override
     public void setExam(Exam exam) {
         this.exam = exam;
     }
 
+    @Override
+    public void addProblems(ProblemView problemView) {
+        problemViews.add(problemView);
+    }
+
     public ExamOverview present() {
-        return ExamOverview.toViewModel(exam);
+        return ExamOverview.toViewModel(exam, problemViews);
     }
 
 }
