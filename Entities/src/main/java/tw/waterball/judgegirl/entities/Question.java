@@ -10,7 +10,7 @@ import javax.validation.constraints.NotNull;
 @Setter
 public class Question {
 
-    private QuestionId id = null;
+    private Id id = null;
 
     @NotNull
     private int quota;
@@ -22,7 +22,7 @@ public class Question {
     private int questionOrder;
 
     public Question(int examId, int problemId, int quota, int score, int questionOrder) {
-        this.id = new QuestionId(examId, problemId);
+        this.id = new Id(examId, problemId);
         this.quota = quota;
         this.score = score;
         this.questionOrder = questionOrder;
@@ -31,7 +31,7 @@ public class Question {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class QuestionId {
+    public static class Id {
         private Integer examId;
         private Integer problemId;
     }

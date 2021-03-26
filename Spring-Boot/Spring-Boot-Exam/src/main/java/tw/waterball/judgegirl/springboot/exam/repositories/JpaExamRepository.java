@@ -1,6 +1,7 @@
 package tw.waterball.judgegirl.springboot.exam.repositories;
 
 import org.springframework.stereotype.Component;
+import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.entities.Exam;
 import tw.waterball.judgegirl.examservice.repositories.ExamRepository;
 import tw.waterball.judgegirl.springboot.exam.repositories.jpa.ExamData;
@@ -30,6 +31,14 @@ public class JpaExamRepository implements ExamRepository {
     @Override
     public List<Exam> findByIdIn(Collection<Integer> examIds) {
         return jpaExamDataPort.findByIdIn(examIds).stream().map(ExamData::toEntity).collect(toList());
+    }
+
+    @Override
+    public boolean deleteQuestionById(int examId, int problemId) {
+        ExamData exam = jpaExamDataPort.findById(examId).orElseThrow(NotFoundException::new);
+        boolean success = exam.getQuestions().removeIf(question -> question.getId().getProblemId() == problemId);
+        jpaExamDataPort.save(exam);
+        return success;
     }
 
     @Override

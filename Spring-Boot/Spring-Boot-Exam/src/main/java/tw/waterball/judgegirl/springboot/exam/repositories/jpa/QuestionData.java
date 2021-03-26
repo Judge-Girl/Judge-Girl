@@ -16,7 +16,7 @@ import java.io.Serializable;
 public class QuestionData {
 
     @EmbeddedId
-    private QuestionId id;
+    private Id id;
 
     private int quota;
     private int score;
@@ -28,7 +28,7 @@ public class QuestionData {
 
     public static QuestionData toData(Question question) {
         return QuestionData.builder()
-                .id(new QuestionId(question.getId().getExamId(),question.getId().getProblemId()))
+                .id(new Id(question.getId().getExamId(),question.getId().getProblemId()))
                 .quota(question.getQuota())
                 .score(question.getScore())
                 .questionOrder(question.getQuestionOrder())
@@ -39,9 +39,9 @@ public class QuestionData {
     @Embeddable
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class QuestionId implements Serializable {
-        private Integer examId;
-        private Integer problemId;
+    public static class Id implements Serializable {
+        private int examId;
+        private int problemId;
     }
 
 }
