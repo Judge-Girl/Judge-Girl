@@ -153,6 +153,19 @@ public class GroupControllerTest extends AbstractSpringBootTest {
         assertEquals(0, group.getStudents().size());
     }
 
+    @Test
+    @Transactional
+    public void GiveOneStudentIntoCreatedGroup_WhenDeleteGroupById_ShouldDeleteSuccessfully() throws Exception {
+        GroupView body = createGroupAndGet(GROUP_NAME);
+        StudentView studentA = signUpAndGetStudent("A");
+        int groupId = body.id;
+        int studentId = studentA.id;
+        addStudentIntoGroup(groupId, studentId);
+        deleteGroupById(groupId);
+        Student student = studentRepository.findStudentById(studentId).orElseThrow(NotFoundException::new);
+        assertEquals(0, student.getGroups().size());
+    }
+
     private StudentView signUpAndGetStudent(String sign) throws Exception {
         String name = "name" + sign;
         String email = "email" + sign + "@example.com";
