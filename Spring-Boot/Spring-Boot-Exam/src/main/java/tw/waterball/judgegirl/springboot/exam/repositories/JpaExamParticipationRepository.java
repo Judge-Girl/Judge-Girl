@@ -28,7 +28,7 @@ public class JpaExamParticipationRepository implements ExamParticipationReposito
     @Override
     public ExamParticipation save(ExamParticipation examParticipation) {
         ExamParticipationData data = jpaExamParticipationDataPort.save(toData(examParticipation));
-        examParticipation.setId(data.getId());
+        examParticipation = data.toEntity();
         return examParticipation;
     }
 

@@ -7,7 +7,6 @@ import tw.waterball.judgegirl.examservice.repositories.ExamParticipationReposito
 import tw.waterball.judgegirl.examservice.repositories.ExamRepository;
 
 import javax.inject.Named;
-import javax.validation.constraints.NotNull;
 import java.util.Date;
 import java.util.List;
 

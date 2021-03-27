@@ -13,22 +13,24 @@ import java.util.stream.Collectors;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ExamView {
+public class ExamOverview {
     private Integer id;
     private String name;
     private Date startTime;
     private Date endTime;
     private String description;
-    private List<QuestionView> questionViews;
+    private List<QuestionOverview> questionViews;
+    private int totalScore;
 
-    public static ExamView toViewModel(Exam exam) {
-        return ExamView.builder()
+    public static ExamOverview toViewModel(Exam exam) {
+        return ExamOverview.builder()
                 .id(exam.getId())
                 .name(exam.getName())
                 .startTime(exam.getStartTime())
                 .endTime(exam.getEndTime())
                 .description(exam.getDescription())
-                .questionViews(exam.getQuestions().stream().map(QuestionView::toViewModel).collect(Collectors.toList()))
+                .questionViews(exam.getQuestions().stream().map(QuestionOverview::toViewModel).collect(Collectors.toList()))
+                .totalScore(exam.getQuestions().stream().mapToInt(question -> question.getScore()).sum())
                 .build();
     }
 }
