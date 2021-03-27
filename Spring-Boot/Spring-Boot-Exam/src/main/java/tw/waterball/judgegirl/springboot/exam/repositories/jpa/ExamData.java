@@ -42,7 +42,7 @@ public class ExamData {
                 .startTime(exam.getStartTime())
                 .endTime(exam.getEndTime())
                 .description(exam.getDescription())
-                .questions(mapToList(exam.getQuestions(),QuestionData::toData))
+                .questions(mapToList(exam.getQuestions(), QuestionData::toData))
                 .build();
     }
 }

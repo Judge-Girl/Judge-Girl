@@ -2,6 +2,7 @@ package tw.waterball.judgegirl.springboot.exam.view;
 
 import lombok.*;
 import tw.waterball.judgegirl.entities.Question;
+import tw.waterball.judgegirl.problemapi.views.ProblemView;
 
 @EqualsAndHashCode
 @Builder
@@ -10,19 +11,19 @@ import tw.waterball.judgegirl.entities.Question;
 @AllArgsConstructor
 @NoArgsConstructor
 public class QuestionOverview {
-    private int examId;
     private int problemId;
     private int quota;
     private int score;
     private int questionOrder;
+    private String problemTitle;
 
-    public static QuestionOverview toViewModel(Question question) {
+    public static QuestionOverview toViewModel(Question question, ProblemView problemView) {
         return QuestionOverview.builder()
-                .examId(question.getId().getExamId())
                 .problemId(question.getId().getProblemId())
                 .quota(question.getQuota())
                 .score(question.getScore())
                 .questionOrder(question.getQuestionOrder())
+                .problemTitle(problemView.getTitle())
                 .build();
     }
 }
