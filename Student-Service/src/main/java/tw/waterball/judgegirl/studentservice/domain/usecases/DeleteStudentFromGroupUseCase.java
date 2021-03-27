@@ -20,7 +20,8 @@ public class DeleteStudentFromGroupUseCase {
 
     private final GroupRepository groupRepository;
 
-    public void execute(int groupId, int studentId) {
+    public void execute(int groupId, int studentId)
+            throws NotFoundException {
         Group group = groupRepository.findGroupById(groupId)
                 .orElseThrow(NotFoundException::new);
         Student student = studentRepository.findStudentById(studentId)

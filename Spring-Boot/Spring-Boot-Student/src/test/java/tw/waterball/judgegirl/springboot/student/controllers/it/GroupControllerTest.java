@@ -31,6 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * @author - wally55077@gmail.com
  */
+@Transactional
 @ActiveProfiles(Profiles.JWT)
 @ContextConfiguration(classes = SpringBootStudentApplication.class)
 public class GroupControllerTest extends AbstractSpringBootTest {
@@ -128,7 +129,6 @@ public class GroupControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    @Transactional
     public void GiveOneGroupCreated_WhenAddTwoStudentsIntoTheGroup_ShouldAddSuccessfully() throws Exception {
         GroupView body = createGroupAndGet(GROUP_NAME);
         StudentView studentA = signUpAndGetStudent("A");
@@ -141,7 +141,6 @@ public class GroupControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    @Transactional
     public void GiveOneStudentIntoCreatedGroup_WhenDeleteOneStudentFromTheGroup_ShouldDeleteSuccessfully() throws Exception {
         GroupView body = createGroupAndGet(GROUP_NAME);
         StudentView studentA = signUpAndGetStudent("A");
