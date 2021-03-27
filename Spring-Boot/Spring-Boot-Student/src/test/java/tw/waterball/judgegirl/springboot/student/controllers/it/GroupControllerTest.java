@@ -27,7 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 @ActiveProfiles(Profiles.JWT)
 @ContextConfiguration(classes = SpringBootStudentApplication.class)
-public class GroupControllerIT extends AbstractSpringBootTest {
+public class GroupControllerTest extends AbstractSpringBootTest {
 
     private static final String TEST_NAME = "name";
     private static final String BASE_PATH = "/api/groups";

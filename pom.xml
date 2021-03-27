@@ -52,7 +52,6 @@
         <maven-failsafe-plugin.version>2.22.0</maven-failsafe-plugin.version>
         <maven-surefile-plugin.version>2.22.0</maven-surefile-plugin.version>
 
-        <maven-failsafe-plugin.jupiter-engine.version>5.3.2</maven-failsafe-plugin.jupiter-engine.version>
         <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>

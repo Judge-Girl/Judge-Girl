@@ -81,10 +81,10 @@ import static tw.waterball.judgegirl.testkit.resultmatchers.ZipResultMatcher.zip
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
-@ActiveProfiles({Profiles.PROD, Profiles.MONGO, Profiles.AMQP, Profiles.K8S})
+@ActiveProfiles({Profiles.JWT, Profiles.EMBEDDED_MONGO, Profiles.AMQP, Profiles.K8S})
 @AutoConfigureMockMvc
-@ContextConfiguration(classes = {SpringBootSubmissionApplication.class, SubmissionControllerIT.TestConfig.class})
-public class SubmissionControllerIT extends AbstractSpringBootTest {
+@ContextConfiguration(classes = {SpringBootSubmissionApplication.class, SubmissionControllerTest.TestConfig.class})
+public class SubmissionControllerTest extends AbstractSpringBootTest {
     private final String API_PREFIX = "/api/problems/{problemId}/" + Language.C.toString() + "/students/{studentId}/submissions";
     private final Problem problem = ProblemStubs.template().build();
     private final String SUBMISSION_EXCHANGE_NAME = "submissions";

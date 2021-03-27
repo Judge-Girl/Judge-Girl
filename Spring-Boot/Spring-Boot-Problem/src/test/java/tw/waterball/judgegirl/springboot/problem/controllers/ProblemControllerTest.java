@@ -58,10 +58,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
-@ActiveProfiles({Profiles.PROD, Profiles.MONGO})
+@ActiveProfiles({Profiles.JWT, Profiles.EMBEDDED_MONGO})
 @AutoConfigureDataMongo
 @ContextConfiguration(classes = SpringBootProblemApplication.class)
-class ProblemControllerIT extends AbstractSpringBootTest {
+public class ProblemControllerTest extends AbstractSpringBootTest {
     @Autowired
     MongoTemplate mongoTemplate;
     @Autowired
