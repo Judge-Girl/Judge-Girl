@@ -31,7 +31,7 @@ public class JpaGroupRepository implements GroupRepository {
 
     @Override
     public Group save(Group group) {
-        GroupData groupData = jpaGroupDataPort.save(toData(group));
+        GroupData groupData = jpaGroupDataPort.saveAndFlush(toData(group));
         group.setId(groupData.getId());
         return group;
     }

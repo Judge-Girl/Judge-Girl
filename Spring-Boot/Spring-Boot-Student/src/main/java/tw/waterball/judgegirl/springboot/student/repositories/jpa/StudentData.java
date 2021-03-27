@@ -15,29 +15,35 @@ package tw.waterball.judgegirl.springboot.student.repositories.jpa;
 
 import lombok.*;
 import tw.waterball.judgegirl.entities.Admin;
+import tw.waterball.judgegirl.entities.Group;
 import tw.waterball.judgegirl.entities.Student;
 
 import javax.persistence.*;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author chaoyulee chaoyu2330@gmail.com
  */
 @Table(name = "students")
-@Builder
-@Getter
 @Setter
+@Getter
+@Builder
 @Entity
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 public class StudentData {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     private String name;
     private String email;
     private String password;
     private boolean isAdmin;
+
+    @ManyToMany(cascade = CascadeType.MERGE)
+    private Set<GroupData> groups = new HashSet<>();
 
     public Student toEntity() {
         if (isAdmin) {
@@ -48,12 +54,24 @@ public class StudentData {
     }
 
     public static StudentData toData(Student student) {
-        return StudentData.builder()
+        StudentData studentData = StudentData.builder()
                 .id(student.getId())
                 .name(student.getName())
                 .email(student.getEmail())
                 .password(student.getPassword())
                 .isAdmin(student.isAdmin())
+                .groups(new HashSet<>())
                 .build();
+        student.getGroups().forEach(studentData::addGroupData);
+        return studentData;
     }
+
+    private void addGroupData(Group group) {
+        GroupData groupData = GroupData.builder()
+                .name(group.getName())
+                .students(new HashSet<>())
+                .build();
+        groups.add(groupData);
+    }
+
 }

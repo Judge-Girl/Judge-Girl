@@ -6,10 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import tw.waterball.judgegirl.entities.Group;
 import tw.waterball.judgegirl.springboot.student.view.GroupView;
 import tw.waterball.judgegirl.studentservice.domain.exceptions.DuplicateGroupNameException;
-import tw.waterball.judgegirl.studentservice.domain.usecases.CreateGroupUseCase;
-import tw.waterball.judgegirl.studentservice.domain.usecases.DeleteGroupByIdUseCase;
-import tw.waterball.judgegirl.studentservice.domain.usecases.GetAllGroupsUseCase;
-import tw.waterball.judgegirl.studentservice.domain.usecases.GetGroupByIdUseCase;
+import tw.waterball.judgegirl.studentservice.domain.usecases.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -26,6 +23,8 @@ public class GroupController {
     private final GetGroupByIdUseCase getGroupByIdUseCase;
     private final GetAllGroupsUseCase getAllGroupsUseCase;
     private final DeleteGroupByIdUseCase deleteGroupByIdUseCase;
+    private final AddStudentIntoGroupUseCase addStudentIntoGroupUseCase;
+    private final DeleteStudentFromGroupUseCase deleteStudentFromGroupUseCase;
 
     @PostMapping("/api/groups")
     public GroupView createGroup(@RequestBody CreateGroupUseCase.Request request) {
@@ -51,6 +50,18 @@ public class GroupController {
     @DeleteMapping("/api/groups/{groupId}")
     public void deleteGroupById(@PathVariable Integer groupId) {
         deleteGroupByIdUseCase.execute(groupId);
+    }
+
+    @PostMapping("/api/groups/{groupId}/students/{studentId}")
+    public void addStudentIntoGroup(@PathVariable Integer groupId,
+                                    @PathVariable Integer studentId) {
+        addStudentIntoGroupUseCase.execute(groupId, studentId);
+    }
+
+    @DeleteMapping("/api/groups/{groupId}/students/{studentId}")
+    public void deleteStudentFromGroup(@PathVariable Integer groupId,
+                                       @PathVariable Integer studentId) {
+        deleteStudentFromGroupUseCase.execute(groupId, studentId);
     }
 
     @ExceptionHandler({DuplicateGroupNameException.class})
@@ -105,3 +116,4 @@ class GetAllGroupsPresenter implements GetAllGroupsUseCase.Presenter {
     }
 
 }
+

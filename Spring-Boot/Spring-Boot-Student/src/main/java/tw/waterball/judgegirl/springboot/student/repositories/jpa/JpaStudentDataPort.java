@@ -13,7 +13,7 @@
 
 package tw.waterball.judgegirl.springboot.student.repositories.jpa;
 
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -22,7 +22,7 @@ import java.util.Optional;
  * @author chaoyulee chaoyu2330@gmail.com
  */
 @Repository
-public interface JpaStudentDataPort extends CrudRepository<StudentData, Integer> {
+public interface JpaStudentDataPort extends JpaRepository<StudentData, Integer> {
     Optional<StudentData> findByEmailAndPassword(String email, String pwd);
 
     Optional<StudentData> findByEmail(String email);

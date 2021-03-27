@@ -62,7 +62,7 @@ public class JpaStudentRepository implements StudentRepository {
 
     @Override
     public Student save(Student student) {
-        StudentData data = jpaStudentDataPort.save(toData(student));
+        StudentData data = jpaStudentDataPort.saveAndFlush(toData(student));
         student.setId(data.getId());
         return student;
     }
