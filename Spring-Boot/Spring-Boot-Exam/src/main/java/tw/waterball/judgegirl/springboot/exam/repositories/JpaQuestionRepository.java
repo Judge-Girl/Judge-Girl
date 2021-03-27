@@ -1,6 +1,5 @@
 package tw.waterball.judgegirl.springboot.exam.repositories;
 
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Component;
 import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.entities.Question;
@@ -20,8 +19,9 @@ public class JpaQuestionRepository implements QuestionRepository {
     }
 
     public void deleteByIdExamIdAndIdProblemId(int examId, int problemId) {
-        if(jpaQuestionDataPort.deleteByIdExamIdAndIdProblemId(examId, problemId)!=1)
+        if (jpaQuestionDataPort.deleteByIdExamIdAndIdProblemId(examId, problemId) != 1) {
             throw new NotFoundException();
+        }
     }
 
     @Override

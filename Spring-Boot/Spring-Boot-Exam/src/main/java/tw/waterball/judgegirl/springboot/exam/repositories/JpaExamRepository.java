@@ -37,11 +37,7 @@ public class JpaExamRepository implements ExamRepository {
 
     @Override
     public void deleteQuestionById(int examId, int problemId) {
-        try {
-            jpaQuestionRepository.deleteByIdExamIdAndIdProblemId(examId, problemId);
-        } catch (IllegalArgumentException  e) {
-            throw new NotFoundException(e);
-        }
+        jpaQuestionRepository.deleteByIdExamIdAndIdProblemId(examId, problemId);
     }
 
     @Override
