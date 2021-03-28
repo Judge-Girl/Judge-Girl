@@ -2,7 +2,6 @@ package tw.waterball.judgegirl.springboot.exam.controllers;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,9 +14,9 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.ResultActions;
 import tw.waterball.judgegirl.entities.Exam;
 import tw.waterball.judgegirl.entities.ExamParticipation;
+import tw.waterball.judgegirl.entities.Question;
 import tw.waterball.judgegirl.examservice.repositories.ExamParticipationRepository;
 import tw.waterball.judgegirl.examservice.repositories.ExamRepository;
-import tw.waterball.judgegirl.examservice.repositories.QuestionRepository;
 import tw.waterball.judgegirl.examservice.usecases.CreateExamUseCase;
 import tw.waterball.judgegirl.examservice.usecases.CreateQuestionUseCase;
 import tw.waterball.judgegirl.problemapi.clients.FakeProblemServiceDriver;
@@ -26,15 +25,16 @@ import tw.waterball.judgegirl.springboot.exam.SpringBootExamApplication;
 import tw.waterball.judgegirl.springboot.exam.view.ExamOverview;
 import tw.waterball.judgegirl.springboot.exam.view.ExamView;
 import tw.waterball.judgegirl.springboot.exam.view.QuestionView;
+import tw.waterball.judgegirl.springboot.profiles.Profiles;
 import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
 
-import javax.transaction.Transactional;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
 import static java.util.Arrays.asList;
 import static java.util.concurrent.TimeUnit.HOURS;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -42,19 +42,25 @@ import static tw.waterball.judgegirl.commons.utils.DateUtils.afterCurrentTime;
 import static tw.waterball.judgegirl.commons.utils.DateUtils.beforeCurrentTime;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
 
-@ActiveProfiles("")
-@Transactional
+@ActiveProfiles(Profiles.JWT)
 @ContextConfiguration(classes = SpringBootExamApplication.class)
 class ExamControllerTest extends AbstractSpringBootTest {
+
+    public static final int PROBLEM_ID = 2;
+    public static final int ANOTHER_PROBLEM_ID = 300;
+
+    public static final int NONEXISTING_EXAM_ID = 9999;
+    public static final int NONEXISTING_PROBLEM_ID = 9999;
+
 
     @Autowired
     ExamRepository examRepository;
     @Autowired
     ExamParticipationRepository examParticipationRepository;
     @Autowired
-    QuestionRepository questionRepository;
-    @Autowired
     FakeProblemServiceDriver problemServiceDriver;
+    private ProblemView problem;
+    private ProblemView anotherProblem;
 
     @Configuration
     public static class TestConfig {
@@ -65,8 +71,29 @@ class ExamControllerTest extends AbstractSpringBootTest {
         }
     }
 
+
+    @BeforeEach
+    void setup() {
+        problem = new ProblemView();
+        problem.setId(PROBLEM_ID);
+        problem.setTitle("problem1");
+        problemServiceDriver.addProblemView(problem);
+        anotherProblem = new ProblemView();
+        anotherProblem.setId(ANOTHER_PROBLEM_ID);
+        anotherProblem.setTitle("another-problem");
+        problemServiceDriver.addProblemView(anotherProblem);
+    }
+
+
+    @AfterEach
+    void cleanup() {
+        examParticipationRepository.deleteAll();
+        examRepository.deleteAll();
+        problemServiceDriver.clear();
+    }
+
     @Test
-    void whenCreateExamWithEndTimeAfterStartTime_shouldSucceed() throws Exception {
+    void WhenCreateExamWithEndTimeAfterStartTime_ShouldSucceed() throws Exception {
         String name = "test-contest", description = "problem statement";
         Date startTime = new Date(), endTime = new Date();
         Exam exam = new Exam(name, startTime, endTime, description);
@@ -82,7 +109,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    void whenCreateExamWithEndTimeBeforeStartTime_shouldRespondBadRequest() throws Exception {
+    void WhenCreateExamWithEndTimeBeforeStartTime_ShouldRespondBadRequest() throws Exception {
         String name = "test-contest", description = "problem statement";
         Calendar cal = Calendar.getInstance();
         cal.setTime(new Date());
@@ -96,7 +123,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    void GivenStudentParticipatesOnThreeExams_AndTwoOfThemAreUpcoming_WhenGetUpcomingExams_shouldResponseThoseTwo() throws Exception {
+    void GivenStudentParticipatesOnThreeExams_AndTwoOfThemAreUpcoming_WhenGetUpcomingExams_ShouldResponseThoseTwo() throws Exception {
         Date now = new Date();
         Date future = afterCurrentTime(2, HOURS);
         Date past = beforeCurrentTime(2, HOURS);
@@ -118,71 +145,75 @@ class ExamControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    void givenOneExam_whenCreateQuestionForExistingExam_shouldRespondCreatedQuestion() throws Exception {
+    void GivenOneExam_WhenCreateQuestionForExistingExam_ShouldRespondTheQuestionAndQuestionShouldBeAddedIntoExam() throws Exception {
         ExamView examView = createExamAndGet(new Date(), new Date(), "sample-exam");
-        createQuestion(new CreateQuestionUseCase.Request(examView.getId(), 2, 5, 100, 1))
+        createQuestion(new CreateQuestionUseCase.Request(examView.getId(), PROBLEM_ID, 5, 100, 1))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("examId").value(1))
-                .andExpect(jsonPath("problemId").value(2))
+                .andExpect(jsonPath("examId").value(examView.id))
+                .andExpect(jsonPath("problemId").value(PROBLEM_ID))
                 .andExpect(jsonPath("quota").value(5))
                 .andExpect(jsonPath("score").value(100));
-        Assertions.assertEquals(getExamOverview(examView.getId()).getQuestionViews().size(), 1);
+
+        List<Question> questions = examRepository.findQuestionsInExam(examView.id);
+        assertEquals(1, questions.size());
     }
 
     @Test
-    void whenCreateQuestionForNonExistingExam_shouldRespondBadRequest() throws Exception {
-        createQuestion(new CreateQuestionUseCase.Request(1, 2, 5, 100, 1))
-                .andExpect(status().isBadRequest());
+    void WhenCreateQuestionForNonExistingExam_ShouldRespondNotFound() throws Exception {
+        createQuestion(new CreateQuestionUseCase.Request(NONEXISTING_EXAM_ID, PROBLEM_ID, 5, 100, 1))
+                .andExpect(status().isNotFound());
     }
 
     @Test
-    void whenCreateQuestionForNonExistingProblem_shouldRespondBadRequest() throws Exception {
+    void WhenCreateQuestionForNonExistingProblem_ShouldRespondNotFound() throws Exception {
         ExamView examView = createExamAndGet(new Date(), new Date(), "sample-exam");
-        createQuestion(new CreateQuestionUseCase.Request(examView.getId(), 1, 5, 100, 1))
-                .andExpect(status().isBadRequest());
+        createQuestion(new CreateQuestionUseCase.Request(examView.getId(), NONEXISTING_PROBLEM_ID, 5, 100, 1))
+                .andExpect(status().isNotFound());
     }
 
     @Test
-    void givenOneExamAndOneQuestionCreated_whenDeleteTheQuestion_shouldSucceed() throws Exception {
+    void GivenOneExamAndOneQuestionCreated_WhenDeleteTheQuestion_ShouldSucceed() throws Exception {
         ExamView examView = createExamAndGet(new Date(), new Date(), "sample-exam");
         QuestionView question = createQuestionAndGet(new CreateQuestionUseCase.Request(examView.getId(), 2, 5, 100, 1));
-        deleteQuestion(examView.getId(), 2)
+        deleteQuestion(examView.getId(), PROBLEM_ID)
                 .andExpect(status().isOk());
-        Assertions.assertEquals(getExamOverview(examView.getId()).getQuestionViews().size(), 0);
+        assertEquals(getExamOverview(examView.getId()).getQuestions().size(), 0);
     }
 
     @Test
-    void whenDeleteQuestionWithNonExistingExam_shouldRespondBadRequest() throws Exception {
+    void WhenDeleteQuestionWithNonExistingExam_ShouldRespondNotFound() throws Exception {
         ExamView examView = createExamAndGet(new Date(), new Date(), "sample-exam");
         QuestionView question = createQuestionAndGet(new CreateQuestionUseCase.Request(examView.getId(), 2, 5, 100, 1));
-        deleteQuestion(examView.getId() + 1, 2)
-                .andExpect(status().isBadRequest());
+        deleteQuestion(NONEXISTING_EXAM_ID, PROBLEM_ID)
+                .andExpect(status().isNotFound());
     }
 
     @Test
-    void whenDeleteQuestionWithNonExistingProblem_shouldRespondBadRequest() throws Exception {
+    void WhenDeleteQuestionWithNonExistingProblem_ShouldRespondNotFound() throws Exception {
         ExamView examView = createExamAndGet(new Date(), new Date(), "sample-exam");
         QuestionView question = createQuestionAndGet(new CreateQuestionUseCase.Request(examView.getId(), 2, 5, 100, 1));
-        deleteQuestion(examView.getId(), 3)
-                .andExpect(status().isBadRequest());
+        deleteQuestion(examView.getId(), NONEXISTING_PROBLEM_ID)
+                .andExpect(status().isNotFound());
     }
 
     @Test
-    void whenGetExistingExamOverview_shouldRespondTheOverview() throws Exception {
+    void GivenOneExamWithTwoQuestions_WhenGetTheExamOverview_ShouldRespondCorrectly() throws Exception {
         Date current = new Date();
         ExamView examView = createExamAndGet(current, current, "sample-exam");
-        createQuestion(new CreateQuestionUseCase.Request(examView.getId(), 2, 5, 30, 1)).andExpect(status().isOk());
-        createQuestion(new CreateQuestionUseCase.Request(examView.getId(), 3, 5, 70, 2)).andExpect(status().isOk());
+        createQuestion(new CreateQuestionUseCase.Request(examView.getId(), PROBLEM_ID, 5, 30, 1)).andExpect(status().isOk());
+        createQuestion(new CreateQuestionUseCase.Request(examView.getId(), ANOTHER_PROBLEM_ID, 5, 70, 2)).andExpect(status().isOk());
+
         ExamOverview examOverview = getExamOverview(examView.getId());
-        Assertions.assertEquals(examOverview.getId(), examView.getId());
-        Assertions.assertEquals(examOverview.getName(), "sample-exam");
-        Assertions.assertEquals(examOverview.getStartTime(), current);
-        Assertions.assertEquals(examOverview.getEndTime(), current);
-        Assertions.assertEquals(examOverview.getDescription(), "problem statement");
-        Assertions.assertEquals(examOverview.getQuestionViews().size(), 2);
-        Assertions.assertEquals(examOverview.getTotalScore(), 100);
-        Assertions.assertEquals(examOverview.getQuestionViews().get(0).getProblemTitle(), "problem1");
-        Assertions.assertEquals(examOverview.getQuestionViews().get(1).getProblemTitle(), "problem2");
+
+        assertEquals(examOverview.getId(), examView.getId());
+        assertEquals(examOverview.getName(), "sample-exam");
+        assertEquals(examOverview.getStartTime(), current);
+        assertEquals(examOverview.getEndTime(), current);
+        assertEquals(examOverview.getDescription(), "problem statement");
+        assertEquals(examOverview.getQuestions().size(), 2);
+        assertEquals(examOverview.getTotalScore(), 100);
+        assertEquals(examOverview.getQuestions().get(0).getProblemTitle(), problem.getTitle());
+        assertEquals(examOverview.getQuestions().get(1).getProblemTitle(), anotherProblem.getTitle());
     }
 
     private ExamView createExamAndGet(Date startTime, Date endTime, String name) throws Exception {
@@ -208,10 +239,10 @@ class ExamControllerTest extends AbstractSpringBootTest {
         examParticipationRepository.save(examParticipation);
     }
 
-    private ResultActions createQuestion(CreateQuestionUseCase.Request question) throws Exception {
-        return mockMvc.perform(post("/api/exams/{examId}/questions", question.getExamId())
+    private ResultActions createQuestion(CreateQuestionUseCase.Request request) throws Exception {
+        return mockMvc.perform(post("/api/exams/{examId}/questions", request.getExamId())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(toJson(question)));
+                .content(toJson(request)));
     }
 
     private QuestionView createQuestionAndGet(CreateQuestionUseCase.Request question) throws Exception {
@@ -223,24 +254,5 @@ class ExamControllerTest extends AbstractSpringBootTest {
         return mockMvc.perform(delete("/api/exams/{examId}/questions/{problemId}", examId, problemId));
     }
 
-    @BeforeEach
-    void setup() {
-        ProblemView problemView = new ProblemView();
-        problemView.setId(2);
-        problemView.setTitle("problem1");
-        problemServiceDriver.addProblemView(problemView);
-        problemView = new ProblemView();
-        problemView.setId(3);
-        problemView.setTitle("problem2");
-        problemServiceDriver.addProblemView(problemView);
-    }
-
-
-    @AfterEach
-    void cleanup() {
-        examRepository.deleteAll();
-        examParticipationRepository.deleteAll();
-        questionRepository.deleteAll();
-    }
 
 }

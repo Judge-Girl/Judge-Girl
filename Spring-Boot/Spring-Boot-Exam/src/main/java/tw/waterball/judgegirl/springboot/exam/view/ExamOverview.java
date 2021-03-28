@@ -4,7 +4,6 @@ import lombok.*;
 import tw.waterball.judgegirl.entities.Exam;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -22,7 +21,7 @@ public class ExamOverview {
     private Date startTime;
     private Date endTime;
     private String description;
-    private List<QuestionOverview> questionViews;
+    private List<QuestionOverview> questions;
     private int totalScore;
 
     public static ExamOverview toViewModel(Exam exam, List<ProblemView> problemViews) {
@@ -32,7 +31,7 @@ public class ExamOverview {
                 .startTime(exam.getStartTime())
                 .endTime(exam.getEndTime())
                 .description(exam.getDescription())
-                .questionViews(zipToList(exam.getQuestions(), problemViews, QuestionOverview::toViewModel))
+                .questions(zipToList(exam.getQuestions(), problemViews, QuestionOverview::toViewModel))
                 .totalScore(exam.getQuestions().stream().mapToInt(question -> question.getScore()).sum())
                 .build();
     }

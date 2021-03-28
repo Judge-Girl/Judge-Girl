@@ -1,25 +1,26 @@
 package tw.waterball.judgegirl.springboot.exam.view;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import tw.waterball.judgegirl.entities.Exam;
 
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@EqualsAndHashCode
+@Data
 @Builder
-@Getter
-@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class ExamView {
-    private Integer id;
-    private String name;
-    private Date startTime;
-    private Date endTime;
-    private String description;
-    private List<QuestionView> questionViews;
+    public Integer id;
+    public String name;
+    public Date startTime;
+    public Date endTime;
+    public String description;
+    public List<QuestionView> questionViews;
 
     public static ExamView toViewModel(Exam exam) {
         return ExamView.builder()

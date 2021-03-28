@@ -9,7 +9,7 @@ import java.util.Map;
 
 public class FakeProblemServiceDriver implements ProblemServiceDriver {
 
-    private Map<Integer, ProblemView> problems = new HashMap<>();
+    private final Map<Integer, ProblemView> problems = new HashMap<>();
 
     @Override
     public ProblemView getProblem(int problemId) throws NotFoundException {
@@ -32,5 +32,9 @@ public class FakeProblemServiceDriver implements ProblemServiceDriver {
     @Override
     public FileResource downloadTestCaseIOs(int problemId, String testcaseIOsFileId) throws UnsupportedOperationException {
         throw new UnsupportedOperationException();
+    }
+
+    public void clear() {
+        problems.clear();
     }
 }

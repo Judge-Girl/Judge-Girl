@@ -1,9 +1,7 @@
 package tw.waterball.judgegirl.springboot.exam.controllers;
 
 import lombok.AllArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.entities.Exam;
 import tw.waterball.judgegirl.entities.Question;
 import tw.waterball.judgegirl.examservice.usecases.*;
@@ -22,7 +20,7 @@ import java.util.stream.Collectors;
 public class ExamController {
     private final CreateExamUseCase createExamUseCase;
     private final GetUpcomingExamsUseCase getUpcomingExamUseCase;
-    private final CreateQuestionUseCase addQuestionUseCase;
+    private final CreateQuestionUseCase createQuestionUseCase;
     private final DeleteQuestionUseCase deleteQuestionUseCase;
     private final GetExamOverviewUseCase getExamOverviewUseCase;
 
@@ -48,7 +46,7 @@ public class ExamController {
     public QuestionView createQuestion(@PathVariable int examId, @RequestBody CreateQuestionUseCase.Request request) {
         request.setExamId(examId);
         CreateQuestionPresenter presenter = new CreateQuestionPresenter();
-        addQuestionUseCase.execute(request, presenter);
+        createQuestionUseCase.execute(request, presenter);
         return presenter.present();
     }
 
@@ -64,10 +62,6 @@ public class ExamController {
         return presenter.present();
     }
 
-    @ExceptionHandler({IllegalStateException.class, IllegalArgumentException.class, NotFoundException.class})
-    public ResponseEntity<?> errorHandler(Exception err) {
-        return ResponseEntity.badRequest().body(err.getMessage());
-    }
 }
 
 class CreateExamPresenter implements CreateExamUseCase.Presenter {
@@ -100,6 +94,10 @@ class CreateQuestionPresenter implements CreateQuestionUseCase.Presenter {
     private Question question;
 
     @Override
+    public void setProblem(ProblemView problemView) {
+    }
+
+    @Override
     public void setQuestion(Question question) {
         this.question = question;
     }
@@ -113,7 +111,7 @@ class GetExamOverviewPresenter implements GetExamOverviewUseCase.Presenter {
 
     private Exam exam;
 
-    private List<ProblemView> problemViews = new ArrayList<>();
+    private final List<ProblemView> problemViews = new ArrayList<>();
 
     @Override
     public void setExam(Exam exam) {

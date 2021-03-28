@@ -7,10 +7,10 @@ import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
 
+@Table(name = "exams")
 @Builder
 @Getter
 @Setter
@@ -20,7 +20,7 @@ import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
 public class ExamData {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     private String name;
@@ -28,11 +28,21 @@ public class ExamData {
     private Date endTime;
     private String description;
 
-    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
+    @OneToMany(mappedBy = "id.examId", cascade = {CascadeType.ALL})
     private List<QuestionData> questions = new ArrayList<>();
 
+
+    public void addQuestion(QuestionData questionData) {
+        questions.add(questionData);
+    }
+
+    public void removeQuestion(QuestionData questionData) {
+        questions.remove(questionData);
+    }
+
     public Exam toEntity() {
-        return new Exam(id, name, startTime, endTime, description, questions.stream().map(QuestionData::toEntity).collect(Collectors.toList()));
+        return new Exam(id, name, startTime, endTime, description,
+                mapToList(questions, QuestionData::toEntity));
     }
 
     public static ExamData toData(Exam exam) {

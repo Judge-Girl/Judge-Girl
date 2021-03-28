@@ -35,4 +35,12 @@ public class Question {
         private int examId;
         private int problemId;
     }
+
+    public int getExamId() {
+        return id.getExamId();
+    }
+
+    public int getProblemId() {
+        return id.getProblemId();
+    }
 }

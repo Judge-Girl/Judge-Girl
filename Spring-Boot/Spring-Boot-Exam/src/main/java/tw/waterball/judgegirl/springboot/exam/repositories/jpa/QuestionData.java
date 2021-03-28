@@ -7,8 +7,10 @@ import tw.waterball.judgegirl.entities.Question;
 import javax.persistence.Embeddable;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
+import javax.persistence.Table;
 import java.io.Serializable;
 
+@Table(name = "questions")
 @Builder
 @Getter
 @Setter
@@ -44,5 +46,10 @@ public class QuestionData {
     public static class Id implements Serializable {
         private int examId;
         private int problemId;
+
+        public Id(Question.Id id) {
+            examId = id.getExamId();
+            problemId = id.getProblemId();
+        }
     }
 }

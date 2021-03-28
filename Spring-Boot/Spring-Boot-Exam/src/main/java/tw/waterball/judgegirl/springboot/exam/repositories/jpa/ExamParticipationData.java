@@ -3,11 +3,9 @@ package tw.waterball.judgegirl.springboot.exam.repositories.jpa;
 import lombok.*;
 import tw.waterball.judgegirl.entities.ExamParticipation;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 
+@Table(name = "exam_participations")
 @Builder
 @Getter
 @Setter
