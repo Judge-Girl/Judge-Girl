@@ -15,8 +15,10 @@ package tw.waterball.judgegirl.commons.utils;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -24,5 +26,12 @@ import java.util.stream.Collectors;
 public abstract class StreamUtils {
     public static <T, R> List<T> mapToList(Collection<R> collection, Function<R, T> mapping) {
         return collection.stream().map(mapping).collect(Collectors.toList());
+    }
+
+    public static <T, L, R> List<T> zipToList(List<L> left, List<R> right,
+                                              BiFunction<L, R, T> zipAndMap) {
+        return IntStream.range(0, left.size())
+                .mapToObj(i -> zipAndMap.apply(left.get(i), right.get(i)))
+                .collect(Collectors.toList());
     }
 }

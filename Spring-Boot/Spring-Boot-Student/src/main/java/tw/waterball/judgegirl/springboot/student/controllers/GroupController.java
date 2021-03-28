@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 /**
  * @author - wally55077@gmail.com
  */
+@CrossOrigin
 @RestController
 @AllArgsConstructor
 public class GroupController {
