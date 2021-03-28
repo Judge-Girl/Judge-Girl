@@ -13,16 +13,19 @@
 
 package tw.waterball.judgegirl.springboot.problem.repositories;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.stereotype.Component;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
 import tw.waterball.judgegirl.entities.problem.LanguageEnv;
 import tw.waterball.judgegirl.entities.problem.Problem;
+import tw.waterball.judgegirl.problemservice.domain.repositories.PatchProblemParams;
 import tw.waterball.judgegirl.problemservice.domain.repositories.ProblemQueryParams;
 import tw.waterball.judgegirl.problemservice.domain.repositories.ProblemRepository;
 import tw.waterball.judgegirl.springboot.profiles.productions.Mongo;
@@ -50,10 +53,12 @@ public class MongoProblemRepository implements ProblemRepository {
     private final static int OFFSET_NEW_PROBLEM_ID = 70000;
     private final MongoTemplate mongoTemplate;
     private final GridFsTemplate gridFsTemplate;
+    private final ObjectMapper objectMapper;
 
     public MongoProblemRepository(MongoTemplate mongoTemplate, GridFsTemplate gridFsTemplate) {
         this.mongoTemplate = mongoTemplate;
         this.gridFsTemplate = gridFsTemplate;
+        this.objectMapper = new ObjectMapper();
     }
 
     @Override
@@ -130,6 +135,31 @@ public class MongoProblemRepository implements ProblemRepository {
         log.info("New problem with title {} has been saved with id={}.",
                 saved.getTitle(), saved.getId());
         return id;
+    }
+
+    @Override
+    public void patchProblem(int problemId, PatchProblemParams params) {
+        Update update = new Update();
+        Query query = new Query(where("_id").is(problemId));
+        params.getTitle().ifPresent(title -> update.set("title", title));
+        params.getDescription().ifPresent(des -> update.set("description", des));
+        params.getMatchPolicyPluginTag().ifPresent(tag -> {
+            update.set("outputMatchPolicyPluginTag.type", tag.getType())
+                    .set("outputMatchPolicyPluginTag.group", tag.getGroup())
+                    .set("outputMatchPolicyPluginTag.name", tag.getName())
+                    .set("outputMatchPolicyPluginTag.version", tag.getVersion());
+        });
+        params.getFilterPluginTags().ifPresent(tags -> {
+            if (!tags.isEmpty()) {
+                update.addToSet("filterPluginTags").each(tags);
+            }
+        });
+        mongoTemplate.updateFirst(query, update, Problem.class);
+    }
+
+    @Override
+    public boolean problemExists(int problemId) {
+        return mongoTemplate.exists(query(where("_id").is(problemId)), Problem.class);
     }
 
     @Document("tag")

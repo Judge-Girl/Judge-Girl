@@ -15,9 +15,11 @@ package tw.waterball.judgegirl.springboot.problem.controllers;
 
 import lombok.AllArgsConstructor;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
+import tw.waterball.judgegirl.entities.problem.JudgePluginTag;
 import tw.waterball.judgegirl.entities.problem.Problem;
 import tw.waterball.judgegirl.entities.problem.Testcase;
 import tw.waterball.judgegirl.problemapi.views.ProblemItem;
@@ -27,6 +29,7 @@ import tw.waterball.judgegirl.problemservice.domain.usecases.*;
 import tw.waterball.judgegirl.springboot.utils.ResponseEntityUtils;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -34,7 +37,7 @@ import java.util.stream.Collectors;
  */
 @CrossOrigin
 @RestController
-@RequestMapping(value = "/api/problems", method = {RequestMethod.GET, RequestMethod.POST})
+@RequestMapping(value = "/api/problems", method = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PATCH})
 @AllArgsConstructor
 public class ProblemController {
     private final GetProblemUseCase getProblemUseCase;
@@ -44,6 +47,8 @@ public class ProblemController {
     private final GetAllTagsUseCase getAllTagsUseCase;
     private final GetTestCasesUseCase getTestCasesUseCase;
     private final SaveProblemWithTitleUseCase saveProblemWithTitleUseCase;
+    private final PatchProblemUseCase patchProblemUseCase;
+
 
     @GetMapping("/tags")
     public List<String> getTags() {
@@ -101,6 +106,31 @@ public class ProblemController {
         return saveProblemWithTitleUseCase.execute(title);
     }
 
+    @PatchMapping(value = "/{problemId}/title",
+            consumes = MediaType.TEXT_PLAIN_VALUE)
+    public void patchProblemWithTitle(@PathVariable int problemId, @RequestBody String title) {
+        patchProblemUseCase.execute(new PatchProblemUseCase.Request(problemId, title, null, null, null));
+    }
+
+    @PatchMapping(value = "/{problemId}/description",
+            consumes = MediaType.TEXT_PLAIN_VALUE)
+    public void patchProblemWithDescription(@PathVariable int problemId, @RequestBody String description) {
+        patchProblemUseCase.execute(new PatchProblemUseCase.Request(problemId, null, description, null, null));
+    }
+
+    @PatchMapping(value = "/{problemId}/plugins/match",
+            consumes = MediaType.APPLICATION_JSON_VALUE)
+    public void patchProblemWithPluginMatchTags(@PathVariable int problemId,
+                                                @RequestBody JudgePluginTag judgePluginTag) {
+        patchProblemUseCase.execute(new PatchProblemUseCase.Request(problemId, null, null, judgePluginTag, null));
+    }
+
+    @PatchMapping(value = "/{problemId}/plugins/filter",
+            consumes = MediaType.APPLICATION_JSON_VALUE)
+    public void patchProblemWithPluginFilterTags(@PathVariable int problemId,
+                                                 @RequestBody Set<JudgePluginTag> judgePluginTagSet) {
+        patchProblemUseCase.execute(new PatchProblemUseCase.Request(problemId, null, null, null, judgePluginTagSet));
+    }
 }
 
 class GetProblemPresenter implements GetProblemUseCase.Presenter {
