@@ -104,6 +104,12 @@ public class StudentControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
+    void WhenSignUpWithPasswordOfLength3_ShouldRespondBadRequest() throws Exception {
+        signUp("name", "email@example.com", "pwd")
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void GivenOneStudentSignedUp_WhenSignUpWithExistingEmail_ShouldRespondBadRequest() throws Exception {
         signUp(student);
         student = new Student("name", "email@example.com", "password");
