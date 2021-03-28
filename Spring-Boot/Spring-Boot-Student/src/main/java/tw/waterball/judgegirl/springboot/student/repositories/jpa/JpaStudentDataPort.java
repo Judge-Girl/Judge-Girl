@@ -13,6 +13,8 @@
 
 package tw.waterball.judgegirl.springboot.student.repositories.jpa;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -30,4 +32,7 @@ public interface JpaStudentDataPort extends JpaRepository<StudentData, Integer> 
     Optional<StudentData> findStudentById(Integer id);
 
     boolean existsByEmail(String email);
+
+    @Override
+    Page<StudentData> findAll(Pageable page);
 }

@@ -13,6 +13,7 @@
 
 package tw.waterball.judgegirl.springboot.student.controllers.it;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,6 +34,8 @@ import tw.waterball.judgegirl.studentservice.domain.exceptions.StudentIdNotFound
 import tw.waterball.judgegirl.studentservice.domain.usecases.ChangePasswordUseCase;
 import tw.waterball.judgegirl.studentservice.domain.usecases.SignInUseCase;
 import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -285,6 +288,31 @@ public class StudentControllerTest extends AbstractSpringBootTest {
                 .header("Authorization", bearerWithToken(token))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(request)));
+    }
+
+    @Test
+    void GivenTenStudentSignedUp_WhenGetStudentsWithSkip2Size3_ShouldSucceed() throws Exception {
+        signUpTenStudents();
+
+        int skip = 2;
+        int size = 3;
+        List<StudentView> students = getBody(
+                mockMvc.perform(get("/api/students?skip={skip}&&size={size}", skip, size))
+                        .andExpect(status().isOk()), new TypeReference<>() {
+                });
+
+        assertEquals(size, students.size());
+        assertEquals("name2", students.get(0).name);
+        assertEquals("name3", students.get(1).name);
+        assertEquals("name4", students.get(2).name);
+
+    }
+
+    private void signUpTenStudents() throws Exception {
+        for (int i = 0; i < 10; i++) {
+            String name = "name" + i;
+            signUp(name, name + "@example.com", "password");
+        }
     }
 
 }
