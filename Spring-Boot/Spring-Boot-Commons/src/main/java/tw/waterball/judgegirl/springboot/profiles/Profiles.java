@@ -18,6 +18,7 @@ package tw.waterball.judgegirl.springboot.profiles;
  */
 public interface Profiles {
     String MONGO = "mongo";
+    String EMBEDDED_MONGO = "embeddedMongo";
     String K8S = "k8s";
     String AMQP = "amqp";
     String SERVICE_DRIVER = "serviceDriver";

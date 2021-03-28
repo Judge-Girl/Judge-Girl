@@ -47,7 +47,7 @@ import static tw.waterball.judgegirl.springboot.student.view.StudentView.toViewM
  */
 @ActiveProfiles(Profiles.JWT)
 @ContextConfiguration(classes = SpringBootStudentApplication.class)
-public class StudentControllerIT extends AbstractSpringBootTest {
+public class StudentControllerTest extends AbstractSpringBootTest {
     private Student student;
     private Student admin;
 

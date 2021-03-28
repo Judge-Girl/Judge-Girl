@@ -30,7 +30,7 @@ public abstract class BaseSubmissionUseCase {
     public Submission doFindSubmission(int studentId, String submissionId) {
         return submissionRepository.findOne(studentId, submissionId)
                 .orElseThrow(() -> NotFoundException
-                        .resource("submission").id(submissionId));
+                        .notFound("submission").id(submissionId));
 
     }
 

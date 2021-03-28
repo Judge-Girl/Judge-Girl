@@ -39,7 +39,7 @@ public class NotFoundException extends RuntimeException {
                 StringUtils.capitalize(resourceName), attributeName, id));
     }
 
-    public static NotFoundExceptionBuilder resource(String resourceName) {
+    public static NotFoundExceptionBuilder notFound(String resourceName) {
         return new NotFoundExceptionBuilder(resourceName);
     }
 
@@ -50,7 +50,7 @@ public class NotFoundException extends RuntimeException {
             this.resourceName = resourceName;
         }
 
-        public NotFoundException id(String id) {
+        public NotFoundException id(Object id) {
             return new NotFoundException(id, resourceName);
         }
     }

@@ -3,14 +3,12 @@ package tw.waterball.judgegirl.springboot.student.repositories.jpa;
 import lombok.*;
 import tw.waterball.judgegirl.entities.Group;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 
 /**
  * @author - wally55077@gmail.com
  */
+@Table(name = "groups")
 @Setter
 @Getter
 @Builder
