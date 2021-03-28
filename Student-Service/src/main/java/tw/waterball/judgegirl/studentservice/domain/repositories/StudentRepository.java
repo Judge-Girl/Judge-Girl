@@ -15,6 +15,7 @@ package tw.waterball.judgegirl.studentservice.domain.repositories;
 
 import tw.waterball.judgegirl.entities.Student;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -32,4 +33,6 @@ public interface StudentRepository {
     Student save(Student student);
 
     void deleteAll();
+
+    List<Student> findAll(int skip, int size);
 }

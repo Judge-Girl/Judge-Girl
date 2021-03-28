@@ -27,6 +27,9 @@ import tw.waterball.judgegirl.studentservice.domain.exceptions.StudentIdNotFound
 import tw.waterball.judgegirl.studentservice.domain.exceptions.StudentPasswordIncorrectException;
 import tw.waterball.judgegirl.studentservice.domain.usecases.*;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import static tw.waterball.judgegirl.springboot.student.view.StudentView.toViewModel;
 
 /**
@@ -40,6 +43,7 @@ public class StudentController {
     private final SignInUseCase signInUseCase;
     private final SignUpUseCase signUpUseCase;
     private final GetStudentUseCase getStudentUseCase;
+    private final GetStudentsWithFilterUseCase getStudentsWithFilterUseCase;
     private final AuthUseCase authUseCase;
     private final ChangePasswordUseCase changePasswordUseCase;
     private final TokenService tokenService;
@@ -88,6 +92,15 @@ public class StudentController {
         request.studentId = studentId;
         tokenService.ifTokenValid(studentId, authorization,
                 token -> changePasswordUseCase.execute(request));
+    }
+
+    @GetMapping
+    public List<StudentView> getStudentsWithFilter(
+            @RequestParam(defaultValue = "0", required = false) int skip,
+            @RequestParam(defaultValue = "25", required = false) int size) {
+        GetStudentsPresenter presenter = new GetStudentsPresenter();
+        getStudentsWithFilterUseCase.execute(new GetStudentsWithFilterUseCase.Request(skip, size), presenter);
+        return presenter.present();
     }
 
 
@@ -174,5 +187,20 @@ class AuthPresenter implements AuthUseCase.Presenter {
     LoginResponse present() {
         return new LoginResponse(token.getStudentId(), student.getEmail(), token.toString(),
                 token.getExpiration().getTime(), student.isAdmin());
+    }
+}
+
+class GetStudentsPresenter implements GetStudentsWithFilterUseCase.Presenter {
+    private List<Student> students;
+
+    @Override
+    public void setStudents(List<Student> students) {
+        this.students = students;
+    }
+
+    List<StudentView> present() {
+        return students.stream()
+                .map(StudentView::toViewModel)
+                .collect(Collectors.toList());
     }
 }
