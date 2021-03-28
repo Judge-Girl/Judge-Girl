@@ -27,9 +27,7 @@ public class AddStudentIntoGroupUseCase {
         Student student = studentRepository.findStudentById(studentId)
                 .orElseThrow(NotFoundException::new);
         group.addStudent(student);
-        student.addGroup(group);
         groupRepository.save(group);
-        studentRepository.save(student);
     }
 
 }

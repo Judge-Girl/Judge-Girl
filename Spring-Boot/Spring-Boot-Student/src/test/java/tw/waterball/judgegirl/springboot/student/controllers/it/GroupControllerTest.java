@@ -31,7 +31,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * @author - wally55077@gmail.com
  */
-@Transactional
 @ActiveProfiles(Profiles.JWT)
 @ContextConfiguration(classes = SpringBootStudentApplication.class)
 public class GroupControllerTest extends AbstractSpringBootTest {
@@ -57,30 +56,36 @@ public class GroupControllerTest extends AbstractSpringBootTest {
         ResultActions resultActions = createGroup(GROUP_NAME)
                 .andExpect(status().isOk());
         GroupView groupView = getBody(resultActions, GroupView.class);
+
         assertEquals(GROUP_NAME, groupView.name);
         assertTrue(groupRepository.existsByName(GROUP_NAME));
     }
 
     @Test
-    public void GiveOneGroupCreated_WhenCreateGroupWithDuplicateName_ShouldRejectWithBadRequest() throws Exception {
+    public void GivenOneGroupCreated_WhenCreateGroupWithDuplicateName_ShouldRejectWithBadRequest() throws Exception {
         createGroup(GROUP_NAME);
+
         createGroup(GROUP_NAME).andExpect(status().isBadRequest());
     }
 
     @Test
-    public void GiveOneGroupCreated_WhenGetGroupById_ShouldRespondGroup() throws Exception {
+    public void GivenOneGroupCreated_WhenGetGroupById_ShouldRespondGroup() throws Exception {
         GroupView group = createGroupAndGet(GROUP_NAME);
+
         ResultActions resultActions = getGroupById(group.id).andExpect(status().isOk());
+
         GroupView body = getBody(resultActions, GroupView.class);
         assertEquals(group, body);
     }
 
     @Test
-    public void GiveTwoGroupsCreated_WhenGetAll_ShouldRespondTwoGroups() throws Exception {
+    public void GivenTwoGroupsCreated_WhenGetAll_ShouldRespondTwoGroups() throws Exception {
         createGroup(GROUP_NAME + 1);
         createGroup(GROUP_NAME + 2);
+
         List<GroupView> body = getBody(getAllGroups().andExpect(status().isOk()), new TypeReference<>() {
         });
+
         assertEquals(2, body.size());
     }
 
@@ -102,10 +107,12 @@ public class GroupControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    public void GiveOneGroupCreated_WhenDeleteGroupById_ShouldDeleteSuccessfully() throws Exception {
+    public void GivenOneGroupCreated_WhenDeleteGroupById_ShouldDeleteSuccessfully() throws Exception {
         GroupView group = createGroupAndGet(GROUP_NAME);
+
         int groupId = group.id;
         deleteGroupById(groupId).andExpect(status().isOk());
+
         getGroupById(groupId).andExpect(status().isNotFound());
     }
 
@@ -129,39 +136,48 @@ public class GroupControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    public void GiveOneGroupCreated_WhenAddTwoStudentsIntoTheGroup_ShouldAddSuccessfully() throws Exception {
+    @Transactional
+    public void GivenOneGroupCreated_WhenAddTwoStudentsIntoTheGroup_ShouldAddSuccessfully() throws Exception {
+        GroupView body = createGroupAndGet(GROUP_NAME);
+
+        StudentView studentA = signUpAndGetStudent("A");
+        StudentView studentB = signUpAndGetStudent("B");
+        int groupId = body.id;
+        addStudentIntoGroup(groupId, studentA.id);
+        addStudentIntoGroup(groupId, studentB.id);
+
+        Group group = groupRepository.findGroupById(groupId).orElseThrow(NotFoundException::new);
+        assertEquals(2, group.getStudents().size());
+    }
+
+    @Test
+    @Transactional
+    public void GivenTwoStudentsAddedIntoCreatedGroup_WhenDeleteOneStudentFromTheGroup_ThenGroupShouldHaveOneStudent() throws Exception {
         GroupView body = createGroupAndGet(GROUP_NAME);
         StudentView studentA = signUpAndGetStudent("A");
         StudentView studentB = signUpAndGetStudent("B");
         int groupId = body.id;
         addStudentIntoGroup(groupId, studentA.id);
         addStudentIntoGroup(groupId, studentB.id);
+
+        deleteStudentFromGroup(groupId, studentA.id);
+
         Group group = groupRepository.findGroupById(groupId).orElseThrow(NotFoundException::new);
-        assertEquals(2, group.getStudents().size());
+        assertEquals(1, group.getStudents().size());
     }
 
     @Test
-    public void GiveOneStudentIntoCreatedGroup_WhenDeleteOneStudentFromTheGroup_ShouldDeleteSuccessfully() throws Exception {
+    public void GivenTwoStudentsAddedIntoCreatedGroup_WhenDeleteGroupById_ShouldDeleteSuccessfully() throws Exception {
         GroupView body = createGroupAndGet(GROUP_NAME);
         StudentView studentA = signUpAndGetStudent("A");
+        StudentView studentB = signUpAndGetStudent("B");
         int groupId = body.id;
-        int studentId = studentA.id;
-        addStudentIntoGroup(groupId, studentId);
-        deleteStudentFromGroup(groupId, studentId);
-        Group group = groupRepository.findGroupById(groupId).orElseThrow(NotFoundException::new);
-        assertEquals(0, group.getStudents().size());
-    }
+        addStudentIntoGroup(groupId, studentA.id);
+        addStudentIntoGroup(groupId, studentB.id);
 
-    @Test
-    @Transactional
-    public void GiveOneStudentIntoCreatedGroup_WhenDeleteGroupById_ShouldDeleteSuccessfully() throws Exception {
-        GroupView body = createGroupAndGet(GROUP_NAME);
-        StudentView studentA = signUpAndGetStudent("A");
-        int groupId = body.id;
-        int studentId = studentA.id;
-        addStudentIntoGroup(groupId, studentId);
         deleteGroupById(groupId);
-        Student student = studentRepository.findStudentById(studentId).orElseThrow(NotFoundException::new);
+
+        Student student = studentRepository.findStudentById(studentA.id).orElseThrow(NotFoundException::new);
         assertEquals(0, student.getGroups().size());
     }
 

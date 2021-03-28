@@ -77,9 +77,11 @@ public class Student {
 
     public void addGroup(Group group) {
         groups.add(group);
+        group.getStudents().add(this);
     }
 
     public void deleteGroup(Group group) {
         groups.remove(group);
+        group.getStudents().remove(this);
     }
 }

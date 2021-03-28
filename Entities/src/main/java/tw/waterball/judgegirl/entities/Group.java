@@ -1,6 +1,7 @@
 package tw.waterball.judgegirl.entities;
 
 import lombok.*;
+import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.commons.utils.JSR380Utils;
 
 import javax.validation.constraints.NotBlank;
@@ -39,9 +40,19 @@ public class Group {
 
     public void addStudent(Student student) {
         students.add(student);
+        student.getGroups().add(this);
     }
 
     public void deleteStudent(Student student) {
         students.remove(student);
+        student.getGroups().remove(this);
+    }
+
+    public void deleteStudentById(int studentId) throws NotFoundException {
+        Student student = students.stream()
+                .filter(studentElement -> studentElement.id == studentId)
+                .findFirst()
+                .orElseThrow(NotFoundException::new);
+        deleteStudent(student);
     }
 }
