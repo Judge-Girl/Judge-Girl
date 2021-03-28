@@ -18,7 +18,6 @@ import lombok.Data;
 import tw.waterball.judgegirl.entities.Admin;
 import tw.waterball.judgegirl.entities.Student;
 import tw.waterball.judgegirl.studentservice.domain.exceptions.DuplicateEmailException;
-import tw.waterball.judgegirl.studentservice.domain.exceptions.InvalidPasswordLength;
 import tw.waterball.judgegirl.studentservice.domain.repositories.StudentRepository;
 import tw.waterball.judgegirl.studentservice.ports.PasswordEncoder;
 
@@ -52,7 +51,7 @@ public class SignUpUseCase {
     private void validatePasswordLength(String password) {
         int length = password.length();
         if (length < 8 || length > 25) {
-            throw new InvalidPasswordLength("Invalid password length");
+            throw new IllegalArgumentException();
         }
     }
 

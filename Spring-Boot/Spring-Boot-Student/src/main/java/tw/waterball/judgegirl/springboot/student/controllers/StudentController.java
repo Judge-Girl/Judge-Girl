@@ -21,7 +21,10 @@ import tw.waterball.judgegirl.commons.token.TokenInvalidException;
 import tw.waterball.judgegirl.commons.token.TokenService;
 import tw.waterball.judgegirl.entities.Student;
 import tw.waterball.judgegirl.springboot.student.view.StudentView;
-import tw.waterball.judgegirl.studentservice.domain.exceptions.*;
+import tw.waterball.judgegirl.studentservice.domain.exceptions.DuplicateEmailException;
+import tw.waterball.judgegirl.studentservice.domain.exceptions.StudentEmailNotFoundException;
+import tw.waterball.judgegirl.studentservice.domain.exceptions.StudentIdNotFoundException;
+import tw.waterball.judgegirl.studentservice.domain.exceptions.StudentPasswordIncorrectException;
 import tw.waterball.judgegirl.studentservice.domain.usecases.*;
 
 import java.util.List;
@@ -101,8 +104,7 @@ public class StudentController {
     }
 
 
-    @ExceptionHandler({StudentPasswordIncorrectException.class,
-            DuplicateEmailException.class, IllegalArgumentException.class, InvalidPasswordLength.class})
+    @ExceptionHandler({StudentPasswordIncorrectException.class, DuplicateEmailException.class, IllegalArgumentException.class})
     public ResponseEntity<?> badRequestHandler(Exception err) {
         return ResponseEntity.badRequest().body(err.getMessage());
     }
