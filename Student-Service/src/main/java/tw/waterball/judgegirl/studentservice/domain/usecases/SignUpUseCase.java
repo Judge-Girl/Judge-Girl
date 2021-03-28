@@ -18,6 +18,7 @@ import lombok.Data;
 import tw.waterball.judgegirl.entities.Admin;
 import tw.waterball.judgegirl.entities.Student;
 import tw.waterball.judgegirl.studentservice.domain.exceptions.DuplicateEmailException;
+import tw.waterball.judgegirl.studentservice.domain.exceptions.InvalidPasswordLength;
 import tw.waterball.judgegirl.studentservice.domain.repositories.StudentRepository;
 import tw.waterball.judgegirl.studentservice.ports.PasswordEncoder;
 
@@ -35,6 +36,7 @@ public class SignUpUseCase {
 
     public void execute(Request request, Presenter presenter) {
         validateEmail(request);
+        validatePasswordLength(request.password);
         String encodedPassword = passwordEncoder.encode(request.password);
         Student student = createStudent(request, encodedPassword);
         student.validate();
@@ -44,6 +46,13 @@ public class SignUpUseCase {
     private void validateEmail(Request request) {
         if (studentRepository.existsByEmail(request.getEmail())) {
             throw new DuplicateEmailException("Duplicate email");
+        }
+    }
+
+    private void validatePasswordLength(String password) {
+        int length = password.length();
+        if (length < 8 || length > 25) {
+            throw new InvalidPasswordLength("Invalid password length");
         }
     }
 
