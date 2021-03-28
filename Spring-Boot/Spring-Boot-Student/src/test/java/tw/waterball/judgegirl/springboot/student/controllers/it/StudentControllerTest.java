@@ -291,21 +291,18 @@ public class StudentControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    void GivenTenStudentSignedUp_WhenGetStudentsWithSkip2Size3_ShouldSucceed() throws Exception {
+    void GivenTenStudentsSignedUp_WhenGetStudentsWithSkip2Size3_ShouldRespondCorrectly() throws Exception {
         signUpTenStudents();
 
-        int skip = 2;
-        int size = 3;
         List<StudentView> students = getBody(
-                mockMvc.perform(get("/api/students?skip={skip}&&size={size}", skip, size))
+                mockMvc.perform(get("/api/students?skip=2&&size=3"))
                         .andExpect(status().isOk()), new TypeReference<>() {
                 });
 
-        assertEquals(size, students.size());
+        assertEquals(3, students.size());
         assertEquals("name2", students.get(0).name);
         assertEquals("name3", students.get(1).name);
         assertEquals("name4", students.get(2).name);
-
     }
 
     private void signUpTenStudents() throws Exception {
@@ -314,5 +311,4 @@ public class StudentControllerTest extends AbstractSpringBootTest {
             signUp(name, name + "@example.com", "password");
         }
     }
-
 }

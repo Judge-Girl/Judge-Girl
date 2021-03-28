@@ -95,7 +95,9 @@ public class StudentController {
     }
 
     @GetMapping
-    public List<StudentView> getStudentsWithFilter(@RequestParam int skip, @RequestParam int size) {
+    public List<StudentView> getStudentsWithFilter(
+            @RequestParam(defaultValue = "0", required = false) int skip,
+            @RequestParam(defaultValue = "25", required = false) int size) {
         GetStudentsPresenter presenter = new GetStudentsPresenter();
         getStudentsWithFilterUseCase.execute(new GetStudentsWithFilterUseCase.Request(skip, size), presenter);
         return presenter.present();

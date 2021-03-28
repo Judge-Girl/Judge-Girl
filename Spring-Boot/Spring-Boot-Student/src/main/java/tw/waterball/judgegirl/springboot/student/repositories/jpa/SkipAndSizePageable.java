@@ -97,6 +97,6 @@ public class SkipAndSizePageable implements Pageable, Serializable {
 
     @Override
     public boolean hasPrevious() {
-        return false;
+        return getPageNumber() != 0;
     }
 }
