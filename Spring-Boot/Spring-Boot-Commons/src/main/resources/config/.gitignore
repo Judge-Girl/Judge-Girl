@@ -1,2 +1,2 @@
 application.yml
-../application.properties
+application-mongo.yml

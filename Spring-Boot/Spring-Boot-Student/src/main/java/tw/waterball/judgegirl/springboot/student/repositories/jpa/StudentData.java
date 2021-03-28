@@ -17,14 +17,12 @@ import lombok.*;
 import tw.waterball.judgegirl.entities.Admin;
 import tw.waterball.judgegirl.entities.Student;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 
 /**
  * @author chaoyulee chaoyu2330@gmail.com
  */
+@Table(name = "students")
 @Builder
 @Getter
 @Setter

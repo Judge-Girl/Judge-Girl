@@ -24,7 +24,7 @@ import tw.waterball.judgegirl.springboot.profiles.Profiles;
  *
  * @author - johnny850807@gmail.com (Waterball)
  */
-@org.springframework.context.annotation.Profile("!" + Profiles.MONGO)
+@org.springframework.context.annotation.Profile("!" + Profiles.MONGO + " & !" + Profiles.EMBEDDED_MONGO)
 @Configuration
 @EnableAutoConfiguration(exclude = {MongoDataAutoConfiguration.class, MongoAutoConfiguration.class})
 public class MongoExclusionConfig {

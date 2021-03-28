@@ -23,6 +23,6 @@ import java.lang.annotation.*;
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@org.springframework.context.annotation.Profile(Profiles.MONGO)
+@org.springframework.context.annotation.Profile({Profiles.MONGO, Profiles.EMBEDDED_MONGO})
 public @interface Mongo {
 }
