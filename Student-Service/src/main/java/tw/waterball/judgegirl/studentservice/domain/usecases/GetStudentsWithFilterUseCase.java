@@ -34,10 +34,8 @@ public class GetStudentsWithFilterUseCase {
     }
 
     public void execute(Request request, Presenter presenter) {
-        int page = request.skip / (request.size * 2);
-        List<Student> students = studentRepository.findAll(page, request.size * 2);
-        int start = request.skip - page * request.size * 2;
-        presenter.setStudents(students.subList(start, start + request.size));
+        List<Student> students = studentRepository.findAll(request.skip, request.size);
+        presenter.setStudents(students);
     }
 
     @AllArgsConstructor

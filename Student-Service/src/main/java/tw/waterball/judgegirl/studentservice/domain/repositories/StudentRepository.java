@@ -34,5 +34,5 @@ public interface StudentRepository {
 
     void deleteAll();
 
-    List<Student> findAll(int page, int size);
+    List<Student> findAll(int skip, int size);
 }
