@@ -124,6 +124,7 @@ public class MongoProblemRepository implements ProblemRepository {
         Problem problem = Problem.builder()
                 .id(id)
                 .title(title)
+                .visible(false)
                 .build();
         Problem saved = mongoTemplate.save(problem);
         log.info("New problem with title {} has been saved with id={}.",
