@@ -13,24 +13,48 @@
 
 package tw.waterball.judgegirl.springboot.student.repositories.jpa;
 
+import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+
+import java.io.Serializable;
 
 /**
  * @author chaoyulee chaoyu2330@gmail.com
  */
-public class JpaPageable implements Pageable {
+public class SkipAndSizePageable implements Pageable, Serializable {
+
+    private static final long serialVersionUID = -25822477129613575L;
+
     private final int skip;
     private final int size;
+    private final Sort sort;
 
-    public JpaPageable(int skip, int size) {
+    public SkipAndSizePageable(int skip, int size, Sort sort) {
+        validation(skip, size);
         this.skip = skip;
         this.size = size;
+        this.sort = sort;
+    }
+
+    public SkipAndSizePageable(int skip, int size) {
+        validation(skip, size);
+        this.skip = skip;
+        this.size = size;
+        this.sort = Sort.unsorted();
+    }
+
+    private void validation(int skip, int size) {
+        if (skip < 0) {
+            throw new IllegalArgumentException("Offset index must not be less than zero!");
+        } else if (size < 1) {
+            throw new IllegalArgumentException("Limit must not be less than one!");
+        }
     }
 
     @Override
     public int getPageNumber() {
-        return 0;
+        return skip / size;
     }
 
     @Override
@@ -43,24 +67,32 @@ public class JpaPageable implements Pageable {
         return this.skip;
     }
 
+    @NotNull
     @Override
     public Sort getSort() {
-        return Sort.unsorted();
+        return this.sort;
     }
 
+    @NotNull
     @Override
     public Pageable next() {
-        return null;
+        return new SkipAndSizePageable(this.skip + this.size, this.size, this.sort);
     }
 
+    @NotNull
     @Override
     public Pageable previousOrFirst() {
-        return this.first();
+        return this.hasPrevious() ? this.previous() : this.first();
     }
 
+    @NotNull
     @Override
     public Pageable first() {
-        return new JpaPageable(0, this.size);
+        return new SkipAndSizePageable(0, this.size, this.sort);
+    }
+
+    private Pageable previous() {
+        return new SkipAndSizePageable(this.skip - this.size, this.size, this.sort);
     }
 
     @Override
