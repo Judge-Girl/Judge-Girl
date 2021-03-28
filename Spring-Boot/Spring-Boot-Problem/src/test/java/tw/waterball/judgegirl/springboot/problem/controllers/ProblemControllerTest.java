@@ -112,6 +112,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     void GivenProblemSaved_WhenGetProblemById_ShouldRespondThatProblem() throws Exception {
         givenProblemSavedWithProvidedCodesAndTestcaseIOs();
 
+        problem.setVisible(false);
         mockMvc.perform(get("/api/problems/{problemId}", problem.getId()))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
