@@ -22,6 +22,7 @@ public class AddStudentIntoGroupUseCase {
 
     public void execute(int groupId, int studentId)
             throws NotFoundException {
+        // TODO: improve performance, should only perform one SQL query
         Group group = groupRepository.findGroupById(groupId)
                 .orElseThrow(NotFoundException::new);
         Student student = studentRepository.findStudentById(studentId)

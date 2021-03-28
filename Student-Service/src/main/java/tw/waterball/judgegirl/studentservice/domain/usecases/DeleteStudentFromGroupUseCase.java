@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.entities.Group;
 import tw.waterball.judgegirl.studentservice.domain.repositories.GroupRepository;
-import tw.waterball.judgegirl.studentservice.domain.repositories.StudentRepository;
 
 import javax.inject.Named;
 
@@ -15,12 +14,11 @@ import javax.inject.Named;
 @AllArgsConstructor
 public class DeleteStudentFromGroupUseCase {
 
-    private final StudentRepository studentRepository;
-
     private final GroupRepository groupRepository;
 
     public void execute(int groupId, int studentId)
             throws NotFoundException {
+        // TODO: improve performance, should only perform one SQL query
         Group group = groupRepository.findGroupById(groupId)
                 .orElseThrow(NotFoundException::new);
         group.deleteStudentById(studentId);
