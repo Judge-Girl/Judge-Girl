@@ -13,22 +13,22 @@
 
 package tw.waterball.judgegirl.entities;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 import tw.waterball.judgegirl.commons.utils.JSR380Utils;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
-@EqualsAndHashCode
-@NoArgsConstructor
+@Setter
 @Getter
-@ToString
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Student {
     protected Integer id;
     @NotBlank
@@ -40,6 +40,7 @@ public class Student {
 
     protected boolean isAdmin = false;
 
+    private final Set<Group> groups = new HashSet<>();
 
     public Student(String name, String email, String password) {
         this.name = name;
@@ -72,5 +73,15 @@ public class Student {
 
     public void validate() {
         JSR380Utils.validate(this);
+    }
+
+    public void addGroup(Group group) {
+        groups.add(group);
+        group.getStudents().add(this);
+    }
+
+    public void deleteGroup(Group group) {
+        groups.remove(group);
+        group.getStudents().remove(this);
     }
 }
