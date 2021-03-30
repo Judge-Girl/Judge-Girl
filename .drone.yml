@@ -30,6 +30,7 @@ steps:
     when:
       branch:
         - master
+        - dev/147
       event:
         - push
   - name: Deploy
@@ -41,5 +42,6 @@ steps:
     when:
       branch:
         - master
+        - dev/147
       event:
         - push

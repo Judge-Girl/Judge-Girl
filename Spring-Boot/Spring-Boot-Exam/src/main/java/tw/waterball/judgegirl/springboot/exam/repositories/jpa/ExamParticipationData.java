@@ -14,7 +14,7 @@ import javax.persistence.*;
 @NoArgsConstructor
 public class ExamParticipationData {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     private Integer examId;

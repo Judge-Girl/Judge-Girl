@@ -11,7 +11,7 @@ import java.util.Set;
 /**
  * @author - wally55077@gmail.com
  */
-@Table(name = "groups")
+@Table(name = "\"groups\"" /*escape from keywords*/)
 @Setter
 @Getter
 @Builder
