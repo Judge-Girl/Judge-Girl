@@ -35,6 +35,7 @@ public class SignUpUseCase {
 
     public void execute(Request request, Presenter presenter) {
         validateEmail(request);
+        validatePasswordLength(request.password);
         String encodedPassword = passwordEncoder.encode(request.password);
         Student student = createStudent(request, encodedPassword);
         student.validate();
@@ -44,6 +45,13 @@ public class SignUpUseCase {
     private void validateEmail(Request request) {
         if (studentRepository.existsByEmail(request.getEmail())) {
             throw new DuplicateEmailException("Duplicate email");
+        }
+    }
+
+    private void validatePasswordLength(String password) {
+        int length = password.length();
+        if (length < 8 || length > 25) {
+            throw new IllegalArgumentException();
         }
     }
 

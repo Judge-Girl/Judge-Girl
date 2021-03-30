@@ -34,6 +34,7 @@ public class ChangePasswordUseCase {
     private final PasswordEncoder passwordEncoder;
 
     public void execute(Request request) {
+        validatePasswordLength(request.newPassword);
         Student student = getStudentUseCase.execute(request.studentId);
         validatePassword(request.currentPassword, student.getPassword());
         String encodedNewPassword = passwordEncoder.encode(request.newPassword);
@@ -44,6 +45,13 @@ public class ChangePasswordUseCase {
     private void validatePassword(String rawPassword, String encodedPassword) throws StudentPasswordIncorrectException {
         if (!passwordEncoder.matches(rawPassword, encodedPassword)) {
             throw new StudentPasswordIncorrectException();
+        }
+    }
+
+    private void validatePasswordLength(String password) {
+        int length = password.length();
+        if (length < 8 || length > 25) {
+            throw new IllegalArgumentException("Invalid password length");
         }
     }
 
