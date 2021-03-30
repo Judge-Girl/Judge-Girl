@@ -31,14 +31,8 @@ public class ExamData {
     @OneToMany(mappedBy = "id.examId", cascade = {CascadeType.ALL})
     private List<QuestionData> questions = new ArrayList<>();
 
-
-    public void addQuestion(QuestionData questionData) {
-        questions.add(questionData);
-    }
-
-    public void removeQuestion(QuestionData questionData) {
-        questions.remove(questionData);
-    }
+    @OneToMany(mappedBy = "id.examId", cascade = {CascadeType.ALL})
+    private List<ExamParticipationData> examParticipations = new ArrayList<>();
 
     public Exam toEntity() {
         return new Exam(id, name, startTime, endTime, description,
@@ -55,4 +49,6 @@ public class ExamData {
                 .questions(mapToList(exam.getQuestions(), QuestionData::toData))
                 .build();
     }
+
+
 }

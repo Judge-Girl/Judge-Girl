@@ -16,8 +16,8 @@ package tw.waterball.judgegirl.springboot.student.repositories;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import tw.waterball.judgegirl.entities.Student;
+import tw.waterball.judgegirl.springboot.helpers.SkipAndSizePageable;
 import tw.waterball.judgegirl.springboot.student.repositories.jpa.JpaStudentDataPort;
-import tw.waterball.judgegirl.springboot.student.repositories.jpa.SkipAndSizePageable;
 import tw.waterball.judgegirl.springboot.student.repositories.jpa.StudentData;
 import tw.waterball.judgegirl.studentservice.domain.repositories.StudentRepository;
 

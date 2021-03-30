@@ -3,6 +3,7 @@ package tw.waterball.judgegirl.springboot.exam.controllers;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -13,9 +14,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.ResultActions;
 import tw.waterball.judgegirl.entities.Exam;
-import tw.waterball.judgegirl.entities.ExamParticipation;
 import tw.waterball.judgegirl.entities.Question;
-import tw.waterball.judgegirl.examservice.repositories.ExamParticipationRepository;
+import tw.waterball.judgegirl.examservice.repositories.ExamFilter;
 import tw.waterball.judgegirl.examservice.repositories.ExamRepository;
 import tw.waterball.judgegirl.examservice.usecases.CreateExamUseCase;
 import tw.waterball.judgegirl.examservice.usecases.CreateQuestionUseCase;
@@ -28,35 +28,33 @@ import tw.waterball.judgegirl.springboot.exam.view.QuestionView;
 import tw.waterball.judgegirl.springboot.profiles.Profiles;
 import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-import static java.util.Arrays.asList;
+import static java.util.Arrays.stream;
 import static java.util.concurrent.TimeUnit.HOURS;
+import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static tw.waterball.judgegirl.commons.utils.DateUtils.afterCurrentTime;
 import static tw.waterball.judgegirl.commons.utils.DateUtils.beforeCurrentTime;
-import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
 
 @ActiveProfiles(Profiles.JWT)
 @ContextConfiguration(classes = SpringBootExamApplication.class)
 class ExamControllerTest extends AbstractSpringBootTest {
-
     public static final int PROBLEM_ID = 2;
     public static final int ANOTHER_PROBLEM_ID = 300;
 
     public static final int NONEXISTING_EXAM_ID = 9999;
     public static final int NONEXISTING_PROBLEM_ID = 9999;
-
+    public static final int STUDENT_ID = 1;
 
     @Autowired
     ExamRepository examRepository;
-    @Autowired
-    ExamParticipationRepository examParticipationRepository;
     @Autowired
     FakeProblemServiceDriver problemServiceDriver;
     private ProblemView problem;
@@ -87,7 +85,6 @@ class ExamControllerTest extends AbstractSpringBootTest {
 
     @AfterEach
     void cleanup() {
-        examParticipationRepository.deleteAll();
         examRepository.deleteAll();
         problemServiceDriver.clear();
     }
@@ -105,7 +102,6 @@ class ExamControllerTest extends AbstractSpringBootTest {
                 .andExpect(jsonPath("startTime").value(startTime))
                 .andExpect(jsonPath("endTime").value(endTime))
                 .andExpect(jsonPath("description").value(description));
-
     }
 
     @Test
@@ -122,26 +118,41 @@ class ExamControllerTest extends AbstractSpringBootTest {
 
     }
 
+    @DisplayName("Given Student participates Exams A, B, C, D (only B, D are upcoming) " +
+            "When get student's upcoming exams, Should respond B D")
     @Test
-    void GivenStudentParticipatesOnThreeExams_AndTwoOfThemAreUpcoming_WhenGetUpcomingExams_ShouldResponseThoseTwo() throws Exception {
-        Date now = new Date();
-        Date future = afterCurrentTime(2, HOURS);
-        Date past = beforeCurrentTime(2, HOURS);
-        ExamView upcoming1 = createExamAndGet(future, future, "upcoming1");
-        ExamView upcoming2 = createExamAndGet(future, future, "upcoming2");
-        ExamView past1 = createExamAndGet(past, now, "past1");
-        createExamParticipation(new ExamParticipation(upcoming1.getId(), 1));
-        createExamParticipation(new ExamParticipation(upcoming2.getId(), 1));
-        createExamParticipation(new ExamParticipation(past1.getId(), 1));
+    void testFilterUpcomingStudentExams() throws Exception {
+        givenStudentParticipatingExams(STUDENT_ID,
+                givenCurrentExams("A", "C"),
+                givenUpcomingExams("B", "D"));
 
-        List<ExamView> exams = getBody(
-                getExams(1, "upcoming")
-                        .andExpect(status().isOk()), new TypeReference<>() {
-                });
+        List<ExamView> exams = getStudentExams(STUDENT_ID, ExamFilter.Status.upcoming);
+        shouldRespondExams(exams, "B", "D");
+    }
 
-        List<Integer> actualExamIdSet = mapToList(exams, ExamView::getId);
-        List<Integer> expectExamIdSet = asList(upcoming1.getId(), upcoming2.getId());
-        assertEqualsIgnoreOrder(expectExamIdSet, actualExamIdSet);
+    @DisplayName("Given Student participates Exams A, B, C, D, E, F, G (only B, F, G are past) " +
+            "When get student's past exams with skip=1, size=2, Should respond F, G")
+    @Test
+    void testFilterPastStudentExamsWithPaging() throws Exception {
+        givenStudentParticipatingExams(STUDENT_ID,
+                givenCurrentExams("A", "C", "D", "E"),
+                givenPastExams("B", "F", "G"));
+
+        List<ExamView> exams = getStudentExams(STUDENT_ID, ExamFilter.Status.past, 1, 2);
+        shouldRespondExams(exams, "F", "G");
+    }
+
+
+    @DisplayName("Given Student participates Exams A, B, C, D, E, F, G (only A, B, C, D are current) " +
+            "When get student's current exams with skip=1, size=500000, Should respond B, C, D")
+    @Test
+    void testFilterCurrentStudentExamsWithPaging() throws Exception {
+        givenStudentParticipatingExams(STUDENT_ID,
+                givenPastExams("E", "F", "G"),
+                givenCurrentExams("A", "B", "C", "D"));
+
+        List<ExamView> exams = getStudentExams(STUDENT_ID, ExamFilter.Status.current, 1, 50000);
+        shouldRespondExams(exams, "B", "C", "D");
     }
 
     @Test
@@ -174,7 +185,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
     @Test
     void GivenOneExamAndOneQuestionCreated_WhenDeleteTheQuestion_ShouldSucceed() throws Exception {
         ExamView examView = createExamAndGet(new Date(), new Date(), "sample-exam");
-        QuestionView question = createQuestionAndGet(new CreateQuestionUseCase.Request(examView.getId(), 2, 5, 100, 1));
+        createQuestion(new CreateQuestionUseCase.Request(examView.getId(), 2, 5, 100, 1));
         deleteQuestion(examView.getId(), PROBLEM_ID)
                 .andExpect(status().isOk());
         assertEquals(getExamOverview(examView.getId()).getQuestions().size(), 0);
@@ -183,7 +194,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
     @Test
     void WhenDeleteQuestionWithNonExistingExam_ShouldRespondNotFound() throws Exception {
         ExamView examView = createExamAndGet(new Date(), new Date(), "sample-exam");
-        QuestionView question = createQuestionAndGet(new CreateQuestionUseCase.Request(examView.getId(), 2, 5, 100, 1));
+        createQuestion(new CreateQuestionUseCase.Request(examView.getId(), 2, 5, 100, 1));
         deleteQuestion(NONEXISTING_EXAM_ID, PROBLEM_ID)
                 .andExpect(status().isNotFound());
     }
@@ -191,7 +202,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
     @Test
     void WhenDeleteQuestionWithNonExistingProblem_ShouldRespondNotFound() throws Exception {
         ExamView examView = createExamAndGet(new Date(), new Date(), "sample-exam");
-        QuestionView question = createQuestionAndGet(new CreateQuestionUseCase.Request(examView.getId(), 2, 5, 100, 1));
+        createQuestion(new CreateQuestionUseCase.Request(examView.getId(), 2, 5, 100, 1));
         deleteQuestion(examView.getId(), NONEXISTING_PROBLEM_ID)
                 .andExpect(status().isNotFound());
     }
@@ -216,6 +227,118 @@ class ExamControllerTest extends AbstractSpringBootTest {
         assertEquals(examOverview.getQuestions().get(1).getProblemTitle(), anotherProblem.getTitle());
     }
 
+    @Test
+    void GivenExams_A_B_WhenGetAllExams_ShouldRespondExams_A_B() throws Exception {
+        givenCurrentExams("A", "B");
+
+        List<ExamView> exams = getAllExams();
+        shouldRespondExams(exams, "A", "B");
+    }
+
+    @Test
+    void GivenExams_A_B_C_D_E_WhenGetExamsWithSkip2Size2_ShouldRespondExams_C_D() throws Exception {
+        givenCurrentExams("A", "B", "C", "D", "E");
+
+        List<ExamView> exams = getExamsWithPaging(2, 2);
+        shouldRespondExams(exams, "C", "D");
+    }
+
+    @Test
+    void GivenExams_A_B_C_D_E_WhenGetExamsWithSkip2Size1000_ShouldRespondExams_C_D_E() throws Exception {
+        givenCurrentExams("A", "B", "C", "D", "E");
+
+        List<ExamView> exams = getExamsWithPaging(2, 1000);
+        shouldRespondExams(exams, "C", "D", "E");
+    }
+
+    @DisplayName("Given exams A, B, C, D, E (A, C, D are upcoming), " +
+            "When filter upcoming exams with skip=1, size=1, " +
+            "Then should respond only C")
+    @Test
+    void testFilterUpcomingExams() throws Exception {
+        givenCurrentExams("B", "E");
+        givenUpcomingExams("A", "C", "D");
+
+        List<ExamView> exams = getExamsWithPaging(ExamFilter.Status.upcoming, 1, 1);
+        shouldRespondExams(exams, "C");
+    }
+
+    @DisplayName("Given exams A, B, C, D, E, F, G, H, I (A, B, G, H, I are past), " +
+            "When filter past exams with skip=2, size=3, " +
+            "Then should respond G, H, I")
+    @Test
+    void testFilterPastExams() throws Exception {
+        givenCurrentExams("C", "D", "E", "F");
+        givenPastExams("A", "B", "G", "H", "I");
+
+        List<ExamView> exams = getExamsWithPaging(ExamFilter.Status.past, 2, 3);
+        shouldRespondExams(exams, "G", "H", "I");
+    }
+
+    @DisplayName("Given exams A, B, C, D, E, F, G, H, I (C, D, E, F are current), " +
+            "When filter current exams with skip=2, size=9999, " +
+            "Then should respond E, F")
+    @Test
+    void testFilterCurrentExams() throws Exception {
+        givenPastExams("A", "B", "G", "H", "I");
+        givenCurrentExams("C", "D", "E", "F");
+
+        List<ExamView> exams = getExamsWithPaging(ExamFilter.Status.current, 2, 9999);
+        shouldRespondExams(exams, "E", "F");
+    }
+
+    private void shouldRespondExams(List<ExamView> exams, String... names) {
+        assertEquals(names.length, exams.size());
+        for (int i = 0; i < exams.size(); i++) {
+            assertEquals(names[i], exams.get(i).name);
+        }
+    }
+
+    private List<ExamView> getExamsWithPaging(ExamFilter.Status status, int skip, int size) throws Exception {
+        return getBody(mockMvc.perform(get("/api/exams?status={status}&&skip={skip}&&size={size}", status, skip, size)), new TypeReference<>() {
+        });
+    }
+
+    private List<ExamView> getExamsWithPaging(int skip, int size) throws Exception {
+        return getBody(mockMvc.perform(get("/api/exams?skip={skip}&&size={size}", skip, size)), new TypeReference<>() {
+        });
+    }
+
+    private List<ExamView> getAllExams() throws Exception {
+        return getBody(mockMvc.perform(get("/api/exams")), new TypeReference<>() {
+        });
+    }
+
+    @SafeVarargs
+    private void givenStudentParticipatingExams(int studentId, List<ExamView>... exams) {
+        List<ExamView> allExams = stream(exams).flatMap(List::stream).collect(toList());
+        for (ExamView exam : allExams) {
+            createExamParticipation(studentId, exam.id);
+        }
+    }
+
+    private List<ExamView> givenPastExams(String... names) throws Exception {
+        return givenExams(beforeCurrentTime(2, HOURS),
+                beforeCurrentTime(1, HOURS), names);
+    }
+
+    private List<ExamView> givenCurrentExams(String... names) throws Exception {
+        return givenExams(new Date(), afterCurrentTime(1, HOURS), names);
+    }
+
+    private List<ExamView> givenUpcomingExams(String... names) throws Exception {
+        return givenExams(afterCurrentTime(1, HOURS),
+                afterCurrentTime(2, HOURS), names);
+    }
+
+    private List<ExamView> givenExams(Date startTime, Date endTime, String... names) throws Exception {
+        List<ExamView> exams = new ArrayList<>(names.length);
+        for (String name : names) {
+            exams.add(createExamAndGet(startTime, endTime, name));
+        }
+        return exams;
+    }
+
     private ExamView createExamAndGet(Date startTime, Date endTime, String name) throws Exception {
         return getBody(createExam(new Exam(name, startTime, endTime, "problem statement"))
                 .andExpect(status().isOk()), ExamView.class);
@@ -227,16 +350,25 @@ class ExamControllerTest extends AbstractSpringBootTest {
                 .content(toJson(new CreateExamUseCase.Request(exam.getName(), exam.getStartTime(), exam.getEndTime(), exam.getDescription()))));
     }
 
-    private ResultActions getExams(int studentId, String type) throws Exception {
-        return mockMvc.perform(get("/api/students/{studentId}/exams?type=" + type, studentId));
+
+    private List<ExamView> getStudentExams(int studentId, ExamFilter.Status status, int skip, int size) throws Exception {
+        return getBody(mockMvc.perform(get("/api/students/{studentId}/exams?status={status}&&skip={skip}&&size={size}", studentId, status, skip, size))
+                .andExpect(status().isOk()), new TypeReference<>() {
+        });
+    }
+
+    private List<ExamView> getStudentExams(int studentId, ExamFilter.Status status) throws Exception {
+        return getBody(mockMvc.perform(get("/api/students/{studentId}/exams?status=" + status, studentId))
+                .andExpect(status().isOk()), new TypeReference<>() {
+        });
     }
 
     private ExamOverview getExamOverview(int examId) throws Exception {
         return getBody(mockMvc.perform(get("/api/exams/{examId}/overview", examId)).andExpect(status().isOk()), ExamOverview.class);
     }
 
-    private void createExamParticipation(ExamParticipation examParticipation) {
-        examParticipationRepository.save(examParticipation);
+    private void createExamParticipation(int studentId, int examId) {
+        examRepository.addParticipation(examId, studentId);
     }
 
     private ResultActions createQuestion(CreateQuestionUseCase.Request request) throws Exception {
