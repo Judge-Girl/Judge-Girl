@@ -33,8 +33,5 @@ public interface JpaStudentDataPort extends JpaRepository<StudentData, Integer> 
 
     boolean existsByEmail(String email);
 
-    Page<StudentData> findByIsAdminFalse(Pageable pageable);
-
-    Page<StudentData> findByIsAdminTrue(Pageable pageable);
-
+    Page<StudentData> findByAdmin(boolean admin, Pageable pageable);
 }

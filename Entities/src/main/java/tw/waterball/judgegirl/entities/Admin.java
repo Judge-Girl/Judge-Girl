@@ -20,11 +20,11 @@ public class Admin extends Student {
 
     public Admin(String name, String email, String password) {
         super(name, email, password);
-        this.isAdmin = true;
+        this.admin = true;
     }
 
     public Admin(Integer id, String name, String email, String password) {
         super(id, name, email, password);
-        this.isAdmin = true;
+        this.admin = true;
     }
 }

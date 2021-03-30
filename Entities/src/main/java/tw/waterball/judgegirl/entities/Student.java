@@ -38,7 +38,7 @@ public class Student {
     @NotBlank
     protected String password;
 
-    protected boolean isAdmin = false;
+    protected boolean admin = false;
 
     private final Set<Group> groups = new HashSet<>();
 

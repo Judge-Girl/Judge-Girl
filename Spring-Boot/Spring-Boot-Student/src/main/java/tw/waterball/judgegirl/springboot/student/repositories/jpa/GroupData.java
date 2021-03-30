@@ -58,7 +58,7 @@ public class GroupData {
                 .name(student.getName())
                 .email(student.getEmail())
                 .password(student.getPassword())
-                .isAdmin(student.isAdmin())
+                .admin(student.isAdmin())
                 .groups(new HashSet<>())
                 .build();
         students.add(studentData);

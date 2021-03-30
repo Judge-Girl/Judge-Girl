@@ -170,7 +170,7 @@ public class StudentControllerTest extends AbstractSpringBootTest {
         assertEquals(view.email, body.email);
         TokenService.Token token = tokenService.parseAndValidate(body.token);
         assertEquals(view.id, token.getStudentId());
-        assertEquals(view.isAdmin, body.isAdmin);
+        assertEquals(view.admin, body.admin);
     }
 
     @Test

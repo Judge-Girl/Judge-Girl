@@ -30,14 +30,14 @@ public class StudentView {
     public Integer id;
     public String name;
     public String email;
-    public boolean isAdmin;
+    public boolean admin;
 
     public static StudentView toViewModel(Student student) {
         return StudentView.builder()
                 .id(student.getId())
                 .name(student.getName())
                 .email(student.getEmail())
-                .isAdmin(student.isAdmin())
+                .admin(student.isAdmin())
                 .build();
     }
 }

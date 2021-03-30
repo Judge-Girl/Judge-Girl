@@ -34,6 +34,6 @@ public interface StudentRepository {
 
     void deleteAll();
 
-    List<Student> findStudents(int skip, int size, boolean isAdmin);
+    List<Student> findStudents(boolean admin, int skip, int size);
 
 }
