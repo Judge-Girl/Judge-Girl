@@ -80,7 +80,7 @@ public class StudentControllerTest extends AbstractSpringBootTest {
 
     @Test
     void WhenAdminSignUpCorrectly_ShouldRespondStudentView() throws Exception {
-        StudentView body = signUpAndGetResponseBody(admin);
+        StudentView body = signUpAdminAndGetResponseBody(admin);
         admin.setId(body.id);
         assertEquals(toViewModel(admin), body);
     }
@@ -123,17 +123,30 @@ public class StudentControllerTest extends AbstractSpringBootTest {
         return getBody(signUp(student).andExpect(status().isOk()), StudentView.class);
     }
 
+    private ResultActions signUp(String name, String email, String password) throws Exception {
+        Student newStudent = new Student(name, email, password);
+        return signUp(newStudent);
+    }
+
     private ResultActions signUp(Student student) throws Exception {
         return mockMvc.perform(post("/api/students/signUp")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(student)));
     }
 
-    private ResultActions signUp(String name, String email, String password) throws Exception {
-        Student newStudent = new Student(name, email, password);
-        return mockMvc.perform(post("/api/students/signUp")
+    private StudentView signUpAdminAndGetResponseBody(Student admin) throws Exception {
+        return getBody(signUpAdmin(admin).andExpect(status().isOk()), StudentView.class);
+    }
+
+    private ResultActions signUpAdmin(String name, String email, String password) throws Exception {
+        Student newAdmin = new Admin(name, email, password);
+        return signUp(newAdmin);
+    }
+
+    private ResultActions signUpAdmin(Student admin) throws Exception {
+        return mockMvc.perform(post("/api/admins")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(toJson(newStudent)));
+                .content(toJson(admin)));
     }
 
     @Test
@@ -141,18 +154,18 @@ public class StudentControllerTest extends AbstractSpringBootTest {
         StudentView studentView = signUpAndGetResponseBody(student);
         LoginResponse body = signInAndGetResponseBody(this.student.getEmail(), this.student.getPassword());
 
-        testStudentSignUp(studentView, body);
+        testStudentSignIn(studentView, body);
     }
 
     @Test
     void GivenOneAdminSignedUp_WhenAdminLoginCorrectly_ShouldRespondLoginResponseWithCorrectToken() throws Exception {
-        StudentView studentView = signUpAndGetResponseBody(admin);
+        StudentView studentView = signUpAdminAndGetResponseBody(admin);
         LoginResponse body = signInAndGetResponseBody(this.admin.getEmail(), this.admin.getPassword());
 
-        testStudentSignUp(studentView, body);
+        testStudentSignIn(studentView, body);
     }
 
-    private void testStudentSignUp(StudentView view, LoginResponse body) {
+    private void testStudentSignIn(StudentView view, LoginResponse body) {
         assertEquals(view.id, body.id);
         assertEquals(view.email, body.email);
         TokenService.Token token = tokenService.parseAndValidate(body.token);
@@ -328,15 +341,12 @@ public class StudentControllerTest extends AbstractSpringBootTest {
 
     private void signUp10StudentsAnd4Admins() throws Exception {
         for (int i = 0; i < 4; i++) {
-            Student student = new Student("student" + i, "student" + i + "@example.com", "password");
-            Student admin = new Admin("admin" + i, "admin" + i + "@example.com", "password");
-            signUp(student);
-            signUp(admin);
+            signUp("student" + i, "student" + i + "@example.com", "password");
+            signUpAdmin("admin" + i, "admin" + i + "@example.com", "password");
         }
 
         for (int i = 4; i < 10; i++) {
-            Student student = new Student("student" + i, "student" + i + "@example.com", "password");
-            signUp(student);
+            signUp("student" + i, "student" + i + "@example.com", "password");
         }
     }
 }

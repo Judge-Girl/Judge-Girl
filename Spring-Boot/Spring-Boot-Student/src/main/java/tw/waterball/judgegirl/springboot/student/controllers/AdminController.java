@@ -18,9 +18,12 @@ import org.springframework.web.bind.annotation.*;
 import tw.waterball.judgegirl.entities.Student;
 import tw.waterball.judgegirl.springboot.student.view.StudentView;
 import tw.waterball.judgegirl.studentservice.domain.usecases.GetStudentsWithFilterUseCase;
+import tw.waterball.judgegirl.studentservice.domain.usecases.SignUpUseCase;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static tw.waterball.judgegirl.springboot.student.view.StudentView.toViewModel;
 
 /**
  * @author chaoyulee chaoyu2330@gmail.com
@@ -31,6 +34,14 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class AdminController {
     private final GetStudentsWithFilterUseCase getStudentsWithFilterUseCase;
+    private final SignUpUseCase signUpUseCase;
+
+    @PostMapping
+    public StudentView signUpAdmin(@RequestBody SignUpUseCase.Request request) {
+        SignUpAdminPresenter presenter = new SignUpAdminPresenter();
+        signUpUseCase.execute(request, presenter);
+        return presenter.present();
+    }
 
     @GetMapping
     public List<StudentView> getAdminsWithFilter(
@@ -54,5 +65,18 @@ class GetAdminsPresenter implements GetStudentsWithFilterUseCase.Presenter {
         return students.stream()
                 .map(StudentView::toViewModel)
                 .collect(Collectors.toList());
+    }
+}
+
+class SignUpAdminPresenter implements SignUpUseCase.Presenter {
+    private Student student;
+
+    @Override
+    public void setStudent(Student student) {
+        this.student = student;
+    }
+
+    StudentView present() {
+        return toViewModel(student);
     }
 }
