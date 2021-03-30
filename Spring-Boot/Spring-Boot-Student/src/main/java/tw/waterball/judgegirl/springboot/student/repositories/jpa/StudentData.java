@@ -40,13 +40,13 @@ public class StudentData {
     private String name;
     private String email;
     private String password;
-    private boolean isAdmin;
+    private boolean admin;
 
     @ManyToMany(cascade = CascadeType.MERGE)
     private Set<GroupData> groups = new HashSet<>();
 
     public Student toEntity() {
-        if (isAdmin) {
+        if (admin) {
             return new Admin(id, name, email, password);
         } else {
             return new Student(id, name, email, password);
@@ -59,7 +59,7 @@ public class StudentData {
                 .name(student.getName())
                 .email(student.getEmail())
                 .password(student.getPassword())
-                .isAdmin(student.isAdmin())
+                .admin(student.isAdmin())
                 .groups(new HashSet<>())
                 .build();
         student.getGroups().forEach(studentData::addGroupData);

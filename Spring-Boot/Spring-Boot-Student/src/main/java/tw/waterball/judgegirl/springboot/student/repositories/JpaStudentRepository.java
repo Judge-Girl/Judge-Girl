@@ -71,10 +71,11 @@ public class JpaStudentRepository implements StudentRepository {
         return student;
     }
 
+
     @Override
-    public List<Student> findAll(int skip, int size) {
+    public List<Student> findStudents(boolean admin, int skip, int size) {
         Pageable pageable = new SkipAndSizePageable(skip, size);
-        List<StudentData> students = jpaStudentDataPort.findAll(pageable).getContent();
+        List<StudentData> students = jpaStudentDataPort.findByAdmin(admin, pageable).getContent();
         return students.stream()
                 .map(StudentData::toEntity)
                 .collect(Collectors.toList());

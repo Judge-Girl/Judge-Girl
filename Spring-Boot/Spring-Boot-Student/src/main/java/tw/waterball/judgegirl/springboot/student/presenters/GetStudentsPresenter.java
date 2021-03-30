@@ -11,29 +11,31 @@
  *   limitations under the License.
  */
 
-package tw.waterball.judgegirl.studentservice.domain.repositories;
+package tw.waterball.judgegirl.springboot.student.presenters;
 
+import org.springframework.stereotype.Component;
 import tw.waterball.judgegirl.entities.Student;
+import tw.waterball.judgegirl.springboot.student.view.StudentView;
+import tw.waterball.judgegirl.studentservice.domain.usecases.GetStudentsWithFilterUseCase;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * @author chaoyulee chaoyu2330@gmail.com
  */
-public interface StudentRepository {
-    Optional<Student> findByEmailAndPassword(String email, String pwd);
+@Component
+public class GetStudentsPresenter implements GetStudentsWithFilterUseCase.Presenter {
+    private List<Student> students;
 
-    Optional<Student> findByEmail(String email);
+    @Override
+    public void setStudents(List<Student> students) {
+        this.students = students;
+    }
 
-    Optional<Student> findStudentById(Integer id);
-
-    boolean existsByEmail(String email);
-
-    Student save(Student student);
-
-    void deleteAll();
-
-    List<Student> findStudents(boolean admin, int skip, int size);
-
+    public List<StudentView> present() {
+        return students.stream()
+                .map(StudentView::toViewModel)
+                .collect(Collectors.toList());
+    }
 }

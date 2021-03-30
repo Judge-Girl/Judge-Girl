@@ -11,20 +11,28 @@
  *   limitations under the License.
  */
 
-package tw.waterball.judgegirl.entities;
+package tw.waterball.judgegirl.springboot.student.presenters;
+
+import org.springframework.stereotype.Component;
+import tw.waterball.judgegirl.entities.Student;
+import tw.waterball.judgegirl.springboot.student.view.StudentView;
+import tw.waterball.judgegirl.studentservice.domain.usecases.SignUpUseCase;
+
+import static tw.waterball.judgegirl.springboot.student.view.StudentView.toViewModel;
 
 /**
  * @author chaoyulee chaoyu2330@gmail.com
  */
-public class Admin extends Student {
+@Component
+public class SignUpPresenter implements SignUpUseCase.Presenter {
+    private Student student;
 
-    public Admin(String name, String email, String password) {
-        super(name, email, password);
-        this.admin = true;
+    @Override
+    public void setStudent(Student student) {
+        this.student = student;
     }
 
-    public Admin(Integer id, String name, String email, String password) {
-        super(id, name, email, password);
-        this.admin = true;
+    public StudentView present() {
+        return toViewModel(student);
     }
 }

@@ -56,7 +56,7 @@ public class SignUpUseCase {
     }
 
     private Student createStudent(Request request, String encodedPassword) {
-        return request.isAdmin ? new Admin(request.name, request.email, encodedPassword) :
+        return request.admin ? new Admin(request.name, request.email, encodedPassword) :
                 new Student(request.name, request.email, encodedPassword);
     }
 
@@ -69,6 +69,6 @@ public class SignUpUseCase {
         public String name;
         public String email;
         public String password;
-        public boolean isAdmin;
+        public boolean admin;
     }
 }
