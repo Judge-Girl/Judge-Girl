@@ -140,7 +140,7 @@ public class StudentControllerTest extends AbstractSpringBootTest {
 
     private ResultActions signUpAdmin(String name, String email, String password) throws Exception {
         Student newAdmin = new Admin(name, email, password);
-        return signUp(newAdmin);
+        return signUpAdmin(newAdmin);
     }
 
     private ResultActions signUpAdmin(Student admin) throws Exception {

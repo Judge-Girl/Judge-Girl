@@ -33,11 +33,11 @@ public class SignUpUseCase {
     private final StudentRepository studentRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public void execute(Request request, Presenter presenter) {
+    public void execute(Request request, boolean isAdmin, Presenter presenter) {
         validateEmail(request);
         validatePasswordLength(request.password);
         String encodedPassword = passwordEncoder.encode(request.password);
-        Student student = createStudent(request, encodedPassword);
+        Student student = createStudent(request, isAdmin, encodedPassword);
         student.validate();
         presenter.setStudent(studentRepository.save(student));
     }
@@ -55,8 +55,8 @@ public class SignUpUseCase {
         }
     }
 
-    private Student createStudent(Request request, String encodedPassword) {
-        return request.isAdmin ? new Admin(request.name, request.email, encodedPassword) :
+    private Student createStudent(Request request, boolean isAdmin, String encodedPassword) {
+        return isAdmin ? new Admin(request.name, request.email, encodedPassword) :
                 new Student(request.name, request.email, encodedPassword);
     }
 
@@ -69,6 +69,5 @@ public class SignUpUseCase {
         public String name;
         public String email;
         public String password;
-        public boolean isAdmin;
     }
 }

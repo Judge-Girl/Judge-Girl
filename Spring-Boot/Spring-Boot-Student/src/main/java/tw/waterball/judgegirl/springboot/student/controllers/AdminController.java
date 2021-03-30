@@ -43,7 +43,7 @@ public class AdminController {
     @PostMapping
     public StudentView signUp(@RequestBody SignUpUseCase.Request request) {
         SignUpAdminPresenter presenter = new SignUpAdminPresenter();
-        signUpUseCase.execute(request, presenter);
+        signUpUseCase.execute(request, true, presenter);
         return presenter.present();
     }
 

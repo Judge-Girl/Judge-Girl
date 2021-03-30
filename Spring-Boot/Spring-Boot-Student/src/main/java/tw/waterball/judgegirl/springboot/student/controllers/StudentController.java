@@ -51,7 +51,7 @@ public class StudentController {
     @PostMapping("/signUp")
     public StudentView signUp(@RequestBody SignUpUseCase.Request request) {
         SignUpPresenter presenter = new SignUpPresenter();
-        signUpUseCase.execute(request, presenter);
+        signUpUseCase.execute(request, false, presenter);
         return presenter.present();
     }
 
