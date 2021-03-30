@@ -14,6 +14,7 @@
 package tw.waterball.judgegirl.springboot.student.controllers.it;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,6 +38,7 @@ import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
 
 import java.util.List;
 
+import static java.util.stream.IntStream.range;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -119,36 +121,6 @@ public class StudentControllerTest extends AbstractSpringBootTest {
                 .andExpect(status().isBadRequest());
     }
 
-    private StudentView signUpAndGetResponseBody(Student student) throws Exception {
-        return getBody(signUp(student).andExpect(status().isOk()), StudentView.class);
-    }
-
-    private ResultActions signUp(String name, String email, String password) throws Exception {
-        Student newStudent = new Student(name, email, password);
-        return signUp(newStudent);
-    }
-
-    private ResultActions signUp(Student student) throws Exception {
-        return mockMvc.perform(post("/api/students/signUp")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(toJson(student)));
-    }
-
-    private StudentView signUpAdminAndGetResponseBody(Student admin) throws Exception {
-        return getBody(signUpAdmin(admin).andExpect(status().isOk()), StudentView.class);
-    }
-
-    private ResultActions signUpAdmin(String name, String email, String password) throws Exception {
-        Student newAdmin = new Admin(name, email, password);
-        return signUpAdmin(newAdmin);
-    }
-
-    private ResultActions signUpAdmin(Student admin) throws Exception {
-        return mockMvc.perform(post("/api/admins")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(toJson(admin)));
-    }
-
     @Test
     void GivenOneStudentSignedUp_WhenStudentLoginCorrectly_ShouldRespondLoginResponseWithCorrectToken() throws Exception {
         StudentView studentView = signUpAndGetResponseBody(student);
@@ -163,14 +135,6 @@ public class StudentControllerTest extends AbstractSpringBootTest {
         LoginResponse body = signInAdminAndGetResponseBody(this.admin.getEmail(), this.admin.getPassword());
 
         testStudentSignIn(studentView, body);
-    }
-
-    private void testStudentSignIn(StudentView view, LoginResponse body) {
-        assertEquals(view.id, body.id);
-        assertEquals(view.email, body.email);
-        TokenService.Token token = tokenService.parseAndValidate(body.token);
-        assertEquals(view.id, token.getStudentId());
-        assertEquals(view.admin, body.admin);
     }
 
     @Test
@@ -197,25 +161,6 @@ public class StudentControllerTest extends AbstractSpringBootTest {
                 .andExpect(status().isNotFound());
     }
 
-    private LoginResponse signInAndGetResponseBody(String email, String password) throws Exception {
-        return getBody(signIn(email, password).andExpect(status().isOk()), LoginResponse.class);
-    }
-
-    private ResultActions signIn(String email, String password) throws Exception {
-        return mockMvc.perform(post("/api/students/login")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(toJson(new SignInUseCase.Request(email, password))));
-    }
-
-    private LoginResponse signInAdminAndGetResponseBody(String email, String password) throws Exception {
-        return getBody(signInAdmin(email, password).andExpect(status().isOk()), LoginResponse.class);
-    }
-
-    private ResultActions signInAdmin(String email, String password) throws Exception {
-        return mockMvc.perform(post("/api/admins/login")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(toJson(new SignInUseCase.Request(email, password))));
-    }
 
     @Test
     void GivenOneStudentSignedUp_WhenGetStudentById_ShouldRespondStudentView() throws Exception {
@@ -236,11 +181,6 @@ public class StudentControllerTest extends AbstractSpringBootTest {
 
         getStudentById(nonExistingStudentId, token.getToken())
                 .andExpect(status().isNotFound());
-    }
-
-    private ResultActions getStudentById(Integer id, String tokenString) throws Exception {
-        return mockMvc.perform(get("/api/students/" + id)
-                .header("Authorization", bearerWithToken(tokenString)));
     }
 
     @Test
@@ -273,17 +213,6 @@ public class StudentControllerTest extends AbstractSpringBootTest {
         auth(invalidToken).andExpect(status().isUnauthorized());
     }
 
-    private LoginResponse authAndGetResponseBody(String tokenString) throws Exception {
-        return getBody(mockMvc.perform(post("/api/students/auth")
-                .header("Authorization", bearerWithToken(tokenString)))
-                .andExpect(status().isOk()), LoginResponse.class);
-    }
-
-    private ResultActions auth(String tokenString) throws Exception {
-        return mockMvc.perform(post("/api/students/auth")
-                .header("Authorization", bearerWithToken(tokenString)));
-    }
-
     @Test
     void GivenOneStudentSignedUp_WhenChangePasswordWithCorrectCurrentPassword_ShouldSucceed() throws Exception {
         signUp(student);
@@ -311,16 +240,8 @@ public class StudentControllerTest extends AbstractSpringBootTest {
         assertEquals(student.getPassword(), student.getPassword());
     }
 
-    private ResultActions changePassword(String password, String newPassword, int id, String token) throws Exception {
-        ChangePasswordUseCase.Request request = new ChangePasswordUseCase.Request(id, password, newPassword);
-        return mockMvc.perform(patch("/api/students/" + id + "/password")
-                .header("Authorization", bearerWithToken(token))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(toJson(request)));
-    }
-
     @Test
-    void Given10StudentsAnd4AdminsSignedUp_WhenGetStudentsWithSkip3Size4_ShouldRespondCorrectly() throws Exception {
+    void Given4AdminsAnd10Students_0_to_10_WhenGetStudentsWithSkip3Size4_ShouldRespondStudents_3_to_6() throws Exception {
         signUp10StudentsAnd4Admins();
 
         List<StudentView> students = getBody(
@@ -336,7 +257,7 @@ public class StudentControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    void Given10StudentsAnd4AdminsSignedUp_WhenGetAdminsWithSkip2Size2_ShouldRespondCorrectly() throws Exception {
+    void Given10StudentsAnd4Admins0_1_2_3_WhenGetAdminsWithSkip2Size2_ShouldRespondAdmins_2_3() throws Exception {
         signUp10StudentsAnd4Admins();
 
         List<StudentView> students = getBody(
@@ -349,14 +270,90 @@ public class StudentControllerTest extends AbstractSpringBootTest {
         assertEquals("admin3", students.get(1).name);
     }
 
-    private void signUp10StudentsAnd4Admins() throws Exception {
-        for (int i = 0; i < 4; i++) {
-            signUp("student" + i, "student" + i + "@example.com", "password");
-            signUpAdmin("admin" + i, "admin" + i + "@example.com", "password");
-        }
+    private StudentView signUpAndGetResponseBody(Student student) throws Exception {
+        return getBody(signUp(student).andExpect(status().isOk()), StudentView.class);
+    }
 
-        for (int i = 4; i < 10; i++) {
-            signUp("student" + i, "student" + i + "@example.com", "password");
-        }
+    @SneakyThrows
+    private ResultActions signUp(String name, String email, String password) {
+        Student newStudent = new Student(name, email, password);
+        return signUp(newStudent);
+    }
+
+    private ResultActions signUp(Student student) throws Exception {
+        return mockMvc.perform(post("/api/students/signUp")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(toJson(student)));
+    }
+
+    private StudentView signUpAdminAndGetResponseBody(Student admin) throws Exception {
+        return getBody(signUpAdmin(admin).andExpect(status().isOk()), StudentView.class);
+    }
+
+    @SneakyThrows
+    private ResultActions signUpAdmin(String name, String email, String password) {
+        Student newAdmin = new Admin(name, email, password);
+        return signUpAdmin(newAdmin);
+    }
+
+    private ResultActions signUpAdmin(Student admin) throws Exception {
+        return mockMvc.perform(post("/api/admins")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(toJson(admin)));
+    }
+
+    private LoginResponse signInAndGetResponseBody(String email, String password) throws Exception {
+        return getBody(signIn(email, password).andExpect(status().isOk()), LoginResponse.class);
+    }
+
+    private ResultActions signIn(String email, String password) throws Exception {
+        return mockMvc.perform(post("/api/students/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(toJson(new SignInUseCase.Request(email, password))));
+    }
+
+    private LoginResponse signInAdminAndGetResponseBody(String email, String password) throws Exception {
+        return getBody(signInAdmin(email, password).andExpect(status().isOk()), LoginResponse.class);
+    }
+
+    private ResultActions signInAdmin(String email, String password) throws Exception {
+        return mockMvc.perform(post("/api/admins/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(toJson(new SignInUseCase.Request(email, password))));
+    }
+
+    private void testStudentSignIn(StudentView view, LoginResponse body) {
+        assertEquals(view.id, body.id);
+        assertEquals(view.email, body.email);
+        TokenService.Token token = tokenService.parseAndValidate(body.token);
+        assertEquals(view.id, token.getStudentId());
+        assertEquals(view.admin, body.admin);
+    }
+
+    private ResultActions getStudentById(Integer id, String tokenString) throws Exception {
+        return mockMvc.perform(get("/api/students/" + id)
+                .header("Authorization", bearerWithToken(tokenString)));
+    }
+
+    private LoginResponse authAndGetResponseBody(String tokenString) throws Exception {
+        return getBody(auth(tokenString).andExpect(status().isOk()), LoginResponse.class);
+    }
+
+    private ResultActions auth(String tokenString) throws Exception {
+        return mockMvc.perform(post("/api/students/auth")
+                .header("Authorization", bearerWithToken(tokenString)));
+    }
+
+    private ResultActions changePassword(String password, String newPassword, int id, String token) throws Exception {
+        ChangePasswordUseCase.Request request = new ChangePasswordUseCase.Request(id, password, newPassword);
+        return mockMvc.perform(patch("/api/students/" + id + "/password")
+                .header("Authorization", bearerWithToken(token))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(toJson(request)));
+    }
+
+    private void signUp10StudentsAnd4Admins() {
+        range(0, 10).forEach(i -> signUp("student" + i, "student" + i + "@example.com", "password"));
+        range(0, 4).forEach(i -> signUpAdmin("admin" + i, "admin" + i + "@example.com", "password"));
     }
 }
