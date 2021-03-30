@@ -60,7 +60,7 @@ public class AdminController {
             @RequestParam(defaultValue = "0", required = false) int skip,
             @RequestParam(defaultValue = "25", required = false) int size) {
         GetStudentsPresenter presenter = new GetStudentsPresenter();
-        getStudentsWithFilterUseCase.execute(new GetStudentsWithFilterUseCase.Request(skip, size, true), presenter);
+        getStudentsWithFilterUseCase.execute(new GetStudentsWithFilterUseCase.Request(true, skip, size), presenter);
         return presenter.present();
     }
 }

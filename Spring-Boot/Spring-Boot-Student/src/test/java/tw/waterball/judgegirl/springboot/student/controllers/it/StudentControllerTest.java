@@ -126,7 +126,7 @@ public class StudentControllerTest extends AbstractSpringBootTest {
         StudentView studentView = signUpAndGetResponseBody(student);
         LoginResponse body = signInAndGetResponseBody(this.student.getEmail(), this.student.getPassword());
 
-        testStudentSignIn(studentView, body);
+        verifyStudentLogin(studentView, body);
     }
 
     @Test
@@ -134,7 +134,7 @@ public class StudentControllerTest extends AbstractSpringBootTest {
         StudentView studentView = signUpAdminAndGetResponseBody(admin);
         LoginResponse body = signInAdminAndGetResponseBody(this.admin.getEmail(), this.admin.getPassword());
 
-        testStudentSignIn(studentView, body);
+        verifyStudentLogin(studentView, body);
     }
 
     @Test
@@ -322,7 +322,7 @@ public class StudentControllerTest extends AbstractSpringBootTest {
                 .content(toJson(new SignInUseCase.Request(email, password))));
     }
 
-    private void testStudentSignIn(StudentView view, LoginResponse body) {
+    private void verifyStudentLogin(StudentView view, LoginResponse body) {
         assertEquals(view.id, body.id);
         assertEquals(view.email, body.email);
         TokenService.Token token = tokenService.parseAndValidate(body.token);

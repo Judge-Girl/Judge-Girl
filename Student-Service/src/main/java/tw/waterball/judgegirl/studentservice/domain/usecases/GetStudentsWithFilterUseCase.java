@@ -34,7 +34,7 @@ public class GetStudentsWithFilterUseCase {
     }
 
     public void execute(Request request, Presenter presenter) {
-        List<Student> students = studentRepository.findStudents(request.isAdmin, request.skip, request.size);
+        List<Student> students = studentRepository.findStudents(request.admin, request.skip, request.size);
         presenter.setStudents(students);
     }
 
@@ -42,8 +42,8 @@ public class GetStudentsWithFilterUseCase {
     @NoArgsConstructor
     @Getter
     public static class Request {
+        private boolean admin;
         private int skip, size;
-        private boolean isAdmin;
     }
 
     public interface Presenter {

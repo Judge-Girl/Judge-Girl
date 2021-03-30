@@ -26,7 +26,7 @@ import tw.waterball.judgegirl.studentservice.domain.usecases.SignInUseCase;
 public class SignInPresenter implements SignInUseCase.Presenter {
     private Student student;
     private TokenService.Token token;
-    
+
     @Override
     public void setToken(TokenService.Token token) {
         this.token = token;
@@ -37,7 +37,7 @@ public class SignInPresenter implements SignInUseCase.Presenter {
         this.student = student;
     }
 
-    public Integer getStudentId() {
+    public int getStudentId() {
         return student.getId();
     }
 
