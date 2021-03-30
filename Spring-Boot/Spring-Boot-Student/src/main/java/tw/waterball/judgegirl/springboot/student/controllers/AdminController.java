@@ -15,9 +15,11 @@ package tw.waterball.judgegirl.springboot.student.controllers;
 
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import tw.waterball.judgegirl.commons.token.TokenService;
 import tw.waterball.judgegirl.entities.Student;
 import tw.waterball.judgegirl.springboot.student.view.StudentView;
 import tw.waterball.judgegirl.studentservice.domain.usecases.GetStudentsWithFilterUseCase;
+import tw.waterball.judgegirl.studentservice.domain.usecases.SignInUseCase;
 import tw.waterball.judgegirl.studentservice.domain.usecases.SignUpUseCase;
 
 import java.util.List;
@@ -35,11 +37,21 @@ import static tw.waterball.judgegirl.springboot.student.view.StudentView.toViewM
 public class AdminController {
     private final GetStudentsWithFilterUseCase getStudentsWithFilterUseCase;
     private final SignUpUseCase signUpUseCase;
+    private final SignInUseCase signInUseCase;
+    private final TokenService tokenService;
 
     @PostMapping
-    public StudentView signUpAdmin(@RequestBody SignUpUseCase.Request request) {
+    public StudentView signUp(@RequestBody SignUpUseCase.Request request) {
         SignUpAdminPresenter presenter = new SignUpAdminPresenter();
         signUpUseCase.execute(request, presenter);
+        return presenter.present();
+    }
+
+    @PostMapping("/login")
+    public LoginResponse login(@RequestBody SignInUseCase.Request request) {
+        SignInAdminPresenter presenter = new SignInAdminPresenter();
+        signInUseCase.execute(request, presenter);
+        presenter.setToken(tokenService.createToken(new TokenService.Identity(presenter.getStudentId())));
         return presenter.present();
     }
 
@@ -50,6 +62,43 @@ public class AdminController {
         GetAdminsPresenter presenter = new GetAdminsPresenter();
         getStudentsWithFilterUseCase.execute(new GetStudentsWithFilterUseCase.Request(skip, size, true), presenter);
         return presenter.present();
+    }
+}
+
+class SignUpAdminPresenter implements SignUpUseCase.Presenter {
+    private Student student;
+
+    @Override
+    public void setStudent(Student student) {
+        this.student = student;
+    }
+
+    StudentView present() {
+        return toViewModel(student);
+    }
+}
+
+class SignInAdminPresenter implements SignInUseCase.Presenter {
+    private Student student;
+    private TokenService.Token token;
+
+    @Override
+    public void setToken(TokenService.Token token) {
+        this.token = token;
+    }
+
+    @Override
+    public void setStudent(Student student) {
+        this.student = student;
+    }
+
+    Integer getStudentId() {
+        return student.getId();
+    }
+
+    LoginResponse present() {
+        return new LoginResponse(student.getId(), student.getEmail(), token.toString(),
+                token.getExpiration().getTime(), student.isAdmin());
     }
 }
 
@@ -65,18 +114,5 @@ class GetAdminsPresenter implements GetStudentsWithFilterUseCase.Presenter {
         return students.stream()
                 .map(StudentView::toViewModel)
                 .collect(Collectors.toList());
-    }
-}
-
-class SignUpAdminPresenter implements SignUpUseCase.Presenter {
-    private Student student;
-
-    @Override
-    public void setStudent(Student student) {
-        this.student = student;
-    }
-
-    StudentView present() {
-        return toViewModel(student);
     }
 }

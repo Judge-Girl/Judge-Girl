@@ -160,7 +160,7 @@ public class StudentControllerTest extends AbstractSpringBootTest {
     @Test
     void GivenOneAdminSignedUp_WhenAdminLoginCorrectly_ShouldRespondLoginResponseWithCorrectToken() throws Exception {
         StudentView studentView = signUpAdminAndGetResponseBody(admin);
-        LoginResponse body = signInAndGetResponseBody(this.admin.getEmail(), this.admin.getPassword());
+        LoginResponse body = signInAdminAndGetResponseBody(this.admin.getEmail(), this.admin.getPassword());
 
         testStudentSignIn(studentView, body);
     }
@@ -203,6 +203,16 @@ public class StudentControllerTest extends AbstractSpringBootTest {
 
     private ResultActions signIn(String email, String password) throws Exception {
         return mockMvc.perform(post("/api/students/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(toJson(new SignInUseCase.Request(email, password))));
+    }
+
+    private LoginResponse signInAdminAndGetResponseBody(String email, String password) throws Exception {
+        return getBody(signInAdmin(email, password).andExpect(status().isOk()), LoginResponse.class);
+    }
+
+    private ResultActions signInAdmin(String email, String password) throws Exception {
+        return mockMvc.perform(post("/api/admins/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(new SignInUseCase.Request(email, password))));
     }
@@ -310,7 +320,7 @@ public class StudentControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    void Given10StudentsAnd4AdminSignedUp_WhenGetStudentsWithSkip3Size4_ShouldRespondCorrectly() throws Exception {
+    void Given10StudentsAnd4AdminsSignedUp_WhenGetStudentsWithSkip3Size4_ShouldRespondCorrectly() throws Exception {
         signUp10StudentsAnd4Admins();
 
         List<StudentView> students = getBody(
@@ -326,7 +336,7 @@ public class StudentControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    void Given10StudentsAnd4AdminSignedUp_WhenGetAdminsWithSkip2Size2_ShouldRespondCorrectly() throws Exception {
+    void Given10StudentsAnd4AdminsSignedUp_WhenGetAdminsWithSkip2Size2_ShouldRespondCorrectly() throws Exception {
         signUp10StudentsAnd4Admins();
 
         List<StudentView> students = getBody(
