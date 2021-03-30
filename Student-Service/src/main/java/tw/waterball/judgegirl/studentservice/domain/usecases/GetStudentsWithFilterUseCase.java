@@ -34,7 +34,7 @@ public class GetStudentsWithFilterUseCase {
     }
 
     public void execute(Request request, Presenter presenter) {
-        List<Student> students = studentRepository.findByAdmin(request.skip, request.size, request.isAdmin);
+        List<Student> students = studentRepository.findStudents(request.skip, request.size, request.isAdmin);
         presenter.setStudents(students);
     }
 
