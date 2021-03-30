@@ -17,8 +17,9 @@ package tw.waterball.judgegirl.springboot.profiles;
  * @author - johnny850807@gmail.com (Waterball)
  */
 public interface Profiles {
-    String MONGO = "mongo";
     String EMBEDDED_MONGO = "embeddedMongo";
+    String MONGO = "mongo";
+    String MYSQL = "mysql";
     String K8S = "k8s";
     String AMQP = "amqp";
     String SERVICE_DRIVER = "serviceDriver";

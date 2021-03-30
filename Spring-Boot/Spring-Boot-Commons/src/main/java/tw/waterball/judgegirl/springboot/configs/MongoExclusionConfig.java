@@ -28,5 +28,4 @@ import tw.waterball.judgegirl.springboot.profiles.Profiles;
 @Configuration
 @EnableAutoConfiguration(exclude = {MongoDataAutoConfiguration.class, MongoAutoConfiguration.class})
 public class MongoExclusionConfig {
-
 }

@@ -36,6 +36,7 @@ steps:
     commands:
       - docker network create judge-girl || echo "Network 'judge-girl' already exists"
       - docker-compose -f infra.yml up -d
+      - sleep 10
       - docker-compose -f services.yml down
       - docker-compose -f services.yml up -d
     when:
