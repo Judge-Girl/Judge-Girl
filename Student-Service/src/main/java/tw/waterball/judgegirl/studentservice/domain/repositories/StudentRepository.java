@@ -33,6 +33,7 @@ public interface StudentRepository {
     Student save(Student student);
 
     void deleteAll();
+    
+    List<Student> findByAdmin(int skip, int size, boolean isAdmin);
 
-    List<Student> findAll(int skip, int size);
 }

@@ -297,24 +297,46 @@ public class StudentControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    void GivenTenStudentsSignedUp_WhenGetStudentsWithSkip2Size3_ShouldRespondCorrectly() throws Exception {
-        signUpTenStudents();
+    void Given10StudentsAnd4AdminSignedUp_WhenGetStudentsWithSkip3Size4_ShouldRespondCorrectly() throws Exception {
+        signUp10StudentsAnd4Admins();
 
         List<StudentView> students = getBody(
-                mockMvc.perform(get("/api/students?skip=2&&size=3"))
+                mockMvc.perform(get("/api/students?skip=3&&size=4"))
                         .andExpect(status().isOk()), new TypeReference<>() {
                 });
 
-        assertEquals(3, students.size());
-        assertEquals("name2", students.get(0).name);
-        assertEquals("name3", students.get(1).name);
-        assertEquals("name4", students.get(2).name);
+        assertEquals(4, students.size());
+        assertEquals("student3", students.get(0).name);
+        assertEquals("student4", students.get(1).name);
+        assertEquals("student5", students.get(2).name);
+        assertEquals("student6", students.get(3).name);
     }
 
-    private void signUpTenStudents() throws Exception {
-        for (int i = 0; i < 10; i++) {
-            String name = "name" + i;
-            signUp(name, name + "@example.com", "password");
+    @Test
+    void Given10StudentsAnd4AdminSignedUp_WhenGetAdminsWithSkip2Size2_ShouldRespondCorrectly() throws Exception {
+        signUp10StudentsAnd4Admins();
+
+        List<StudentView> students = getBody(
+                mockMvc.perform(get("/api/admins?skip=2&&size=2"))
+                        .andExpect(status().isOk()), new TypeReference<>() {
+                });
+
+        assertEquals(2, students.size());
+        assertEquals("admin2", students.get(0).name);
+        assertEquals("admin3", students.get(1).name);
+    }
+
+    private void signUp10StudentsAnd4Admins() throws Exception {
+        for (int i = 0; i < 4; i++) {
+            Student student = new Student("student" + i, "student" + i + "@example.com", "password");
+            Student admin = new Admin("admin" + i, "admin" + i + "@example.com", "password");
+            signUp(student);
+            signUp(admin);
+        }
+
+        for (int i = 4; i < 10; i++) {
+            Student student = new Student("student" + i, "student" + i + "@example.com", "password");
+            signUp(student);
         }
     }
 }

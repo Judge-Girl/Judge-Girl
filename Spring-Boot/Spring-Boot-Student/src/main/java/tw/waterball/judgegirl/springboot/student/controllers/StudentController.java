@@ -99,7 +99,7 @@ public class StudentController {
             @RequestParam(defaultValue = "0", required = false) int skip,
             @RequestParam(defaultValue = "25", required = false) int size) {
         GetStudentsPresenter presenter = new GetStudentsPresenter();
-        getStudentsWithFilterUseCase.execute(new GetStudentsWithFilterUseCase.Request(skip, size), presenter);
+        getStudentsWithFilterUseCase.execute(new GetStudentsWithFilterUseCase.Request(skip, size, false), presenter);
         return presenter.present();
     }
 
