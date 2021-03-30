@@ -20,6 +20,9 @@ import org.springframework.web.bind.annotation.*;
 import tw.waterball.judgegirl.commons.token.TokenInvalidException;
 import tw.waterball.judgegirl.commons.token.TokenService;
 import tw.waterball.judgegirl.entities.Student;
+import tw.waterball.judgegirl.springboot.student.presenters.GetStudentsPresenter;
+import tw.waterball.judgegirl.springboot.student.presenters.SignInPresenter;
+import tw.waterball.judgegirl.springboot.student.presenters.SignUpPresenter;
 import tw.waterball.judgegirl.springboot.student.view.StudentView;
 import tw.waterball.judgegirl.studentservice.domain.exceptions.DuplicateEmailException;
 import tw.waterball.judgegirl.studentservice.domain.exceptions.StudentEmailNotFoundException;
@@ -28,7 +31,6 @@ import tw.waterball.judgegirl.studentservice.domain.exceptions.StudentPasswordIn
 import tw.waterball.judgegirl.studentservice.domain.usecases.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static tw.waterball.judgegirl.springboot.student.view.StudentView.toViewModel;
 
@@ -51,7 +53,8 @@ public class StudentController {
     @PostMapping("/signUp")
     public StudentView signUp(@RequestBody SignUpUseCase.Request request) {
         SignUpPresenter presenter = new SignUpPresenter();
-        signUpUseCase.execute(request, false, presenter);
+        request.admin = false;
+        signUpUseCase.execute(request, presenter);
         return presenter.present();
     }
 
@@ -120,43 +123,6 @@ public class StudentController {
     }
 }
 
-class SignUpPresenter implements SignUpUseCase.Presenter {
-    private Student student;
-
-    @Override
-    public void setStudent(Student student) {
-        this.student = student;
-    }
-
-    StudentView present() {
-        return toViewModel(student);
-    }
-}
-
-class SignInPresenter implements SignInUseCase.Presenter {
-    private Student student;
-    private TokenService.Token token;
-
-    @Override
-    public void setToken(TokenService.Token token) {
-        this.token = token;
-    }
-
-    @Override
-    public void setStudent(Student student) {
-        this.student = student;
-    }
-
-    Integer getStudentId() {
-        return student.getId();
-    }
-
-    LoginResponse present() {
-        return new LoginResponse(student.getId(), student.getEmail(), token.toString(),
-                token.getExpiration().getTime(), student.isAdmin());
-    }
-}
-
 class GetStudentByIdPresenter implements GetStudentUseCase.Presenter {
     private Student student;
 
@@ -190,17 +156,3 @@ class AuthPresenter implements AuthUseCase.Presenter {
     }
 }
 
-class GetStudentsPresenter implements GetStudentsWithFilterUseCase.Presenter {
-    private List<Student> students;
-
-    @Override
-    public void setStudents(List<Student> students) {
-        this.students = students;
-    }
-
-    List<StudentView> present() {
-        return students.stream()
-                .map(StudentView::toViewModel)
-                .collect(Collectors.toList());
-    }
-}
