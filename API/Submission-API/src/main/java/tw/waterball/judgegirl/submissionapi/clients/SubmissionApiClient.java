@@ -26,6 +26,7 @@ import tw.waterball.judgegirl.api.retrofit.BaseRetrofitAPI;
 import tw.waterball.judgegirl.api.retrofit.RetrofitFactory;
 import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
+import tw.waterball.judgegirl.entities.problem.Language;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 import tw.waterball.judgegirl.submissionservice.domain.usecases.SubmitCodeRequest;
 
@@ -39,8 +40,9 @@ import static tw.waterball.judgegirl.commons.utils.HttpHeaderUtils.bearerWithTok
  * @author - johnny850807@gmail.com (Waterball)
  */
 public class SubmissionApiClient extends BaseRetrofitAPI implements SubmissionServiceDriver {
-    private API api;
-    private String token;
+    public static final String CURRENTLY_ONLY_SUPPORT_C = Language.C.toString();
+    private final API api;
+    private final String token;
 
     public SubmissionApiClient(RetrofitFactory retrofitFactory,
                                String scheme,
@@ -53,7 +55,7 @@ public class SubmissionApiClient extends BaseRetrofitAPI implements SubmissionSe
     @Override
     public SubmissionView submit(SubmitCodeRequest submitCodeRequest) throws IOException {
         return api.submit(bearerWithToken(token),
-                submitCodeRequest.problemId, submitCodeRequest.studentId,
+                submitCodeRequest.problemId, CURRENTLY_ONLY_SUPPORT_C, submitCodeRequest.studentId,
                 submitCodeRequest.fileResources.stream()
                         .map(r -> MultipartBody.Part.createFormData("submittedCodes", r.getFileName(),
                                 new RequestBody() {
@@ -73,7 +75,7 @@ public class SubmissionApiClient extends BaseRetrofitAPI implements SubmissionSe
     public SubmissionView getSubmission(int problemId, int studentId, String submissionId) throws NotFoundException {
         return errorHandlingGetBody(() -> api.getSubmission(
                 bearerWithToken(token),
-                problemId, studentId, submissionId).execute());
+                problemId, CURRENTLY_ONLY_SUPPORT_C, studentId, submissionId).execute());
     }
 
     @Override
@@ -82,7 +84,7 @@ public class SubmissionApiClient extends BaseRetrofitAPI implements SubmissionSe
         Response<ResponseBody> resp = errorHandlingGetResponse(() ->
                 api.getSubmittedCodes(
                         bearerWithToken(token),
-                        problemId, studentId, submissionId, submittedCodesFileId));
+                        problemId, CURRENTLY_ONLY_SUPPORT_C, studentId, submissionId, submittedCodesFileId));
         return parseDownloadedFileResource(resp);
     }
 
@@ -90,32 +92,36 @@ public class SubmissionApiClient extends BaseRetrofitAPI implements SubmissionSe
     public List<SubmissionView> getSubmissions(int problemId, int studentId) {
         return errorHandlingGetBody(() -> api.getSubmissions(
                 bearerWithToken(token),
-                problemId, studentId).execute());
+                problemId, CURRENTLY_ONLY_SUPPORT_C, studentId).execute());
     }
 
     private interface API {
         @Multipart
-        @POST("/api/problems/{problemId}/students/{studentId}/submissions")
+        @POST("/api/problems/{problemId}/{langEnvName}/students/{studentId}/submissions")
         Call<SubmissionView> submit(@Header("Authorization") String bearerToken,
                                     @Path("problemId") int problemId,
+                                    @Path("langEnvName") String langEnvName,
                                     @Path("studentId") int studentId,
                                     @Part List<MultipartBody.Part> submittedCodes);
 
-        @GET("/api/problems/{problemId}/students/{studentId}/submissions/{submissionId}")
+        @GET("/api/problems/{problemId}/{langEnvName}/students/{studentId}/submissions/{submissionId}")
         Call<SubmissionView> getSubmission(@Header("Authorization") String bearerToken,
                                            @Path("problemId") int problemId,
+                                           @Path("langEnvName") String langEnvName,
                                            @Path("studentId") int studentId,
                                            @Path("submissionId") String submissionId);
 
 
-        @GET("/api/problems/{problemId}/students/{studentId}/submissions")
+        @GET("/api/problems/{problemId}/{langEnvName}/students/{studentId}/submissions")
         Call<List<SubmissionView>> getSubmissions(@Header("Authorization") String bearerToken,
                                                   @Path("problemId") int problemId,
+                                                  @Path("langEnvName") String langEnvName,
                                                   @Path("studentId") int studentId);
 
-        @GET("/api/problems/{problemId}/students/{studentId}/submissions/{submissionId}/submittedCodes/{submittedCodesFileId}")
+        @GET("/api/problems/{problemId}/{langEnvName}/students/{studentId}/submissions/{submissionId}/submittedCodes/{submittedCodesFileId}")
         Call<ResponseBody> getSubmittedCodes(@Header("Authorization") String bearerToken,
                                              @Path("problemId") int problemId,
+                                             @Path("langEnvName") String langEnvName,
                                              @Path("studentId") int studentId,
                                              @Path("submissionId") String submissionId,
                                              @Path("submittedCodesFileId") String submittedCodesFileId);
