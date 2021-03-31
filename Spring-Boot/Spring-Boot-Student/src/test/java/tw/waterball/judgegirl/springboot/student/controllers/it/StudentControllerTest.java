@@ -29,9 +29,9 @@ import tw.waterball.judgegirl.entities.Student;
 import tw.waterball.judgegirl.springboot.profiles.Profiles;
 import tw.waterball.judgegirl.springboot.student.SpringBootStudentApplication;
 import tw.waterball.judgegirl.springboot.student.controllers.LoginResponse;
-import tw.waterball.judgegirl.springboot.student.repositories.jpa.JpaStudentDataPort;
 import tw.waterball.judgegirl.springboot.student.view.StudentView;
 import tw.waterball.judgegirl.studentservice.domain.exceptions.StudentIdNotFoundException;
+import tw.waterball.judgegirl.studentservice.domain.repositories.StudentRepository;
 import tw.waterball.judgegirl.studentservice.domain.usecases.ChangePasswordUseCase;
 import tw.waterball.judgegirl.studentservice.domain.usecases.SignInUseCase;
 import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
@@ -54,10 +54,9 @@ import static tw.waterball.judgegirl.springboot.student.view.StudentView.toViewM
 @ContextConfiguration(classes = SpringBootStudentApplication.class)
 public class StudentControllerTest extends AbstractSpringBootTest {
     private Student student;
-    private Student admin;
 
     @Autowired
-    private JpaStudentDataPort studentRepository;
+    private StudentRepository studentRepository;
 
     @Autowired
     private TokenService tokenService;
@@ -65,7 +64,6 @@ public class StudentControllerTest extends AbstractSpringBootTest {
     @BeforeEach
     void setup() {
         student = new Student("name", "email@example.com", "password");
-        admin = new Admin("adminName", "admin@example.com", "adminPassword");
     }
 
     @AfterEach
@@ -78,13 +76,6 @@ public class StudentControllerTest extends AbstractSpringBootTest {
         StudentView body = signUpAndGetResponseBody(student);
         student.setId(body.id);
         assertEquals(toViewModel(student), body);
-    }
-
-    @Test
-    void WhenAdminSignUpCorrectly_ShouldRespondStudentView() throws Exception {
-        StudentView body = signUpAdminAndGetResponseBody(admin);
-        admin.setId(body.id);
-        assertEquals(toViewModel(admin), body);
     }
 
     @Test
@@ -112,12 +103,10 @@ public class StudentControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    void GivenOneStudentSignedUp_WhenSignUpWithExistingEmail_ShouldRespondBadRequest() throws Exception {
+    void GivenOneStudentSignedUp_WhenSignUpWithDuplicateEmail_ShouldRespondBadRequest() throws Exception {
         signUp(student);
-        student = new Student("name", "email@example.com", "password");
-        mockMvc.perform(post("/api/students/signUp")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(toJson(student)))
+
+        signUp("student", student.getEmail(), "password")
                 .andExpect(status().isBadRequest());
     }
 
@@ -129,13 +118,6 @@ public class StudentControllerTest extends AbstractSpringBootTest {
         verifyStudentLogin(studentView, body);
     }
 
-    @Test
-    void GivenOneAdminSignedUp_WhenAdminLoginCorrectly_ShouldRespondLoginResponseWithCorrectToken() throws Exception {
-        StudentView studentView = signUpAdminAndGetResponseBody(admin);
-        LoginResponse body = signInAdminAndGetResponseBody(this.admin.getEmail(), this.admin.getPassword());
-
-        verifyStudentLogin(studentView, body);
-    }
 
     @Test
     void GivenOneStudentSignedUp_WhenLoginWithWrongPassword_ShouldRespondBadRequest() throws Exception {
@@ -222,7 +204,7 @@ public class StudentControllerTest extends AbstractSpringBootTest {
         changePassword(student.getPassword(), newPassword, body.id, body.token).andExpect(status().isOk());
 
         Student student = studentRepository.findStudentById(body.id)
-                .orElseThrow(StudentIdNotFoundException::new).toEntity();
+                .orElseThrow(StudentIdNotFoundException::new);
         assertNotEquals(newPassword, student.getPassword());
     }
 
@@ -236,7 +218,7 @@ public class StudentControllerTest extends AbstractSpringBootTest {
         changePassword(wrongPassword, newPassword, body.id, body.token).andExpect(status().isBadRequest());
 
         Student student = studentRepository.findStudentById(body.id)
-                .orElseThrow(StudentIdNotFoundException::new).toEntity();
+                .orElseThrow(StudentIdNotFoundException::new);
         assertEquals(student.getPassword(), student.getPassword());
     }
 
@@ -281,13 +263,9 @@ public class StudentControllerTest extends AbstractSpringBootTest {
     }
 
     private ResultActions signUp(Student student) throws Exception {
-        return mockMvc.perform(post("/api/students/signUp")
+        return mockMvc.perform(post("/api/students")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(student)));
-    }
-
-    private StudentView signUpAdminAndGetResponseBody(Student admin) throws Exception {
-        return getBody(signUpAdmin(admin).andExpect(status().isOk()), StudentView.class);
     }
 
     @SneakyThrows
@@ -312,16 +290,6 @@ public class StudentControllerTest extends AbstractSpringBootTest {
                 .content(toJson(new SignInUseCase.Request(email, password))));
     }
 
-    private LoginResponse signInAdminAndGetResponseBody(String email, String password) throws Exception {
-        return getBody(signInAdmin(email, password).andExpect(status().isOk()), LoginResponse.class);
-    }
-
-    private ResultActions signInAdmin(String email, String password) throws Exception {
-        return mockMvc.perform(post("/api/admins/login")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(toJson(new SignInUseCase.Request(email, password))));
-    }
-
     private void verifyStudentLogin(StudentView view, LoginResponse body) {
         assertEquals(view.id, body.id);
         assertEquals(view.email, body.email);
@@ -331,7 +299,7 @@ public class StudentControllerTest extends AbstractSpringBootTest {
     }
 
     private ResultActions getStudentById(Integer id, String tokenString) throws Exception {
-        return mockMvc.perform(get("/api/students/" + id)
+        return mockMvc.perform(get("/api/students/{id}", id)
                 .header("Authorization", bearerWithToken(tokenString)));
     }
 
@@ -346,7 +314,7 @@ public class StudentControllerTest extends AbstractSpringBootTest {
 
     private ResultActions changePassword(String password, String newPassword, int id, String token) throws Exception {
         ChangePasswordUseCase.Request request = new ChangePasswordUseCase.Request(id, password, newPassword);
-        return mockMvc.perform(patch("/api/students/" + id + "/password")
+        return mockMvc.perform(patch("/api/students/{id}/password", id)
                 .header("Authorization", bearerWithToken(token))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(request)));
