@@ -11,7 +11,7 @@ import java.util.Set;
 /**
  * @author - wally55077@gmail.com
  */
-@Table(name = "groups")
+@Table(name = "\"groups\"" /*escape from keywords*/)
 @Setter
 @Getter
 @Builder
@@ -58,7 +58,7 @@ public class GroupData {
                 .name(student.getName())
                 .email(student.getEmail())
                 .password(student.getPassword())
-                .isAdmin(student.isAdmin())
+                .admin(student.isAdmin())
                 .groups(new HashSet<>())
                 .build();
         students.add(studentData);

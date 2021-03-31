@@ -59,6 +59,9 @@ public class Problem {
     @Singular
     private List<@Valid Testcase> testcases;
 
+    @NotNull
+    private boolean visible;
+
     private String testcaseIOsFileId;
 
     public void validate() {
@@ -107,6 +110,14 @@ public class Problem {
 
     public void addTag(String tag) {
         tags.add(tag);
+    }
+
+    public boolean getVisible() {
+        return visible;
+    }
+
+    public void setVisible(boolean visible) {
+        this.visible = visible;
     }
 
     public String getTestcaseIOsFileId() {

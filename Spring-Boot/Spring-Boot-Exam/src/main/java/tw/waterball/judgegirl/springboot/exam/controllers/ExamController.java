@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import tw.waterball.judgegirl.entities.Exam;
 import tw.waterball.judgegirl.entities.Question;
+import tw.waterball.judgegirl.examservice.repositories.ExamFilter;
 import tw.waterball.judgegirl.examservice.usecases.*;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.springboot.exam.view.ExamOverview;
@@ -19,7 +20,7 @@ import java.util.stream.Collectors;
 @RestController
 public class ExamController {
     private final CreateExamUseCase createExamUseCase;
-    private final GetUpcomingExamsUseCase getUpcomingExamUseCase;
+    private final GetExamsUseCase getExamsUseCase;
     private final CreateQuestionUseCase createQuestionUseCase;
     private final DeleteQuestionUseCase deleteQuestionUseCase;
     private final GetExamOverviewUseCase getExamOverviewUseCase;
@@ -31,15 +32,27 @@ public class ExamController {
         return presenter.present();
     }
 
+    @GetMapping("/api/exams")
+    public List<ExamView> getAllExams(@RequestParam(defaultValue = "0", required = false) int skip,
+                                      @RequestParam(defaultValue = "50", required = false) int size,
+                                      @RequestParam(defaultValue = "all", required = false) ExamFilter.Status status) {
+        GetExamsPresenter presenter = new GetExamsPresenter();
+        getExamsUseCase.execute(ExamFilter.builder()
+                .skip(skip).size(size).status(status).build(), presenter);
+        return presenter.present();
+    }
+
     @GetMapping("/api/students/{studentId}/exams")
-    public List<ExamView> getExams(@PathVariable Integer studentId, @RequestParam String type) {
-        if (type.equals("upcoming")) {
-            GetUpcomingExamPresenter presenter = new GetUpcomingExamPresenter();
-            getUpcomingExamUseCase.execute(new GetUpcomingExamsUseCase.Request(studentId), presenter);
-            return presenter.present();
-        } else {
-            throw new IllegalArgumentException("Type: " + type + " not supported.");
-        }
+    public List<ExamView> getStudentExams(@PathVariable Integer studentId,
+                                          @RequestParam(defaultValue = "0", required = false) int skip,
+                                          @RequestParam(defaultValue = "50", required = false) int size,
+                                          @RequestParam(defaultValue = "all", required = false) ExamFilter.Status status) {
+        GetExamsPresenter presenter = new GetExamsPresenter();
+        getExamsUseCase.execute(
+                ExamFilter.studentId(studentId)
+                        .skip(skip).size(size)
+                        .status(status).build(), presenter);
+        return presenter.present();
     }
 
     @PostMapping("/api/exams/{examId}/questions")
@@ -77,7 +90,7 @@ class CreateExamPresenter implements CreateExamUseCase.Presenter {
     }
 }
 
-class GetUpcomingExamPresenter implements GetUpcomingExamsUseCase.Presenter {
+class GetExamsPresenter implements GetExamsUseCase.Presenter {
     private List<Exam> exams;
 
     @Override

@@ -41,6 +41,7 @@ public class ProblemView {
     public List<String> tags;
     public String testcaseIOsFileId;
     public List<Testcase> testcases;
+    public boolean visible;
 
     public static ProblemView fromEntity(Problem problem) {
         return new ProblemView(
@@ -52,7 +53,8 @@ public class ProblemView {
                 problem.getFilterPluginTags(),
                 problem.getTags(),
                 problem.getTestcaseIOsFileId(),
-                problem.getTestcases()
+                problem.getTestcases(),
+                problem.getVisible()
         );
     }
 

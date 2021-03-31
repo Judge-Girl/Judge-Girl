@@ -43,14 +43,14 @@ import static java.util.Collections.singletonList;
  * @author - johnny850807@gmail.com (Waterball)
  */
 public class DockerJudgerDeployer implements JudgerDeployer {
-    private final static Logger logger = LogManager.getLogger();
-    private int dockerRemovalIntervalInMs;
-    private DockerClient dockerClient;
-    private ScheduledExecutorService scheduler;
-    private ServiceProps.ProblemService problemServiceInstance;
-    private ServiceProps.SubmissionService submissionServiceInstance;
-    private JudgeGirlAmqpProps amqpProps;
-    private JudgeGirlJudgerProps judgerProps;
+    private final static Logger logger = LogManager.getLogger(DockerJudgerDeployer.class);
+    private final int dockerRemovalIntervalInMs;
+    private final DockerClient dockerClient;
+    private final ScheduledExecutorService scheduler;
+    private final ServiceProps.ProblemService problemServiceInstance;
+    private final ServiceProps.SubmissionService submissionServiceInstance;
+    private final JudgeGirlAmqpProps amqpProps;
+    private final JudgeGirlJudgerProps judgerProps;
 
     public DockerJudgerDeployer(int dockerRemovalIntervalInMs, DockerClient dockerClient,
                                 ScheduledExecutorService scheduler,
@@ -116,7 +116,9 @@ public class DockerJudgerDeployer implements JudgerDeployer {
                 .flatMap(c -> Arrays.stream(c.getNames()))
                 .map(name -> name.substring(1))
                 .collect(Collectors.toSet()); // remove the beginning slash '/'
-        logger.info("Remove all exited judger containers which are based on the image '{}', found: {}",
-                judgerProps.getImage().getName(), String.join(", ", removedNames));
+        if (!removedNames.isEmpty()) {
+            logger.info("Remove all exited judger containers which are based on the image '{}', found: {}",
+                    judgerProps.getImage().getName(), String.join(", ", removedNames));
+        }
     }
 }

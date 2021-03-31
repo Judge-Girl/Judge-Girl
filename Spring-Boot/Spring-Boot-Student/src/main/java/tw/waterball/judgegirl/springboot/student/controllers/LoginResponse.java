@@ -27,5 +27,5 @@ public class LoginResponse {
     public String email;
     public String token;
     public long expiryTime;
-    public boolean isAdmin;
+    public boolean admin;
 }

@@ -16,8 +16,8 @@ package tw.waterball.judgegirl.springboot.student.repositories;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import tw.waterball.judgegirl.entities.Student;
+import tw.waterball.judgegirl.springboot.helpers.SkipAndSizePageable;
 import tw.waterball.judgegirl.springboot.student.repositories.jpa.JpaStudentDataPort;
-import tw.waterball.judgegirl.springboot.student.repositories.jpa.SkipAndSizePageable;
 import tw.waterball.judgegirl.springboot.student.repositories.jpa.StudentData;
 import tw.waterball.judgegirl.studentservice.domain.repositories.StudentRepository;
 
@@ -71,10 +71,11 @@ public class JpaStudentRepository implements StudentRepository {
         return student;
     }
 
+
     @Override
-    public List<Student> findAll(int skip, int size) {
+    public List<Student> findStudents(boolean admin, int skip, int size) {
         Pageable pageable = new SkipAndSizePageable(skip, size);
-        List<StudentData> students = jpaStudentDataPort.findAll(pageable).getContent();
+        List<StudentData> students = jpaStudentDataPort.findByAdmin(admin, pageable).getContent();
         return students.stream()
                 .map(StudentData::toEntity)
                 .collect(Collectors.toList());
