@@ -31,7 +31,7 @@ public class StudentExceptionAdvices {
     public StudentExceptionAdvices() {
     }
 
-    @ExceptionHandler({StudentPasswordIncorrectException.class, DuplicateEmailException.class, IllegalArgumentException.class})
+    @ExceptionHandler({StudentPasswordIncorrectException.class, DuplicateEmailException.class})
     public ResponseEntity<?> badRequestHandler(Exception err) {
         return ResponseEntity.badRequest().body(err.getMessage());
     }

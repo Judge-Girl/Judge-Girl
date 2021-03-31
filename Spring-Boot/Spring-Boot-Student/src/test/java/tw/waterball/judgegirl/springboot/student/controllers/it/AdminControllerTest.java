@@ -91,7 +91,7 @@ class AdminControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    void GivenOneAdminSignedUp_WhenSignUpWithExistingEmail_ShouldRespondBadRequest() throws Exception {
+    void GivenOneAdminSignedUp_WhenSignUpWithDuplicateEmail_ShouldRespondBadRequest() throws Exception {
         signUp(admin);
 
         signUp("admin", admin.getEmail(), "password")

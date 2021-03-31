@@ -103,7 +103,7 @@ public class StudentControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    void GivenOneStudentSignedUp_WhenSignUpWithExistingEmail_ShouldRespondBadRequest() throws Exception {
+    void GivenOneStudentSignedUp_WhenSignUpWithDuplicateEmail_ShouldRespondBadRequest() throws Exception {
         signUp(student);
 
         signUp("student", student.getEmail(), "password")

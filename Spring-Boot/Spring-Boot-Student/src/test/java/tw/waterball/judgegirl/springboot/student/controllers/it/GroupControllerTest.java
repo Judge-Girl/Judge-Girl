@@ -190,7 +190,7 @@ public class GroupControllerTest extends AbstractSpringBootTest {
 
     private ResultActions signUp(String name, String email, String password) throws Exception {
         Student newStudent = new Student(name, email, password);
-        return mockMvc.perform(post(STUDENT_PATH + "/signUp")
+        return mockMvc.perform(post(STUDENT_PATH)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(newStudent)));
     }
