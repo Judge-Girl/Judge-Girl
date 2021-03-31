@@ -23,8 +23,8 @@ public class FixedInputConfiguration {
         int problemId = 3;
         return MigrateOneProblemStandardInput.builder()
                 .problemId(problemId)
-                .compilationScript("gcc -std=c99 -O2 intersection.c main.c -lm")
-                .tags(new String[]{"array", "loop", "function"})
+                .compilationScript("gcc -std=c99 -O2 a.c -lm")
+                .tags(new String[]{"arithmetic operation, basic I/O"})
                 .legacyPackageRootPath(Paths.get("/Volumes/Legacy-Judge-Girl-2021/package"))
                 .outputDirectoryPath(Paths.get("temp/migration/" + problemId))
                 .resourceSpec(new ResourceSpec(1, 0))
