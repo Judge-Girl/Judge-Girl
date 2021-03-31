@@ -68,56 +68,88 @@ class AdminControllerTest extends AbstractSpringBootTest {
 
     @Test
     void WhenSignUpWithEmptyName_ShouldRespondBadRequest() throws Exception {
-        signUpAdmin("", "email@example.com", "password")
+        signUp("", "email@example.com", "password")
                 .andExpect(status().isBadRequest());
     }
 
     @Test
     void WhenSignUpWithEmptyPassword_ShouldRespondBadRequest() throws Exception {
-        signUpAdmin("name", "email@example.com", "")
+        signUp("name", "email@example.com", "")
                 .andExpect(status().isBadRequest());
     }
 
     @Test
     void WhenSignUpWithIncorrectEmail_ShouldRespondBadRequest() throws Exception {
-        signUpAdmin("name", "email", "password")
+        signUp("name", "email", "password")
                 .andExpect(status().isBadRequest());
     }
 
     @Test
     void WhenSignUpWithPasswordOfLength3_ShouldRespondBadRequest() throws Exception {
-        signUpAdmin("name", "email@example.com", "pwd")
+        signUp("name", "email@example.com", "pwd")
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void GivenOneAdminSignedUp_WhenSignUpWithExistingEmail_ShouldRespondBadRequest() throws Exception {
+        signUp(admin);
+
+        signUp("admin", admin.getEmail(), "password")
                 .andExpect(status().isBadRequest());
     }
 
     @Test
     void GivenOneAdminSignedUp_WhenAdminLoginCorrectly_ShouldRespondLoginResponseWithCorrectToken() throws Exception {
         StudentView studentView = signUpAdminAndGetResponseBody(admin);
-        LoginResponse body = signInAdminAndGetResponseBody(this.admin.getEmail(), this.admin.getPassword());
+        LoginResponse body = signInAndGetResponseBody(this.admin.getEmail(), this.admin.getPassword());
 
         verifyStudentLogin(studentView, body);
     }
 
+    @Test
+    void GivenOneAdminSignedUp_WhenLoginWithWrongPassword_ShouldRespondBadRequest() throws Exception {
+        signUp(admin);
+
+        signIn(this.admin.getEmail(), "wrongPassword")
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void GivenOneAdminSignedUp_WhenLoginWithWrongEmail_ShouldRespondNotFound() throws Exception {
+        signUp(admin);
+
+        signIn("worngEmail@example.com", this.admin.getPassword())
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void GivenOneAdminSignedUp_WhenLoginWithWrongEmailAndPassword_ShouldRespondNotFound() throws Exception {
+        signUp(admin);
+
+        signIn("worngEmail@example.com", "wrongPassword")
+                .andExpect(status().isNotFound());
+    }
+
     private StudentView signUpAdminAndGetResponseBody(Student admin) throws Exception {
-        return getBody(signUpAdmin(admin).andExpect(status().isOk()), StudentView.class);
+        return getBody(signUp(admin).andExpect(status().isOk()), StudentView.class);
     }
 
-    private ResultActions signUpAdmin(String name, String email, String password) throws Exception {
+    private ResultActions signUp(String name, String email, String password) throws Exception {
         Student newAdmin = new Admin(name, email, password);
-        return signUpAdmin(newAdmin);
+        return signUp(newAdmin);
     }
 
-    private ResultActions signUpAdmin(Student admin) throws Exception {
+    private ResultActions signUp(Student admin) throws Exception {
         return mockMvc.perform(post("/api/admins")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(admin)));
     }
 
-    private LoginResponse signInAdminAndGetResponseBody(String email, String password) throws Exception {
-        return getBody(signInAdmin(email, password).andExpect(status().isOk()), LoginResponse.class);
+    private LoginResponse signInAndGetResponseBody(String email, String password) throws Exception {
+        return getBody(signIn(email, password).andExpect(status().isOk()), LoginResponse.class);
     }
 
-    private ResultActions signInAdmin(String email, String password) throws Exception {
+    private ResultActions signIn(String email, String password) throws Exception {
         return mockMvc.perform(post("/api/admins/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(new SignInUseCase.Request(email, password))));
@@ -130,5 +162,4 @@ class AdminControllerTest extends AbstractSpringBootTest {
         assertEquals(view.id, token.getStudentId());
         assertEquals(view.admin, body.admin);
     }
-
 }

@@ -54,7 +54,6 @@ import static tw.waterball.judgegirl.springboot.student.view.StudentView.toViewM
 @ContextConfiguration(classes = SpringBootStudentApplication.class)
 public class StudentControllerTest extends AbstractSpringBootTest {
     private Student student;
-    private Student admin;
 
     @Autowired
     private StudentRepository studentRepository;
@@ -65,7 +64,6 @@ public class StudentControllerTest extends AbstractSpringBootTest {
     @BeforeEach
     void setup() {
         student = new Student("name", "email@example.com", "password");
-        admin = new Admin("adminName", "admin@example.com", "adminPassword");
     }
 
     @AfterEach
@@ -107,10 +105,8 @@ public class StudentControllerTest extends AbstractSpringBootTest {
     @Test
     void GivenOneStudentSignedUp_WhenSignUpWithExistingEmail_ShouldRespondBadRequest() throws Exception {
         signUp(student);
-        student = new Student("name", "email@example.com", "password");
-        mockMvc.perform(post("/api/students/signUp")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(toJson(student)))
+
+        signUp("student", student.getEmail(), "password")
                 .andExpect(status().isBadRequest());
     }
 
@@ -303,7 +299,7 @@ public class StudentControllerTest extends AbstractSpringBootTest {
     }
 
     private ResultActions getStudentById(Integer id, String tokenString) throws Exception {
-        return mockMvc.perform(get("/api/students/" + id)
+        return mockMvc.perform(get("/api/students/{id}", id)
                 .header("Authorization", bearerWithToken(tokenString)));
     }
 
@@ -318,7 +314,7 @@ public class StudentControllerTest extends AbstractSpringBootTest {
 
     private ResultActions changePassword(String password, String newPassword, int id, String token) throws Exception {
         ChangePasswordUseCase.Request request = new ChangePasswordUseCase.Request(id, password, newPassword);
-        return mockMvc.perform(patch("/api/students/" + id + "/password")
+        return mockMvc.perform(patch("/api/students/{id}/password", id)
                 .header("Authorization", bearerWithToken(token))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(request)));
