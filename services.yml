@@ -31,6 +31,7 @@ services:
       - "traefik.http.routers.student-service.entrypoints=web"
       - "traefik.http.routers.student-service.service=student-service"
       - "traefik.http.services.student-service.loadbalancer.server.port=80"
+      - "traefik.http.routers.student-service.priority=1"
 
   exam-service:
     build: Spring-Boot/Spring-Boot-Exam
@@ -44,6 +45,7 @@ services:
       - "traefik.http.routers.exam-service.entrypoints=web"
       - "traefik.http.routers.exam-service.service=exam-service"
       - "traefik.http.services.exam-service.loadbalancer.server.port=80"
+      - "traefik.http.routers.exam-service.priority=2"
 
   problem-service:
     build: Spring-Boot/Spring-Boot-Problem
