@@ -43,7 +43,7 @@ public class StudentController {
     private final ChangePasswordUseCase changePasswordUseCase;
     private final TokenService tokenService;
 
-    @PostMapping("/signUp")
+    @PostMapping
     public StudentView signUp(@RequestBody SignUpUseCase.Request request) {
         SignUpPresenter presenter = new SignUpPresenter();
         request.admin = false;

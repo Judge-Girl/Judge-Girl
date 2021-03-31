@@ -263,7 +263,7 @@ public class StudentControllerTest extends AbstractSpringBootTest {
     }
 
     private ResultActions signUp(Student student) throws Exception {
-        return mockMvc.perform(post("/api/students/signUp")
+        return mockMvc.perform(post("/api/students")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(student)));
     }
