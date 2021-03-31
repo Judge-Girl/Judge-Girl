@@ -74,7 +74,6 @@ public class ExamController {
         getExamOverviewUseCase.execute(new GetExamOverviewUseCase.Request(examId), presenter);
         return presenter.present();
     }
-
 }
 
 class CreateExamPresenter implements CreateExamUseCase.Presenter {
@@ -141,3 +140,4 @@ class GetExamOverviewPresenter implements GetExamOverviewUseCase.Presenter {
     }
 
 }
+
