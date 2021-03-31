@@ -161,7 +161,7 @@ public class ConvertLegacyLayout {
                     "the stdin's and stdout's name are different:" + stdinFileName + "," + stdoutFileName;
             testcase.setName(getBaseName(stdinFileName));
             testcase.setProblemId(problemId);
-            testcase.setTimeLimit((Integer) caseAttr.get(2));
+            testcase.setTimeLimit((Integer) caseAttr.get(2) * 1000);
             testcase.setMemoryLimit(((Integer) caseAttr.get(3)).longValue());
             testcase.setOutputLimit(((Integer) caseAttr.get(4)).longValue());
             testcase.setThreadNumberLimit(-1);
