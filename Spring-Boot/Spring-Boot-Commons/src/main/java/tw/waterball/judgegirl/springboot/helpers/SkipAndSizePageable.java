@@ -11,7 +11,7 @@
  *   limitations under the License.
  */
 
-package tw.waterball.judgegirl.springboot.student.repositories.jpa;
+package tw.waterball.judgegirl.springboot.helpers;
 
 import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Pageable;

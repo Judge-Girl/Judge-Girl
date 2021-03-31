@@ -15,7 +15,11 @@ public interface ExamRepository {
 
     List<Exam> findByIdIn(Collection<Integer> examIds);
 
+    List<Exam> findExams(ExamFilter examFilter);
+
     void addQuestion(Question question);
+
+    void addParticipation(int examId, int studentId);
 
     void deleteQuestionById(Question.Id id);
 

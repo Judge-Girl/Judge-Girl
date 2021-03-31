@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import static tw.waterball.judgegirl.entities.date.DateProvider.now;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
@@ -46,5 +48,18 @@ public class Exam {
         if (startTime.after(endTime)) {
             throw new IllegalStateException();
         }
+    }
+
+    public boolean isUpcoming() {
+        return getStartTime().after(now());
+    }
+
+    public boolean isPast() {
+        return getEndTime().before(now());
+    }
+
+    public boolean isCurrent() {
+        Date now = now();
+        return getStartTime().before(now) && getEndTime().after(now);
     }
 }
