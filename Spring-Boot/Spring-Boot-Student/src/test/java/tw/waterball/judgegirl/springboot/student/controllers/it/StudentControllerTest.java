@@ -29,9 +29,9 @@ import tw.waterball.judgegirl.entities.Student;
 import tw.waterball.judgegirl.springboot.profiles.Profiles;
 import tw.waterball.judgegirl.springboot.student.SpringBootStudentApplication;
 import tw.waterball.judgegirl.springboot.student.controllers.LoginResponse;
-import tw.waterball.judgegirl.springboot.student.repositories.jpa.JpaStudentDataPort;
 import tw.waterball.judgegirl.springboot.student.view.StudentView;
 import tw.waterball.judgegirl.studentservice.domain.exceptions.StudentIdNotFoundException;
+import tw.waterball.judgegirl.studentservice.domain.repositories.StudentRepository;
 import tw.waterball.judgegirl.studentservice.domain.usecases.ChangePasswordUseCase;
 import tw.waterball.judgegirl.studentservice.domain.usecases.SignInUseCase;
 import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
@@ -57,7 +57,7 @@ public class StudentControllerTest extends AbstractSpringBootTest {
     private Student admin;
 
     @Autowired
-    private JpaStudentDataPort studentRepository;
+    private StudentRepository studentRepository;
 
     @Autowired
     private TokenService tokenService;
@@ -222,7 +222,7 @@ public class StudentControllerTest extends AbstractSpringBootTest {
         changePassword(student.getPassword(), newPassword, body.id, body.token).andExpect(status().isOk());
 
         Student student = studentRepository.findStudentById(body.id)
-                .orElseThrow(StudentIdNotFoundException::new).toEntity();
+                .orElseThrow(StudentIdNotFoundException::new);
         assertNotEquals(newPassword, student.getPassword());
     }
 
@@ -236,7 +236,7 @@ public class StudentControllerTest extends AbstractSpringBootTest {
         changePassword(wrongPassword, newPassword, body.id, body.token).andExpect(status().isBadRequest());
 
         Student student = studentRepository.findStudentById(body.id)
-                .orElseThrow(StudentIdNotFoundException::new).toEntity();
+                .orElseThrow(StudentIdNotFoundException::new);
         assertEquals(student.getPassword(), student.getPassword());
     }
 
