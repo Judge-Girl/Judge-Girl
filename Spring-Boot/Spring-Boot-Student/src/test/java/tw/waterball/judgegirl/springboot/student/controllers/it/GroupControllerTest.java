@@ -151,6 +151,16 @@ public class GroupControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
+    public void GivenOneStudentAddedIntoCreatedGroup_WhenAddStudentMultipleTimesIntoTheGroup_ShouldRespondOk() throws Exception {
+        GroupView body = createGroupAndGet(GROUP_NAME);
+        StudentView studentA = signUpAndGetStudent("A");
+        int groupId = body.id;
+        addStudentIntoGroup(groupId, studentA.id);
+        addStudentIntoGroup(groupId, studentA.id)
+                .andExpect(status().isOk());
+    }
+
+    @Test
     @Transactional
     public void GivenTwoStudentsAddedIntoCreatedGroup_WhenDeleteOneStudentFromTheGroup_ThenGroupShouldHaveOneStudent() throws Exception {
         GroupView body = createGroupAndGet(GROUP_NAME);
