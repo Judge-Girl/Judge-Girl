@@ -22,7 +22,7 @@ steps:
   - name: Integration
     commands:
       - export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-11.0.9.11-2.el7_9.x86_64
-      - ./mvnw package --quiet
+      - ./mvnw package --quiet > result.txt 2>&1 && cat result.txt
   - name: Build Docker Image
     commands:
       - cd Judger/ && docker build . -t judger -f Dockerfile.cqi && cd ..
