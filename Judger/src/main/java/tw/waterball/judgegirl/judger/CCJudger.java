@@ -38,9 +38,9 @@ import tw.waterball.judgegirl.problemapi.clients.ProblemServiceDriver;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.submissionapi.clients.SubmissionServiceDriver;
 import tw.waterball.judgegirl.submissionapi.clients.VerdictPublisher;
-import tw.waterball.judgegirl.submissionapi.views.ReportView;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 import tw.waterball.judgegirl.submissionapi.views.VerdictIssuedEvent;
+import tw.waterball.judgegirl.submissionapi.views.VerdictView;
 
 import java.io.File;
 import java.io.IOException;
@@ -311,12 +311,10 @@ public class CCJudger extends PluginExtendedJudger {
     protected void publishVerdict(Verdict verdict) {
         verdictPublisher.publish(
                 new VerdictIssuedEvent(getProblem().getId(),
+                        getStudent(),
                         getProblem().getTitle(),
                         getSubmission().getId(),
-                        verdict.getCompileErrorMessage(),
-                        verdict.getIssueTime(),
-                        ReportView.fromEntity(verdict.getReport()),
-                        verdict.getJudges()));
+                        VerdictView.fromEntity(verdict)));
 
     }
 

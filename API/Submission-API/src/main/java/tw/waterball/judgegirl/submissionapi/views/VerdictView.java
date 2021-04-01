@@ -13,9 +13,7 @@
 
 package tw.waterball.judgegirl.submissionapi.views;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.jetbrains.annotations.Nullable;
 import tw.waterball.judgegirl.entities.problem.JudgeStatus;
 import tw.waterball.judgegirl.entities.submission.Judge;
@@ -27,10 +25,12 @@ import java.util.List;
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
+@Builder
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class VerdictView {
+    @Singular
     private List<Judge> judges;
     private JudgeStatus summaryStatus;
     private int totalGrade;

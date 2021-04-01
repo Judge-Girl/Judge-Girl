@@ -13,12 +13,10 @@
 
 package tw.waterball.judgegirl.submissionapi.views;
 
-import lombok.*;
-import org.jetbrains.annotations.Nullable;
-import tw.waterball.judgegirl.entities.submission.Judge;
-
-import java.util.Date;
-import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -27,17 +25,10 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-// TODO refactor: include VerdictView instead of List<Judge>
 public class VerdictIssuedEvent {
     private int problemId;
+    private int studentId;
     private String problemTitle;
     private String submissionId;
-
-    @Nullable
-    private String compileErrorMessage;
-    private Date issueTime;
-    private ReportView report;
-
-    @Singular
-    private List<Judge> judges;
+    private VerdictView verdict;
 }

@@ -44,7 +44,7 @@ public interface JudgerEnvVariables {
     String ENV_AMQP_PASSWORD = "spring.rabbitmq.password";
     String ENV_AMQP_HOST = "spring.rabbitmq.host";
     String ENV_AMQP_PORT = "spring.rabbitmq.port";
-    String ENV_SUBMISSION_EXCHANGE_NAME = "judge-girl.amqp.submission-exchange-name";
+    String ENV_VERDICT_EXCHANGE_NAME = "judge-girl.amqp.verdict-exchange-name";
     String ENV_VERDICT_ISSUED_ROUTING_KEY_FORMAT = "judge-girl.amqp.verdict-issued-routing-key-format";
 
 
@@ -69,7 +69,7 @@ public interface JudgerEnvVariables {
         applier.apply(ENV_AMQP_HOST, values.amqpHost);
         applier.apply(ENV_AMQP_PORT, values.amqpPort);
 
-        applier.apply(ENV_SUBMISSION_EXCHANGE_NAME, values.submissionExchangeName);
+        applier.apply(ENV_VERDICT_EXCHANGE_NAME, values.verdictExchangeName);
         applier.apply(ENV_VERDICT_ISSUED_ROUTING_KEY_FORMAT, values.verdictIssuedRoutingKeyFormat);
     }
 
@@ -101,7 +101,7 @@ public interface JudgerEnvVariables {
         public final String amqpPassword;
         public final String amqpHost;
         public final int amqpPort;
-        public final String submissionExchangeName;
+        public final String verdictExchangeName;
         public final String verdictIssuedRoutingKeyFormat;
     }
 
@@ -131,7 +131,7 @@ public interface JudgerEnvVariables {
                 .amqpPassword(getenv(ENV_AMQP_PASSWORD))
                 .amqpHost(getenv(ENV_AMQP_HOST))
                 .amqpPort(parseInt(getenv(ENV_AMQP_PORT)))
-                .submissionExchangeName(getenv(ENV_SUBMISSION_EXCHANGE_NAME))
+                .verdictExchangeName(getenv(ENV_VERDICT_EXCHANGE_NAME))
                 .verdictIssuedRoutingKeyFormat(getenv(ENV_VERDICT_ISSUED_ROUTING_KEY_FORMAT))
                 .build();
     }

@@ -57,6 +57,7 @@ import tw.waterball.judgegirl.submissionapi.clients.VerdictPublisher;
 import tw.waterball.judgegirl.submissionapi.views.ReportView;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 import tw.waterball.judgegirl.submissionapi.views.VerdictIssuedEvent;
+import tw.waterball.judgegirl.submissionapi.views.VerdictView;
 import tw.waterball.judgegirl.submissionservice.deployer.JudgerDeployer;
 import tw.waterball.judgegirl.submissionservice.domain.usecases.SubmitCodeUseCase;
 import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
@@ -222,7 +223,7 @@ public class SubmissionControllerTest extends AbstractSpringBootTest {
         VerdictData verdictData = updatedSubmissionData.getVerdict();
         assertEquals(50, verdictData.getTotalGrade());
         assertEquals(JudgeStatus.WA, verdictData.getSummaryStatus());
-        assertEquals(new HashSet<>(verdictIssuedEvent.getJudges()),
+        assertEquals(new HashSet<>(verdictIssuedEvent.getVerdict().getJudges()),
                 new HashSet<>(verdictData.getJudges()));
         assertEquals(stubReport.getRawData(), verdictData.getReportData());
     }
@@ -242,14 +243,16 @@ public class SubmissionControllerTest extends AbstractSpringBootTest {
     private VerdictIssuedEvent generateVerdictIssuedEvent(SubmissionView submissionView) {
         return VerdictIssuedEvent.builder()
                 .problemId(problem.getId())
+                .studentId(submissionView.studentId)
                 .problemTitle(problem.getTitle())
                 .submissionId(submissionView.getId())
-                .judge(new Judge("t1", JudgeStatus.AC, new ProgramProfile(5, 5, ""), 20))
-                .judge(new Judge("t2", JudgeStatus.AC, new ProgramProfile(6, 6, ""), 30))
-                .judge(new Judge("t3", JudgeStatus.WA, new ProgramProfile(7, 7, ""), 0))
-                .issueTime(new Date())
-                .report(ReportView.fromEntity(ProblemStubs.compositeReport()))
-                .build();
+                .verdict(VerdictView.builder()
+                        .judge(new Judge("t1", JudgeStatus.AC, new ProgramProfile(5, 5, ""), 20))
+                        .judge(new Judge("t2", JudgeStatus.AC, new ProgramProfile(6, 6, ""), 30))
+                        .judge(new Judge("t3", JudgeStatus.WA, new ProgramProfile(7, 7, ""), 0))
+                        .issueTime(new Date())
+                        .report(ReportView.fromEntity(ProblemStubs.compositeReport()))
+                        .build()).build();
     }
 
     @Test

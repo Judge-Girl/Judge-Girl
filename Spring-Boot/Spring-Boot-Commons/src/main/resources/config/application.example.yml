@@ -28,8 +28,9 @@ judge-girl:
     password: service-girl-judge
     host: ${RABBIT_HOST:localhost}
     port: 5672
-    verdict-issued-event-queue: Submission-Service:Verdict-Issue
-    submission-exchange-name: Submissions
+    submission-service-queue: Submission-Service
+    broker-queue: Broker
+    verdict-exchange-name: Verdicts
     verdict-issued-routing-key-format: submissions.%s.verdict
   client:
     problem-service:
