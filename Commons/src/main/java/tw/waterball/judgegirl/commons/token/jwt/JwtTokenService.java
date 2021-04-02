@@ -39,11 +39,9 @@ public class JwtTokenService implements TokenService {
     @Override
     public Token createToken(Identity identity) {
         Date expirationDate;
-        if (identity.isAdmin()) {
-            return Token.ofAdmin(compactTokenStringWithoutExpiration(identity));
-        }
         expirationDate = new Date((System.currentTimeMillis() + this.expiration.getTime()));
-        return Token.ofStudent(identity.getStudentId(), compactTokenString(expirationDate, identity), expirationDate);
+        return new Token(identity.isAdmin(), identity.getStudentId(),
+                compactTokenString(expirationDate, identity), expirationDate);
     }
 
     @Override
@@ -62,14 +60,10 @@ public class JwtTokenService implements TokenService {
             throw new TokenInvalidException(err);
         }
 
-        io.jsonwebtoken.Claims claims = (io.jsonwebtoken.Claims) jwt.getBody();
-        if (claims.containsKey(Identity.KEY_IS_ADMIN)) {
-            if ((boolean) claims.get(Identity.KEY_IS_ADMIN)) {
-                return Token.ofAdmin(compactTokenString(claims.getExpiration(), Identity.admin()));
-            }
-        }
-        Identity identity = new Identity((int) claims.get(Identity.KEY_STUDENT_ID));
-        return Token.ofStudent(identity.getStudentId(),
+        io.jsonwebtoken.Claims claims = jwt.getBody();
+        Identity identity = new Identity((boolean) claims.get(Identity.KEY_IS_ADMIN),
+                (int) claims.get(Identity.KEY_STUDENT_ID));
+        return new Token(identity.isAdmin(), identity.getStudentId(),
                 compactTokenString(claims.getExpiration(), identity), claims.getExpiration());
     }
 

@@ -30,7 +30,7 @@ import javax.inject.Named;
  */
 @Named
 @AllArgsConstructor
-public class SignInUseCase {
+public class LoginUseCase {
     private final StudentRepository studentRepository;
     private final PasswordEncoder passwordEncoder;
 
@@ -41,7 +41,7 @@ public class SignInUseCase {
                 .findByEmail(request.email)
                 .orElseThrow(StudentEmailNotFoundException::new);
         validatePassword(request.password, student.getPassword());
-        presenter.setStudent(student);
+        presenter.loginSuccessfully(student);
     }
 
     private void validatePassword(String rawPassword, String encodedPassword) throws StudentPasswordIncorrectException {
@@ -60,6 +60,6 @@ public class SignInUseCase {
     public interface Presenter {
         void setToken(TokenService.Token token);
 
-        void setStudent(Student student);
+        void loginSuccessfully(Student student);
     }
 }

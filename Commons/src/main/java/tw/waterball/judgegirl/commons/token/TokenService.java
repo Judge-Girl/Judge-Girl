@@ -18,12 +18,10 @@ import lombok.Setter;
 import tw.waterball.judgegirl.commons.utils.HttpHeaderUtils;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
-
-import static java.util.Collections.singletonMap;
-import static tw.waterball.judgegirl.commons.utils.DateUtils.NEVER_EXPIRED_IN_LIFETIME_DATE;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -37,7 +35,7 @@ public interface TokenService {
 
     default <T> T returnIfTokenValid(int studentId, String authorization, Function<Token, T> tokenFunction) {
         TokenService.Token token = parseBearerTokenAndValidate(authorization);
-        if (token.getStudentId() == studentId) {
+        if (token.canAccessStudent(studentId)) {
             return tokenFunction.apply(token);
         } else {
             throw new TokenInvalidException("Authentication failed.");
@@ -46,7 +44,7 @@ public interface TokenService {
 
     default void ifTokenValid(int studentId, String authorization, Consumer<Token> tokenConsumer) {
         TokenService.Token token = parseBearerTokenAndValidate(authorization);
-        if (token.getStudentId() == studentId) {
+        if (token.canAccessStudent(studentId)) {
             tokenConsumer.accept(token);
         } else {
             throw new TokenInvalidException("Authentication failed.");
@@ -64,24 +62,18 @@ public interface TokenService {
         private String token;
         private Date expiration;
 
-        private Token(String token, Date expiration) {
-            super(true);
-            this.token = token;
-            this.expiration = expiration;
-        }
-
-        private Token(int studentId, String token, Date expiration) {
-            super(studentId);
+        public Token(boolean isAdmin, int studentId, String token, Date expiration) {
+            super(isAdmin, studentId);
             this.token = token;
             this.expiration = expiration;
         }
 
         public static Token ofStudent(int studentId, String token, Date expiration) {
-            return new Token(studentId, token, expiration);
+            return new Token(false, studentId, token, expiration);
         }
 
-        public static Token ofAdmin(String token) {
-            return new Token(token, NEVER_EXPIRED_IN_LIFETIME_DATE);
+        public static Token ofAdmin(int studentId, String token, Date expiration) {
+            return new Token(true, studentId, token, expiration);
         }
 
         @Override
@@ -93,29 +85,27 @@ public interface TokenService {
     class Identity {
         public final static String KEY_STUDENT_ID = "studentId";
         public final static String KEY_IS_ADMIN = "isAdmin";
-        private int studentId = Integer.MIN_VALUE;
-        private boolean isAdmin;
+        private final int studentId;
+        private final boolean isAdmin;
 
-        public Identity(int studentId) {
+        public Identity(boolean isAdmin, int studentId) {
+            this.isAdmin = isAdmin;
             this.studentId = studentId;
         }
 
-        private Identity(boolean isAdmin) {
-            this.isAdmin = isAdmin;
-        }
-
         public static Identity student(int studentId) {
-            return new Identity(studentId);
+            return new Identity(false, studentId);
         }
 
-        public static Identity admin() {
-            return new Identity(true);
+        public static Identity admin(int studentId) {
+            return new Identity(true, studentId);
         }
 
         public Map<String, Object> getClaimMap() {
-            return isAdmin() ?
-                    singletonMap(KEY_IS_ADMIN, true) :
-                    singletonMap(KEY_STUDENT_ID, studentId);
+            Map<String, Object> claim = new HashMap<>();
+            claim.put(KEY_IS_ADMIN, isAdmin);
+            claim.put(KEY_STUDENT_ID, studentId);
+            return claim;
         }
 
         public boolean isAdmin() {

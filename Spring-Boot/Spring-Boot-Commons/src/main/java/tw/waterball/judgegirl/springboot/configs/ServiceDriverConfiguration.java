@@ -14,6 +14,7 @@
 package tw.waterball.judgegirl.springboot.configs;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import tw.waterball.judgegirl.api.retrofit.RetrofitFactory;
@@ -24,6 +25,8 @@ import tw.waterball.judgegirl.springboot.configs.properties.ServiceProps;
 import tw.waterball.judgegirl.springboot.profiles.productions.ServiceDriver;
 import tw.waterball.judgegirl.submissionapi.clients.SubmissionApiClient;
 import tw.waterball.judgegirl.submissionapi.clients.SubmissionServiceDriver;
+
+import static tw.waterball.judgegirl.commons.token.TokenService.Identity.admin;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -41,9 +44,9 @@ public class ServiceDriverConfiguration {
     public ProblemServiceDriver problemServiceDriver(
             RetrofitFactory retrofitFactory,
             TokenService tokenService,
-            ServiceProps.ProblemService problemServiceInstance) {
-        String adminToken =
-                tokenService.createToken(TokenService.Identity.admin()).getToken();
+            ServiceProps.ProblemService problemServiceInstance,
+            @Value("${judge-girl.client.problem-service.studentId}") int studentId) {
+        String adminToken = tokenService.createToken(admin(studentId)).getToken();
 
         return new ProblemApiClient(retrofitFactory,
                 problemServiceInstance.getScheme(),
@@ -55,9 +58,9 @@ public class ServiceDriverConfiguration {
     public SubmissionServiceDriver submissionServiceDriver(
             RetrofitFactory retrofitFactory,
             TokenService tokenService,
-            ServiceProps.SubmissionService submissionServiceInstance) {
-        String adminToken =
-                tokenService.createToken(TokenService.Identity.admin()).getToken();
+            ServiceProps.SubmissionService submissionServiceInstance,
+            @Value("${judge-girl.client.submission-service.studentId}") int studentId) {
+        String adminToken = tokenService.createToken(admin(studentId)).getToken();
 
         return new SubmissionApiClient(retrofitFactory,
                 submissionServiceInstance.getScheme(),

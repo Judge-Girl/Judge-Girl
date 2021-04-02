@@ -18,7 +18,7 @@ package tw.waterball.judgegirl.studentservice.domain.exceptions;
  */
 public class StudentPasswordIncorrectException extends RuntimeException {
     public StudentPasswordIncorrectException() {
-        super();
+        super("Student's password is incorrect.");
     }
 
     public StudentPasswordIncorrectException(String message) {

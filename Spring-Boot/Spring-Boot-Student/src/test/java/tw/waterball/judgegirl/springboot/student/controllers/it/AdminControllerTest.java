@@ -29,7 +29,7 @@ import tw.waterball.judgegirl.springboot.student.SpringBootStudentApplication;
 import tw.waterball.judgegirl.springboot.student.controllers.LoginResponse;
 import tw.waterball.judgegirl.springboot.student.view.StudentView;
 import tw.waterball.judgegirl.studentservice.domain.repositories.StudentRepository;
-import tw.waterball.judgegirl.studentservice.domain.usecases.SignInUseCase;
+import tw.waterball.judgegirl.studentservice.domain.usecases.LoginUseCase;
 import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -152,7 +152,7 @@ class AdminControllerTest extends AbstractSpringBootTest {
     private ResultActions signIn(String email, String password) throws Exception {
         return mockMvc.perform(post("/api/admins/login")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(toJson(new SignInUseCase.Request(email, password))));
+                .content(toJson(new LoginUseCase.Request(email, password))));
     }
 
     private void verifyStudentLogin(StudentView view, LoginResponse body) {

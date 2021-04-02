@@ -30,12 +30,14 @@ public interface JudgerEnvVariables {
     String ENV_STUDENT_ID = "studentId";
     String ENV_PROBLEM_ID = "problemId";
     String ENV_SUBMISSION_ID = "submissionId";
-    String ENV_JWT_TOKEN = "judger.jwt-token";
+    String ENV_JWT_SECRET = "jwt.secret";
 
     // Application Properties
+    String ENV_PROBLEM_STUDENT_ID = "judge-girl.client.problem-service.studentId";
     String ENV_PROBLEM_SVC_SCHEME = "judge-girl.client.problem-service.scheme";
     String ENV_PROBLEM_SVC_HOST = "judge-girl.client.problem-service.host";
     String ENV_PROBLEM_SVC_PORT = "judge-girl.client.problem-service.port";
+    String ENV_SUBMISSION_STUDENT_ID = "judge-girl.client.submission-service.studentId";
     String ENV_SUBMISSION_SVC_SCHEME = "judge-girl.client.submission-service.scheme";
     String ENV_SUBMISSION_SVC_HOST = "judge-girl.client.submission-service.host";
     String ENV_SUBMISSION_SVC_PORT = "judge-girl.client.submission-service.port";
@@ -54,11 +56,14 @@ public interface JudgerEnvVariables {
         applier.apply(ENV_STUDENT_ID, values.studentId);
         applier.apply(ENV_PROBLEM_ID, values.problemId);
         applier.apply(ENV_SUBMISSION_ID, values.submissionId);
-        applier.apply(ENV_JWT_TOKEN, values.jwtToken);
+        applier.apply(ENV_JWT_SECRET, values.jwtSecret);
 
+        applier.apply(ENV_PROBLEM_STUDENT_ID, values.problemServiceInstance.getStudentId());
         applier.apply(ENV_PROBLEM_SVC_HOST, values.problemServiceInstance.getHost());
         applier.apply(ENV_PROBLEM_SVC_PORT, values.problemServiceInstance.getPort());
         applier.apply(ENV_PROBLEM_SVC_SCHEME, values.problemServiceInstance.getScheme());
+
+        applier.apply(ENV_SUBMISSION_STUDENT_ID, values.submissionServiceInstance.getStudentId());
         applier.apply(ENV_SUBMISSION_SVC_HOST, values.submissionServiceInstance.getHost());
         applier.apply(ENV_SUBMISSION_SVC_PORT, values.submissionServiceInstance.getPort());
         applier.apply(ENV_SUBMISSION_SVC_SCHEME, values.submissionServiceInstance.getScheme());
@@ -90,19 +95,19 @@ public interface JudgerEnvVariables {
     @Value
     @Builder
     class Values {
-        public final int studentId;
-        public final int problemId;
-        public final String submissionId;
-        public final String jwtToken;
-        public final ServiceInstance problemServiceInstance;
-        public final ServiceInstance submissionServiceInstance;
-        public final String amqpVirtualHost;
-        public final String amqpUserName;
-        public final String amqpPassword;
-        public final String amqpHost;
-        public final int amqpPort;
-        public final String verdictExchangeName;
-        public final String verdictIssuedRoutingKeyFormat;
+        public int studentId;
+        public int problemId;
+        public String submissionId;
+        public String jwtSecret;
+        public ServiceInstance problemServiceInstance;
+        public ServiceInstance submissionServiceInstance;
+        public String amqpVirtualHost;
+        public String amqpUserName;
+        public String amqpPassword;
+        public String amqpHost;
+        public int amqpPort;
+        public String verdictExchangeName;
+        public String verdictIssuedRoutingKeyFormat;
     }
 
     static Values fromSystemEnvs() {
@@ -112,9 +117,10 @@ public interface JudgerEnvVariables {
                 .studentId(parseInt(getenv(ENV_STUDENT_ID)))
                 .problemId(parseInt(getenv(ENV_PROBLEM_ID)))
                 .submissionId(getenv(ENV_SUBMISSION_ID))
-                .jwtToken(getenv(ENV_JWT_TOKEN))
+                .jwtSecret(getenv(ENV_JWT_SECRET))
                 .problemServiceInstance(
                         new ServiceInstance(
+                                parseInt(getenv(ENV_PROBLEM_STUDENT_ID)),
                                 getenv(ENV_PROBLEM_SVC_SCHEME),
                                 getenv(ENV_PROBLEM_SVC_HOST),
                                 parseInt(getenv(ENV_PROBLEM_SVC_PORT))
@@ -122,6 +128,7 @@ public interface JudgerEnvVariables {
                 )
                 .submissionServiceInstance(
                         new ServiceInstance(
+                                parseInt(getenv(ENV_SUBMISSION_STUDENT_ID)),
                                 getenv(ENV_SUBMISSION_SVC_SCHEME),
                                 getenv(ENV_SUBMISSION_SVC_HOST),
                                 parseInt(getenv(ENV_SUBMISSION_SVC_PORT))
