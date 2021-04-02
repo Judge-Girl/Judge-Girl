@@ -25,6 +25,8 @@ import tw.waterball.judgegirl.studentservice.domain.usecases.*;
 
 import java.util.List;
 
+import static tw.waterball.judgegirl.commons.token.TokenService.Identity.admin;
+import static tw.waterball.judgegirl.commons.token.TokenService.Identity.student;
 import static tw.waterball.judgegirl.springboot.student.view.StudentView.toViewModel;
 
 /**
@@ -35,7 +37,7 @@ import static tw.waterball.judgegirl.springboot.student.view.StudentView.toViewM
 @RestController
 @AllArgsConstructor
 public class StudentController {
-    private final SignInUseCase signInUseCase;
+    private final LoginUseCase loginUseCase;
     private final SignUpUseCase signUpUseCase;
     private final GetStudentUseCase getStudentUseCase;
     private final GetStudentsWithFilterUseCase getStudentsWithFilterUseCase;
@@ -52,10 +54,11 @@ public class StudentController {
     }
 
     @PostMapping("/login")
-    public LoginResponse login(@RequestBody SignInUseCase.Request request) {
+    public LoginResponse login(@RequestBody LoginUseCase.Request request) {
         SignInPresenter presenter = new SignInPresenter();
-        signInUseCase.execute(request, presenter);
-        presenter.setToken(tokenService.createToken(new TokenService.Identity(presenter.getStudentId())));
+        loginUseCase.execute(request, presenter);
+        presenter.setToken(tokenService.createToken(
+                presenter.isAdmin() ? admin(presenter.getStudentId()) : student(presenter.getStudentId())));
         return presenter.present();
     }
 
@@ -76,7 +79,6 @@ public class StudentController {
         AuthPresenter presenter = new AuthPresenter();
         presenter.setToken(tokenService.renewToken(token.getToken()));
         authUseCase.execute(new AuthUseCase.Request(token.getStudentId()), presenter);
-
         return presenter.present();
     }
 

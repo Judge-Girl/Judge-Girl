@@ -53,13 +53,14 @@ public class DockerDeployerAutoConfiguration {
     @Bean
     public JudgerDeployer kubernetesJudgerDeployer(@Value("${judge-girl.judger.docker.dockerRemovalIntervalInMs}")
                                                            int dockerRemovalIntervalInMs,
+                                                   @Value("${jwt.secret}") String jwtSecret,
                                                    DockerClient dockerClient,
                                                    ScheduledExecutorService scheduler,
                                                    ServiceProps.ProblemService problemServiceProps,
                                                    ServiceProps.SubmissionService submissionServiceProps,
                                                    JudgeGirlAmqpProps amqpProp,
                                                    JudgeGirlJudgerProps deployProps) {
-        return new DockerJudgerDeployer(dockerRemovalIntervalInMs, dockerClient, scheduler,
+        return new DockerJudgerDeployer(dockerRemovalIntervalInMs, jwtSecret, dockerClient, scheduler,
                 problemServiceProps, submissionServiceProps, amqpProp, deployProps);
     }
 

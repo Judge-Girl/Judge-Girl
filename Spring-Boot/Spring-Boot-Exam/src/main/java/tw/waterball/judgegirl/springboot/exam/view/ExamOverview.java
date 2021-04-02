@@ -2,6 +2,7 @@ package tw.waterball.judgegirl.springboot.exam.view;
 
 import lombok.*;
 import tw.waterball.judgegirl.entities.Exam;
+import tw.waterball.judgegirl.entities.Question;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
 
 import java.util.Date;
@@ -32,7 +33,7 @@ public class ExamOverview {
                 .endTime(exam.getEndTime())
                 .description(exam.getDescription())
                 .questions(zipToList(exam.getQuestions(), problemViews, QuestionOverview::toViewModel))
-                .totalScore(exam.getQuestions().stream().mapToInt(question -> question.getScore()).sum())
+                .totalScore(exam.getQuestions().stream().mapToInt(Question::getScore).sum())
                 .build();
     }
 }

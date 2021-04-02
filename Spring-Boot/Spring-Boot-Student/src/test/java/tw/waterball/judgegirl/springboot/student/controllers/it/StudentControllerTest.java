@@ -33,7 +33,7 @@ import tw.waterball.judgegirl.springboot.student.view.StudentView;
 import tw.waterball.judgegirl.studentservice.domain.exceptions.StudentIdNotFoundException;
 import tw.waterball.judgegirl.studentservice.domain.repositories.StudentRepository;
 import tw.waterball.judgegirl.studentservice.domain.usecases.ChangePasswordUseCase;
-import tw.waterball.judgegirl.studentservice.domain.usecases.SignInUseCase;
+import tw.waterball.judgegirl.studentservice.domain.usecases.LoginUseCase;
 import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
 
 import java.util.List;
@@ -43,6 +43,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static tw.waterball.judgegirl.commons.token.TokenService.Identity.student;
 import static tw.waterball.judgegirl.commons.utils.HttpHeaderUtils.bearerWithToken;
 import static tw.waterball.judgegirl.springboot.student.view.StudentView.toViewModel;
 
@@ -159,7 +160,7 @@ public class StudentControllerTest extends AbstractSpringBootTest {
     @Test
     void WhenGetStudentByNonExistingStudentId_ShouldRespondNotFound() throws Exception {
         int nonExistingStudentId = 123123;
-        TokenService.Token token = tokenService.createToken(new TokenService.Identity(nonExistingStudentId));
+        TokenService.Token token = tokenService.createToken(student(nonExistingStudentId));
 
         getStudentById(nonExistingStudentId, token.getToken())
                 .andExpect(status().isNotFound());
@@ -185,7 +186,7 @@ public class StudentControllerTest extends AbstractSpringBootTest {
     @Test
     void WhenAuthWithNonExistingStudentToken_ShouldRespondUnauthorized() throws Exception {
         int nonExistingStudentId = 123123;
-        TokenService.Token token = tokenService.createToken(new TokenService.Identity(nonExistingStudentId));
+        TokenService.Token token = tokenService.createToken(student(nonExistingStudentId));
         auth(token.getToken()).andExpect(status().isUnauthorized());
     }
 
@@ -287,7 +288,7 @@ public class StudentControllerTest extends AbstractSpringBootTest {
     private ResultActions signIn(String email, String password) throws Exception {
         return mockMvc.perform(post("/api/students/login")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(toJson(new SignInUseCase.Request(email, password))));
+                .content(toJson(new LoginUseCase.Request(email, password))));
     }
 
     private void verifyStudentLogin(StudentView view, LoginResponse body) {

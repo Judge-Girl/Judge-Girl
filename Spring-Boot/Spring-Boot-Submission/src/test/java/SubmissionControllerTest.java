@@ -76,6 +76,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static tw.waterball.judgegirl.commons.token.TokenService.Identity.admin;
+import static tw.waterball.judgegirl.commons.token.TokenService.Identity.student;
 import static tw.waterball.judgegirl.springboot.submission.controllers.SubmissionController.SUBMIT_CODE_MULTIPART_KEY_NAME;
 import static tw.waterball.judgegirl.testkit.resultmatchers.ZipResultMatcher.zip;
 
@@ -86,9 +87,15 @@ import static tw.waterball.judgegirl.testkit.resultmatchers.ZipResultMatcher.zip
 @AutoConfigureMockMvc
 @ContextConfiguration(classes = {SpringBootSubmissionApplication.class, SubmissionControllerTest.TestConfig.class})
 public class SubmissionControllerTest extends AbstractSpringBootTest {
+    public static final int ADMIN_ID = 12345;
+    public static final int STUDENT1_ID = 22;
+    public static final int STUDENT2_ID = 34;
     private final String API_PREFIX = "/api/problems/{problemId}/" + Language.C.toString() + "/students/{studentId}/submissions";
     private final Problem problem = ProblemStubs.template().build();
     private final String SUBMISSION_EXCHANGE_NAME = "submissions";
+    private String ADMIN_TOKEN;
+    private String STUDENT1_TOKEN;
+    private String STUDENT2_TOKEN;
 
     @Value("${spring.rabbitmq.username}")
     String amqpUsername;
@@ -104,21 +111,6 @@ public class SubmissionControllerTest extends AbstractSpringBootTest {
 
     @Value("${spring.rabbitmq.port}")
     int amqpPort;
-
-    @Value("${jwt.test.student1.id}")
-    int STUDENT1_ID;
-
-    @Value("${jwt.test.student1.token}")
-    String STUDENT1_TOKEN;
-
-    @Value("${jwt.test.student2.id}")
-    int STUDENT2_ID;
-
-    @Value("${jwt.test.student2.token}")
-    String STUDENT2_TOKEN;
-
-    @Value("${jwt.token-admin}")
-    String adminToken;
 
     @Autowired
     MockMvc mockMvc;
@@ -156,14 +148,15 @@ public class SubmissionControllerTest extends AbstractSpringBootTest {
                     "int plus(int a, int b) {return a + b;}".getBytes()),
             new MockMultipartFile(SUBMIT_CODE_MULTIPART_KEY_NAME, "func2.c", "text/plain",
                     "int minus(int a, int b) {return a - b;}".getBytes())};
-    private String ADMIN_TOKEN;
 
     private final Report stubReport = ProblemStubs.compositeReport();
 
     @BeforeEach
     void setup() {
-        ADMIN_TOKEN = tokenService.createToken(admin()).toString();
+        ADMIN_TOKEN = tokenService.createToken(admin(ADMIN_ID)).toString();
         amqpAdmin.declareExchange(new TopicExchange(SUBMISSION_EXCHANGE_NAME));
+        STUDENT1_TOKEN = tokenService.createToken(student(STUDENT1_ID)).toString();
+        STUDENT2_TOKEN = tokenService.createToken(student(STUDENT2_ID)).toString();
         mockGetProblemById();
     }
 
@@ -260,14 +253,14 @@ public class SubmissionControllerTest extends AbstractSpringBootTest {
         SubmissionView submissionView = givenSubmitCode(STUDENT1_ID, STUDENT1_TOKEN);
 
         // verify get submissions
-        requestWithToken(() -> get(API_PREFIX, problem.getId(), STUDENT1_ID), adminToken)
+        requestWithToken(() -> get(API_PREFIX, problem.getId(), STUDENT1_ID), ADMIN_TOKEN)
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().json(toJson(singletonList(submissionView))));
 
         // verify download submitted codes
         requestWithToken(() -> get(API_PREFIX + "/{submissionId}/submittedCodes/{submittedCodesFileId}",
-                problem.getId(), STUDENT1_ID, submissionView.getId(), submissionView.submittedCodesFileId), adminToken)
+                problem.getId(), STUDENT1_ID, submissionView.getId(), submissionView.submittedCodesFileId), ADMIN_TOKEN)
                 .andExpect(status().isOk())
                 .andExpect(ZipResultMatcher.zip().content(mockFiles));
     }
