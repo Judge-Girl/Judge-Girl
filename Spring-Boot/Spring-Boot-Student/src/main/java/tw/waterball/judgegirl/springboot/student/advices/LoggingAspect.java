@@ -46,7 +46,7 @@ public class LoggingAspect {
             public void setToken(TokenService.Token token) {
             }
         };
-        return joinPoint.proceed(joinPoint.getArgs());
+        return joinPoint.proceed(args);
     }
 
     @Around("bean(signUpUseCase)")
@@ -61,7 +61,7 @@ public class LoggingAspect {
             log.info("[SignUp Successfully] {}", toJson(toViewModel(student)));
             presenter.signUpSuccessfully(student);
         };
-        return joinPoint.proceed(joinPoint.getArgs());
+        return joinPoint.proceed(args);
     }
 
     @Around("bean(changePasswordUseCase)")
@@ -72,7 +72,7 @@ public class LoggingAspect {
         Logger log = LoggerFactory.getLogger(useCase.getClass());
         log.info("[Change Password] {\"id\"={}}", request.studentId);
         try {
-            Object response = joinPoint.proceed(joinPoint.getArgs());
+            Object response = joinPoint.proceed(args);
             log.info("[Change Password Successfully] {\"id\"={}}", request.studentId);
             return response;
         } catch (StudentPasswordIncorrectException err) {
