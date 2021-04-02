@@ -27,7 +27,7 @@ import tw.waterball.judgegirl.entities.Student;
 @AllArgsConstructor
 @NoArgsConstructor
 public class StudentView {
-    public Integer id;
+    public int id;
     public String name;
     public String email;
     public boolean admin;

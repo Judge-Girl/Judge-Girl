@@ -17,14 +17,7 @@ public class GroupView {
 
     public String name;
 
-    public GroupView(String name) {
-        this.name = name;
-    }
-
     public static GroupView toViewModel(Group group) {
-        return GroupView.builder()
-                .id(group.getId())
-                .name(group.getName())
-                .build();
+        return new GroupView(group.getId(), group.getName());
     }
 }

@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
  * @author - wally55077@gmail.com
  */
 @Repository
-public interface JpaGroupDataPort extends JpaRepository<GroupData, Integer> {
+public interface JpaGroupDataPort extends JpaRepository<GroupData, Integer>, CascadeGroupDeletion {
 
     boolean existsByName(String name);
 

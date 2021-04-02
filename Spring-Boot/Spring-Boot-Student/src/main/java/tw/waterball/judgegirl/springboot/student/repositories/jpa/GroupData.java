@@ -5,8 +5,7 @@ import tw.waterball.judgegirl.entities.Group;
 import tw.waterball.judgegirl.entities.Student;
 
 import javax.persistence.*;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author - wally55077@gmail.com
@@ -27,41 +26,45 @@ public class GroupData {
     private String name;
 
     @ManyToMany(cascade = CascadeType.MERGE)
+    @JoinTable(name = "groups_students",
+            joinColumns = @JoinColumn(name = "group_id"),
+            inverseJoinColumns = @JoinColumn(name = "student_id"))
     private Set<StudentData> students = new HashSet<>();
 
+    public GroupData(Integer id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+
     public static GroupData toData(Group group) {
-        GroupData groupData = GroupData.builder()
-                .id(group.getId())
-                .name(group.getName())
-                .students(new HashSet<>())
-                .build();
-        group.getStudents().forEach(groupData::addStudentData);
+        GroupData groupData = new GroupData(group.getId(), group.getName());
+        groupData.addAllStudentData(group.getStudents());
         return groupData;
     }
 
-    public static Group toEntity(GroupData groupData) {
-        Group group = Group.builder()
-                .id(groupData.getId())
-                .name(groupData.getName())
-                .students(new HashSet<>())
-                .build();
-        groupData.getStudents()
-                .stream()
+    private void addAllStudentData(Collection<Student> students) {
+        List<StudentData> studentDataList = new ArrayList<>(students.size());
+        for (Student student : students) {
+            StudentData studentData = StudentData.builder()
+                    .id(student.getId())
+                    .name(student.getName())
+                    .email(student.getEmail())
+                    .password(student.getPassword())
+                    .admin(student.isAdmin())
+                    .groups(new HashSet<>())
+                    .build();
+            studentDataList.add(studentData);
+            studentData.getGroups().add(this);
+        }
+        this.students.addAll(studentDataList);
+    }
+
+    public Group toEntity() {
+        Group group = new Group(id, name);
+        students.stream()
                 .map(StudentData::toEntity)
                 .forEach(group::addStudent);
         return group;
-    }
-
-    private void addStudentData(Student student) {
-        StudentData studentData = StudentData.builder()
-                .id(student.getId())
-                .name(student.getName())
-                .email(student.getEmail())
-                .password(student.getPassword())
-                .admin(student.isAdmin())
-                .groups(new HashSet<>())
-                .build();
-        students.add(studentData);
     }
 
 }

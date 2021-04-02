@@ -19,8 +19,7 @@ import tw.waterball.judgegirl.entities.Group;
 import tw.waterball.judgegirl.entities.Student;
 
 import javax.persistence.*;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author chaoyulee chaoyu2330@gmail.com
@@ -42,16 +41,8 @@ public class StudentData {
     private String password;
     private boolean admin;
 
-    @ManyToMany(cascade = CascadeType.MERGE)
+    @ManyToMany(cascade = CascadeType.MERGE, mappedBy = "students")
     private Set<GroupData> groups = new HashSet<>();
-
-    public Student toEntity() {
-        if (admin) {
-            return new Admin(id, name, email, password);
-        } else {
-            return new Student(id, name, email, password);
-        }
-    }
 
     public static StudentData toData(Student student) {
         StudentData studentData = StudentData.builder()
@@ -62,16 +53,31 @@ public class StudentData {
                 .admin(student.isAdmin())
                 .groups(new HashSet<>())
                 .build();
-        student.getGroups().forEach(studentData::addGroupData);
+        studentData.addAllGroupData(student.getGroups());
         return studentData;
     }
 
-    private void addGroupData(Group group) {
-        GroupData groupData = GroupData.builder()
-                .name(group.getName())
-                .students(new HashSet<>())
-                .build();
-        groups.add(groupData);
+    private void addAllGroupData(Collection<Group> groups) {
+        List<GroupData> groupDataList = new ArrayList<>(groups.size());
+        for (Group group : groups) {
+            GroupData groupData = new GroupData(group.getId(), group.getName());
+            groupDataList.add(groupData);
+            groupData.getStudents().add(this);
+        }
+        this.groups.addAll(groupDataList);
+    }
+
+    public Student toEntity() {
+        Student student;
+        if (admin) {
+            student = new Admin(id, name, email, password);
+        } else {
+            student = new Student(id, name, email, password);
+        }
+        groups.stream()
+                .map(groupData -> new Group(groupData.getId(), groupData.getName()))
+                .forEach(student::addGroup);
+        return student;
     }
 
 }
