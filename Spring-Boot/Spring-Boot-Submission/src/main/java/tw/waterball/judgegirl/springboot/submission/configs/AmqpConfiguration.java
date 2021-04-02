@@ -13,7 +13,6 @@
 
 package tw.waterball.judgegirl.springboot.submission.configs;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.amqp.core.*;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,37 +32,33 @@ public class AmqpConfiguration {
     @Bean
     public VerdictPublisher verdictPublisher(AmqpAdmin amqpAdmin,
                                              AmqpTemplate amqpTemplate,
-                                             ObjectMapper objectMapper,
-                                             @Value("${judge-girl.amqp.submission-exchange-name}")
+                                             @Value("${judge-girl.amqp.verdict-exchange-name}")
                                                      String submissionExchangeName,
                                              @Value("${judge-girl.amqp.verdict-issued-routing-key-format}")
                                                      String verdictIssuedRoutingKeyFormat) {
-        return new AmqpVerdictPublisher(amqpAdmin, amqpTemplate, objectMapper,
+        return new AmqpVerdictPublisher(amqpAdmin, amqpTemplate,
                 submissionExchangeName, verdictIssuedRoutingKeyFormat);
     }
 
     @Bean
-    public Queue verdictIssuedEventQueue(
-            @Value("${judge-girl.amqp.verdict-issued-event-queue}")
+    public Queue submissionServiceQueue(
+            @Value("${judge-girl.amqp.submission-service-queue}")
                     String verdictIssuedEventQueueName) {
         return new Queue(verdictIssuedEventQueueName, true);
     }
 
     @Bean
-    public TopicExchange verdictIssuedExchange(
-            @Value("${judge-girl.amqp.submission-exchange-name}")
-                    String submissionExchangeName) {
-        return new TopicExchange(submissionExchangeName);
+    public TopicExchange verdictExchange(@Value("${judge-girl.amqp.verdict-exchange-name}") String verdictExchangeName) {
+        return new TopicExchange(verdictExchangeName);
     }
 
     @Bean
     public Binding binding(@Value("${judge-girl.amqp.verdict-issued-routing-key-format}")
                                    String verdictIssuedRoutingKeyFormat,
-                           @Qualifier("verdictIssuedEventQueue") Queue queue,
-                           @Qualifier("verdictIssuedExchange") TopicExchange exchange) {
+                           @Qualifier("submissionServiceQueue") Queue queue,
+                           @Qualifier("verdictExchange") TopicExchange exchange) {
         return BindingBuilder.bind(queue)
                 .to(exchange)
                 .with(String.format(verdictIssuedRoutingKeyFormat, "*"));
     }
-
 }

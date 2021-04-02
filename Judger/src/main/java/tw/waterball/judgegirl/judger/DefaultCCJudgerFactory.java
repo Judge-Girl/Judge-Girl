@@ -18,11 +18,11 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
 import org.springframework.amqp.core.AmqpAdmin;
-import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import tw.waterball.judgegirl.api.retrofit.RetrofitFactory;
 import tw.waterball.judgegirl.judger.infra.compile.ShellCompilerFactory;
 import tw.waterball.judgegirl.judger.infra.testexecutor.CCSandboxTestcaseExecutorFactory;
@@ -115,9 +115,11 @@ public class DefaultCCJudgerFactory {
     private static VerdictPublisher verdictPublisher(JudgerEnvVariables.Values values) {
         ConnectionFactory connectionFactory = connectionFactory(values);
         AmqpAdmin amqpAdmin = new RabbitAdmin(connectionFactory);
-        AmqpTemplate amqpTemplate = new RabbitTemplate(connectionFactory);
-        return new AmqpVerdictPublisher(amqpAdmin, amqpTemplate, objectMapper(),
-                values.submissionExchangeName,
+        RabbitTemplate amqpTemplate = new RabbitTemplate(connectionFactory);
+        ObjectMapper objectMapper = objectMapper();
+        amqpTemplate.setMessageConverter(new Jackson2JsonMessageConverter(objectMapper));
+        return new AmqpVerdictPublisher(amqpAdmin, amqpTemplate,
+                values.verdictExchangeName,
                 values.verdictIssuedRoutingKeyFormat);
     }
 

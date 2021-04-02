@@ -30,6 +30,6 @@ public class JudgeGirlAmqpProps {
     private String host;
     private int port;
     private String verdictIssuedEventQueue;
-    private String submissionExchangeName;
+    private String verdictExchangeName;
     private String verdictIssuedRoutingKeyFormat;
 }

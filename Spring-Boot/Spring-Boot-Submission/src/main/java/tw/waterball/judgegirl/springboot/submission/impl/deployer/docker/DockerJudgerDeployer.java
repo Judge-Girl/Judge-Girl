@@ -83,7 +83,7 @@ public class DockerJudgerDeployer implements JudgerDeployer {
                         .amqpPort(amqpProps.getPort())
                         .amqpUserName(amqpProps.getUsername())
                         .amqpPassword(amqpProps.getPassword())
-                        .submissionExchangeName(amqpProps.getSubmissionExchangeName())
+                        .verdictExchangeName(amqpProps.getVerdictExchangeName())
                         .verdictIssuedRoutingKeyFormat(
                                 format(amqpProps.getVerdictIssuedRoutingKeyFormat(), "*"))
                         .build());
