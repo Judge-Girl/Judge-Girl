@@ -26,6 +26,8 @@ import tw.waterball.judgegirl.studentservice.domain.usecases.SignUpUseCase;
 
 import java.util.List;
 
+import static tw.waterball.judgegirl.commons.token.TokenService.Identity.admin;
+
 /**
  * @author chaoyulee chaoyu2330@gmail.com
  */
@@ -51,7 +53,7 @@ public class AdminController {
     public LoginResponse login(@RequestBody SignInUseCase.Request request) {
         SignInPresenter presenter = new SignInPresenter();
         signInUseCase.execute(request, presenter);
-        presenter.setToken(tokenService.createToken(new TokenService.Identity(presenter.getStudentId())));
+        presenter.setToken(tokenService.createToken(admin()));
         return presenter.present();
     }
 
