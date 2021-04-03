@@ -28,7 +28,7 @@ public class SignUpPresenter implements SignUpUseCase.Presenter {
     private Student student;
 
     @Override
-    public void setStudent(Student student) {
+    public void signUpSuccessfully(Student student) {
         this.student = student;
     }
 

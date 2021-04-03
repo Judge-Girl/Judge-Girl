@@ -43,7 +43,7 @@ public class ExamController {
     }
 
     @GetMapping("/api/students/{studentId}/exams")
-    public List<ExamView> getStudentExams(@PathVariable Integer studentId,
+    public List<ExamView> getStudentExams(@PathVariable int studentId,
                                           @RequestParam(defaultValue = "0", required = false) int skip,
                                           @RequestParam(defaultValue = "50", required = false) int size,
                                           @RequestParam(defaultValue = "all", required = false) ExamFilter.Status status) {
@@ -74,7 +74,6 @@ public class ExamController {
         getExamOverviewUseCase.execute(new GetExamOverviewUseCase.Request(examId), presenter);
         return presenter.present();
     }
-
 }
 
 class CreateExamPresenter implements CreateExamUseCase.Presenter {
@@ -141,3 +140,4 @@ class GetExamOverviewPresenter implements GetExamOverviewUseCase.Presenter {
     }
 
 }
+

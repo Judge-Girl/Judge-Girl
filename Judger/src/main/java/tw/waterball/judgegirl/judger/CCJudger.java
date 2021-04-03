@@ -38,15 +38,18 @@ import tw.waterball.judgegirl.problemapi.clients.ProblemServiceDriver;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.submissionapi.clients.SubmissionServiceDriver;
 import tw.waterball.judgegirl.submissionapi.clients.VerdictPublisher;
-import tw.waterball.judgegirl.submissionapi.views.ReportView;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 import tw.waterball.judgegirl.submissionapi.views.VerdictIssuedEvent;
+import tw.waterball.judgegirl.submissionapi.views.VerdictView;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
@@ -66,12 +69,12 @@ public class CCJudger extends PluginExtendedJudger {
     private final static Logger logger = LogManager.getLogger(CCJudger.class);
     public static final String TEMP_SUBMITTED_CODES_DIR_NAME = "tempSubmittedCodes";
     private static final String EXECUTABLE_NAME = "a.out";
-    private JudgerWorkspace judgerWorkspace;
-    private ProblemServiceDriver problemServiceDriver;
-    private SubmissionServiceDriver submissionServiceDriver;
-    private VerdictPublisher verdictPublisher;
-    private CompilerFactory compilerFactory;
-    private TestcaseExecutorFactory testcaseExecutorFactory;
+    private final JudgerWorkspace judgerWorkspace;
+    private final ProblemServiceDriver problemServiceDriver;
+    private final SubmissionServiceDriver submissionServiceDriver;
+    private final VerdictPublisher verdictPublisher;
+    private final CompilerFactory compilerFactory;
+    private final TestcaseExecutorFactory testcaseExecutorFactory;
 
     private Set<String> filesWithinSandboxRootOtherThanOutFiles;
     private Set<File> inFiles;
@@ -122,15 +125,13 @@ public class CCJudger extends PluginExtendedJudger {
             ZipUtils.unzipToDestination(zip.getInputStream(), getSourceRootPath());
         }
 
-        logger.info("Source Code: {}", Files.readString(getSourceRootPath().resolve("prefixsum-seq.c")));
-
         // Since we don't want the providedCodes stay in the source root after compilation (for some source code filtering reason),
         // here we copy the submitted codes into a temporary directory
         // for latter swapping back to override the source root.
         Path tempSubmittedCodesPath = submissionHome.getPath().resolve(TEMP_SUBMITTED_CODES_DIR_NAME);
         FileUtils.copyDirectory(getSourceRootPath().toFile(), tempSubmittedCodesPath.toFile());
 
-        logger.info("<After downloadSubmittedCodes> Files under src: {}.", Arrays.stream(getSourceRootPath().toFile().listFiles()).map(f -> f.getName() + (f.isDirectory() ? "/" : "")).collect(Collectors.joining(",")));
+        logger.info("<After downloadSubmittedCodes> Files under src: {}.", stream(getSourceRootPath().toFile().listFiles()).map(f -> f.getName() + (f.isDirectory() ? "/" : "")).collect(Collectors.joining(",")));
     }
 
     @Override
@@ -141,7 +142,7 @@ public class CCJudger extends PluginExtendedJudger {
             ZipUtils.unzipToDestination(zip.getInputStream(), getSourceRootPath());
         }
 
-        logger.info("<After downloadProvidedCodes> Files under src: {}.", Arrays.stream(getSourceRootPath().toFile().listFiles()).map(f -> f.getName() + (f.isDirectory() ? "/" : "")).collect(Collectors.joining(",")));
+        logger.info("<After downloadProvidedCodes> Files under src: {}.", stream(getSourceRootPath().toFile().listFiles()).map(f -> f.getName() + (f.isDirectory() ? "/" : "")).collect(Collectors.joining(",")));
     }
 
     @Override
@@ -157,7 +158,7 @@ public class CCJudger extends PluginExtendedJudger {
     protected CompileResult doCompile() {
         String script = getLanguageEnv().getCompilation().getScript();
         Files.write(getCompileScriptPath(), script.getBytes());
-        logger.info("<After compile> Files under src: {}.", Arrays.stream(getSourceRootPath().toFile().listFiles()).map(f -> f.getName() + (f.isDirectory() ? "/" : "")).collect(Collectors.joining(",")));
+        logger.info("<After compile> Files under src: {}.", stream(getSourceRootPath().toFile().listFiles()).map(f -> f.getName() + (f.isDirectory() ? "/" : "")).collect(Collectors.joining(",")));
         Compiler compiler = compilerFactory.create(getSourceRootPath());
         CompileResult result = compiler.compile(getLanguageEnv().getCompilation());
         if (result.isSuccessful()) {
@@ -310,12 +311,10 @@ public class CCJudger extends PluginExtendedJudger {
     protected void publishVerdict(Verdict verdict) {
         verdictPublisher.publish(
                 new VerdictIssuedEvent(getProblem().getId(),
+                        getStudent(),
                         getProblem().getTitle(),
                         getSubmission().getId(),
-                        verdict.getCompileErrorMessage(),
-                        verdict.getIssueTime(),
-                        ReportView.fromEntity(verdict.getReport()),
-                        verdict.getJudges()));
+                        VerdictView.fromEntity(verdict)));
 
     }
 

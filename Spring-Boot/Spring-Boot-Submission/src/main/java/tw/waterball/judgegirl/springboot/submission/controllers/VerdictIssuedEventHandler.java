@@ -13,45 +13,34 @@
 
 package tw.waterball.judgegirl.springboot.submission.controllers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 import tw.waterball.judgegirl.commons.utils.NotifyWaitLock;
 import tw.waterball.judgegirl.entities.submission.Verdict;
 import tw.waterball.judgegirl.submissionapi.views.VerdictIssuedEvent;
+import tw.waterball.judgegirl.submissionapi.views.VerdictView;
 import tw.waterball.judgegirl.submissionservice.domain.repositories.SubmissionRepository;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
+@Slf4j
 @Component
+@AllArgsConstructor
 public class VerdictIssuedEventHandler {
-    private static final Logger logger = LogManager.getLogger(VerdictIssuedEventHandler.class);
-    private ObjectMapper objectMapper;
-    private SubmissionRepository submissionRepository;
-
-    public VerdictIssuedEventHandler(ObjectMapper objectMapper,
-                                     SubmissionRepository submissionRepository) {
-        this.objectMapper = objectMapper;
-        this.submissionRepository = submissionRepository;
-    }
+    private final SubmissionRepository submissionRepository;
 
 
     // This is for test-purpose, test script can wait for this lock until the next onIssueVerdict()
     public final NotifyWaitLock onHandlingCompletion$ = new NotifyWaitLock();
 
-    @RabbitListener(queues = "${judge-girl.amqp.verdict-issued-event-queue}")
-    public void listen(@Payload String body) throws JsonProcessingException {
-        VerdictIssuedEvent event = objectMapper.readValue(body, VerdictIssuedEvent.class);
+    @RabbitListener(queues = "${judge-girl.amqp.submission-service-queue}")
+    public void listen(VerdictIssuedEvent event) {
+        log.info("Handle: {}", event);
 
-        logger.info(event);
-        Verdict verdict = new Verdict(event.getJudges(), event.getIssueTime());
-        verdict.setReport(event.getReport().toEntity());
-        verdict.setCompileErrorMessage(event.getCompileErrorMessage());
+        Verdict verdict = VerdictView.toEntity(event.getVerdict());
         submissionRepository.issueVerdictOfSubmission(event.getSubmissionId(), verdict);
 
         onHandlingCompletion$.doNotifyAll();

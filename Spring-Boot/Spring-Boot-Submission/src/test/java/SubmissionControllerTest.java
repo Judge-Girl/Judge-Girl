@@ -57,6 +57,7 @@ import tw.waterball.judgegirl.submissionapi.clients.VerdictPublisher;
 import tw.waterball.judgegirl.submissionapi.views.ReportView;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 import tw.waterball.judgegirl.submissionapi.views.VerdictIssuedEvent;
+import tw.waterball.judgegirl.submissionapi.views.VerdictView;
 import tw.waterball.judgegirl.submissionservice.deployer.JudgerDeployer;
 import tw.waterball.judgegirl.submissionservice.domain.usecases.SubmitCodeUseCase;
 import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
@@ -75,6 +76,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static tw.waterball.judgegirl.commons.token.TokenService.Identity.admin;
+import static tw.waterball.judgegirl.commons.token.TokenService.Identity.student;
 import static tw.waterball.judgegirl.springboot.submission.controllers.SubmissionController.SUBMIT_CODE_MULTIPART_KEY_NAME;
 import static tw.waterball.judgegirl.testkit.resultmatchers.ZipResultMatcher.zip;
 
@@ -85,9 +87,15 @@ import static tw.waterball.judgegirl.testkit.resultmatchers.ZipResultMatcher.zip
 @AutoConfigureMockMvc
 @ContextConfiguration(classes = {SpringBootSubmissionApplication.class, SubmissionControllerTest.TestConfig.class})
 public class SubmissionControllerTest extends AbstractSpringBootTest {
+    public static final int ADMIN_ID = 12345;
+    public static final int STUDENT1_ID = 22;
+    public static final int STUDENT2_ID = 34;
     private final String API_PREFIX = "/api/problems/{problemId}/" + Language.C.toString() + "/students/{studentId}/submissions";
     private final Problem problem = ProblemStubs.template().build();
     private final String SUBMISSION_EXCHANGE_NAME = "submissions";
+    private String ADMIN_TOKEN;
+    private String STUDENT1_TOKEN;
+    private String STUDENT2_TOKEN;
 
     @Value("${spring.rabbitmq.username}")
     String amqpUsername;
@@ -103,21 +111,6 @@ public class SubmissionControllerTest extends AbstractSpringBootTest {
 
     @Value("${spring.rabbitmq.port}")
     int amqpPort;
-
-    @Value("${jwt.test.student1.id}")
-    int STUDENT1_ID;
-
-    @Value("${jwt.test.student1.token}")
-    String STUDENT1_TOKEN;
-
-    @Value("${jwt.test.student2.id}")
-    int STUDENT2_ID;
-
-    @Value("${jwt.test.student2.token}")
-    String STUDENT2_TOKEN;
-
-    @Value("${jwt.token-admin}")
-    String adminToken;
 
     @Autowired
     MockMvc mockMvc;
@@ -155,14 +148,15 @@ public class SubmissionControllerTest extends AbstractSpringBootTest {
                     "int plus(int a, int b) {return a + b;}".getBytes()),
             new MockMultipartFile(SUBMIT_CODE_MULTIPART_KEY_NAME, "func2.c", "text/plain",
                     "int minus(int a, int b) {return a - b;}".getBytes())};
-    private String ADMIN_TOKEN;
 
     private final Report stubReport = ProblemStubs.compositeReport();
 
     @BeforeEach
     void setup() {
-        ADMIN_TOKEN = tokenService.createToken(admin()).toString();
+        ADMIN_TOKEN = tokenService.createToken(admin(ADMIN_ID)).toString();
         amqpAdmin.declareExchange(new TopicExchange(SUBMISSION_EXCHANGE_NAME));
+        STUDENT1_TOKEN = tokenService.createToken(student(STUDENT1_ID)).toString();
+        STUDENT2_TOKEN = tokenService.createToken(student(STUDENT2_ID)).toString();
         mockGetProblemById();
     }
 
@@ -222,7 +216,7 @@ public class SubmissionControllerTest extends AbstractSpringBootTest {
         VerdictData verdictData = updatedSubmissionData.getVerdict();
         assertEquals(50, verdictData.getTotalGrade());
         assertEquals(JudgeStatus.WA, verdictData.getSummaryStatus());
-        assertEquals(new HashSet<>(verdictIssuedEvent.getJudges()),
+        assertEquals(new HashSet<>(verdictIssuedEvent.getVerdict().getJudges()),
                 new HashSet<>(verdictData.getJudges()));
         assertEquals(stubReport.getRawData(), verdictData.getReportData());
     }
@@ -242,14 +236,16 @@ public class SubmissionControllerTest extends AbstractSpringBootTest {
     private VerdictIssuedEvent generateVerdictIssuedEvent(SubmissionView submissionView) {
         return VerdictIssuedEvent.builder()
                 .problemId(problem.getId())
+                .studentId(submissionView.studentId)
                 .problemTitle(problem.getTitle())
                 .submissionId(submissionView.getId())
-                .judge(new Judge("t1", JudgeStatus.AC, new ProgramProfile(5, 5, ""), 20))
-                .judge(new Judge("t2", JudgeStatus.AC, new ProgramProfile(6, 6, ""), 30))
-                .judge(new Judge("t3", JudgeStatus.WA, new ProgramProfile(7, 7, ""), 0))
-                .issueTime(new Date())
-                .report(ReportView.fromEntity(ProblemStubs.compositeReport()))
-                .build();
+                .verdict(VerdictView.builder()
+                        .judge(new Judge("t1", JudgeStatus.AC, new ProgramProfile(5, 5, ""), 20))
+                        .judge(new Judge("t2", JudgeStatus.AC, new ProgramProfile(6, 6, ""), 30))
+                        .judge(new Judge("t3", JudgeStatus.WA, new ProgramProfile(7, 7, ""), 0))
+                        .issueTime(new Date())
+                        .report(ReportView.fromEntity(ProblemStubs.compositeReport()))
+                        .build()).build();
     }
 
     @Test
@@ -257,14 +253,14 @@ public class SubmissionControllerTest extends AbstractSpringBootTest {
         SubmissionView submissionView = givenSubmitCode(STUDENT1_ID, STUDENT1_TOKEN);
 
         // verify get submissions
-        requestWithToken(() -> get(API_PREFIX, problem.getId(), STUDENT1_ID), adminToken)
+        requestWithToken(() -> get(API_PREFIX, problem.getId(), STUDENT1_ID), ADMIN_TOKEN)
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().json(toJson(singletonList(submissionView))));
 
         // verify download submitted codes
         requestWithToken(() -> get(API_PREFIX + "/{submissionId}/submittedCodes/{submittedCodesFileId}",
-                problem.getId(), STUDENT1_ID, submissionView.getId(), submissionView.submittedCodesFileId), adminToken)
+                problem.getId(), STUDENT1_ID, submissionView.getId(), submissionView.submittedCodesFileId), ADMIN_TOKEN)
                 .andExpect(status().isOk())
                 .andExpect(ZipResultMatcher.zip().content(mockFiles));
     }

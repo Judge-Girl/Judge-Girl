@@ -13,7 +13,6 @@
 
 package tw.waterball.judgegirl.submissionapi.clients;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
 import org.springframework.amqp.core.AmqpAdmin;
 import org.springframework.amqp.core.AmqpTemplate;
@@ -24,28 +23,25 @@ import tw.waterball.judgegirl.submissionapi.views.VerdictIssuedEvent;
  * @author - johnny850807@gmail.com (Waterball)
  */
 public class AmqpVerdictPublisher implements VerdictPublisher {
-    private AmqpTemplate amqpTemplate;
-    private TopicExchange submissionTopicExchange;
-    private String verdictIssueRoutingKey;
-    private ObjectMapper objectMapper;
+    private final AmqpTemplate amqpTemplate;
+    private final TopicExchange verdictExchange;
+    private final String verdictIssueRoutingKey;
 
     public AmqpVerdictPublisher(AmqpAdmin amqpAdmin, AmqpTemplate amqpTemplate,
-                                ObjectMapper objectMapper,
-                                String submissionExchangeName,
+                                String verdictExchangeName,
                                 String verdictIssuedRoutingKeyFormat) {
         this.amqpTemplate = amqpTemplate;
-        this.objectMapper = objectMapper;
-        this.submissionTopicExchange = new TopicExchange(submissionExchangeName);
+        this.verdictExchange = new TopicExchange(verdictExchangeName);
         this.verdictIssueRoutingKey = verdictIssuedRoutingKeyFormat;
-        amqpAdmin.declareExchange(submissionTopicExchange);
+        amqpAdmin.declareExchange(verdictExchange);
     }
 
     @SneakyThrows
     @Override
     public void publish(VerdictIssuedEvent event) {
         String routingKey = getRoutingKey(event.getSubmissionId());
-        amqpTemplate.convertAndSend(submissionTopicExchange.getName(),
-                routingKey, objectMapper.writeValueAsBytes(event));
+        amqpTemplate.convertAndSend(verdictExchange.getName(),
+                routingKey, event);
     }
 
     private String getRoutingKey(String submissionId) {

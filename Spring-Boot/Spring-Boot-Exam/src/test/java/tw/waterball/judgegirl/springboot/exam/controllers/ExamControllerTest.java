@@ -143,6 +143,21 @@ class ExamControllerTest extends AbstractSpringBootTest {
     }
 
 
+    @DisplayName("Given Student participates Exams A, B, C, D, E, F, G, " +
+            "When get all student's exams with skip=1, size=4, Should respond B, C, D, E, F")
+    @Test
+    void testGetALlStudentsExams() throws Exception {
+        givenStudentParticipatingExams(
+                STUDENT_ID,
+                givenCurrentExams("A", "B", "C"),
+                givenUpcomingExams("D", "E"),
+                givenPastExams("F", "G"));
+
+        List<ExamView> exams = getStudentExams(STUDENT_ID, ExamFilter.Status.all, 1, 5);
+        shouldRespondExams(exams, "B", "C", "D", "E", "F");
+    }
+
+
     @DisplayName("Given Student participates Exams A, B, C, D, E, F, G (only A, B, C, D are current) " +
             "When get student's current exams with skip=1, size=500000, Should respond B, C, D")
     @Test
@@ -250,6 +265,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
         List<ExamView> exams = getExamsWithPaging(2, 1000);
         shouldRespondExams(exams, "C", "D", "E");
     }
+
 
     @DisplayName("Given exams A, B, C, D, E (A, C, D are upcoming), " +
             "When filter upcoming exams with skip=1, size=1, " +

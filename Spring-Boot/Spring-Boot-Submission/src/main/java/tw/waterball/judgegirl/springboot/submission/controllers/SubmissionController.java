@@ -13,6 +13,7 @@
 
 package tw.waterball.judgegirl.springboot.submission.controllers;
 
+import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -39,25 +40,20 @@ import java.util.stream.Collectors;
  */
 @CrossOrigin
 @RestController
+@AllArgsConstructor
 @RequestMapping("/api/problems/{problemId}/{langEnvName}/students/{studentId}/submissions")
 public class SubmissionController {
     public final static String SUBMIT_CODE_MULTIPART_KEY_NAME = "submittedCodes";
-    private TokenService tokenService;
-    private SubmitCodeUseCase submitCodeUseCase;
-    private GetSubmissionUseCase getSubmissionUseCase;
-    private GetSubmissionsUseCase getSubmissionsUseCase;
-    private DownloadSubmittedCodesUseCase downloadSubmittedCodesUseCase;
+    private final TokenService tokenService;
+    private final SubmitCodeUseCase submitCodeUseCase;
+    private final GetSubmissionUseCase getSubmissionUseCase;
+    private final GetSubmissionsUseCase getSubmissionsUseCase;
+    private final DownloadSubmittedCodesUseCase downloadSubmittedCodesUseCase;
 
-    public SubmissionController(TokenService tokenService,
-                                SubmitCodeUseCase submitCodeUseCase,
-                                GetSubmissionUseCase getSubmissionUseCase,
-                                GetSubmissionsUseCase getSubmissionsUseCase,
-                                DownloadSubmittedCodesUseCase downloadSubmittedCodesUseCase) {
-        this.tokenService = tokenService;
-        this.submitCodeUseCase = submitCodeUseCase;
-        this.getSubmissionUseCase = getSubmissionUseCase;
-        this.getSubmissionsUseCase = getSubmissionsUseCase;
-        this.downloadSubmittedCodesUseCase = downloadSubmittedCodesUseCase;
+
+    @GetMapping("/health")
+    public String health(@PathVariable String langEnvName, @PathVariable int problemId, @PathVariable int studentId) {
+        return String.format("OK (problemId=%d, langEnv=%s, studentId=%d)", problemId, langEnvName, studentId);
     }
 
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)

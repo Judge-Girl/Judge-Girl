@@ -39,7 +39,7 @@ public class SignUpUseCase {
         String encodedPassword = passwordEncoder.encode(request.password);
         Student student = createStudent(request, encodedPassword);
         student.validate();
-        presenter.setStudent(studentRepository.save(student));
+        presenter.signUpSuccessfully(studentRepository.save(student));
     }
 
     private void validateEmail(Request request) {
@@ -61,7 +61,7 @@ public class SignUpUseCase {
     }
 
     public interface Presenter {
-        void setStudent(Student student);
+        void signUpSuccessfully(Student student);
     }
 
     @Data

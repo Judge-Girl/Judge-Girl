@@ -26,11 +26,8 @@ public class NaiveTokenService implements TokenService {
 
     @Override
     public Token createToken(Identity identity) {
-        if (identity.isAdmin()) {
-            return Token.ofAdmin("admin");
-        }
         Date expirationTime = new Date(System.currentTimeMillis() + this.exp.getTime());
-        return Token.ofStudent(identity.getStudentId(),
+        return new Token(identity.isAdmin(), identity.getStudentId(),
                 String.format("%d" + DELIMITER + "%d", identity.getStudentId(), expirationTime.getTime()),
                 expirationTime);
     }
@@ -44,13 +41,11 @@ public class NaiveTokenService implements TokenService {
     public Token parseAndValidate(String token) throws TokenInvalidException {
         try {
             String[] splits = token.split(DELIMITER);
-            if (splits[0].equals("admin")) {
-                return Token.ofAdmin("admin");
-            }
+            boolean isAdmin = splits[0].equals("admin");
             long expirationTime = Long.parseLong(splits[1]);
             validateExpiration(expirationTime);
             int studentId = Integer.parseInt(splits[0]);
-            return Token.ofStudent(studentId, token, new Date(expirationTime));
+            return new Token(isAdmin, studentId, token, new Date(expirationTime));
         } catch (ArrayIndexOutOfBoundsException err) {
             throw new TokenInvalidException("Token invalid.", err);
         }

@@ -33,7 +33,7 @@ public class ChangePasswordUseCase {
     private final StudentRepository studentRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public void execute(Request request) {
+    public void execute(Request request) throws StudentPasswordIncorrectException {
         validatePasswordLength(request.newPassword);
         Student student = getStudentUseCase.execute(request.studentId);
         validatePassword(request.currentPassword, student.getPassword());

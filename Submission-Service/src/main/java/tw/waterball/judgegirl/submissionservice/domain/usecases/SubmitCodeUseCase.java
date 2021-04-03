@@ -13,6 +13,7 @@
 
 package tw.waterball.judgegirl.submissionservice.domain.usecases;
 
+import lombok.AllArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tw.waterball.judgegirl.commons.models.files.StreamingResource;
@@ -32,23 +33,13 @@ import java.io.InputStream;
  * @author - johnny850807@gmail.com (Waterball)
  */
 @Named
+@AllArgsConstructor
 public class SubmitCodeUseCase {
     private final static Logger logger = LogManager.getLogger(SubmitCodeUseCase.class);
-
-    private ThrottleSubmissionUseCase throttleSubmissionUseCase;
-    private SubmissionRepository submissionRepository;
-    private JudgerDeployer judgerDeployer;
-    private ProblemServiceDriver problemServiceDriver;
-
-    public SubmitCodeUseCase(ThrottleSubmissionUseCase throttleSubmissionUseCase,
-                             JudgerDeployer judgerDeployer,
-                             ProblemServiceDriver problemServiceDriver,
-                             SubmissionRepository submissionRepository) {
-        this.throttleSubmissionUseCase = throttleSubmissionUseCase;
-        this.submissionRepository = submissionRepository;
-        this.judgerDeployer = judgerDeployer;
-        this.problemServiceDriver = problemServiceDriver;
-    }
+    private final ThrottleSubmissionUseCase throttleSubmissionUseCase;
+    private final SubmissionRepository submissionRepository;
+    private final JudgerDeployer judgerDeployer;
+    private final ProblemServiceDriver problemServiceDriver;
 
     public void execute(SubmitCodeRequest request, SubmissionPresenter presenter) throws IOException {
         logger.info(request);

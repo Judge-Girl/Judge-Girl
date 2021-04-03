@@ -151,6 +151,16 @@ public class GroupControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
+    public void GivenOneStudentAddedIntoCreatedGroup_WhenAddStudentMultipleTimesIntoTheGroup_ShouldRespondOk() throws Exception {
+        GroupView body = createGroupAndGet(GROUP_NAME);
+        StudentView studentA = signUpAndGetStudent("A");
+        int groupId = body.id;
+        addStudentIntoGroup(groupId, studentA.id);
+        addStudentIntoGroup(groupId, studentA.id)
+                .andExpect(status().isOk());
+    }
+
+    @Test
     @Transactional
     public void GivenTwoStudentsAddedIntoCreatedGroup_WhenDeleteOneStudentFromTheGroup_ThenGroupShouldHaveOneStudent() throws Exception {
         GroupView body = createGroupAndGet(GROUP_NAME);
@@ -190,7 +200,7 @@ public class GroupControllerTest extends AbstractSpringBootTest {
 
     private ResultActions signUp(String name, String email, String password) throws Exception {
         Student newStudent = new Student(name, email, password);
-        return mockMvc.perform(post(STUDENT_PATH + "/signUp")
+        return mockMvc.perform(post(STUDENT_PATH)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(newStudent)));
     }

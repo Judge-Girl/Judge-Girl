@@ -14,24 +14,19 @@
 package tw.waterball.judgegirl.springboot.student.controllers;
 
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import tw.waterball.judgegirl.commons.token.TokenInvalidException;
 import tw.waterball.judgegirl.commons.token.TokenService;
 import tw.waterball.judgegirl.entities.Student;
 import tw.waterball.judgegirl.springboot.student.presenters.GetStudentsPresenter;
 import tw.waterball.judgegirl.springboot.student.presenters.SignInPresenter;
 import tw.waterball.judgegirl.springboot.student.presenters.SignUpPresenter;
 import tw.waterball.judgegirl.springboot.student.view.StudentView;
-import tw.waterball.judgegirl.studentservice.domain.exceptions.DuplicateEmailException;
-import tw.waterball.judgegirl.studentservice.domain.exceptions.StudentEmailNotFoundException;
-import tw.waterball.judgegirl.studentservice.domain.exceptions.StudentIdNotFoundException;
-import tw.waterball.judgegirl.studentservice.domain.exceptions.StudentPasswordIncorrectException;
 import tw.waterball.judgegirl.studentservice.domain.usecases.*;
 
 import java.util.List;
 
+import static tw.waterball.judgegirl.commons.token.TokenService.Identity.admin;
+import static tw.waterball.judgegirl.commons.token.TokenService.Identity.student;
 import static tw.waterball.judgegirl.springboot.student.view.StudentView.toViewModel;
 
 /**
@@ -42,7 +37,7 @@ import static tw.waterball.judgegirl.springboot.student.view.StudentView.toViewM
 @RestController
 @AllArgsConstructor
 public class StudentController {
-    private final SignInUseCase signInUseCase;
+    private final LoginUseCase loginUseCase;
     private final SignUpUseCase signUpUseCase;
     private final GetStudentUseCase getStudentUseCase;
     private final GetStudentsWithFilterUseCase getStudentsWithFilterUseCase;
@@ -50,7 +45,7 @@ public class StudentController {
     private final ChangePasswordUseCase changePasswordUseCase;
     private final TokenService tokenService;
 
-    @PostMapping("/signUp")
+    @PostMapping
     public StudentView signUp(@RequestBody SignUpUseCase.Request request) {
         SignUpPresenter presenter = new SignUpPresenter();
         request.admin = false;
@@ -59,10 +54,11 @@ public class StudentController {
     }
 
     @PostMapping("/login")
-    public LoginResponse login(@RequestBody SignInUseCase.Request request) {
+    public LoginResponse login(@RequestBody LoginUseCase.Request request) {
         SignInPresenter presenter = new SignInPresenter();
-        signInUseCase.execute(request, presenter);
-        presenter.setToken(tokenService.createToken(new TokenService.Identity(presenter.getStudentId())));
+        loginUseCase.execute(request, presenter);
+        presenter.setToken(tokenService.createToken(
+                presenter.isAdmin() ? admin(presenter.getStudentId()) : student(presenter.getStudentId())));
         return presenter.present();
     }
 
@@ -83,7 +79,6 @@ public class StudentController {
         AuthPresenter presenter = new AuthPresenter();
         presenter.setToken(tokenService.renewToken(token.getToken()));
         authUseCase.execute(new AuthUseCase.Request(token.getStudentId()), presenter);
-
         return presenter.present();
     }
 
@@ -104,22 +99,6 @@ public class StudentController {
         GetStudentsPresenter presenter = new GetStudentsPresenter();
         getStudentsWithFilterUseCase.execute(new GetStudentsWithFilterUseCase.Request(false, skip, size), presenter);
         return presenter.present();
-    }
-
-
-    @ExceptionHandler({StudentPasswordIncorrectException.class, DuplicateEmailException.class, IllegalArgumentException.class})
-    public ResponseEntity<?> badRequestHandler(Exception err) {
-        return ResponseEntity.badRequest().body(err.getMessage());
-    }
-
-    @ExceptionHandler({StudentIdNotFoundException.class, StudentEmailNotFoundException.class})
-    public ResponseEntity<?> notFoundHandler(Exception err) {
-        return ResponseEntity.notFound().build();
-    }
-
-    @ExceptionHandler({TokenInvalidException.class})
-    public ResponseEntity<?> unauthorizedHandler(Exception err) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 }
 

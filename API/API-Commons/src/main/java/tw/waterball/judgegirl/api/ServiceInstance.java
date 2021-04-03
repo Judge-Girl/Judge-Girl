@@ -24,9 +24,18 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ServiceInstance {
+    protected int studentId;  // service as a student
     protected String scheme;
     protected String host;
     protected int port;
+
+    public void setStudentId(int studentId) {
+        this.studentId = studentId;
+    }
+
+    public int getStudentId() {
+        return studentId;
+    }
 
     public String getScheme() {
         return scheme;

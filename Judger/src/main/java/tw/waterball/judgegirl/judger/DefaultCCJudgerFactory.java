@@ -13,15 +13,18 @@
 
 package tw.waterball.judgegirl.judger;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
 import org.springframework.amqp.core.AmqpAdmin;
-import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import tw.waterball.judgegirl.api.retrofit.RetrofitFactory;
+import tw.waterball.judgegirl.commons.token.jwt.JwtTokenService;
 import tw.waterball.judgegirl.judger.infra.compile.ShellCompilerFactory;
 import tw.waterball.judgegirl.judger.infra.testexecutor.CCSandboxTestcaseExecutorFactory;
 import tw.waterball.judgegirl.judgerapi.env.JudgerEnvVariables;
@@ -37,8 +40,11 @@ import tw.waterball.judgegirl.submissionapi.clients.VerdictPublisher;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static java.util.Arrays.asList;
+import static tw.waterball.judgegirl.commons.token.TokenService.Identity.admin;
+import static tw.waterball.judgegirl.commons.utils.DateUtils.afterCurrentTime;
 
 /**
  * Provide different basic ways to construct a CCJudger.
@@ -47,17 +53,19 @@ import static java.util.Arrays.asList;
  * @author - johnny850807@gmail.com (Waterball)
  */
 public class DefaultCCJudgerFactory {
+    private final static int JUDGER_STUDENT_ID = -999999;
 
     @SneakyThrows
     public static CCJudger create(JudgerEnvVariables.Values values,
                                   String judgeWorkspaceLayoutYamlResourcePath,
                                   JudgeGirlPlugin... plugins) {
-
+        JwtTokenService jwtTokenService = new JwtTokenService(values.jwtSecret, afterCurrentTime(10, TimeUnit.DAYS).getTime());
+        String token = jwtTokenService.createToken(admin(JUDGER_STUDENT_ID)).getToken();
         return new CCJudger(
                 new YAMLJudgerWorkspace(judgeWorkspaceLayoutYamlResourcePath),
                 new PresetJudgeGirlPluginLocator(aggregateJudgeGirlPlugins(plugins)),
-                problemApiClient(values),
-                submissionApiClient(values),
+                problemApiClient(values, token),
+                submissionApiClient(values, token),
                 verdictPublisher(values),
                 new ShellCompilerFactory(),
                 new CCSandboxTestcaseExecutorFactory()
@@ -90,20 +98,20 @@ public class DefaultCCJudgerFactory {
         return allPlugins;
     }
 
-    private static ProblemApiClient problemApiClient(JudgerEnvVariables.Values values) {
+    private static ProblemApiClient problemApiClient(JudgerEnvVariables.Values values, String token) {
         return new ProblemApiClient(retrofitFactory(),
                 values.getProblemServiceInstance().getScheme(),
                 values.getProblemServiceInstance().getHost(),
                 values.getProblemServiceInstance().getPort(),
-                values.jwtToken);
+                token);
     }
 
-    private static SubmissionApiClient submissionApiClient(JudgerEnvVariables.Values values) {
+    private static SubmissionApiClient submissionApiClient(JudgerEnvVariables.Values values, String token) {
         return new SubmissionApiClient(retrofitFactory(),
                 values.getSubmissionServiceInstance().getScheme(),
                 values.getSubmissionServiceInstance().getHost(),
                 values.getSubmissionServiceInstance().getPort(),
-                values.jwtToken);
+                token);
     }
 
     private static RetrofitFactory retrofitFactory() {
@@ -113,9 +121,11 @@ public class DefaultCCJudgerFactory {
     private static VerdictPublisher verdictPublisher(JudgerEnvVariables.Values values) {
         ConnectionFactory connectionFactory = connectionFactory(values);
         AmqpAdmin amqpAdmin = new RabbitAdmin(connectionFactory);
-        AmqpTemplate amqpTemplate = new RabbitTemplate(connectionFactory);
-        return new AmqpVerdictPublisher(amqpAdmin, amqpTemplate, objectMapper(),
-                values.submissionExchangeName,
+        RabbitTemplate amqpTemplate = new RabbitTemplate(connectionFactory);
+        ObjectMapper objectMapper = objectMapper();
+        amqpTemplate.setMessageConverter(new Jackson2JsonMessageConverter(objectMapper));
+        return new AmqpVerdictPublisher(amqpAdmin, amqpTemplate,
+                values.verdictExchangeName,
                 values.verdictIssuedRoutingKeyFormat);
     }
 
@@ -131,6 +141,9 @@ public class DefaultCCJudgerFactory {
 
     // TODO the objectMapper implementation should be injected
     private static ObjectMapper objectMapper() {
-        return new ObjectMapper();
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        return objectMapper;
     }
 }
