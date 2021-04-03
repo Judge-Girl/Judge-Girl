@@ -2,6 +2,7 @@ package tw.waterball.judgegirl.springboot.student.repositories;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import tw.waterball.judgegirl.entities.Group;
 import tw.waterball.judgegirl.springboot.student.repositories.jpa.GroupData;
 import tw.waterball.judgegirl.springboot.student.repositories.jpa.JpaGroupDataPort;
@@ -17,6 +18,7 @@ import static tw.waterball.judgegirl.springboot.student.repositories.jpa.GroupDa
  * @author - wally55077@gmail.com
  */
 @Component
+@Transactional
 @AllArgsConstructor
 public class JpaGroupRepository implements GroupRepository {
 

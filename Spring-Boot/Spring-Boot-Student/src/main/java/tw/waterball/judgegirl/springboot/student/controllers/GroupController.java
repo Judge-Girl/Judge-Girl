@@ -10,7 +10,10 @@ import tw.waterball.judgegirl.springboot.student.view.StudentView;
 import tw.waterball.judgegirl.studentservice.domain.exceptions.DuplicateGroupNameException;
 import tw.waterball.judgegirl.studentservice.domain.usecases.*;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -29,6 +32,7 @@ public class GroupController {
     private final DeleteStudentFromGroupUseCase deleteStudentFromGroupUseCase;
     private final GetStudentsByGroupIdUseCase getStudentsByGroupIdUseCase;
     private final GetGroupsByStudentIdUseCase getGroupsByStudentIdUseCase;
+    private final AddStudentsIntoGroupByMailListUseCase addStudentsIntoGroupByMailListUseCase;
 
     @PostMapping("/api/groups")
     public GroupView createGroup(@RequestBody CreateGroupUseCase.Request request) {
@@ -79,6 +83,14 @@ public class GroupController {
     public List<GroupView> getGroupsByStudentId(@PathVariable Integer studentId) {
         GetGroupsByStudentIdPresenter presenter = new GetGroupsByStudentIdPresenter();
         getGroupsByStudentIdUseCase.execute(studentId, presenter);
+        return presenter.present();
+    }
+
+    @PostMapping("/api/groups/{groupId}/students")
+    public Map<String, List<String>> getStudentsByGroupId(@PathVariable Integer groupId,
+                                                          @RequestBody String[] mailList) {
+        AddStudentsIntoGroupByMailListPresenter presenter = new AddStudentsIntoGroupByMailListPresenter();
+        addStudentsIntoGroupByMailListUseCase.execute(groupId, mailList, presenter);
         return presenter.present();
     }
 
@@ -163,3 +175,17 @@ class GetGroupsByStudentIdPresenter implements GetGroupsByStudentIdUseCase.Prese
     }
 }
 
+class AddStudentsIntoGroupByMailListPresenter implements AddStudentsIntoGroupByMailListUseCase.Presenter {
+
+    private String[] errorList;
+
+    @Override
+    public void notFound(String... errorList) {
+        this.errorList = errorList;
+    }
+
+    public Map<String, List<String>> present() {
+        return Collections.singletonMap("errorList", Arrays.asList(errorList));
+    }
+
+}
