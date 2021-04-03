@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
@@ -154,7 +153,6 @@ public class GroupControllerTest extends AbstractSpringBootTest {
         assertEquals(1, studentA.getGroups().size());
         Student studentB = studentRepository.findStudentById(studentViewB.id).orElseThrow(NotFoundException::new);
         assertEquals(1, studentB.getGroups().size());
-
     }
 
     @Test
