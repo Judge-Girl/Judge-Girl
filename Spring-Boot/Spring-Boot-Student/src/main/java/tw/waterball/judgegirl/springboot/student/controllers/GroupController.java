@@ -9,9 +9,11 @@ import tw.waterball.judgegirl.springboot.student.view.GroupView;
 import tw.waterball.judgegirl.springboot.student.view.StudentView;
 import tw.waterball.judgegirl.studentservice.domain.exceptions.DuplicateGroupNameException;
 import tw.waterball.judgegirl.studentservice.domain.usecases.*;
-import tw.waterball.judgegirl.studentservice.domain.usecases.AddStudentsIntoGroupByMailListUseCase.Response;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -85,8 +87,8 @@ public class GroupController {
     }
 
     @PostMapping("/api/groups/{groupId}/students")
-    public Response getStudentsByGroupId(@PathVariable Integer groupId,
-                                         @RequestBody String[] mailList) {
+    public Map<String, List<String>> getStudentsByGroupId(@PathVariable Integer groupId,
+                                                          @RequestBody String[] mailList) {
         AddStudentsIntoGroupByMailListPresenter presenter = new AddStudentsIntoGroupByMailListPresenter();
         addStudentsIntoGroupByMailListUseCase.execute(groupId, mailList, presenter);
         return presenter.present();
@@ -178,12 +180,12 @@ class AddStudentsIntoGroupByMailListPresenter implements AddStudentsIntoGroupByM
     private String[] errorList;
 
     @Override
-    public void setErrorList(String... errorList) {
+    public void notFound(String... errorList) {
         this.errorList = errorList;
     }
 
-    public Response present() {
-        return new Response(errorList);
+    public Map<String, List<String>> present() {
+        return Collections.singletonMap("errorList", Arrays.asList(errorList));
     }
 
 }

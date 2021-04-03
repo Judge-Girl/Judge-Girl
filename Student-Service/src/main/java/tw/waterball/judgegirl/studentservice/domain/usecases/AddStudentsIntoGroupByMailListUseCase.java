@@ -1,7 +1,6 @@
 package tw.waterball.judgegirl.studentservice.domain.usecases;
 
 import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.entities.Group;
 import tw.waterball.judgegirl.entities.Student;
@@ -10,7 +9,6 @@ import tw.waterball.judgegirl.studentservice.domain.repositories.StudentReposito
 
 import javax.inject.Named;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -30,53 +28,39 @@ public class AddStudentsIntoGroupByMailListUseCase {
             throws NotFoundException {
         Group group = groupRepository.findGroupById(groupId).orElseThrow(NotFoundException::new);
         List<Student> students = studentRepository.findByEmailIn(mailList);
-        List<Student> nonAddedIntoGroupStudents = filterAddedStudents(group, students);
-        if (!nonAddedIntoGroupStudents.isEmpty()) {
-            group.addStudents(nonAddedIntoGroupStudents);
+        List<Student> newStudents = filterOffStudentsThatHaveBeenAdded(group, students);
+        if (!newStudents.isEmpty()) {
+            group.addStudents(newStudents);
             groupRepository.save(group);
         }
-        presenter.setErrorList(getErrorList(mailList, students));
+        presenter.notFound(getNotFoundMailList(mailList, students));
     }
 
-    private List<Student> filterAddedStudents(Group group, List<Student> students) {
+    private List<Student> filterOffStudentsThatHaveBeenAdded(Group group, List<Student> students) {
+        Set<Integer> idSet = group.getStudents().stream()
+                .map(Student::getId)
+                .collect(Collectors.toSet());
         return students.stream()
-                .filter(student -> !hasStudentAddedIntoGroup(group, student))
+                .filter(student -> !idSet.contains(student.getId()))
                 .collect(Collectors.toList());
     }
 
-    private boolean hasStudentAddedIntoGroup(Group group, Student student) {
-        return group.getStudents()
-                .stream()
-                .map(Student::getId)
-                .anyMatch(groupStudentId -> groupStudentId.equals(student.getId()));
-    }
-
-    private String[] getErrorList(String[] mailList, List<Student> students) {
+    private String[] getNotFoundMailList(String[] mailList, List<Student> students) {
         if (students.isEmpty()) {
             return mailList;
         }
-        Set<String> mails = new HashSet<>(Arrays.asList(mailList));
-        return students.stream()
+        Set<String> mails = students.stream()
                 .map(Student::getEmail)
+                .collect(Collectors.toSet());
+        return Arrays.stream(mailList)
                 .filter(email -> !mails.contains(email))
                 .toArray(String[]::new);
     }
 
     public interface Presenter {
 
-        void setErrorList(String... errorList);
+        void notFound(String... errorList);
 
-    }
-
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class Response {
-
-        public List<String> errorList;
-
-        public Response(String... errorList) {
-            this(Arrays.asList(errorList));
-        }
     }
 
 }
