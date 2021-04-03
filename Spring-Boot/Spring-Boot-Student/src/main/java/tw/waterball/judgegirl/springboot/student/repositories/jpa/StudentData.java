@@ -53,11 +53,11 @@ public class StudentData {
                 .admin(student.isAdmin())
                 .groups(new HashSet<>())
                 .build();
-        studentData.addAllGroupData(student.getGroups());
+        studentData.addGroups(student.getGroups());
         return studentData;
     }
 
-    private void addAllGroupData(Collection<Group> groups) {
+    private void addGroups(Collection<Group> groups) {
         List<GroupData> groupDataList = new ArrayList<>(groups.size());
         for (Group group : groups) {
             GroupData groupData = new GroupData(group.getId(), group.getName());

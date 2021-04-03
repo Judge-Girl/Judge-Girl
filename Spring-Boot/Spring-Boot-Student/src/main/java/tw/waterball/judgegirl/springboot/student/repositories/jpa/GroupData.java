@@ -38,11 +38,11 @@ public class GroupData {
 
     public static GroupData toData(Group group) {
         GroupData groupData = new GroupData(group.getId(), group.getName());
-        groupData.addAllStudentData(group.getStudents());
+        groupData.addStudents(group.getStudents());
         return groupData;
     }
 
-    private void addAllStudentData(Collection<Student> students) {
+    private void addStudents(Collection<Student> students) {
         List<StudentData> studentDataList = new ArrayList<>(students.size());
         for (Student student : students) {
             StudentData studentData = StudentData.builder()

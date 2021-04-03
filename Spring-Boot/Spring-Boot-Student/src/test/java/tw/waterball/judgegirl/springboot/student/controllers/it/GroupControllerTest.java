@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
@@ -142,18 +141,18 @@ public class GroupControllerTest extends AbstractSpringBootTest {
     public void GivenOneGroupCreated_WhenAddTwoStudentsIntoTheGroup_ShouldAddSuccessfully() throws Exception {
         GroupView body = createGroupAndGet(GROUP_NAME);
 
-        StudentView studentA = signUpAndGetStudent("A");
-        StudentView studentB = signUpAndGetStudent("B");
+        StudentView studentViewA = signUpAndGetStudent("A");
+        StudentView studentViewB = signUpAndGetStudent("B");
         int groupId = body.id;
-        addStudentIntoGroup(groupId, studentA.id);
-        addStudentIntoGroup(groupId, studentB.id);
+        addStudentIntoGroup(groupId, studentViewA.id);
+        addStudentIntoGroup(groupId, studentViewB.id);
 
         Group group = groupRepository.findGroupById(groupId).orElseThrow(NotFoundException::new);
         assertEquals(2, group.getStudents().size());
-        Student studentAEntity = studentRepository.findStudentById(studentA.id).orElseThrow(NotFoundException::new);
-        assertEquals(1, studentAEntity.getGroups().size());
-        Student studentBEntity = studentRepository.findStudentById(studentB.id).orElseThrow(NotFoundException::new);
-        assertEquals(1, studentBEntity.getGroups().size());
+        Student studentA = studentRepository.findStudentById(studentViewA.id).orElseThrow(NotFoundException::new);
+        assertEquals(1, studentA.getGroups().size());
+        Student studentB = studentRepository.findStudentById(studentViewB.id).orElseThrow(NotFoundException::new);
+        assertEquals(1, studentB.getGroups().size());
     }
 
     @Test
@@ -196,12 +195,10 @@ public class GroupControllerTest extends AbstractSpringBootTest {
 
         deleteGroupById(groupId);
 
-        TestTransaction.flagForCommit();
-        TestTransaction.end();
-        TestTransaction.start();
-        Student student = studentRepository.findStudentById(studentA.id).orElseThrow(NotFoundException::new);
-        assertEquals(0, student.getGroups().size());
-        TestTransaction.end();
+        anotherTransaction(() -> {
+            Student student = studentRepository.findStudentById(studentA.id).orElseThrow(NotFoundException::new);
+            assertEquals(0, student.getGroups().size());
+        });
     }
 
     private StudentView signUpAndGetStudent(String sign) throws Exception {
@@ -220,12 +217,11 @@ public class GroupControllerTest extends AbstractSpringBootTest {
         addStudentIntoGroup(groupId, studentA.id);
         addStudentIntoGroup(groupId, studentB.id);
 
-        ResultActions resultActions = getStudentsByGroupId(groupId)
-                .andExpect(status().isOk());
-
-        List<StudentView> body = getBody(resultActions, new TypeReference<>() {
+        List<StudentView> respondedStudents = getBody(getStudentsByGroupId(groupId)
+                .andExpect(status().isOk()), new TypeReference<>() {
         });
-        assertEquals(2, body.size());
+
+        assertEquals(2, respondedStudents.size());
     }
 
     @Test
@@ -237,11 +233,11 @@ public class GroupControllerTest extends AbstractSpringBootTest {
         addStudentIntoGroup(groupA.id, studentId);
         addStudentIntoGroup(groupB.id, studentId);
 
-        ResultActions resultActions = getGroupsByStudentId(studentId).andExpect(status().isOk());
-
-        List<GroupView> body = getBody(resultActions, new TypeReference<>() {
+        List<GroupView> respondedGroups = getBody(getGroupsByStudentId(studentId)
+                .andExpect(status().isOk()), new TypeReference<>() {
         });
-        assertEquals(2, body.size());
+
+        assertEquals(2, respondedGroups.size());
     }
 
     private ResultActions getGroupsByStudentId(int studentId) throws Exception {

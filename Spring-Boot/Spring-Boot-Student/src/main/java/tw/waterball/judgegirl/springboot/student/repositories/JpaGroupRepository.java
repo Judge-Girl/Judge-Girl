@@ -51,7 +51,7 @@ public class JpaGroupRepository implements GroupRepository {
     }
 
     @Override
-    public List<Group> findAllGroup() {
+    public List<Group> findAllGroups() {
         return jpaGroupDataPort.findAll().stream()
                 .map(GroupData::toEntity)
                 .collect(Collectors.toList());

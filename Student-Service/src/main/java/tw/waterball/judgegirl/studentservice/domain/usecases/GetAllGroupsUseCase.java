@@ -17,7 +17,7 @@ public class GetAllGroupsUseCase {
     private final GroupRepository groupRepository;
 
     public void execute(Presenter presenter) {
-        List<Group> groups = groupRepository.findAllGroup();
+        List<Group> groups = groupRepository.findAllGroups();
         presenter.setGroups(groups);
     }
 

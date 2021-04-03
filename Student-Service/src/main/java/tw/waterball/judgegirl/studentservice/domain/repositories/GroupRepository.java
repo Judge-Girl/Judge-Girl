@@ -17,7 +17,7 @@ public interface GroupRepository {
 
     boolean existsById(int id);
 
-    List<Group> findAllGroup();
+    List<Group> findAllGroups();
 
     void deleteGroupById(int groupId);
 }
