@@ -22,6 +22,7 @@ import tw.waterball.judgegirl.studentservice.domain.usecases.CreateGroupUseCase;
 import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
 
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -140,14 +141,18 @@ public class GroupControllerTest extends AbstractSpringBootTest {
     public void GivenOneGroupCreated_WhenAddTwoStudentsIntoTheGroup_ShouldAddSuccessfully() throws Exception {
         GroupView body = createGroupAndGet(GROUP_NAME);
 
-        StudentView studentA = signUpAndGetStudent("A");
-        StudentView studentB = signUpAndGetStudent("B");
+        StudentView studentViewA = signUpAndGetStudent("A");
+        StudentView studentViewB = signUpAndGetStudent("B");
         int groupId = body.id;
-        addStudentIntoGroup(groupId, studentA.id);
-        addStudentIntoGroup(groupId, studentB.id);
+        addStudentIntoGroup(groupId, studentViewA.id);
+        addStudentIntoGroup(groupId, studentViewB.id);
 
         Group group = groupRepository.findGroupById(groupId).orElseThrow(NotFoundException::new);
         assertEquals(2, group.getStudents().size());
+        Student studentA = studentRepository.findStudentById(studentViewA.id).orElseThrow(NotFoundException::new);
+        assertEquals(1, studentA.getGroups().size());
+        Student studentB = studentRepository.findStudentById(studentViewB.id).orElseThrow(NotFoundException::new);
+        assertEquals(1, studentB.getGroups().size());
     }
 
     @Test
@@ -173,10 +178,13 @@ public class GroupControllerTest extends AbstractSpringBootTest {
         deleteStudentFromGroup(groupId, studentA.id);
 
         Group group = groupRepository.findGroupById(groupId).orElseThrow(NotFoundException::new);
-        assertEquals(1, group.getStudents().size());
+        Set<Student> students = group.getStudents();
+        assertEquals(1, students.size());
+        assertEquals(studentB.id, students.stream().findFirst().orElseThrow(NotFoundException::new).getId());
     }
 
     @Test
+    @Transactional
     public void GivenTwoStudentsAddedIntoCreatedGroup_WhenDeleteGroupById_ShouldDeleteSuccessfully() throws Exception {
         GroupView body = createGroupAndGet(GROUP_NAME);
         StudentView studentA = signUpAndGetStudent("A");
@@ -187,8 +195,10 @@ public class GroupControllerTest extends AbstractSpringBootTest {
 
         deleteGroupById(groupId);
 
-        Student student = studentRepository.findStudentById(studentA.id).orElseThrow(NotFoundException::new);
-        assertEquals(0, student.getGroups().size());
+        anotherTransaction(() -> {
+            Student student = studentRepository.findStudentById(studentA.id).orElseThrow(NotFoundException::new);
+            assertEquals(0, student.getGroups().size());
+        });
     }
 
     private StudentView signUpAndGetStudent(String sign) throws Exception {
@@ -196,6 +206,42 @@ public class GroupControllerTest extends AbstractSpringBootTest {
         String email = "email" + sign + "@example.com";
         String password = "password" + sign;
         return getBody(signUp(name, email, password), StudentView.class);
+    }
+
+    @Test
+    public void GivenTwoStudentsAddedIntoCreatedGroup_WhenGetStudentsByGroupId_RespondTwoStudents() throws Exception {
+        GroupView group = createGroupAndGet(GROUP_NAME);
+        StudentView studentA = signUpAndGetStudent("A");
+        StudentView studentB = signUpAndGetStudent("B");
+        int groupId = group.id;
+        addStudentIntoGroup(groupId, studentA.id);
+        addStudentIntoGroup(groupId, studentB.id);
+
+        List<StudentView> respondedStudents = getBody(getStudentsByGroupId(groupId)
+                .andExpect(status().isOk()), new TypeReference<>() {
+        });
+
+        assertEquals(2, respondedStudents.size());
+    }
+
+    @Test
+    public void GivenOneStudentAddedIntoTwoCreatedGroups_WhenGetGroupsByStudentId_RespondTwoGroups() throws Exception {
+        GroupView groupA = createGroupAndGet(GROUP_NAME + "A");
+        GroupView groupB = createGroupAndGet(GROUP_NAME + "B");
+        StudentView studentA = signUpAndGetStudent("A");
+        int studentId = studentA.id;
+        addStudentIntoGroup(groupA.id, studentId);
+        addStudentIntoGroup(groupB.id, studentId);
+
+        List<GroupView> respondedGroups = getBody(getGroupsByStudentId(studentId)
+                .andExpect(status().isOk()), new TypeReference<>() {
+        });
+
+        assertEquals(2, respondedGroups.size());
+    }
+
+    private ResultActions getGroupsByStudentId(int studentId) throws Exception {
+        return mockMvc.perform(get("/api/students/{studentId}/groups", studentId));
     }
 
     private ResultActions signUp(String name, String email, String password) throws Exception {
@@ -211,6 +257,10 @@ public class GroupControllerTest extends AbstractSpringBootTest {
 
     private ResultActions deleteStudentFromGroup(int groupId, int studentId) throws Exception {
         return mockMvc.perform(delete(GROUP_PATH + "/{groupId}/students/{studentId}", groupId, studentId));
+    }
+
+    private ResultActions getStudentsByGroupId(int groupId) throws Exception {
+        return mockMvc.perform(get(GROUP_PATH + "/{groupId}/students", groupId));
     }
 
 }

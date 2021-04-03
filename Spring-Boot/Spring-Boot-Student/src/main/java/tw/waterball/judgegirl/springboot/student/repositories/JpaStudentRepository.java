@@ -15,6 +15,7 @@ package tw.waterball.judgegirl.springboot.student.repositories;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import tw.waterball.judgegirl.entities.Student;
 import tw.waterball.judgegirl.springboot.helpers.SkipAndSizePageable;
 import tw.waterball.judgegirl.springboot.student.repositories.jpa.JpaStudentDataPort;
@@ -31,6 +32,7 @@ import static tw.waterball.judgegirl.springboot.student.repositories.jpa.Student
  * @author chaoyulee chaoyu2330@gmail.com
  */
 @Component
+@Transactional
 public class JpaStudentRepository implements StudentRepository {
     private final JpaStudentDataPort jpaStudentDataPort;
 
