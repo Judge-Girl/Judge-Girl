@@ -28,7 +28,7 @@ public class AddStudentsIntoGroupByMailListUseCase {
             throws NotFoundException {
         Group group = groupRepository.findGroupById(groupId).orElseThrow(NotFoundException::new);
         List<Student> students = studentRepository.findByEmailIn(mailList);
-        List<Student> newStudents = filterOffStudentsThatHaveBeenAdded(group, students);
+        List<Student> newStudents = filterStudentsThatHaveNotBeenAdded(group, students);
         if (!newStudents.isEmpty()) {
             group.addStudents(newStudents);
             groupRepository.save(group);
@@ -36,7 +36,7 @@ public class AddStudentsIntoGroupByMailListUseCase {
         presenter.notFound(getNotFoundMailList(mailList, students));
     }
 
-    private List<Student> filterOffStudentsThatHaveBeenAdded(Group group, List<Student> students) {
+    private List<Student> filterStudentsThatHaveNotBeenAdded(Group group, List<Student> students) {
         Set<Integer> idSet = group.getStudents().stream()
                 .map(Student::getId)
                 .collect(Collectors.toSet());

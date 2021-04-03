@@ -109,9 +109,8 @@ public class GroupControllerTest extends AbstractSpringBootTest {
 
     @Test
     public void GivenOneGroupCreated_WhenDeleteGroupById_ShouldDeleteSuccessfully() throws Exception {
-        GroupView group = createGroupAndGet(GROUP_NAME);
+        int groupId = createGroupAndGet(GROUP_NAME).id;
 
-        int groupId = group.id;
         deleteGroupById(groupId).andExpect(status().isOk());
 
         getGroupById(groupId).andExpect(status().isNotFound());
@@ -156,9 +155,9 @@ public class GroupControllerTest extends AbstractSpringBootTest {
 
     @Test
     public void GivenOneStudentAddedIntoCreatedGroup_WhenAddStudentMultipleTimesIntoTheGroup_ShouldRespondOk() throws Exception {
-        GroupView body = createGroupAndGet(GROUP_NAME);
+        int groupId = createGroupAndGet(GROUP_NAME).id;
         StudentView studentA = signUpAndGetStudent("A");
-        int groupId = body.id;
+
         addStudentIntoGroup(groupId, studentA.id);
         addStudentIntoGroup(groupId, studentA.id)
                 .andExpect(status().isOk());
@@ -167,10 +166,10 @@ public class GroupControllerTest extends AbstractSpringBootTest {
     @Test
     @Transactional
     public void GivenTwoStudentsAddedIntoCreatedGroup_WhenDeleteOneStudentFromTheGroup_ThenGroupShouldHaveOneStudent() throws Exception {
-        GroupView body = createGroupAndGet(GROUP_NAME);
+        int groupId = createGroupAndGet(GROUP_NAME).id;
         StudentView studentA = signUpAndGetStudent("A");
         StudentView studentB = signUpAndGetStudent("B");
-        int groupId = body.id;
+
         addStudentIntoGroup(groupId, studentA.id);
         addStudentIntoGroup(groupId, studentB.id);
 
@@ -185,10 +184,10 @@ public class GroupControllerTest extends AbstractSpringBootTest {
     @Test
     @Transactional
     public void GivenTwoStudentsAddedIntoCreatedGroup_WhenDeleteGroupById_ShouldDeleteSuccessfully() throws Exception {
-        GroupView body = createGroupAndGet(GROUP_NAME);
+        int groupId = createGroupAndGet(GROUP_NAME).id;
         StudentView studentA = signUpAndGetStudent("A");
         StudentView studentB = signUpAndGetStudent("B");
-        int groupId = body.id;
+
         addStudentIntoGroup(groupId, studentA.id);
         addStudentIntoGroup(groupId, studentB.id);
 
@@ -208,10 +207,10 @@ public class GroupControllerTest extends AbstractSpringBootTest {
 
     @Test
     public void GivenTwoStudentsAddedIntoCreatedGroup_WhenGetStudentsByGroupId_ShouldRespondTwoStudents() throws Exception {
-        GroupView group = createGroupAndGet(GROUP_NAME);
+        int groupId = createGroupAndGet(GROUP_NAME).id;
         StudentView studentA = signUpAndGetStudent("A");
         StudentView studentB = signUpAndGetStudent("B");
-        int groupId = group.id;
+
         addStudentIntoGroup(groupId, studentA.id);
         addStudentIntoGroup(groupId, studentB.id);
 
@@ -224,12 +223,12 @@ public class GroupControllerTest extends AbstractSpringBootTest {
 
     @Test
     public void GivenOneStudentAddedIntoTwoCreatedGroups_WhenGetGroupsByStudentId_ShouldRespondTwoGroups() throws Exception {
-        GroupView groupA = createGroupAndGet(GROUP_NAME + "A");
-        GroupView groupB = createGroupAndGet(GROUP_NAME + "B");
+        int groupAId = createGroupAndGet(GROUP_NAME + "A").id;
+        int groupBId = createGroupAndGet(GROUP_NAME + "B").id;
         StudentView studentA = signUpAndGetStudent("A");
         int studentId = studentA.id;
-        addStudentIntoGroup(groupA.id, studentId);
-        addStudentIntoGroup(groupB.id, studentId);
+        addStudentIntoGroup(groupAId, studentId);
+        addStudentIntoGroup(groupBId, studentId);
 
         List<GroupView> respondedGroups = getBody(getGroupsByStudentId(studentId)
                 .andExpect(status().isOk()), new TypeReference<>() {
@@ -264,11 +263,10 @@ public class GroupControllerTest extends AbstractSpringBootTest {
     @SuppressWarnings("unchecked")
     @Test
     public void GivenOneGroupCreated_WhenAddTwoStudentsIntoTheGroupByMailList_ShouldRespondEmptyErrorListAndGroupShouldHaveTwoStudents() throws Exception {
-        GroupView body = createGroupAndGet(GROUP_NAME);
+        int groupId = createGroupAndGet(GROUP_NAME).id;
         StudentView studentA = signUpAndGetStudent("A");
         StudentView studentB = signUpAndGetStudent("B");
 
-        int groupId = body.id;
         String[] mailList = {studentA.email, studentB.email};
         List<String> errorList = (List<String>) getBody(addStudentsIntoGroupByMailList(groupId, mailList)
                 .andExpect(status().isOk()), Map.class).get("errorList");
@@ -281,10 +279,10 @@ public class GroupControllerTest extends AbstractSpringBootTest {
     @SuppressWarnings("unchecked")
     @Test
     public void GivenTwoStudentsAddedIntoCreatedGroup_WhenAddSameStudentsMultipleTimesIntoTheGroupByMailList_ShouldRespondEmptyErrorListAndGroupShouldHaveTwoStudents() throws Exception {
-        GroupView body = createGroupAndGet(GROUP_NAME);
+        int groupId = createGroupAndGet(GROUP_NAME).id;
         StudentView studentA = signUpAndGetStudent("A");
         StudentView studentB = signUpAndGetStudent("B");
-        int groupId = body.id;
+
         addStudentIntoGroup(groupId, studentA.id);
         addStudentIntoGroup(groupId, studentB.id);
 
@@ -303,12 +301,11 @@ public class GroupControllerTest extends AbstractSpringBootTest {
             "Should return an errorList with [B@gmail.com]")
     @Test
     public void testAddStudentsIntoGroupByNonExistingEmails() throws Exception {
-        GroupView body = createGroupAndGet(GROUP_NAME);
+        int groupId = createGroupAndGet(GROUP_NAME).id;
         StudentView studentA = signUpAndGetStudent("A");
 
         String nonExistingStudentEmail = "B@gmail.com";
         String[] mailList = {studentA.email, nonExistingStudentEmail};
-        int groupId = body.id;
         List<String> errorList = (List<String>) getBody(addStudentsIntoGroupByMailList(groupId, mailList)
                 .andExpect(status().isOk()), Map.class).get("errorList");
 
