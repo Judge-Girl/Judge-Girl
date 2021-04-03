@@ -110,7 +110,7 @@ class AdminControllerTest extends AbstractSpringBootTest {
     void GivenOneAdminSignedUp_WhenLoginWithWrongPassword_ShouldRespondBadRequest() throws Exception {
         signUp(admin);
 
-        signIn(this.admin.getEmail(), "wrongPassword")
+        login(this.admin.getEmail(), "wrongPassword")
                 .andExpect(status().isBadRequest());
     }
 
@@ -118,7 +118,7 @@ class AdminControllerTest extends AbstractSpringBootTest {
     void GivenOneAdminSignedUp_WhenLoginWithWrongEmail_ShouldRespondNotFound() throws Exception {
         signUp(admin);
 
-        signIn("worngEmail@example.com", this.admin.getPassword())
+        login("worngEmail@example.com", this.admin.getPassword())
                 .andExpect(status().isNotFound());
     }
 
@@ -126,8 +126,16 @@ class AdminControllerTest extends AbstractSpringBootTest {
     void GivenOneAdminSignedUp_WhenLoginWithWrongEmailAndPassword_ShouldRespondNotFound() throws Exception {
         signUp(admin);
 
-        signIn("worngEmail@example.com", "wrongPassword")
+        login("worngEmail@example.com", "wrongPassword")
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void GivenOneStudentSignedUp_WhenLoginWithStudentAccount_ShouldRespondForbidden() throws Exception {
+        Student student = new Student("Student", "student@example.com", "password");
+        signUpStudent(student);
+
+        login(student.getEmail(), student.getPassword()).andExpect(status().isForbidden());
     }
 
     private StudentView signUpAdminAndGetResponseBody(Student admin) throws Exception {
@@ -145,11 +153,17 @@ class AdminControllerTest extends AbstractSpringBootTest {
                 .content(toJson(admin)));
     }
 
-    private LoginResponse signInAndGetResponseBody(String email, String password) throws Exception {
-        return getBody(signIn(email, password).andExpect(status().isOk()), LoginResponse.class);
+    private ResultActions signUpStudent(Student student) throws Exception {
+        return mockMvc.perform(post("/api/students")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(toJson(student)));
     }
 
-    private ResultActions signIn(String email, String password) throws Exception {
+    private LoginResponse signInAndGetResponseBody(String email, String password) throws Exception {
+        return getBody(login(email, password).andExpect(status().isOk()), LoginResponse.class);
+    }
+
+    private ResultActions login(String email, String password) throws Exception {
         return mockMvc.perform(post("/api/admins/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(new LoginUseCase.Request(email, password))));

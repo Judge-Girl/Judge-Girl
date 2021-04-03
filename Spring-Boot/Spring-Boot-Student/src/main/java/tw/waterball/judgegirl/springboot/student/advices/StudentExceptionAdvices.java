@@ -18,10 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import tw.waterball.judgegirl.commons.token.TokenInvalidException;
-import tw.waterball.judgegirl.studentservice.domain.exceptions.DuplicateEmailException;
-import tw.waterball.judgegirl.studentservice.domain.exceptions.StudentEmailNotFoundException;
-import tw.waterball.judgegirl.studentservice.domain.exceptions.StudentIdNotFoundException;
-import tw.waterball.judgegirl.studentservice.domain.exceptions.StudentPasswordIncorrectException;
+import tw.waterball.judgegirl.studentservice.domain.exceptions.*;
 
 /**
  * @author chaoyulee chaoyu2330@gmail.com
@@ -44,5 +41,10 @@ public class StudentExceptionAdvices {
     @ExceptionHandler({TokenInvalidException.class})
     public ResponseEntity<?> unauthorizedHandler(Exception err) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
+
+    @ExceptionHandler({ForbiddenLoginException.class})
+    public ResponseEntity<?> forbiddenHandler(Exception err) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 }
