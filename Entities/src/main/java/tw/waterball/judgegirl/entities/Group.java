@@ -5,6 +5,7 @@ import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.commons.utils.JSR380Utils;
 
 import javax.validation.constraints.NotBlank;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -41,6 +42,10 @@ public class Group {
     public void addStudent(Student student) {
         students.add(student);
         student.getGroups().add(this);
+    }
+
+    public void addStudents(Collection<Student> students) {
+        students.forEach(this::addStudent);
     }
 
     public void deleteStudent(Student student) {

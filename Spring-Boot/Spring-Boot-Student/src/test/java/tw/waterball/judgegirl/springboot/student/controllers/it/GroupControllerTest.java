@@ -28,6 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static tw.waterball.judgegirl.studentservice.domain.usecases.AddStudentsIntoGroupByMailListUseCase.Response;
 
 /**
  * @author - wally55077@gmail.com
@@ -167,7 +168,7 @@ public class GroupControllerTest extends AbstractSpringBootTest {
 
     @Test
     @Transactional
-    public void GivenTwoStudentsAddedIntoCreatedGroup_WhenDeleteOneStudentFromTheGroup_ThenGroupShouldHaveOneStudent() throws Exception {
+    public void GivenTwoStudentsAddedIntoCreatedGroup_WhenDeleteOneStudentFromTheGroup_ThenGroupShouldHasOneStudent() throws Exception {
         GroupView body = createGroupAndGet(GROUP_NAME);
         StudentView studentA = signUpAndGetStudent("A");
         StudentView studentB = signUpAndGetStudent("B");
@@ -209,7 +210,7 @@ public class GroupControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    public void GivenTwoStudentsAddedIntoCreatedGroup_WhenGetStudentsByGroupId_RespondTwoStudents() throws Exception {
+    public void GivenTwoStudentsAddedIntoCreatedGroup_WhenGetStudentsByGroupId_ShouldRespondTwoStudents() throws Exception {
         GroupView group = createGroupAndGet(GROUP_NAME);
         StudentView studentA = signUpAndGetStudent("A");
         StudentView studentB = signUpAndGetStudent("B");
@@ -225,7 +226,7 @@ public class GroupControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    public void GivenOneStudentAddedIntoTwoCreatedGroups_WhenGetGroupsByStudentId_RespondTwoGroups() throws Exception {
+    public void GivenOneStudentAddedIntoTwoCreatedGroups_WhenGetGroupsByStudentId_ShouldRespondTwoGroups() throws Exception {
         GroupView groupA = createGroupAndGet(GROUP_NAME + "A");
         GroupView groupB = createGroupAndGet(GROUP_NAME + "B");
         StudentView studentA = signUpAndGetStudent("A");
@@ -261,6 +262,64 @@ public class GroupControllerTest extends AbstractSpringBootTest {
 
     private ResultActions getStudentsByGroupId(int groupId) throws Exception {
         return mockMvc.perform(get(GROUP_PATH + "/{groupId}/students", groupId));
+    }
+
+    @Test
+    public void GivenOneGroupCreated_WhenAddTwoStudentsIntoTheGroupByMailList_ShouldRespondEmptyErrorListAndGroupHasTwoStudents() throws Exception {
+        GroupView body = createGroupAndGet(GROUP_NAME);
+        StudentView studentA = signUpAndGetStudent("A");
+        StudentView studentB = signUpAndGetStudent("B");
+
+        int groupId = body.id;
+        String[] mailList = {studentA.email, studentB.email};
+        ResultActions resultActions = addStudentsIntoGroupByMailList(groupId, mailList)
+                .andExpect(status().isOk());
+
+        Response response = getBody(resultActions, Response.class);
+        assertTrue(response.errorList.isEmpty());
+        Group group = groupRepository.findGroupById(groupId).orElseThrow(NotFoundException::new);
+        assertEquals(2, group.getStudents().size());
+    }
+
+    @Test
+    public void GivenTwoStudentsAddedIntoCreatedGroup_WhenAddStudentsMultipleTimesIntoTheGroupByMailList_ShouldRespondEmptyErrorListAndGroupHasTwoStudents() throws Exception {
+        GroupView body = createGroupAndGet(GROUP_NAME);
+        StudentView studentA = signUpAndGetStudent("A");
+        StudentView studentB = signUpAndGetStudent("B");
+        int groupId = body.id;
+        addStudentIntoGroup(groupId, studentA.id);
+        addStudentIntoGroup(groupId, studentB.id);
+
+        String[] mailList = {studentA.email, studentB.email};
+        ResultActions resultActions = addStudentsIntoGroupByMailList(groupId, mailList)
+                .andExpect(status().isOk());
+
+        Response response = getBody(resultActions, Response.class);
+        assertTrue(response.errorList.isEmpty());
+        Group group = groupRepository.findGroupById(groupId).orElseThrow(NotFoundException::new);
+        assertEquals(2, group.getStudents().size());
+    }
+
+    @Test
+    public void GivenOneGroupCreated_WhenAddOneStudentIntoTheGroupByNonExistingEmail_ThenErrorListShouldHasOneEmail() throws Exception {
+        GroupView body = createGroupAndGet(GROUP_NAME);
+
+        int groupId = body.id;
+        String NonExistingStudentEmail = "email123123@example.com";
+        String[] mailList = {NonExistingStudentEmail};
+        ResultActions resultActions = addStudentsIntoGroupByMailList(groupId, mailList)
+                .andExpect(status().isOk());
+
+        Response response = getBody(resultActions, Response.class);
+        assertEquals(1, response.errorList.size());
+        Group group = groupRepository.findGroupById(groupId).orElseThrow(NotFoundException::new);
+        assertEquals(0, group.getStudents().size());
+    }
+
+    private ResultActions addStudentsIntoGroupByMailList(int groupId, String[] mailList) throws Exception {
+        return mockMvc.perform(post(GROUP_PATH + "/{groupId}/students", groupId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(toJson(mailList)));
     }
 
 }

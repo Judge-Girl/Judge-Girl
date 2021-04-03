@@ -55,6 +55,14 @@ public class JpaStudentRepository implements StudentRepository {
     }
 
     @Override
+    public List<Student> findByEmailIn(String... emails) {
+        return jpaStudentDataPort.findByEmailIn(emails)
+                .stream()
+                .map(StudentData::toEntity)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public Optional<Student> findStudentById(Integer id) {
         return jpaStudentDataPort
                 .findStudentById(id)
