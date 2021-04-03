@@ -1,6 +1,9 @@
 # Judge Girl
 
-## Setup & Build
+Judge Girl is under incubating, the document may be obsolete.
+Feel free to contact `johnny850807@gmail.com` or leave issues if you are interested.
+
+## Setup & Build (Obsolete)
 
 Use `ssh` key (ssh is a MUST, or it will fail) to run the following command:
 `git clone --recursive` (This repository depends on the submodule Judge-Girl/Code-Quality-Inspection)
@@ -19,7 +22,6 @@ Use `ssh` key (ssh is a MUST, or it will fail) to run the following command:
 ## Contributing
 
 Thanks to all the people who already contributed!
-
 
 
 <a href="https://github.com/Judge-Girl/Judge-Girl/graphs/contributors">
