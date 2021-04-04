@@ -31,6 +31,10 @@ import java.util.Optional;
 public interface SubmissionRepository {
     List<Submission> findByProblemIdAndJudgeStatus(int problemId, JudgeStatus judgeStatus);
 
+    List<Submission> query(SubmissionQueryParams params);
+
+    Optional<Submission> findById(String submissionId);
+
     Optional<Submission> findOne(int studentId, String submissionId);
 
     void issueVerdictOfSubmission(String submissionId, Verdict verdict);
@@ -42,8 +46,6 @@ public interface SubmissionRepository {
     String saveZippedSubmittedCodesAndGetFileId(StreamingResource streamingResource) throws IOException;
 
     Optional<FileResource> downloadZippedSubmittedCodes(String submissionId);
-
-    List<Submission> find(SubmissionQueryParams params);
 
     Optional<SubmissionThrottling> findSubmissionThrottling(int problemId, int studentId);
 

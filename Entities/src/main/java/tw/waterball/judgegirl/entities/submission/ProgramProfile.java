@@ -15,13 +15,14 @@ package tw.waterball.judgegirl.entities.submission;
 
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
 @ToString
 @EqualsAndHashCode
-public class ProgramProfile {
+public class ProgramProfile implements Comparable<ProgramProfile> {
     private long runtime;
     private long memoryUsage;
     private String errorMessage;
@@ -61,5 +62,23 @@ public class ProgramProfile {
 
     public void setErrorMessage(String errorMessage) {
         this.errorMessage = errorMessage;
+    }
+
+    public boolean hasErrorMessage() {
+        return errorMessage != null && !errorMessage.isBlank();
+    }
+
+    @Override
+    public int compareTo(@NotNull ProgramProfile programProfile) {
+        if (hasErrorMessage() && programProfile.hasErrorMessage()) {
+            return 0;
+        }
+        if (hasErrorMessage()) {
+            return -1;
+        }
+        if (programProfile.hasErrorMessage()) {
+            return 1;
+        }
+        return (int) ((programProfile.getRuntime() + programProfile.getMemoryUsage()) - (getRuntime() + getMemoryUsage()));
     }
 }

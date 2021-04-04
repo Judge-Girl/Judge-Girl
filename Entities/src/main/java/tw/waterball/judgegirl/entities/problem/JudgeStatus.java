@@ -68,7 +68,7 @@ public enum JudgeStatus {
      */
     SYSTEM_ERR("System Error");
 
-    private String fullName;
+    private final String fullName;
 
     JudgeStatus(String fullName) {
         this.fullName = fullName;
@@ -77,5 +77,4 @@ public enum JudgeStatus {
     public String getFullName() {
         return fullName;
     }
-
 }

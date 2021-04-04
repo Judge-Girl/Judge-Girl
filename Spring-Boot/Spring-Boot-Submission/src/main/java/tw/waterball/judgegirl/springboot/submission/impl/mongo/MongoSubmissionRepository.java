@@ -36,8 +36,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
+import static java.util.Optional.ofNullable;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
-import static org.springframework.data.mongodb.core.query.Query.query;
 import static org.springframework.data.mongodb.core.query.Update.update;
 import static tw.waterball.judgegirl.springboot.utils.MongoUtils.downloadFileResourceByFileId;
 
@@ -58,7 +58,7 @@ public class MongoSubmissionRepository implements SubmissionRepository {
 
     @Override
     public List<Submission> findByProblemIdAndJudgeStatus(int problemId, JudgeStatus judgeStatus) {
-        var data = mongoTemplate.find(query(where("problemId").is(problemId)
+        var data = mongoTemplate.find(Query.query(where("problemId").is(problemId)
                 .and("verdict.summaryStatus").is(judgeStatus.toString())), SubmissionData.class);
         return DataMapper.toEntity(data);
     }
@@ -66,16 +66,16 @@ public class MongoSubmissionRepository implements SubmissionRepository {
     @Override
     public Optional<Submission> findOne(int studentId, String submissionId) {
         SubmissionData data = mongoTemplate.findOne(
-                query(where("studentId").is(studentId)
+                Query.query(where("studentId").is(studentId)
                         .and("id").is(submissionId)), SubmissionData.class);
-        return Optional.ofNullable(DataMapper.toEntity(data));
+        return ofNullable(DataMapper.toEntity(data));
     }
 
     @Override
     public void issueVerdictOfSubmission(String submissionId, Verdict verdict) {
         VerdictData verdictData = DataMapper.toData(verdict);
         UpdateResult result = mongoTemplate.updateFirst(
-                query(where("id").is(submissionId)),
+                Query.query(where("id").is(submissionId)),
                 update("verdict", verdictData), SubmissionData.class);
 
         assert result.getModifiedCount() == 1 : "Assert only one submission will be issued its verdict.";
@@ -111,8 +111,8 @@ public class MongoSubmissionRepository implements SubmissionRepository {
     }
 
     @Override
-    public List<Submission> find(SubmissionQueryParams params) {
-        Query query = query(where("problemId").is(params.getProblemId())
+    public List<Submission> query(SubmissionQueryParams params) {
+        Query query = Query.query(where("problemId").is(params.getProblemId())
                 .and("languageEnvName").is(params.getLanguageEnvName())
                 .and("studentId").is(params.getStudentId()));
         params.getPage().ifPresent(page -> query.skip(page * PAGE_SIZE).limit(PAGE_SIZE));
@@ -121,9 +121,16 @@ public class MongoSubmissionRepository implements SubmissionRepository {
     }
 
     @Override
+    public Optional<Submission> findById(String submissionId) {
+        return ofNullable(mongoTemplate.findById(submissionId, SubmissionData.class))
+                .map(DataMapper::toEntity);
+
+    }
+
+    @Override
     public Optional<SubmissionThrottling> findSubmissionThrottling(int problemId, int studentId) {
-        return Optional.ofNullable(mongoTemplate.findOne(
-                query(where("studentId").is(studentId)
+        return ofNullable(mongoTemplate.findOne(
+                Query.query(where("studentId").is(studentId)
                         .and("problemId").is(problemId)), SubmissionThrottling.class));
     }
 

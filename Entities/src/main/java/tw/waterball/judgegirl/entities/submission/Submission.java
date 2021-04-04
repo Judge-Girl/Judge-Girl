@@ -16,11 +16,11 @@ package tw.waterball.judgegirl.entities.submission;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Date;
 import java.util.Optional;
-import java.util.function.Consumer;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -28,7 +28,7 @@ import java.util.function.Consumer;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class Submission {
+public class Submission implements Comparable<Submission> {
     private String id;
     private int problemId;
     private int studentId;
@@ -60,14 +60,8 @@ public class Submission {
         this.submittedCodesFileId = submittedCodesFileId;
     }
 
-    public void ifHasBeenJudged(Consumer<Verdict> verdictConsumer) {
-        if (isJudged()) {
-            verdictConsumer.accept(verdict);
-        }
-    }
-
     public boolean isJudged() {
-        return verdict != null;
+        return getVerdict().isPresent();
     }
 
     public String getId() {
@@ -115,7 +109,7 @@ public class Submission {
     }
 
     public Date getJudgeTime() {
-        return verdict == null ? null : verdict.getIssueTime();
+        return getVerdict().map(Verdict::getIssueTime).orElse(null);
     }
 
     public String getLanguageEnvName() {
@@ -124,5 +118,20 @@ public class Submission {
 
     public void setProblemId(Integer problemId) {
         this.problemId = problemId;
+    }
+
+    @Override
+    public int compareTo(@NotNull Submission submission) {
+        if (!isJudged()) {
+            if (!submission.isJudged()) {
+                return 0;
+            }
+            return -1;
+        }
+        if (!submission.isJudged()) {
+            return 1;
+        }
+        return getVerdict().orElseThrow()
+                .compareTo(submission.getVerdict().orElseThrow());
     }
 }
