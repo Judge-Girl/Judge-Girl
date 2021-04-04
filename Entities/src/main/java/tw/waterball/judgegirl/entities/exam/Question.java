@@ -1,8 +1,8 @@
 package tw.waterball.judgegirl.entities.exam;
 
 import lombok.*;
-import tw.waterball.judgegirl.entities.problem.validators.PositiveOrNegativeOne;
 
+import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
 
 @AllArgsConstructor
@@ -10,10 +10,10 @@ import javax.validation.constraints.PositiveOrZero;
 @Getter
 @Setter
 public class Question {
-    public static final int NO_QUOTA = -1;
+    public static final int NO_QUOTA = Integer.MAX_VALUE;
     private Id id = null;
 
-    @PositiveOrNegativeOne
+    @Positive
     private int quota = NO_QUOTA;
 
     @PositiveOrZero
@@ -21,6 +21,8 @@ public class Question {
 
     @PositiveOrZero
     private int questionOrder;
+
+    private Exam exam;
 
     public Question(int examId, int problemId, int quota, int score, int questionOrder) {
         this.id = new Id(examId, problemId);
@@ -34,6 +36,7 @@ public class Question {
     }
 
     @Data
+    @ToString
     @NoArgsConstructor
     @AllArgsConstructor
     public static class Id {

@@ -1,7 +1,7 @@
 package tw.waterball.judgegirl.springboot.exam.repositories.jpa;
 
 import org.springframework.data.domain.Pageable;
-import tw.waterball.judgegirl.examservice.repositories.ExamFilter;
+import tw.waterball.judgegirl.examservice.domain.repositories.ExamFilter;
 
 import java.util.Date;
 import java.util.List;

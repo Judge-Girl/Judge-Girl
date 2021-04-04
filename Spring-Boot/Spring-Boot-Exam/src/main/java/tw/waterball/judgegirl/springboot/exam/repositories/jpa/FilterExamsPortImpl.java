@@ -2,7 +2,7 @@ package tw.waterball.judgegirl.springboot.exam.repositories.jpa;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
-import tw.waterball.judgegirl.examservice.repositories.ExamFilter;
+import tw.waterball.judgegirl.examservice.domain.repositories.ExamFilter;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;

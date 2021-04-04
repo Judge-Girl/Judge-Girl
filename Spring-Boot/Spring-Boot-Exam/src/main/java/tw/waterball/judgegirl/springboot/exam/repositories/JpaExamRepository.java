@@ -8,8 +8,8 @@ import org.springframework.stereotype.Component;
 import tw.waterball.judgegirl.entities.exam.Answer;
 import tw.waterball.judgegirl.entities.exam.Exam;
 import tw.waterball.judgegirl.entities.exam.Question;
-import tw.waterball.judgegirl.examservice.repositories.ExamFilter;
-import tw.waterball.judgegirl.examservice.repositories.ExamRepository;
+import tw.waterball.judgegirl.examservice.domain.repositories.ExamFilter;
+import tw.waterball.judgegirl.examservice.domain.repositories.ExamRepository;
 import tw.waterball.judgegirl.springboot.exam.repositories.jpa.*;
 import tw.waterball.judgegirl.springboot.helpers.SkipAndSizePageable;
 
@@ -33,7 +33,6 @@ public class JpaExamRepository implements ExamRepository {
     private final JpaQuestionDataPort jpaQuestionDataPort;
     private final JpaExamParticipationDataPort jpaExamParticipationDataPort;
     private final JpaAnswerDataPort jpaAnswerDataPort;
-
 
     @Override
     public Optional<Exam> findById(int examId) {
@@ -128,5 +127,10 @@ public class JpaExamRepository implements ExamRepository {
     @Override
     public int countAnswersInQuestion(Question.Id id, int studentId) {
         return jpaAnswerDataPort.countAllByExamIdAndProblemIdAndStudentId(id.getExamId(), id.getProblemId(), studentId);
+    }
+
+    @Override
+    public boolean hasStudentParticipatedExam(int studentId, int examId) {
+        return jpaExamParticipationDataPort.existsById_StudentIdAndId_ExamId(studentId, examId);
     }
 }

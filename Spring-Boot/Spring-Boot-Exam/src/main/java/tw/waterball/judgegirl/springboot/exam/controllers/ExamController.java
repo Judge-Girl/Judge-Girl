@@ -7,10 +7,10 @@ import org.springframework.web.multipart.MultipartFile;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
 import tw.waterball.judgegirl.entities.exam.Answer;
 import tw.waterball.judgegirl.entities.exam.Exam;
-import tw.waterball.judgegirl.entities.exam.NoSubmissionQuotaException;
 import tw.waterball.judgegirl.entities.exam.Question;
-import tw.waterball.judgegirl.examservice.repositories.ExamFilter;
-import tw.waterball.judgegirl.examservice.usecases.*;
+import tw.waterball.judgegirl.entities.exam.YouAreNotAnExamineeException;
+import tw.waterball.judgegirl.examservice.domain.repositories.ExamFilter;
+import tw.waterball.judgegirl.examservice.domain.usecases.*;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.springboot.exam.view.AnswerView;
 import tw.waterball.judgegirl.springboot.exam.view.ExamOverview;
@@ -101,9 +101,10 @@ public class ExamController {
         return presenter.present();
     }
 
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler({NoSubmissionQuotaException.class})
-    public void handleNoSubmissionQuotaException() {
+
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    @ExceptionHandler({YouAreNotAnExamineeException.class})
+    public void handleYouAreNotAnExamineeException() {
     }
 }
 

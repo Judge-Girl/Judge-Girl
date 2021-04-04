@@ -12,7 +12,9 @@ import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
+import static tw.waterball.judgegirl.commons.utils.StreamUtils.findFirst;
 import static tw.waterball.judgegirl.entities.date.DateProvider.now;
 
 @AllArgsConstructor
@@ -63,5 +65,9 @@ public class Exam {
     public boolean isCurrent() {
         Date now = now();
         return getStartTime().before(now) && getEndTime().after(now);
+    }
+    
+    public Optional<Question> getQuestionByProblemId(int problemId) {
+        return findFirst(questions, q -> q.getProblemId() == problemId);
     }
 }

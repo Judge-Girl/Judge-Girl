@@ -1,10 +1,10 @@
-package tw.waterball.judgegirl.examservice.usecases;
+package tw.waterball.judgegirl.examservice.domain.usecases;
 
 import lombok.AllArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import tw.waterball.judgegirl.entities.exam.Exam;
-import tw.waterball.judgegirl.examservice.repositories.ExamFilter;
-import tw.waterball.judgegirl.examservice.repositories.ExamRepository;
+import tw.waterball.judgegirl.examservice.domain.repositories.ExamFilter;
+import tw.waterball.judgegirl.examservice.domain.repositories.ExamRepository;
 
 import javax.inject.Named;
 import java.util.List;
