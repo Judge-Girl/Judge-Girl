@@ -6,8 +6,9 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
-import tw.waterball.judgegirl.entities.Exam;
-import tw.waterball.judgegirl.entities.Question;
+import tw.waterball.judgegirl.entities.exam.Answer;
+import tw.waterball.judgegirl.entities.exam.Exam;
+import tw.waterball.judgegirl.entities.exam.Question;
 import tw.waterball.judgegirl.examservice.repositories.ExamFilter;
 import tw.waterball.judgegirl.examservice.repositories.ExamRepository;
 import tw.waterball.judgegirl.springboot.exam.repositories.jpa.*;
@@ -25,21 +26,27 @@ import static tw.waterball.judgegirl.entities.date.DateProvider.now;
 import static tw.waterball.judgegirl.springboot.exam.repositories.jpa.ExamData.toData;
 import static tw.waterball.judgegirl.springboot.exam.repositories.jpa.QuestionData.toData;
 
+@Transactional
 @Component
 @Slf4j
 @AllArgsConstructor
 public class JpaExamRepository implements ExamRepository {
-
     private final JpaExamDataPort jpaExamDataPort;
-
     private final JpaQuestionDataPort jpaQuestionDataPort;
-
     private final JpaExamParticipationDataPort jpaExamParticipationDataPort;
+    private final JpaAnswerDataPort jpaAnswerDataPort;
+
 
     @Override
     public Optional<Exam> findById(int examId) {
         return jpaExamDataPort.findById(examId)
                 .map(ExamData::toEntity);
+    }
+
+    @Override
+    public Optional<Question> findQuestion(Question.Id id) {
+        return jpaQuestionDataPort.findById(new QuestionData.Id(id))
+                .map(QuestionData::toEntity);
     }
 
     @Override
@@ -106,5 +113,22 @@ public class JpaExamRepository implements ExamRepository {
     @Override
     public void deleteAll() {
         jpaExamDataPort.deleteAll();
+    }
+
+    @Override
+    public Answer saveAnswer(Answer answer) {
+        AnswerData data = jpaAnswerDataPort.save(AnswerData.toData(answer));
+        return data.toEntity();
+    }
+
+    @Override
+    public Optional<Answer> findAnswer(Answer.Id id) {
+        return jpaAnswerDataPort.findById(new AnswerData.Id(id))
+                .map(AnswerData::toEntity);
+    }
+
+    @Override
+    public int countAnswersInQuestion(Question.Id id, int studentId) {
+        return jpaAnswerDataPort.countAllByExamIdAndProblemIdAndStudentId(id.getExamId(), id.getProblemId(), studentId);
     }
 }

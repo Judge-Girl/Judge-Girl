@@ -1,7 +1,8 @@
 package tw.waterball.judgegirl.examservice.repositories;
 
-import tw.waterball.judgegirl.entities.Exam;
-import tw.waterball.judgegirl.entities.Question;
+import tw.waterball.judgegirl.entities.exam.Answer;
+import tw.waterball.judgegirl.entities.exam.Exam;
+import tw.waterball.judgegirl.entities.exam.Question;
 
 import java.util.Collection;
 import java.util.List;
@@ -10,6 +11,8 @@ import java.util.Optional;
 public interface ExamRepository {
 
     Optional<Exam> findById(int examId);
+
+    Optional<Question> findQuestion(Question.Id id);
 
     List<Question> findQuestionsInExam(int examId);
 
@@ -26,4 +29,10 @@ public interface ExamRepository {
     Exam save(Exam exam);
 
     void deleteAll();
+
+    Answer saveAnswer(Answer answer);
+
+    Optional<Answer> findAnswer(Answer.Id id);
+
+    int countAnswersInQuestion(Question.Id id, int studentId);
 }

@@ -2,7 +2,7 @@ package tw.waterball.judgegirl.examservice.usecases;
 
 import lombok.AllArgsConstructor;
 import org.jetbrains.annotations.NotNull;
-import tw.waterball.judgegirl.entities.Exam;
+import tw.waterball.judgegirl.entities.exam.Exam;
 import tw.waterball.judgegirl.examservice.repositories.ExamFilter;
 import tw.waterball.judgegirl.examservice.repositories.ExamRepository;
 

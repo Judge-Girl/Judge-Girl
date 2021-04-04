@@ -19,6 +19,7 @@ import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import okio.BufferedSink;
 import okio.Okio;
+import org.jetbrains.annotations.NotNull;
 import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.http.*;
@@ -29,18 +30,21 @@ import tw.waterball.judgegirl.commons.models.files.FileResource;
 import tw.waterball.judgegirl.entities.problem.Language;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 import tw.waterball.judgegirl.submissionservice.domain.usecases.SubmitCodeRequest;
+import tw.waterball.judgegirl.submissionservice.domain.usecases.exceptions.SubmissionThrottlingException;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.stream.Collectors;
 
+import static tw.waterball.judgegirl.api.retrofit.BaseRetrofitAPI.ExceptionDeclaration.declare;
 import static tw.waterball.judgegirl.commons.utils.HttpHeaderUtils.bearerWithToken;
+import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
 public class SubmissionApiClient extends BaseRetrofitAPI implements SubmissionServiceDriver {
     public static final String CURRENTLY_ONLY_SUPPORT_C = Language.C.toString();
+    public static final String SUBMIT_CODE_MULTIPART_KEY_NAME = "submittedCodes";
     private final API api;
     private final String token;
 
@@ -53,22 +57,27 @@ public class SubmissionApiClient extends BaseRetrofitAPI implements SubmissionSe
     }
 
     @Override
-    public SubmissionView submit(SubmitCodeRequest submitCodeRequest) throws IOException {
-        return api.submit(bearerWithToken(token),
+    public SubmissionView submit(SubmitCodeRequest submitCodeRequest) throws SubmissionThrottlingException {
+        return errorHandlingGetBody(() -> api.submit(bearerWithToken(token),
                 submitCodeRequest.problemId, CURRENTLY_ONLY_SUPPORT_C, submitCodeRequest.studentId,
-                submitCodeRequest.fileResources.stream()
-                        .map(r -> MultipartBody.Part.createFormData("submittedCodes", r.getFileName(),
-                                new RequestBody() {
-                                    @Override
-                                    public MediaType contentType() {
-                                        return MediaType.parse("application/zip");
-                                    }
+                mapToList(submitCodeRequest.fileResources, this::submittedCodesMultipartBody)).execute(),
+                declare(400).toThrow(SubmissionThrottlingException::new));
+    }
 
-                                    @Override
-                                    public void writeTo(BufferedSink bufferedSink) throws IOException {
-                                        bufferedSink.writeAll(Okio.source(r.getInputStream()));
-                                    }
-                                })).collect(Collectors.toList())).execute().body();
+    @NotNull
+    private MultipartBody.Part submittedCodesMultipartBody(FileResource r) {
+        return MultipartBody.Part.createFormData(SUBMIT_CODE_MULTIPART_KEY_NAME, r.getFileName(),
+                new RequestBody() {
+                    @Override
+                    public MediaType contentType() {
+                        return MediaType.parse("application/zip");
+                    }
+
+                    @Override
+                    public void writeTo(@NotNull BufferedSink bufferedSink) throws IOException {
+                        bufferedSink.writeAll(Okio.source(r.getInputStream()));
+                    }
+                });
     }
 
     @Override

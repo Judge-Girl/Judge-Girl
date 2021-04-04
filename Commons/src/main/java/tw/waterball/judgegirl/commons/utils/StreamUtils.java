@@ -13,6 +13,9 @@
 
 package tw.waterball.judgegirl.commons.utils;
 
+import tw.waterball.judgegirl.commons.utils.functional.ErrConsumer;
+
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.BiFunction;
@@ -33,5 +36,17 @@ public abstract class StreamUtils {
         return IntStream.range(0, left.size())
                 .mapToObj(i -> zipAndMap.apply(left.get(i), right.get(i)))
                 .collect(Collectors.toList());
+    }
+
+    public static <T> void atTheSameTime(T[] array, ErrConsumer<T> consumer) {
+        Arrays.stream(array)
+                .parallel()
+                .forEach(t -> {
+                    try {
+                        consumer.accept(t);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                });
     }
 }

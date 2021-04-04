@@ -11,7 +11,7 @@
  *   limitations under the License.
  */
 
-package tw.waterball.judgegirl.entities.exceptions;
+package tw.waterball.judgegirl.entities.submission;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)

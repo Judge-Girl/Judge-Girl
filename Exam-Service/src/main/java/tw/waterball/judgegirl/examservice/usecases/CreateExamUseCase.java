@@ -3,7 +3,7 @@ package tw.waterball.judgegirl.examservice.usecases;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import tw.waterball.judgegirl.entities.Exam;
+import tw.waterball.judgegirl.entities.exam.Exam;
 import tw.waterball.judgegirl.examservice.repositories.ExamRepository;
 
 import javax.inject.Named;

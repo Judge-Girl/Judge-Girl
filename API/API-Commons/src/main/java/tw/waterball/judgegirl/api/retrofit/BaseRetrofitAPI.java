@@ -13,36 +13,51 @@
 
 package tw.waterball.judgegirl.api.retrofit;
 
+import lombok.RequiredArgsConstructor;
 import okhttp3.Headers;
 import okhttp3.ResponseBody;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import retrofit2.Call;
 import retrofit2.Response;
-import tw.waterball.judgegirl.api.exceptions.ApiConnectionException;
+import tw.waterball.judgegirl.api.exceptions.ApiRequestFailedException;
 import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
 import tw.waterball.judgegirl.commons.utils.HttpHeaderUtils;
-import tw.waterball.judgegirl.commons.utils.functional.ErrSupplier;
+import tw.waterball.judgegirl.commons.utils.functional.IoErrSupplier;
 
+import java.io.IOException;
+import java.util.function.Supplier;
+
+import static java.util.Arrays.stream;
 import static java.util.Objects.requireNonNull;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
 public class BaseRetrofitAPI {
-    private Logger logger = LogManager.getLogger(getClass());
+    private final Logger logger = LogManager.getLogger(getClass());
 
-    protected <T> Response<T> validateResponse(Response<T> response) {
+    protected final <T> Response<T> validateResponse(Response<T> response,
+                                                     ExceptionDeclaration... exceptionDeclarations) throws NotFoundException, ApiRequestFailedException {
         logger.debug("Response: " + response);
+        final int code = response.code();
         if (!response.isSuccessful()) {
-            if (response.code() == 404) {
-                throw new NotFoundException(response.message());
-            } else {
-                throw new ApiConnectionException("Error code: " + response.code() + ", message: " + response.message());
-            }
+            var exceptionDeclaration = stream(exceptionDeclarations).filter(d -> d.errorCode == code)
+                    .findFirst().orElseGet(defaultExceptionDeclarations(response, code));
+            exceptionDeclaration.throwIt();
         }
         return response;
+    }
+
+    private <T> Supplier<ExceptionDeclaration> defaultExceptionDeclarations(Response<T> response, int code) {
+        return () -> {
+            if (code == 404) {
+                return ExceptionDeclaration.declare(404).toThrow(NotFoundException::new);
+            } else {
+                return ExceptionDeclaration.declare(code).toThrow(() -> ApiRequestFailedException.failed(response.code(), response.message()));
+            }
+        };
     }
 
     protected FileResource parseDownloadedFileResource(Response<ResponseBody> response) {
@@ -53,19 +68,40 @@ public class BaseRetrofitAPI {
                 requireNonNull(response.body()).byteStream());
     }
 
-    protected <T> T errorHandlingGetBody(ErrSupplier<Response<T>> responseErrSupplier) {
+    protected final <T> T errorHandlingGetBody(IoErrSupplier<Response<T>> responseErrSupplier, ExceptionDeclaration... exceptionDeclarations) {
         try {
-            return validateResponse(responseErrSupplier.get()).body();
-        } catch (Exception e) {
-            throw new ApiConnectionException(e);
+            return validateResponse(responseErrSupplier.get(), exceptionDeclarations).body();
+        } catch (IOException e) {
+            throw ApiRequestFailedException.connectionError(e);
         }
     }
 
-    protected <T> Response<T> errorHandlingGetResponse(ErrSupplier<Call<T>> responseErrSupplier) {
+    @SafeVarargs
+    protected final <T> Response<T> errorHandlingGetResponse(IoErrSupplier<Call<T>> responseErrSupplier, ExceptionDeclaration... exceptionDeclarations) {
         try {
-            return validateResponse(responseErrSupplier.get().execute());
-        } catch (Exception e) {
-            throw new ApiConnectionException(e);
+            return validateResponse(responseErrSupplier.get().execute(), exceptionDeclarations);
+        } catch (IOException e) {
+            throw ApiRequestFailedException.connectionError(e);
+        }
+    }
+
+
+    @RequiredArgsConstructor
+    public static class ExceptionDeclaration {
+        public final int errorCode;
+        public Supplier<RuntimeException> exceptionSupplier = RuntimeException::new;
+
+        public static ExceptionDeclaration declare(int errorCode) {
+            return new ExceptionDeclaration(errorCode);
+        }
+
+        public ExceptionDeclaration toThrow(Supplier<RuntimeException> exceptionSupplier) {
+            this.exceptionSupplier = exceptionSupplier;
+            return this;
+        }
+
+        public void throwIt() {
+            throw exceptionSupplier.get();
         }
     }
 }

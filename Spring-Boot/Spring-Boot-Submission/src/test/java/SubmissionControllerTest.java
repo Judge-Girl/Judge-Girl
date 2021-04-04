@@ -77,7 +77,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static tw.waterball.judgegirl.commons.token.TokenService.Identity.admin;
 import static tw.waterball.judgegirl.commons.token.TokenService.Identity.student;
-import static tw.waterball.judgegirl.springboot.submission.controllers.SubmissionController.SUBMIT_CODE_MULTIPART_KEY_NAME;
+import static tw.waterball.judgegirl.submissionapi.clients.SubmissionApiClient.SUBMIT_CODE_MULTIPART_KEY_NAME;
 import static tw.waterball.judgegirl.testkit.resultmatchers.ZipResultMatcher.zip;
 
 /**
