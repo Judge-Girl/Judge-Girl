@@ -22,9 +22,11 @@ import tw.waterball.judgegirl.studentservice.domain.repositories.StudentReposito
 import tw.waterball.judgegirl.studentservice.domain.usecases.group.CreateGroupUseCase;
 import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -104,7 +106,8 @@ public class GroupControllerTest extends AbstractSpringBootTest {
     @Test
     public void WhenGetGroupByNonExistingGroupId_ShouldRespondNotFound() throws Exception {
         int nonExistingGroupId = 123123;
-        getGroupById(nonExistingGroupId).andExpect(status().isNotFound());
+        getGroupById(nonExistingGroupId)
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -157,8 +160,8 @@ public class GroupControllerTest extends AbstractSpringBootTest {
     public void GivenOneStudentAddedIntoCreatedGroup_WhenAddStudentMultipleTimesIntoTheGroup_ShouldRespondOk() throws Exception {
         int groupId = createGroupAndGet(GROUP_NAME).id;
         StudentView studentA = signUpAndGetStudent("A");
-
         addStudentIntoGroup(groupId, studentA.id);
+
         addStudentIntoGroup(groupId, studentA.id)
                 .andExpect(status().isOk());
     }
@@ -169,7 +172,6 @@ public class GroupControllerTest extends AbstractSpringBootTest {
         int groupId = createGroupAndGet(GROUP_NAME).id;
         StudentView studentA = signUpAndGetStudent("A");
         StudentView studentB = signUpAndGetStudent("B");
-
         addStudentIntoGroup(groupId, studentA.id);
         addStudentIntoGroup(groupId, studentB.id);
 
@@ -187,7 +189,6 @@ public class GroupControllerTest extends AbstractSpringBootTest {
         int groupId = createGroupAndGet(GROUP_NAME).id;
         StudentView studentA = signUpAndGetStudent("A");
         StudentView studentB = signUpAndGetStudent("B");
-
         addStudentIntoGroup(groupId, studentA.id);
         addStudentIntoGroup(groupId, studentB.id);
 
@@ -210,7 +211,6 @@ public class GroupControllerTest extends AbstractSpringBootTest {
         int groupId = createGroupAndGet(GROUP_NAME).id;
         StudentView studentA = signUpAndGetStudent("A");
         StudentView studentB = signUpAndGetStudent("B");
-
         addStudentIntoGroup(groupId, studentA.id);
         addStudentIntoGroup(groupId, studentB.id);
 
@@ -282,7 +282,6 @@ public class GroupControllerTest extends AbstractSpringBootTest {
         int groupId = createGroupAndGet(GROUP_NAME).id;
         StudentView studentA = signUpAndGetStudent("A");
         StudentView studentB = signUpAndGetStudent("B");
-
         addStudentIntoGroup(groupId, studentA.id);
         addStudentIntoGroup(groupId, studentB.id);
 
@@ -318,6 +317,33 @@ public class GroupControllerTest extends AbstractSpringBootTest {
         return mockMvc.perform(post(GROUP_PATH + "/{groupId}/students", groupId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(mailList)));
+    }
+
+    @Test
+    public void GivenStudents_A_B_C_AddedIntoGroup_WhenDeleteStudentsByIds_A_B_ShouldRemainStudentCInGroup() throws Exception {
+        int groupId = createGroupAndGet(GROUP_NAME).id;
+        int studentAId = signUpAndGetStudent("A").id;
+        int studentBId = signUpAndGetStudent("B").id;
+        int studentCId = signUpAndGetStudent("C").id;
+        addStudentIntoGroup(groupId, studentAId);
+        addStudentIntoGroup(groupId, studentBId);
+        addStudentIntoGroup(groupId, studentCId);
+
+        deleteStudentsByIds(groupId, studentAId, studentBId)
+                .andExpect(status().isOk());
+
+        Group group = groupRepository.findGroupById(groupId).orElseThrow(NotFoundException::new);
+        Set<Student> students = group.getStudents();
+        assertEquals(1, students.size());
+        assertEquals(studentCId, students.iterator().next().getId());
+    }
+
+    private ResultActions deleteStudentsByIds(int groupId, int... studentIds) throws Exception {
+        String ids = Arrays.stream(studentIds)
+                .mapToObj(String::valueOf)
+                .collect(Collectors.joining(","));
+        return mockMvc.perform(delete(GROUP_PATH + "/{groupId}/students", groupId)
+                .queryParam("ids", ids));
     }
 
 }
