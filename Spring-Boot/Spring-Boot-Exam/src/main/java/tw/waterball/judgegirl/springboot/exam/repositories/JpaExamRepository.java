@@ -2,7 +2,6 @@ package tw.waterball.judgegirl.springboot.exam.repositories;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
@@ -26,7 +25,6 @@ import static tw.waterball.judgegirl.entities.date.DateProvider.now;
 import static tw.waterball.judgegirl.springboot.exam.repositories.jpa.ExamData.toData;
 import static tw.waterball.judgegirl.springboot.exam.repositories.jpa.QuestionData.toData;
 
-@Transactional
 @Component
 @Slf4j
 @AllArgsConstructor
@@ -81,7 +79,7 @@ public class JpaExamRepository implements ExamRepository {
     public void addQuestion(Question question) {
         try {
             jpaQuestionDataPort.save(toData(question));
-        } catch (DataIntegrityViolationException err) {
+        } catch (Exception err) {
             // exam doesn't exist
             throw notFound("exam").id(question.getExamId());
         }
