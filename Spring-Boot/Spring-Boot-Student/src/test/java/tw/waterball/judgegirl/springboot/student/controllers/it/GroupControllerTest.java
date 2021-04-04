@@ -22,10 +22,11 @@ import tw.waterball.judgegirl.studentservice.domain.repositories.StudentReposito
 import tw.waterball.judgegirl.studentservice.domain.usecases.group.CreateGroupUseCase;
 import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -319,7 +320,7 @@ public class GroupControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    public void GivenThreeStudentsAddedIntoCreatedGroup_WhenDeleteStudentsByIds_ShouldDeleteSuccessfully() throws Exception {
+    public void GivenStudents_A_B_C_AddedIntoGroup_WhenDeleteStudentsByIds_A_B_ShouldRemainStudentCInGroup() throws Exception {
         int groupId = createGroupAndGet(GROUP_NAME).id;
         int studentAId = signUpAndGetStudent("A").id;
         int studentBId = signUpAndGetStudent("B").id;
@@ -328,17 +329,19 @@ public class GroupControllerTest extends AbstractSpringBootTest {
         addStudentIntoGroup(groupId, studentBId);
         addStudentIntoGroup(groupId, studentCId);
 
-        String ids = studentAId + "," + studentBId;
-        deleteStudentsByIds(groupId, ids)
+        deleteStudentsByIds(groupId, studentAId, studentBId)
                 .andExpect(status().isOk());
 
         Group group = groupRepository.findGroupById(groupId).orElseThrow(NotFoundException::new);
-        List<Student> students = new ArrayList<>(group.getStudents());
+        Set<Student> students = group.getStudents();
         assertEquals(1, students.size());
-        assertEquals(studentCId, students.get(0).getId());
+        assertEquals(studentCId, students.iterator().next().getId());
     }
 
-    private ResultActions deleteStudentsByIds(int groupId, String ids) throws Exception {
+    private ResultActions deleteStudentsByIds(int groupId, int... studentIds) throws Exception {
+        String ids = Arrays.stream(studentIds)
+                .mapToObj(String::valueOf)
+                .collect(Collectors.joining(","));
         return mockMvc.perform(delete(GROUP_PATH + "/{groupId}/students", groupId)
                 .queryParam("ids", ids));
     }

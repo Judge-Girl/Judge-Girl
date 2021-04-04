@@ -7,6 +7,8 @@ import tw.waterball.judgegirl.entities.Group;
 import tw.waterball.judgegirl.studentservice.domain.repositories.GroupRepository;
 
 import javax.inject.Named;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author - wally55077@gmail.com
@@ -21,7 +23,7 @@ public class DeleteStudentsFromGroupUseCase {
             throws NotFoundException {
         // TODO: improve performance, should only perform one SQL query
         int groupId = request.groupId;
-        String[] ids = request.ids.split(",");
+        List<Integer> ids = request.ids;
         Group group = groupRepository.findGroupById(groupId)
                 .orElseThrow(NotFoundException::new);
         group.deleteStudentByIds(ids);
@@ -32,7 +34,7 @@ public class DeleteStudentsFromGroupUseCase {
     @AllArgsConstructor
     public static class Request {
         public int groupId;
-        public String ids = "";
+        public List<Integer> ids = new ArrayList<>();
     }
 
 }

@@ -5,9 +5,9 @@ import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.commons.utils.JSR380Utils;
 
 import javax.validation.constraints.NotBlank;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -55,10 +55,8 @@ public class Group {
         student.getGroups().remove(this);
     }
 
-    public void deleteStudentByIds(String... ids) throws NotFoundException {
-        Set<Integer> studentIds = Arrays.stream(ids)
-                .map(Integer::parseInt)
-                .collect(Collectors.toSet());
+    public void deleteStudentByIds(List<Integer> ids) throws NotFoundException {
+        Set<Integer> studentIds = new HashSet<>(ids);
         students.stream()
                 .filter(student -> studentIds.contains(student.id))
                 .collect(Collectors.toList())

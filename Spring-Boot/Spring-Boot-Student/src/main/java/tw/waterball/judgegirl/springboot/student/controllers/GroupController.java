@@ -70,7 +70,7 @@ public class GroupController {
     @DeleteMapping("/groups/{groupId}/students/{studentId}")
     public void deleteStudentFromGroup(@PathVariable Integer groupId,
                                        @PathVariable Integer studentId) {
-        deleteStudentsFromGroupUseCase.execute(new DeleteStudentsFromGroupUseCase.Request(groupId, studentId.toString()));
+        deleteStudentsFromGroupUseCase.execute(new DeleteStudentsFromGroupUseCase.Request(groupId, Collections.singletonList(studentId)));
     }
 
     @GetMapping("/groups/{groupId}/students")
@@ -98,8 +98,8 @@ public class GroupController {
 
     @DeleteMapping("/groups/{groupId}/students")
     public void deleteStudentsFromGroupByIds(@PathVariable Integer groupId,
-                                             @RequestParam String ids) {
-        deleteStudentsFromGroupUseCase.execute(new DeleteStudentsFromGroupUseCase.Request(groupId, ids));
+                                             @RequestParam Integer[] ids) {
+        deleteStudentsFromGroupUseCase.execute(new DeleteStudentsFromGroupUseCase.Request(groupId, Arrays.asList(ids)));
     }
 
     @ExceptionHandler({DuplicateGroupNameException.class})
