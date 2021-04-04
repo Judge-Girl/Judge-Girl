@@ -43,7 +43,7 @@ public class LoginUseCase {
                 .orElseThrow(StudentEmailNotFoundException::new);
         validatePassword(request.password, student.getPassword());
         if (request.admin && !student.isAdmin()) {
-            throw new ForbiddenLoginException();
+            throw new ForbiddenLoginException("Student account can not login as admin");
         }
         presenter.loginSuccessfully(student);
     }
