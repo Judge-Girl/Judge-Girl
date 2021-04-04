@@ -18,6 +18,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import tw.waterball.judgegirl.commons.token.TokenService;
 import tw.waterball.judgegirl.entities.Student;
+import tw.waterball.judgegirl.studentservice.domain.exceptions.ForbiddenLoginException;
 import tw.waterball.judgegirl.studentservice.domain.exceptions.StudentEmailNotFoundException;
 import tw.waterball.judgegirl.studentservice.domain.exceptions.StudentPasswordIncorrectException;
 import tw.waterball.judgegirl.studentservice.domain.repositories.StudentRepository;
@@ -41,6 +42,9 @@ public class LoginUseCase {
                 .findByEmail(request.email)
                 .orElseThrow(StudentEmailNotFoundException::new);
         validatePassword(request.password, student.getPassword());
+        if (request.admin && !student.isAdmin()) {
+            throw new ForbiddenLoginException();
+        }
         presenter.loginSuccessfully(student);
     }
 
@@ -52,9 +56,14 @@ public class LoginUseCase {
 
     @Data
     @NoArgsConstructor
-    @AllArgsConstructor
     public static class Request {
         public String email, password;
+        public boolean admin;
+
+        public Request(String email, String password) {
+            this.email = email;
+            this.password = password;
+        }
     }
 
     public interface Presenter {

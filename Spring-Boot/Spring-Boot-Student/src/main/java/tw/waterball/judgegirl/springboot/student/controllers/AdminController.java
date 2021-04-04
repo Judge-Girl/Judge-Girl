@@ -52,6 +52,7 @@ public class AdminController {
     @PostMapping("/login")
     public LoginResponse login(@RequestBody LoginUseCase.Request request) {
         SignInPresenter presenter = new SignInPresenter();
+        request.admin = true;
         loginUseCase.execute(request, presenter);
         presenter.setToken(tokenService.createToken(admin(presenter.getStudentId())));
         return presenter.present();
