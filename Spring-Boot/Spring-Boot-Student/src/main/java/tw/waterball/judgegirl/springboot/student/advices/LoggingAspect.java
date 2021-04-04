@@ -12,9 +12,9 @@ import org.springframework.stereotype.Component;
 import tw.waterball.judgegirl.commons.token.TokenService;
 import tw.waterball.judgegirl.entities.Student;
 import tw.waterball.judgegirl.studentservice.domain.exceptions.StudentPasswordIncorrectException;
-import tw.waterball.judgegirl.studentservice.domain.usecases.ChangePasswordUseCase;
-import tw.waterball.judgegirl.studentservice.domain.usecases.LoginUseCase;
-import tw.waterball.judgegirl.studentservice.domain.usecases.SignUpUseCase;
+import tw.waterball.judgegirl.studentservice.domain.usecases.student.ChangePasswordUseCase;
+import tw.waterball.judgegirl.studentservice.domain.usecases.student.LoginUseCase;
+import tw.waterball.judgegirl.studentservice.domain.usecases.student.SignUpUseCase;
 
 import static tw.waterball.judgegirl.springboot.student.view.StudentView.toViewModel;
 

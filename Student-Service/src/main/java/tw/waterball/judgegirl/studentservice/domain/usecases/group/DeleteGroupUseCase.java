@@ -1,4 +1,4 @@
-package tw.waterball.judgegirl.studentservice.domain.usecases;
+package tw.waterball.judgegirl.studentservice.domain.usecases.group;
 
 import lombok.AllArgsConstructor;
 import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
@@ -11,7 +11,7 @@ import javax.inject.Named;
  */
 @Named
 @AllArgsConstructor
-public class DeleteGroupByIdUseCase {
+public class DeleteGroupUseCase {
 
     private final GroupRepository groupRepository;
 

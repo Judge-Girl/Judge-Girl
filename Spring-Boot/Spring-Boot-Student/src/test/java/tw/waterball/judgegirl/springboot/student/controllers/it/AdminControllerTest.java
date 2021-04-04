@@ -29,7 +29,7 @@ import tw.waterball.judgegirl.springboot.student.SpringBootStudentApplication;
 import tw.waterball.judgegirl.springboot.student.controllers.LoginResponse;
 import tw.waterball.judgegirl.springboot.student.view.StudentView;
 import tw.waterball.judgegirl.studentservice.domain.repositories.StudentRepository;
-import tw.waterball.judgegirl.studentservice.domain.usecases.LoginUseCase;
+import tw.waterball.judgegirl.studentservice.domain.usecases.student.LoginUseCase;
 import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

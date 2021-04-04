@@ -1,4 +1,4 @@
-package tw.waterball.judgegirl.studentservice.domain.usecases;
+package tw.waterball.judgegirl.studentservice.domain.usecases.group;
 
 import lombok.AllArgsConstructor;
 import tw.waterball.judgegirl.entities.Group;
@@ -17,7 +17,7 @@ public class GetAllGroupsUseCase {
     private final GroupRepository groupRepository;
 
     public void execute(Presenter presenter) {
-        List<Group> groups = groupRepository.findAllGroup();
+        List<Group> groups = groupRepository.findAllGroups();
         presenter.setGroups(groups);
     }
 

@@ -20,6 +20,7 @@ import org.junit.jupiter.api.DisplayNameGeneration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import tw.waterball.judgegirl.testkit.jupiter.ReplaceUnderscoresWithCamelCasesDisplayNameGenerators;
@@ -77,6 +78,15 @@ public abstract class AbstractSpringBootTest {
 
     public void assertEqualsIgnoreOrder(Collection<?> expected, Collection<?> actual) {
         assertEquals(new HashSet<>(expected), new HashSet<>(actual));
+    }
+
+    @SneakyThrows
+    protected void anotherTransaction(Runnable anotherTransaction) {
+        TestTransaction.flagForCommit();
+        TestTransaction.end();
+        TestTransaction.start();
+        anotherTransaction.run();
+        TestTransaction.end();
     }
 
 }

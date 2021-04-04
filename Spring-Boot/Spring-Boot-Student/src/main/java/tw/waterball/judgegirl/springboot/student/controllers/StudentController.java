@@ -21,7 +21,7 @@ import tw.waterball.judgegirl.springboot.student.presenters.GetStudentsPresenter
 import tw.waterball.judgegirl.springboot.student.presenters.SignInPresenter;
 import tw.waterball.judgegirl.springboot.student.presenters.SignUpPresenter;
 import tw.waterball.judgegirl.springboot.student.view.StudentView;
-import tw.waterball.judgegirl.studentservice.domain.usecases.*;
+import tw.waterball.judgegirl.studentservice.domain.usecases.student.*;
 
 import java.util.List;
 
