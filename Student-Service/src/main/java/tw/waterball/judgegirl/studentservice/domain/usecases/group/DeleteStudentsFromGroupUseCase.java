@@ -13,7 +13,7 @@ import javax.inject.Named;
  */
 @Named
 @AllArgsConstructor
-public class DeleteStudentFromGroupUseCase {
+public class DeleteStudentsFromGroupUseCase {
 
     private final GroupRepository groupRepository;
 
@@ -21,10 +21,10 @@ public class DeleteStudentFromGroupUseCase {
             throws NotFoundException {
         // TODO: improve performance, should only perform one SQL query
         int groupId = request.groupId;
-        int studentId = request.studentId;
+        String[] ids = request.ids.split(",");
         Group group = groupRepository.findGroupById(groupId)
                 .orElseThrow(NotFoundException::new);
-        group.deleteStudentById(studentId);
+        group.deleteStudentByIds(ids);
         groupRepository.save(group);
     }
 
@@ -32,7 +32,7 @@ public class DeleteStudentFromGroupUseCase {
     @AllArgsConstructor
     public static class Request {
         public int groupId;
-        public int studentId;
+        public String ids = "";
     }
 
 }

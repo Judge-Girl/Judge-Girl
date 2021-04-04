@@ -30,7 +30,7 @@ public class GroupController {
     private final GetAllGroupsUseCase getAllGroupsUseCase;
     private final DeleteGroupUseCase deleteGroupUseCase;
     private final AddStudentIntoGroupUseCase addStudentIntoGroupUseCase;
-    private final DeleteStudentFromGroupUseCase deleteStudentFromGroupUseCase;
+    private final DeleteStudentsFromGroupUseCase deleteStudentsFromGroupUseCase;
     private final GetStudentsInGroupUseCase getStudentsInGroupUseCase;
     private final GetGroupsOwnedByStudentUseCase getGroupsOwnedByStudentUseCase;
     private final AddStudentsIntoGroupByMailListUseCase addStudentsIntoGroupByMailListUseCase;
@@ -70,7 +70,7 @@ public class GroupController {
     @DeleteMapping("/groups/{groupId}/students/{studentId}")
     public void deleteStudentFromGroup(@PathVariable Integer groupId,
                                        @PathVariable Integer studentId) {
-        deleteStudentFromGroupUseCase.execute(new DeleteStudentFromGroupUseCase.Request(groupId, studentId));
+        deleteStudentsFromGroupUseCase.execute(new DeleteStudentsFromGroupUseCase.Request(groupId, studentId.toString()));
     }
 
     @GetMapping("/groups/{groupId}/students")
@@ -94,6 +94,12 @@ public class GroupController {
         AddStudentsIntoGroupByMailListPresenter presenter = new AddStudentsIntoGroupByMailListPresenter();
         addStudentsIntoGroupByMailListUseCase.execute(request, presenter);
         return presenter.present();
+    }
+
+    @DeleteMapping("/groups/{groupId}/students")
+    public void deleteStudentsFromGroupByIds(@PathVariable Integer groupId,
+                                             @RequestParam String ids) {
+        deleteStudentsFromGroupUseCase.execute(new DeleteStudentsFromGroupUseCase.Request(groupId, ids));
     }
 
     @ExceptionHandler({DuplicateGroupNameException.class})

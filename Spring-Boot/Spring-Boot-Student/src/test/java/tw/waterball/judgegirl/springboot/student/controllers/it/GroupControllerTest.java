@@ -22,6 +22,7 @@ import tw.waterball.judgegirl.studentservice.domain.repositories.StudentReposito
 import tw.waterball.judgegirl.studentservice.domain.usecases.group.CreateGroupUseCase;
 import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -104,7 +105,8 @@ public class GroupControllerTest extends AbstractSpringBootTest {
     @Test
     public void WhenGetGroupByNonExistingGroupId_ShouldRespondNotFound() throws Exception {
         int nonExistingGroupId = 123123;
-        getGroupById(nonExistingGroupId).andExpect(status().isNotFound());
+        getGroupById(nonExistingGroupId)
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -157,8 +159,8 @@ public class GroupControllerTest extends AbstractSpringBootTest {
     public void GivenOneStudentAddedIntoCreatedGroup_WhenAddStudentMultipleTimesIntoTheGroup_ShouldRespondOk() throws Exception {
         int groupId = createGroupAndGet(GROUP_NAME).id;
         StudentView studentA = signUpAndGetStudent("A");
-
         addStudentIntoGroup(groupId, studentA.id);
+
         addStudentIntoGroup(groupId, studentA.id)
                 .andExpect(status().isOk());
     }
@@ -169,7 +171,6 @@ public class GroupControllerTest extends AbstractSpringBootTest {
         int groupId = createGroupAndGet(GROUP_NAME).id;
         StudentView studentA = signUpAndGetStudent("A");
         StudentView studentB = signUpAndGetStudent("B");
-
         addStudentIntoGroup(groupId, studentA.id);
         addStudentIntoGroup(groupId, studentB.id);
 
@@ -187,7 +188,6 @@ public class GroupControllerTest extends AbstractSpringBootTest {
         int groupId = createGroupAndGet(GROUP_NAME).id;
         StudentView studentA = signUpAndGetStudent("A");
         StudentView studentB = signUpAndGetStudent("B");
-
         addStudentIntoGroup(groupId, studentA.id);
         addStudentIntoGroup(groupId, studentB.id);
 
@@ -210,7 +210,6 @@ public class GroupControllerTest extends AbstractSpringBootTest {
         int groupId = createGroupAndGet(GROUP_NAME).id;
         StudentView studentA = signUpAndGetStudent("A");
         StudentView studentB = signUpAndGetStudent("B");
-
         addStudentIntoGroup(groupId, studentA.id);
         addStudentIntoGroup(groupId, studentB.id);
 
@@ -282,7 +281,6 @@ public class GroupControllerTest extends AbstractSpringBootTest {
         int groupId = createGroupAndGet(GROUP_NAME).id;
         StudentView studentA = signUpAndGetStudent("A");
         StudentView studentB = signUpAndGetStudent("B");
-
         addStudentIntoGroup(groupId, studentA.id);
         addStudentIntoGroup(groupId, studentB.id);
 
@@ -318,6 +316,31 @@ public class GroupControllerTest extends AbstractSpringBootTest {
         return mockMvc.perform(post(GROUP_PATH + "/{groupId}/students", groupId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(mailList)));
+    }
+
+    @Test
+    public void GivenThreeStudentsAddedIntoCreatedGroup_WhenDeleteStudentsByIds_ShouldDeleteSuccessfully() throws Exception {
+        int groupId = createGroupAndGet(GROUP_NAME).id;
+        int studentAId = signUpAndGetStudent("A").id;
+        int studentBId = signUpAndGetStudent("B").id;
+        int studentCId = signUpAndGetStudent("C").id;
+        addStudentIntoGroup(groupId, studentAId);
+        addStudentIntoGroup(groupId, studentBId);
+        addStudentIntoGroup(groupId, studentCId);
+
+        String ids = studentAId + "," + studentBId;
+        deleteStudentsByIds(groupId, ids)
+                .andExpect(status().isOk());
+
+        Group group = groupRepository.findGroupById(groupId).orElseThrow(NotFoundException::new);
+        List<Student> students = new ArrayList<>(group.getStudents());
+        assertEquals(1, students.size());
+        assertEquals(studentCId, students.get(0).getId());
+    }
+
+    private ResultActions deleteStudentsByIds(int groupId, String ids) throws Exception {
+        return mockMvc.perform(delete(GROUP_PATH + "/{groupId}/students", groupId)
+                .queryParam("ids", ids));
     }
 
 }
