@@ -11,7 +11,7 @@
  *   limitations under the License.
  */
 
-package tw.waterball.judgegirl.studentservice.domain.usecases;
+package tw.waterball.judgegirl.studentservice.domain.usecases.student;
 
 import tw.waterball.judgegirl.entities.Student;
 

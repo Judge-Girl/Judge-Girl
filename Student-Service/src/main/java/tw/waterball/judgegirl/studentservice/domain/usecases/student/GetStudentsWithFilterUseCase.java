@@ -11,41 +11,42 @@
  *   limitations under the License.
  */
 
-package tw.waterball.judgegirl.studentservice.domain.usecases;
+package tw.waterball.judgegirl.studentservice.domain.usecases.student;
 
-import lombok.Value;
-import tw.waterball.judgegirl.commons.token.TokenInvalidException;
-import tw.waterball.judgegirl.commons.token.TokenService;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import tw.waterball.judgegirl.entities.Student;
 import tw.waterball.judgegirl.studentservice.domain.repositories.StudentRepository;
 
 import javax.inject.Named;
+import java.util.List;
 
 /**
  * @author chaoyulee chaoyu2330@gmail.com
  */
 @Named
-public class AuthUseCase {
+public class GetStudentsWithFilterUseCase {
     private final StudentRepository studentRepository;
 
-    public AuthUseCase(StudentRepository studentRepository) {
+    public GetStudentsWithFilterUseCase(StudentRepository studentRepository) {
         this.studentRepository = studentRepository;
     }
 
-    public void execute(Request request, Presenter presenter) throws TokenInvalidException {
-        presenter.setStudent(studentRepository
-                .findStudentById(request.id)
-                .orElseThrow(TokenInvalidException::new));
+    public void execute(Request request, Presenter presenter) {
+        List<Student> students = studentRepository.findStudents(request.admin, request.skip, request.size);
+        presenter.setStudents(students);
     }
 
-    @Value
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Getter
     public static class Request {
-        public Integer id;
+        private boolean admin;
+        private int skip, size;
     }
 
     public interface Presenter {
-        void setStudent(Student student);
-
-        void setToken(TokenService.Token token);
+        void setStudents(List<Student> students);
     }
 }

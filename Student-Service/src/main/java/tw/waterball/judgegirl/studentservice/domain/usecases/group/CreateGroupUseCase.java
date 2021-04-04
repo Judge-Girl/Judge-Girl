@@ -1,4 +1,4 @@
-package tw.waterball.judgegirl.studentservice.domain.usecases;
+package tw.waterball.judgegirl.studentservice.domain.usecases.group;
 
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;

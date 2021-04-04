@@ -19,7 +19,7 @@ import tw.waterball.judgegirl.springboot.student.view.GroupView;
 import tw.waterball.judgegirl.springboot.student.view.StudentView;
 import tw.waterball.judgegirl.studentservice.domain.repositories.GroupRepository;
 import tw.waterball.judgegirl.studentservice.domain.repositories.StudentRepository;
-import tw.waterball.judgegirl.studentservice.domain.usecases.CreateGroupUseCase;
+import tw.waterball.judgegirl.studentservice.domain.usecases.group.CreateGroupUseCase;
 import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
 
 import java.util.List;

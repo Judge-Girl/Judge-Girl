@@ -1,6 +1,7 @@
-package tw.waterball.judgegirl.studentservice.domain.usecases;
+package tw.waterball.judgegirl.studentservice.domain.usecases.group;
 
 import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.entities.Group;
 import tw.waterball.judgegirl.entities.Student;
@@ -24,8 +25,10 @@ public class AddStudentsIntoGroupByMailListUseCase {
 
     private final GroupRepository groupRepository;
 
-    public void execute(int groupId, String[] mailList, Presenter presenter)
+    public void execute(Request request, Presenter presenter)
             throws NotFoundException {
+        int groupId = request.groupId;
+        String[] mailList = request.mailList;
         Group group = groupRepository.findGroupById(groupId).orElseThrow(NotFoundException::new);
         List<Student> students = studentRepository.findByEmailIn(mailList);
         List<Student> newStudents = filterStudentsThatHaveNotBeenAdded(group, students);
@@ -55,6 +58,13 @@ public class AddStudentsIntoGroupByMailListUseCase {
         return Arrays.stream(mailList)
                 .filter(email -> !mails.contains(email))
                 .toArray(String[]::new);
+    }
+
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class Request {
+        public int groupId;
+        public String[] mailList;
     }
 
     public interface Presenter {

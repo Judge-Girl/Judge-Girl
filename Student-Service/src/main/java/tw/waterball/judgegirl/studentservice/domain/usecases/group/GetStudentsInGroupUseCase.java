@@ -1,4 +1,4 @@
-package tw.waterball.judgegirl.studentservice.domain.usecases;
+package tw.waterball.judgegirl.studentservice.domain.usecases.group;
 
 import lombok.AllArgsConstructor;
 import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
@@ -15,7 +15,7 @@ import java.util.List;
  */
 @Named
 @AllArgsConstructor
-public class GetStudentsByGroupIdUseCase {
+public class GetStudentsInGroupUseCase {
 
     private final GroupRepository groupRepository;
 
