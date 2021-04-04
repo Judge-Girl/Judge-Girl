@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import tw.waterball.judgegirl.commons.token.TokenService;
 import tw.waterball.judgegirl.entities.Student;
+import tw.waterball.judgegirl.studentservice.domain.exceptions.ForbiddenLoginException;
 import tw.waterball.judgegirl.studentservice.domain.exceptions.StudentPasswordIncorrectException;
 import tw.waterball.judgegirl.studentservice.domain.usecases.student.ChangePasswordUseCase;
 import tw.waterball.judgegirl.studentservice.domain.usecases.student.LoginUseCase;
@@ -46,7 +47,13 @@ public class LoggingAspect {
             public void setToken(TokenService.Token token) {
             }
         };
-        return joinPoint.proceed(args);
+
+        try {
+            return joinPoint.proceed(args);
+        } catch (ForbiddenLoginException err) {
+            log.info("[Login Failed] {\"email\"=\"{}\", \"message\":\"{}\"}", request.email, err.getMessage());
+            throw err;
+        }
     }
 
     @Around("bean(signUpUseCase)")
