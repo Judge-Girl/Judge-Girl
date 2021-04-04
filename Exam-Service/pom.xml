@@ -16,16 +16,6 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <dependencies>
-        <dependency>
-            <groupId>tw.waterball.judge-girl</groupId>
-            <artifactId>entities</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>tw.waterball.judge-girl</groupId>
-            <artifactId>problem-api</artifactId>
-        </dependency>
-    </dependencies>
     <parent>
         <artifactId>judge-girl</artifactId>
         <groupId>tw.waterball.judge-girl</groupId>
@@ -35,4 +25,18 @@
     <name>Exam-Service</name>
     <artifactId>exam-service</artifactId>
 
+    <dependencies>
+        <dependency>
+            <groupId>tw.waterball.judge-girl</groupId>
+            <artifactId>submission-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>tw.waterball.judge-girl</groupId>
+            <artifactId>entities</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>tw.waterball.judge-girl</groupId>
+            <artifactId>problem-api</artifactId>
+        </dependency>
+    </dependencies>
 </project>

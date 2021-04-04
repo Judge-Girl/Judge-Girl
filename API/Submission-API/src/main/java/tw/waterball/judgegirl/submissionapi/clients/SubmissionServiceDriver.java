@@ -18,8 +18,8 @@ import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 import tw.waterball.judgegirl.submissionservice.domain.usecases.SubmitCodeRequest;
+import tw.waterball.judgegirl.submissionservice.domain.usecases.exceptions.SubmissionThrottlingException;
 
-import java.io.IOException;
 import java.util.List;
 
 /**
@@ -27,7 +27,7 @@ import java.util.List;
  */
 public interface SubmissionServiceDriver {
 
-    SubmissionView submit(SubmitCodeRequest submitCodeRequest) throws IOException;
+    SubmissionView submit(SubmitCodeRequest submitCodeRequest) throws SubmissionThrottlingException;
 
     SubmissionView getSubmission(int problemId, int studentId, String submissionId) throws NotFoundException;
 

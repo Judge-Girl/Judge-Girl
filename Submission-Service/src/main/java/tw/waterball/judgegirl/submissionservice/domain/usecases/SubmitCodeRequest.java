@@ -28,10 +28,16 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SubmitCodeRequest {
-    public boolean throttle;
-    public int studentId;
+    public boolean throttle = true;
     public int problemId;
     public String languageEnvName;
-
+    public int studentId;
     public List<FileResource> fileResources;
+
+    public SubmitCodeRequest(int problemId, String languageEnvName, int studentId, List<FileResource> fileResources) {
+        this.problemId = problemId;
+        this.languageEnvName = languageEnvName;
+        this.studentId = studentId;
+        this.fileResources = fileResources;
+    }
 }

@@ -1,7 +1,7 @@
 package tw.waterball.judgegirl.springboot.exam.view;
 
 import lombok.*;
-import tw.waterball.judgegirl.entities.Question;
+import tw.waterball.judgegirl.entities.exam.Question;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
 
 @EqualsAndHashCode

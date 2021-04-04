@@ -30,10 +30,12 @@ import tw.waterball.judgegirl.submissionservice.domain.usecases.*;
 import tw.waterball.judgegirl.submissionservice.domain.usecases.dto.SubmissionQueryParams;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static tw.waterball.judgegirl.springboot.utils.MultipartFileUtils.convertMultipartFilesToFileResources;
+import static tw.waterball.judgegirl.submissionapi.clients.SubmissionApiClient.SUBMIT_CODE_MULTIPART_KEY_NAME;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -43,7 +45,6 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 @RequestMapping("/api/problems/{problemId}/{langEnvName}/students/{studentId}/submissions")
 public class SubmissionController {
-    public final static String SUBMIT_CODE_MULTIPART_KEY_NAME = "submittedCodes";
     private final TokenService tokenService;
     private final SubmitCodeUseCase submitCodeUseCase;
     private final GetSubmissionUseCase getSubmissionUseCase;
@@ -77,21 +78,10 @@ public class SubmissionController {
 
     private SubmitCodeRequest convertToSubmitCodeRequest(@PathVariable int problemId, String langEnvName, @PathVariable int studentId, @RequestParam(SUBMIT_CODE_MULTIPART_KEY_NAME) MultipartFile[] submittedCodes, boolean throttling) {
         return new SubmitCodeRequest(
-                throttling, studentId, problemId, langEnvName,
-                Arrays.stream(submittedCodes)
-                        .map(this::convertMultipartFileToFileResource)
-                        .collect(Collectors.toList()));
+                throttling, problemId, langEnvName, studentId,
+                convertMultipartFilesToFileResources(submittedCodes));
     }
 
-    private FileResource convertMultipartFileToFileResource(MultipartFile multipartFile) {
-        try {
-            return new FileResource(multipartFile.getOriginalFilename(),
-                    multipartFile.getSize(),
-                    multipartFile.getInputStream());
-        } catch (IOException e) {
-            throw new RuntimeException("File uploading error", e);
-        }
-    }
 
     @GetMapping(value = "/{submissionId}",
             produces = MediaType.APPLICATION_JSON_VALUE)

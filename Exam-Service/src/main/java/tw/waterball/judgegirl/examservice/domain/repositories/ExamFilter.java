@@ -1,4 +1,4 @@
-package tw.waterball.judgegirl.examservice.repositories;
+package tw.waterball.judgegirl.examservice.domain.repositories;
 
 import lombok.Builder;
 import lombok.Getter;

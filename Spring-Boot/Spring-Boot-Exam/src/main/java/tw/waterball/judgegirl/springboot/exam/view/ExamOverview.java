@@ -1,8 +1,8 @@
 package tw.waterball.judgegirl.springboot.exam.view;
 
 import lombok.*;
-import tw.waterball.judgegirl.entities.Exam;
-import tw.waterball.judgegirl.entities.Question;
+import tw.waterball.judgegirl.entities.exam.Exam;
+import tw.waterball.judgegirl.entities.exam.Question;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
 
 import java.util.Date;

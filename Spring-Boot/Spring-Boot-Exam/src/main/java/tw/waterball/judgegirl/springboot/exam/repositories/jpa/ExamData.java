@@ -1,7 +1,7 @@
 package tw.waterball.judgegirl.springboot.exam.repositories.jpa;
 
 import lombok.*;
-import tw.waterball.judgegirl.entities.Exam;
+import tw.waterball.judgegirl.entities.exam.Exam;
 
 import javax.persistence.*;
 import java.util.ArrayList;

@@ -13,10 +13,15 @@
 
 package tw.waterball.judgegirl.commons.utils;
 
+import tw.waterball.judgegirl.commons.utils.functional.ErrConsumer;
+
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -33,5 +38,21 @@ public abstract class StreamUtils {
         return IntStream.range(0, left.size())
                 .mapToObj(i -> zipAndMap.apply(left.get(i), right.get(i)))
                 .collect(Collectors.toList());
+    }
+
+    public static <T> Optional<T> findFirst(Collection<T> collection, Predicate<T> predicate) {
+        return collection.stream().filter(predicate).findFirst();
+    }
+
+    public static <T> void atTheSameTime(T[] array, ErrConsumer<T> consumer) {
+        Arrays.stream(array)
+                .parallel()
+                .forEach(t -> {
+                    try {
+                        consumer.accept(t);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                });
     }
 }

@@ -1,7 +1,7 @@
 package tw.waterball.judgegirl.springboot.exam.repositories.jpa;
 
 import lombok.*;
-import tw.waterball.judgegirl.entities.ExamParticipation;
+import tw.waterball.judgegirl.entities.exam.ExamParticipation;
 
 import javax.persistence.Embeddable;
 import javax.persistence.EmbeddedId;

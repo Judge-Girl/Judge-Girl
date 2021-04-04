@@ -6,26 +6,33 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.ResultActions;
-import tw.waterball.judgegirl.entities.Exam;
-import tw.waterball.judgegirl.entities.Question;
-import tw.waterball.judgegirl.examservice.repositories.ExamFilter;
-import tw.waterball.judgegirl.examservice.repositories.ExamRepository;
-import tw.waterball.judgegirl.examservice.usecases.CreateExamUseCase;
-import tw.waterball.judgegirl.examservice.usecases.CreateQuestionUseCase;
+import tw.waterball.judgegirl.entities.exam.Answer;
+import tw.waterball.judgegirl.entities.exam.Exam;
+import tw.waterball.judgegirl.entities.exam.Question;
+import tw.waterball.judgegirl.entities.problem.Language;
+import tw.waterball.judgegirl.examservice.domain.repositories.ExamFilter;
+import tw.waterball.judgegirl.examservice.domain.repositories.ExamRepository;
+import tw.waterball.judgegirl.examservice.domain.usecases.CreateExamUseCase;
+import tw.waterball.judgegirl.examservice.domain.usecases.CreateQuestionUseCase;
 import tw.waterball.judgegirl.problemapi.clients.FakeProblemServiceDriver;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.springboot.exam.SpringBootExamApplication;
+import tw.waterball.judgegirl.springboot.exam.view.AnswerView;
 import tw.waterball.judgegirl.springboot.exam.view.ExamOverview;
 import tw.waterball.judgegirl.springboot.exam.view.ExamView;
 import tw.waterball.judgegirl.springboot.exam.view.QuestionView;
 import tw.waterball.judgegirl.springboot.profiles.Profiles;
+import tw.waterball.judgegirl.submissionapi.clients.SubmissionServiceDriver;
+import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
 
 import java.util.ArrayList;
@@ -34,14 +41,22 @@ import java.util.Date;
 import java.util.List;
 
 import static java.util.Arrays.stream;
+import static java.util.Collections.singletonList;
 import static java.util.concurrent.TimeUnit.HOURS;
 import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static tw.waterball.judgegirl.commons.utils.DateUtils.afterCurrentTime;
 import static tw.waterball.judgegirl.commons.utils.DateUtils.beforeCurrentTime;
+import static tw.waterball.judgegirl.commons.utils.StreamUtils.atTheSameTime;
+import static tw.waterball.judgegirl.entities.exam.Question.NO_QUOTA;
+import static tw.waterball.judgegirl.submissionapi.clients.SubmissionApiClient.SUBMIT_CODE_MULTIPART_KEY_NAME;
+import static tw.waterball.judgegirl.testkit.stubs.MultipartFileStubs.codes;
 
 @ActiveProfiles(Profiles.JWT)
 @ContextConfiguration(classes = SpringBootExamApplication.class)
@@ -52,13 +67,20 @@ class ExamControllerTest extends AbstractSpringBootTest {
     public static final int NONEXISTING_EXAM_ID = 9999;
     public static final int NONEXISTING_PROBLEM_ID = 9999;
     public static final int STUDENT_ID = 1;
+    public static final String LANG_ENV = Language.C.toString();
+    public static final String SUBMISSION_ID = "SubmissionId";
+
 
     @Autowired
     ExamRepository examRepository;
     @Autowired
     FakeProblemServiceDriver problemServiceDriver;
+    @MockBean
+    SubmissionServiceDriver submissionServiceDriver;
     private ProblemView problem;
     private ProblemView anotherProblem;
+
+    private final MockMultipartFile[] mockFiles = codes(SUBMIT_CODE_MULTIPART_KEY_NAME, 2);
 
     @Configuration
     public static class TestConfig {
@@ -72,6 +94,11 @@ class ExamControllerTest extends AbstractSpringBootTest {
 
     @BeforeEach
     void setup() {
+        fakeProblemServiceDriver();
+        mockSubmissionServiceDriver();
+    }
+
+    private void fakeProblemServiceDriver() {
         problem = new ProblemView();
         problem.setId(PROBLEM_ID);
         problem.setTitle("problem1");
@@ -80,6 +107,11 @@ class ExamControllerTest extends AbstractSpringBootTest {
         anotherProblem.setId(ANOTHER_PROBLEM_ID);
         anotherProblem.setTitle("another-problem");
         problemServiceDriver.addProblemView(anotherProblem);
+    }
+
+    private void mockSubmissionServiceDriver() {
+        when(submissionServiceDriver.submit(any()))
+                .thenReturn(new SubmissionView(SUBMISSION_ID, STUDENT_ID, PROBLEM_ID, LANG_ENV, null, "fileId", new Date()));
     }
 
 
@@ -303,10 +335,80 @@ class ExamControllerTest extends AbstractSpringBootTest {
         shouldRespondExams(exams, "E", "F");
     }
 
-    private void shouldRespondExams(List<ExamView> exams, String... names) {
-        assertEquals(names.length, exams.size());
-        for (int i = 0; i < exams.size(); i++) {
-            assertEquals(names[i], exams.get(i).name);
+    @Test
+    void GivenStudentDoesntParticipateACurrentExam_WhenAnswerExamQuestion_ShouldBeForbidden() throws Exception {
+        ExamView currentExam = createExamAndGet(beforeCurrentTime(1, HOURS), afterCurrentTime(1, HOURS), "A");
+        createQuestion(new CreateQuestionUseCase.Request(currentExam.getId(), PROBLEM_ID, NO_QUOTA, 100, 1));
+
+        answerQuestion(currentExam, STUDENT_ID)
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void GivenStudentParticipatingAPastExamWithOneQuestion_WhenAnswerExamQuestion_ShouldFail() throws Exception {
+        ExamView pastExam = createExamAndGet(beforeCurrentTime(2, HOURS), beforeCurrentTime(1, HOURS), "A");
+        givenStudentParticipatingExam(STUDENT_ID, pastExam);
+        createQuestion(new CreateQuestionUseCase.Request(pastExam.getId(), PROBLEM_ID, NO_QUOTA, 100, 1));
+
+        answerQuestion(pastExam, STUDENT_ID)
+                .andExpect(status().is4xxClientError());
+    }
+
+    @Test
+    void GivenStudentParticipatingAnUpcomingExamWithOneQuestion_WhenAnswerExamQuestion_ShouldFail() throws Exception {
+        ExamView upcomingExam = createExamAndGet(afterCurrentTime(1, HOURS), afterCurrentTime(2, HOURS), "A");
+        createQuestion(new CreateQuestionUseCase.Request(upcomingExam.getId(), PROBLEM_ID, NO_QUOTA, 100, 1));
+        givenStudentParticipatingExam(STUDENT_ID, upcomingExam);
+
+        answerQuestion(upcomingExam, STUDENT_ID)
+                .andExpect(status().is4xxClientError());
+    }
+
+    @DisplayName("Give 8 students participating a current exam, one question in the exam with submission quota = 3, " +
+            "When 8 students answer that question 4 times at the same time, all should succeed in the first 3 times and fail in the 4th time.")
+    @Test
+    void testAnswerQuestionWithSubmissionQuotas() throws Exception {
+        int SUBMISSION_QUOTA = 3;
+        Integer[] studentIds = {333, 555, 5, 6, 7, 22, 56, 44};
+        ExamView exam = createExamAndGet(beforeCurrentTime(1, HOURS), afterCurrentTime(1, HOURS), "A");
+        givenStudentsParticipatingExam(studentIds, exam);
+        createQuestion(new CreateQuestionUseCase.Request(exam.getId(), PROBLEM_ID, SUBMISSION_QUOTA, 100, 1));
+
+        atTheSameTime(studentIds, studentId -> {
+            for (int i = 0; i < 3; i++) {
+                AnswerView answer = getBody(answerQuestion(exam, studentId).andExpect(status().isOk()), AnswerView.class);
+                shouldHaveSavedAnswer(answer);
+            }
+            answerQuestion(exam, studentId).andExpect(status().is4xxClientError());
+        });
+    }
+
+    private void shouldHaveSavedAnswer(AnswerView answer) {
+        examRepository.findAnswer(new Answer.Id(answer.number, new Question.Id(answer.examId, answer.problemId), answer.studentId))
+                .ifPresentOrElse(a -> {
+                            assertEquals(answer.examId, a.getExamId());
+                            assertEquals(answer.problemId, a.getProblemId());
+                            assertEquals(answer.studentId, a.getStudentId());
+                            assertEquals(answer.number, a.getNumber());
+                            assertEquals(answer.getAnswerTime(), a.getAnswerTime());
+                            assertEquals(answer.getSubmissionId(), a.getSubmissionId());
+
+                        },
+                        () -> fail("The answer is not saved."));
+    }
+
+    private ResultActions answerQuestion(ExamView exam, int studentId) throws Exception {
+        return mockMvc.perform(multipart("/api/exams/{examId}/problems/{problemId}/{langEnvName}/students/{studentId}/answers",
+                exam.getId(), problem.getId(), LANG_ENV, studentId)
+                .file(mockFiles[0])
+                .file(mockFiles[1]));
+    }
+
+
+    private void shouldRespondExams(List<ExamView> actualExams, String... expectedNames) {
+        assertEquals(expectedNames.length, actualExams.size());
+        for (int i = 0; i < actualExams.size(); i++) {
+            assertEquals(expectedNames[i], actualExams.get(i).name);
         }
     }
 
@@ -323,6 +425,19 @@ class ExamControllerTest extends AbstractSpringBootTest {
     private List<ExamView> getAllExams() throws Exception {
         return getBody(mockMvc.perform(get("/api/exams")), new TypeReference<>() {
         });
+    }
+
+    private void givenStudentParticipatingExam(int studentId, ExamView exam) {
+        givenStudentParticipatingExams(studentId, singletonList(exam));
+    }
+
+    private void givenStudentsParticipatingExam(Integer[] studentIds, ExamView exam) {
+        stream(studentIds).forEach(studentId -> givenStudentParticipatingExams(studentId, singletonList(exam)));
+    }
+
+    @SafeVarargs
+    private void givenStudentsParticipatingExams(Integer[] studentIds, List<ExamView>... exams) {
+        stream(studentIds).forEach(studentId -> givenStudentParticipatingExams(studentId, exams));
     }
 
     @SafeVarargs
@@ -388,7 +503,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
     }
 
     private ResultActions createQuestion(CreateQuestionUseCase.Request request) throws Exception {
-        return mockMvc.perform(post("/api/exams/{examId}/questions", request.getExamId())
+        return mockMvc.perform(post("/api/exams/{examId}/problems/{problemId}", request.getExamId(), request.getProblemId())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(request)));
     }
@@ -399,7 +514,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
     }
 
     private ResultActions deleteQuestion(int examId, int problemId) throws Exception {
-        return mockMvc.perform(delete("/api/exams/{examId}/questions/{problemId}", examId, problemId));
+        return mockMvc.perform(delete("/api/exams/{examId}/problems/{problemId}", examId, problemId));
     }
 
 

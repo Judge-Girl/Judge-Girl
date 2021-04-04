@@ -15,7 +15,6 @@ package tw.waterball.judgegirl.entities.submission;
 
 import lombok.Singular;
 import org.jetbrains.annotations.Nullable;
-import tw.waterball.judgegirl.entities.exceptions.InvalidVerdictException;
 import tw.waterball.judgegirl.entities.problem.JudgeStatus;
 
 import java.util.Collections;

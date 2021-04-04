@@ -1,7 +1,7 @@
 package tw.waterball.judgegirl.springboot.exam.view;
 
 import lombok.*;
-import tw.waterball.judgegirl.entities.Question;
+import tw.waterball.judgegirl.entities.exam.Question;
 
 @EqualsAndHashCode
 @Builder
@@ -10,11 +10,11 @@ import tw.waterball.judgegirl.entities.Question;
 @AllArgsConstructor
 @NoArgsConstructor
 public class QuestionView {
-    private int examId;
-    private int problemId;
-    private int quota;
-    private int score;
-    private int questionOrder;
+    public int examId;
+    public int problemId;
+    public int quota;
+    public int score;
+    public int questionOrder;
 
     public static QuestionView toViewModel(Question question) {
         return QuestionView.builder()

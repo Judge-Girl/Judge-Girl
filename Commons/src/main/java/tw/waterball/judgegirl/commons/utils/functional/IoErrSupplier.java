@@ -11,17 +11,14 @@
  *   limitations under the License.
  */
 
-package tw.waterball.judgegirl.api.exceptions;
+package tw.waterball.judgegirl.commons.utils.functional;
+
+import java.io.IOException;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
-public class ApiConnectionException extends RuntimeException {
-    public ApiConnectionException(String message) {
-        super(message);
-    }
-
-    public ApiConnectionException(Throwable cause) {
-        super(cause);
-    }
+@FunctionalInterface
+public interface IoErrSupplier<T> {
+    T get() throws IOException;
 }

@@ -8,7 +8,9 @@ import java.util.List;
 
 @Repository
 public interface JpaExamParticipationDataPort extends JpaRepository<ExamParticipationData, Integer> {
+    boolean existsById_StudentIdAndId_ExamId(int studentId, int examId);
+
     List<ExamParticipationData> findByStudentId(int studentId, Pageable pageable);
-    
+
 
 }
