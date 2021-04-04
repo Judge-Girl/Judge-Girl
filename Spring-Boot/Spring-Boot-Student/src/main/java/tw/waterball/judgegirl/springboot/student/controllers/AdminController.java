@@ -20,9 +20,9 @@ import tw.waterball.judgegirl.springboot.student.presenters.GetStudentsPresenter
 import tw.waterball.judgegirl.springboot.student.presenters.SignInPresenter;
 import tw.waterball.judgegirl.springboot.student.presenters.SignUpPresenter;
 import tw.waterball.judgegirl.springboot.student.view.StudentView;
-import tw.waterball.judgegirl.studentservice.domain.usecases.GetStudentsWithFilterUseCase;
-import tw.waterball.judgegirl.studentservice.domain.usecases.LoginUseCase;
-import tw.waterball.judgegirl.studentservice.domain.usecases.SignUpUseCase;
+import tw.waterball.judgegirl.studentservice.domain.usecases.student.GetStudentsWithFilterUseCase;
+import tw.waterball.judgegirl.studentservice.domain.usecases.student.LoginUseCase;
+import tw.waterball.judgegirl.studentservice.domain.usecases.student.SignUpUseCase;
 
 import java.util.List;
 

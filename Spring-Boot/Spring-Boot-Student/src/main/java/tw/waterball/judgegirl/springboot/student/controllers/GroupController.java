@@ -8,7 +8,7 @@ import tw.waterball.judgegirl.entities.Student;
 import tw.waterball.judgegirl.springboot.student.view.GroupView;
 import tw.waterball.judgegirl.springboot.student.view.StudentView;
 import tw.waterball.judgegirl.studentservice.domain.exceptions.DuplicateGroupNameException;
-import tw.waterball.judgegirl.studentservice.domain.usecases.*;
+import tw.waterball.judgegirl.studentservice.domain.usecases.group.*;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -21,76 +21,78 @@ import java.util.stream.Collectors;
  */
 @CrossOrigin
 @RestController
+@RequestMapping("/api")
 @AllArgsConstructor
 public class GroupController {
 
     private final CreateGroupUseCase createGroupUseCase;
-    private final GetGroupByIdUseCase getGroupByIdUseCase;
+    private final GetGroupUseCase getGroupUseCase;
     private final GetAllGroupsUseCase getAllGroupsUseCase;
-    private final DeleteGroupByIdUseCase deleteGroupByIdUseCase;
+    private final DeleteGroupUseCase deleteGroupUseCase;
     private final AddStudentIntoGroupUseCase addStudentIntoGroupUseCase;
     private final DeleteStudentFromGroupUseCase deleteStudentFromGroupUseCase;
-    private final GetStudentsByGroupIdUseCase getStudentsByGroupIdUseCase;
-    private final GetGroupsByStudentIdUseCase getGroupsByStudentIdUseCase;
+    private final GetStudentsInGroupUseCase getStudentsInGroupUseCase;
+    private final GetGroupsOwnedByStudentUseCase getGroupsOwnedByStudentUseCase;
     private final AddStudentsIntoGroupByMailListUseCase addStudentsIntoGroupByMailListUseCase;
 
-    @PostMapping("/api/groups")
+    @PostMapping("/groups")
     public GroupView createGroup(@RequestBody CreateGroupUseCase.Request request) {
         CreateGroupPresenter presenter = new CreateGroupPresenter();
         createGroupUseCase.execute(request, presenter);
         return presenter.present();
     }
 
-    @GetMapping("/api/groups/{groupId}")
+    @GetMapping("/groups/{groupId}")
     public GroupView getGroupById(@PathVariable Integer groupId) {
-        GetGroupByIdPresenter presenter = new GetGroupByIdPresenter();
-        getGroupByIdUseCase.execute(groupId, presenter);
+        GetGroupPresenter presenter = new GetGroupPresenter();
+        getGroupUseCase.execute(groupId, presenter);
         return presenter.present();
     }
 
-    @GetMapping("/api/groups")
+    @GetMapping("/groups")
     public List<GroupView> getAllGroups() {
         GetAllGroupsPresenter presenter = new GetAllGroupsPresenter();
         getAllGroupsUseCase.execute(presenter);
         return presenter.present();
     }
 
-    @DeleteMapping("/api/groups/{groupId}")
+    @DeleteMapping("/groups/{groupId}")
     public void deleteGroupById(@PathVariable Integer groupId) {
-        deleteGroupByIdUseCase.execute(groupId);
+        deleteGroupUseCase.execute(groupId);
     }
 
-    @PostMapping("/api/groups/{groupId}/students/{studentId}")
+    @PostMapping("/groups/{groupId}/students/{studentId}")
     public void addStudentIntoGroup(@PathVariable Integer groupId,
                                     @PathVariable Integer studentId) {
-        addStudentIntoGroupUseCase.execute(groupId, studentId);
+        addStudentIntoGroupUseCase.execute(new AddStudentIntoGroupUseCase.Request(groupId, studentId));
     }
 
-    @DeleteMapping("/api/groups/{groupId}/students/{studentId}")
+    @DeleteMapping("/groups/{groupId}/students/{studentId}")
     public void deleteStudentFromGroup(@PathVariable Integer groupId,
                                        @PathVariable Integer studentId) {
-        deleteStudentFromGroupUseCase.execute(groupId, studentId);
+        deleteStudentFromGroupUseCase.execute(new DeleteStudentFromGroupUseCase.Request(groupId, studentId));
     }
 
-    @GetMapping("/api/groups/{groupId}/students")
+    @GetMapping("/groups/{groupId}/students")
     public List<StudentView> getStudentsByGroupId(@PathVariable Integer groupId) {
-        GetStudentsByGroupIdPresenter presenter = new GetStudentsByGroupIdPresenter();
-        getStudentsByGroupIdUseCase.execute(groupId, presenter);
+        GetStudentsInGroupPresenter presenter = new GetStudentsInGroupPresenter();
+        getStudentsInGroupUseCase.execute(groupId, presenter);
         return presenter.present();
     }
 
-    @GetMapping("/api/students/{studentId}/groups")
+    @GetMapping("/students/{studentId}/groups")
     public List<GroupView> getGroupsByStudentId(@PathVariable Integer studentId) {
-        GetGroupsByStudentIdPresenter presenter = new GetGroupsByStudentIdPresenter();
-        getGroupsByStudentIdUseCase.execute(studentId, presenter);
+        GetGroupsOwnedByStudentPresenter presenter = new GetGroupsOwnedByStudentPresenter();
+        getGroupsOwnedByStudentUseCase.execute(studentId, presenter);
         return presenter.present();
     }
 
-    @PostMapping("/api/groups/{groupId}/students")
+    @PostMapping("/groups/{groupId}/students")
     public Map<String, List<String>> getStudentsByGroupId(@PathVariable Integer groupId,
                                                           @RequestBody String[] mailList) {
+        AddStudentsIntoGroupByMailListUseCase.Request request = new AddStudentsIntoGroupByMailListUseCase.Request(groupId, mailList);
         AddStudentsIntoGroupByMailListPresenter presenter = new AddStudentsIntoGroupByMailListPresenter();
-        addStudentsIntoGroupByMailListUseCase.execute(groupId, mailList, presenter);
+        addStudentsIntoGroupByMailListUseCase.execute(request, presenter);
         return presenter.present();
     }
 
@@ -116,7 +118,7 @@ class CreateGroupPresenter implements CreateGroupUseCase.Presenter {
 
 }
 
-class GetGroupByIdPresenter implements GetGroupByIdUseCase.Presenter {
+class GetGroupPresenter implements GetGroupUseCase.Presenter {
 
     private Group group;
 
@@ -147,7 +149,7 @@ class GetAllGroupsPresenter implements GetAllGroupsUseCase.Presenter {
 
 }
 
-class GetStudentsByGroupIdPresenter implements GetStudentsByGroupIdUseCase.Presenter {
+class GetStudentsInGroupPresenter implements GetStudentsInGroupUseCase.Presenter {
 
     private List<Student> students;
 
@@ -161,7 +163,7 @@ class GetStudentsByGroupIdPresenter implements GetStudentsByGroupIdUseCase.Prese
     }
 }
 
-class GetGroupsByStudentIdPresenter implements GetGroupsByStudentIdUseCase.Presenter {
+class GetGroupsOwnedByStudentPresenter implements GetGroupsOwnedByStudentUseCase.Presenter {
 
     private List<Group> groups;
 

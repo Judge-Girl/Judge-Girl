@@ -32,8 +32,8 @@ import tw.waterball.judgegirl.springboot.student.controllers.LoginResponse;
 import tw.waterball.judgegirl.springboot.student.view.StudentView;
 import tw.waterball.judgegirl.studentservice.domain.exceptions.StudentIdNotFoundException;
 import tw.waterball.judgegirl.studentservice.domain.repositories.StudentRepository;
-import tw.waterball.judgegirl.studentservice.domain.usecases.ChangePasswordUseCase;
-import tw.waterball.judgegirl.studentservice.domain.usecases.LoginUseCase;
+import tw.waterball.judgegirl.studentservice.domain.usecases.student.ChangePasswordUseCase;
+import tw.waterball.judgegirl.studentservice.domain.usecases.student.LoginUseCase;
 import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
 
 import java.util.List;
