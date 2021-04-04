@@ -20,7 +20,6 @@ import tw.waterball.judgegirl.springboot.student.presenters.GetStudentsPresenter
 import tw.waterball.judgegirl.springboot.student.presenters.SignInPresenter;
 import tw.waterball.judgegirl.springboot.student.presenters.SignUpPresenter;
 import tw.waterball.judgegirl.springboot.student.view.StudentView;
-import tw.waterball.judgegirl.studentservice.domain.exceptions.ForbiddenLoginException;
 import tw.waterball.judgegirl.studentservice.domain.usecases.student.GetStudentsWithFilterUseCase;
 import tw.waterball.judgegirl.studentservice.domain.usecases.student.LoginUseCase;
 import tw.waterball.judgegirl.studentservice.domain.usecases.student.SignUpUseCase;
@@ -53,10 +52,8 @@ public class AdminController {
     @PostMapping("/login")
     public LoginResponse login(@RequestBody LoginUseCase.Request request) {
         SignInPresenter presenter = new SignInPresenter();
+        request.admin = true;
         loginUseCase.execute(request, presenter);
-        if (!presenter.isAdmin()) {
-            throw new ForbiddenLoginException();
-        }
         presenter.setToken(tokenService.createToken(admin(presenter.getStudentId())));
         return presenter.present();
     }

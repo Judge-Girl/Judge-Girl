@@ -131,7 +131,7 @@ class AdminControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    void GivenOneStudentSignedUp_WhenLoginWithStudentAccount_ShouldRespondForbidden() throws Exception {
+    void GivenOneStudentSignedUp_WhenLoginAsAdminWithStudentAccount_ShouldRespondForbidden() throws Exception {
         Student student = new Student("Student", "student@example.com", "password");
         signUpStudent(student);
 

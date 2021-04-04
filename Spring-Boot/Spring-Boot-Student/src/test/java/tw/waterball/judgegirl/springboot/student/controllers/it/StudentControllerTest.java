@@ -114,7 +114,7 @@ public class StudentControllerTest extends AbstractSpringBootTest {
     @Test
     void GivenOneStudentSignedUp_WhenStudentLoginCorrectly_ShouldRespondLoginResponseWithCorrectToken() throws Exception {
         StudentView studentView = signUpAndGetResponseBody(student);
-        LoginResponse body = signInAndGetResponseBody(this.student.getEmail(), this.student.getPassword());
+        LoginResponse body = loginAndGetResponseBody(this.student.getEmail(), this.student.getPassword());
 
         verifyStudentLogin(studentView, body);
     }
@@ -124,7 +124,7 @@ public class StudentControllerTest extends AbstractSpringBootTest {
     void GivenOneStudentSignedUp_WhenLoginWithWrongPassword_ShouldRespondBadRequest() throws Exception {
         signUp(student);
 
-        signIn(this.student.getEmail(), "wrongPassword")
+        login(this.student.getEmail(), "wrongPassword")
                 .andExpect(status().isBadRequest());
     }
 
@@ -132,7 +132,7 @@ public class StudentControllerTest extends AbstractSpringBootTest {
     void GivenOneStudentSignedUp_WhenLoginWithWrongEmail_ShouldRespondNotFound() throws Exception {
         signUp(student);
 
-        signIn("worngEmail@example.com", this.student.getPassword())
+        login("worngEmail@example.com", this.student.getPassword())
                 .andExpect(status().isNotFound());
     }
 
@@ -140,7 +140,7 @@ public class StudentControllerTest extends AbstractSpringBootTest {
     void GivenOneStudentSignedUp_WhenLoginWithWrongEmailAndPassword_ShouldRespondNotFound() throws Exception {
         signUp(student);
 
-        signIn("worngEmail@example.com", "wrongPassword")
+        login("worngEmail@example.com", "wrongPassword")
                 .andExpect(status().isNotFound());
     }
 
@@ -148,7 +148,7 @@ public class StudentControllerTest extends AbstractSpringBootTest {
     @Test
     void GivenOneStudentSignedUp_WhenGetStudentById_ShouldRespondStudentView() throws Exception {
         StudentView student = signUpAndGetResponseBody(this.student);
-        LoginResponse loginResponse = signInAndGetResponseBody(this.student.getEmail(), this.student.getPassword());
+        LoginResponse loginResponse = loginAndGetResponseBody(this.student.getEmail(), this.student.getPassword());
 
         StudentView body = getBody(getStudentById(student.id, loginResponse.token)
                 .andExpect(status().isOk()), StudentView.class);
@@ -169,7 +169,7 @@ public class StudentControllerTest extends AbstractSpringBootTest {
     @Test
     void GivenOneStudentSignedUp_WhenAuth_ShouldRespondLoginResponseWithNewToken() throws Exception {
         signUp(student);
-        LoginResponse loginResponse = signInAndGetResponseBody(student.getEmail(), student.getPassword());
+        LoginResponse loginResponse = loginAndGetResponseBody(student.getEmail(), student.getPassword());
 
         // we must delay certain seconds so that our token's expiry date
         // will increase enough to make differences in its produced token
@@ -199,7 +199,7 @@ public class StudentControllerTest extends AbstractSpringBootTest {
     @Test
     void GivenOneStudentSignedUp_WhenChangePasswordWithCorrectCurrentPassword_ShouldSucceed() throws Exception {
         signUp(student);
-        LoginResponse body = signInAndGetResponseBody(student.getEmail(), student.getPassword());
+        LoginResponse body = loginAndGetResponseBody(student.getEmail(), student.getPassword());
 
         String newPassword = "newPassword";
         changePassword(student.getPassword(), newPassword, body.id, body.token).andExpect(status().isOk());
@@ -212,7 +212,7 @@ public class StudentControllerTest extends AbstractSpringBootTest {
     @Test
     void GivenOneStudentSignedUp_WhenChangePasswordWithWrongCurrentPassword_ShouldRejectWithBadRequest() throws Exception {
         signUp(student);
-        LoginResponse body = signInAndGetResponseBody(student.getEmail(), student.getPassword());
+        LoginResponse body = loginAndGetResponseBody(student.getEmail(), student.getPassword());
 
         String wrongPassword = "wrongPassword";
         String newPassword = "newPassword";
@@ -281,11 +281,11 @@ public class StudentControllerTest extends AbstractSpringBootTest {
                 .content(toJson(admin)));
     }
 
-    private LoginResponse signInAndGetResponseBody(String email, String password) throws Exception {
-        return getBody(signIn(email, password).andExpect(status().isOk()), LoginResponse.class);
+    private LoginResponse loginAndGetResponseBody(String email, String password) throws Exception {
+        return getBody(login(email, password).andExpect(status().isOk()), LoginResponse.class);
     }
 
-    private ResultActions signIn(String email, String password) throws Exception {
+    private ResultActions login(String email, String password) throws Exception {
         return mockMvc.perform(post("/api/students/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(new LoginUseCase.Request(email, password))));
