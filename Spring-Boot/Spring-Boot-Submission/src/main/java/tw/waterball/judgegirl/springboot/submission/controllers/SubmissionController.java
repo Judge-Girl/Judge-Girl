@@ -51,7 +51,6 @@ public class SubmissionController {
     private final GetSubmissionsUseCase getSubmissionsUseCase;
     private final DownloadSubmittedCodesUseCase downloadSubmittedCodesUseCase;
 
-
     @GetMapping("/health")
     public String health(@PathVariable String langEnvName, @PathVariable int problemId, @PathVariable int studentId) {
         return String.format("OK (problemId=%d, langEnv=%s, studentId=%d)", problemId, langEnvName, studentId);

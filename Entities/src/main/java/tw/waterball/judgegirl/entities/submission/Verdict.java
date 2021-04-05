@@ -14,6 +14,7 @@
 package tw.waterball.judgegirl.entities.submission;
 
 import lombok.Singular;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import tw.waterball.judgegirl.entities.problem.JudgeStatus;
 
@@ -24,9 +25,9 @@ import java.util.List;
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
-public class Verdict {
+public class Verdict implements Comparable<Verdict> {
     @Singular
-    private List<Judge> judges;
+    private final List<Judge> judges;
     @Nullable
     private String compileErrorMessage;
     private Date issueTime;
@@ -106,6 +107,14 @@ public class Verdict {
                 .max().orElseThrow(() -> new IllegalStateException("A verdict that doesn't have judges."));
     }
 
+    public Judge getWorseJudge() {
+        return Collections.min(judges);
+    }
+
+    public Judge getBestJudge() {
+        return Collections.max(judges);
+    }
+
     public List<Judge> getJudges() {
         return judges;
     }
@@ -158,4 +167,12 @@ public class Verdict {
         ((CompositeReport) this.report).addReport(report);
     }
 
+    @Override
+    public int compareTo(@NotNull Verdict verdict) {
+        int myGrade = getTotalGrade(), hisGrade = verdict.getTotalGrade();
+        if (myGrade == hisGrade) {
+            return getBestJudge().compareTo(verdict.getBestJudge());
+        }
+        return myGrade - hisGrade;
+    }
 }

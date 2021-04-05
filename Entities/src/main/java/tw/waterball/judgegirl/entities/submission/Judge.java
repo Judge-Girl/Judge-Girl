@@ -15,6 +15,7 @@ package tw.waterball.judgegirl.entities.submission;
 
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+import org.jetbrains.annotations.NotNull;
 import tw.waterball.judgegirl.entities.problem.JudgeStatus;
 
 /**
@@ -22,7 +23,7 @@ import tw.waterball.judgegirl.entities.problem.JudgeStatus;
  */
 @ToString
 @EqualsAndHashCode
-public class Judge {
+public class Judge implements Comparable<Judge> {
     private String testcaseName;
     private JudgeStatus status;
     private ProgramProfile programProfile;
@@ -71,4 +72,35 @@ public class Judge {
     public void setGrade(int grade) {
         this.grade = grade;
     }
+
+    @Override
+    public int compareTo(@NotNull Judge judge) {
+        if (getStatus() == judge.getStatus()) {
+            return getProgramProfile().compareTo(judge.getProgramProfile());
+        }
+        return getJudgeStatusOder(getStatus()) - getJudgeStatusOder(judge.getStatus());
+    }
+
+    private int getJudgeStatusOder(JudgeStatus judgeStatus) {
+        switch (judgeStatus) {
+            case AC:
+                return Integer.MAX_VALUE; // the best
+            case WA:
+            case RE:
+            case MLE:
+            case TLE:
+            case OLE:
+            case PE:
+                return 300;
+            case CE:
+                return 200;
+            case SYSTEM_ERR:
+                return 0;
+            case NONE:
+                return -1;
+            default:
+                throw new IllegalStateException("enums has not been totally covered.");
+        }
+    }
+
 }

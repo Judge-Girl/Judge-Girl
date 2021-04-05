@@ -25,14 +25,14 @@ import java.util.List;
  */
 @Named
 public class GetSubmissionsUseCase {
-    private SubmissionRepository submissionRepository;
+    private final SubmissionRepository submissionRepository;
 
     public GetSubmissionsUseCase(SubmissionRepository submissionRepository) {
         this.submissionRepository = submissionRepository;
     }
 
     public void execute(SubmissionQueryParams queryParams, Presenter presenter) {
-        List<Submission> submissions = submissionRepository.find(queryParams);
+        List<Submission> submissions = submissionRepository.query(queryParams);
         presenter.setSubmissions(submissions);
     }
 
