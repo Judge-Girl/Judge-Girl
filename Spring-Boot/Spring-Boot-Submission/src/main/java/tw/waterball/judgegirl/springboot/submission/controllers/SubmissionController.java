@@ -29,7 +29,6 @@ import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 import tw.waterball.judgegirl.submissionservice.domain.usecases.*;
 import tw.waterball.judgegirl.submissionservice.domain.usecases.dto.SubmissionQueryParams;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -63,15 +62,11 @@ public class SubmissionController {
                           @PathVariable int studentId,
                           @RequestParam(SUBMIT_CODE_MULTIPART_KEY_NAME) MultipartFile[] submittedCodes) {
         return validateIdentity(studentId, bearerToken, (token) -> {
-            try {
-                boolean throttling = !token.isAdmin();
-                SubmitCodeRequest request = convertToSubmitCodeRequest(problemId, langEnvName, studentId, submittedCodes, throttling);
-                SubmissionPresenter presenter = new SubmissionPresenter();
-                submitCodeUseCase.execute(request, presenter);
-                return ResponseEntity.accepted().body(presenter.present());
-            } catch (IOException e) {
-                throw new RuntimeException("File uploading error", e);
-            }
+            boolean throttling = !token.isAdmin();
+            SubmitCodeRequest request = convertToSubmitCodeRequest(problemId, langEnvName, studentId, submittedCodes, throttling);
+            SubmissionPresenter presenter = new SubmissionPresenter();
+            submitCodeUseCase.execute(request, presenter);
+            return ResponseEntity.accepted().body(presenter.present());
         });
     }
 

@@ -37,4 +37,16 @@ public class SubmissionData {
     private VerdictData verdict;
     private String submittedCodesFileId;
     private Date submissionTime;
+    private String submittedCodesHash;
+
+
+    public SubmissionData(String id, int problemId, String languageEnvName, int studentId, VerdictData verdict, String submittedCodesFileId, Date submissionTime) {
+        this.id = id;
+        this.problemId = problemId;
+        this.languageEnvName = languageEnvName;
+        this.studentId = studentId;
+        this.verdict = verdict;
+        this.submittedCodesFileId = submittedCodesFileId;
+        this.submissionTime = submissionTime;
+    }
 }

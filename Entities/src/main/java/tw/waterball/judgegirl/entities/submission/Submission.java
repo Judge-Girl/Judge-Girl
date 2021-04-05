@@ -45,15 +45,16 @@ public class Submission implements Comparable<Submission> {
         this.submissionTime = submissionTime;
     }
 
-    public Submission(String id, int studentId, int problemId, String languageEnvName, String submittedCodesFileId) {
-        this.id = id;
-        this.studentId = studentId;
-        this.problemId = problemId;
-        this.languageEnvName = languageEnvName;
-        this.submittedCodesFileId = submittedCodesFileId;
+    public Submission(int studentId, int problemId, String languageEnvName) {
+        this(studentId, problemId, languageEnvName, null);
     }
 
     public Submission(int studentId, int problemId, String languageEnvName, String submittedCodesFileId) {
+        this(null, studentId, problemId, languageEnvName, submittedCodesFileId);
+    }
+
+    public Submission(String id, int studentId, int problemId, String languageEnvName, String submittedCodesFileId) {
+        this.id = id;
         this.studentId = studentId;
         this.problemId = problemId;
         this.languageEnvName = languageEnvName;

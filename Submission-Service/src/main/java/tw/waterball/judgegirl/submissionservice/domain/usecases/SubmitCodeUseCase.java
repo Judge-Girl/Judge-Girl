@@ -14,50 +14,48 @@
 package tw.waterball.judgegirl.submissionservice.domain.usecases;
 
 import lombok.AllArgsConstructor;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import tw.waterball.judgegirl.commons.models.files.StreamingResource;
-import tw.waterball.judgegirl.commons.utils.ZipUtils;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
+import tw.waterball.judgegirl.commons.models.files.FileResource;
 import tw.waterball.judgegirl.entities.problem.Problem;
 import tw.waterball.judgegirl.entities.submission.Submission;
 import tw.waterball.judgegirl.problemapi.clients.ProblemServiceDriver;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.submissionservice.deployer.JudgerDeployer;
 import tw.waterball.judgegirl.submissionservice.domain.repositories.SubmissionRepository;
+import tw.waterball.judgegirl.submissionservice.domain.usecases.exceptions.SubmissionThrottlingException;
 
 import javax.inject.Named;
-import java.io.IOException;
-import java.io.InputStream;
+import java.util.List;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
+@Slf4j
 @Named
 @AllArgsConstructor
 public class SubmitCodeUseCase {
-    private final static Logger logger = LogManager.getLogger(SubmitCodeUseCase.class);
     private final ThrottleSubmissionUseCase throttleSubmissionUseCase;
     private final SubmissionRepository submissionRepository;
     private final JudgerDeployer judgerDeployer;
     private final ProblemServiceDriver problemServiceDriver;
 
-    public void execute(SubmitCodeRequest request, SubmissionPresenter presenter) throws IOException {
-        logger.info(request);
+    public void execute(SubmitCodeRequest request, SubmissionPresenter presenter) throws SubmissionThrottlingException {
+        mayThrottleOnRequest(request);
+
+        Problem problem = getProblem(request.problemId);
+        Submission submission = new Submission(request.studentId, problem.getId(), request.languageEnvName);
+        submission = save(submission, request.fileResources);
+
+        mayDeployJudgerIfNotJudged(request, problem, submission);
+        presenter.setSubmission(submission);
+    }
+
+    private void mayThrottleOnRequest(SubmitCodeRequest request) throws SubmissionThrottlingException {
+        log.info(request.toString());
         if (request.throttle) {
             throttleSubmissionUseCase.execute(request);
         }
-
-        String submittedCodeFileId = zipAndSaveSubmittedCodesAndGetFileId(request);
-        Problem problem = getProblem(request.problemId);
-        Submission submission = new Submission(request.studentId, request.problemId, request.languageEnvName, submittedCodeFileId);
-        submission.setProblemId(problem.getId());
-
-        submission = submissionRepository.save(submission);
-        logger.info("Saved submission: " + submission.getId());
-
-        judgerDeployer.deployJudger(problem, request.getStudentId(), submission);
-        logger.info("Completed: " + request);
-        presenter.setSubmission(submission);
     }
 
     private Problem getProblem(int problemId) {
@@ -65,13 +63,19 @@ public class SubmitCodeUseCase {
         return ProblemView.toEntity(problemView);
     }
 
-    private String zipAndSaveSubmittedCodesAndGetFileId(SubmitCodeRequest request) throws IOException {
-        // TODO: refactor, the data-storing related code should be encapsulated in the repository
-        String fileName = String.format("%d-%s-%d.zip", request.studentId, request.problemId,
-                System.currentTimeMillis());
-        InputStream zippedSubmittedCodesStream = ZipUtils.zipToStream(request.getFileResources());
-        StreamingResource streamingResource = new StreamingResource(fileName, zippedSubmittedCodesStream);
-        return submissionRepository.saveZippedSubmittedCodesAndGetFileId(streamingResource);
+    @SneakyThrows
+    private Submission save(Submission submission, List<FileResource> codes) {
+        Submission saved = submissionRepository.saveSubmissionWithCodes(submission, codes);
+        log.info("Saved submission: " + submission.getId());
+        return saved;
     }
+
+    private void mayDeployJudgerIfNotJudged(SubmitCodeRequest request, Problem problem, Submission submission) {
+        if (!submission.isJudged()) {
+            judgerDeployer.deployJudger(problem, request.getStudentId(), submission);
+        }
+        log.info("Completed: {}", request);
+    }
+
 
 }

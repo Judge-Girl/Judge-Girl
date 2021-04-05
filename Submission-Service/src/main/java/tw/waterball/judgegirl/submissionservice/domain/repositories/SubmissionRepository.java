@@ -43,6 +43,8 @@ public interface SubmissionRepository {
 
     Submission save(Submission submission);
 
+    Submission saveSubmissionWithCodes(Submission submission, List<FileResource> originalCodes) throws IOException;
+
     String saveZippedSubmittedCodesAndGetFileId(StreamingResource streamingResource) throws IOException;
 
     Optional<FileResource> downloadZippedSubmittedCodes(String submissionId);
