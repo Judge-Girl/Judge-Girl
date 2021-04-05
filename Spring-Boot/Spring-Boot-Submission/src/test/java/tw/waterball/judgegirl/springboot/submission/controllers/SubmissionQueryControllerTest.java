@@ -1,3 +1,5 @@
+package tw.waterball.judgegirl.springboot.submission.controllers;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;

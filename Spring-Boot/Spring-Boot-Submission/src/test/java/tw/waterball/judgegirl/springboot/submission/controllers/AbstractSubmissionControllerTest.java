@@ -1,4 +1,4 @@
-/*
+package tw.waterball.judgegirl.springboot.submission.controllers;/*
  * Copyright 2020 Johnny850807 (Waterball) 潘冠辰
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
@@ -48,7 +49,8 @@ import tw.waterball.judgegirl.problemapi.clients.ProblemServiceDriver;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.springboot.profiles.Profiles;
 import tw.waterball.judgegirl.springboot.submission.SpringBootSubmissionApplication;
-import tw.waterball.judgegirl.springboot.submission.controllers.VerdictIssuedEventHandler;
+import tw.waterball.judgegirl.springboot.submission.impl.mongo.strategy.SaveSubmissionWithCodesStrategy;
+import tw.waterball.judgegirl.springboot.submission.impl.mongo.strategy.VerdictShortcut;
 import tw.waterball.judgegirl.submissionapi.clients.VerdictPublisher;
 import tw.waterball.judgegirl.submissionapi.views.ReportView;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
@@ -142,13 +144,34 @@ public class AbstractSubmissionControllerTest extends AbstractSpringBootTest {
     SubmissionRepository submissionRepository;
 
     // For submission
-    protected final MockMultipartFile[] mockFiles = {
+    protected final MockMultipartFile[] codes1 = {
             new MockMultipartFile(SUBMIT_CODE_MULTIPART_KEY_NAME, "func1.c", "text/plain",
                     "int plus(int a, int b) {return a + b;}".getBytes()),
             new MockMultipartFile(SUBMIT_CODE_MULTIPART_KEY_NAME, "func2.c", "text/plain",
                     "int minus(int a, int b) {return a - b;}".getBytes())};
+    protected final MockMultipartFile[] codes2 = {
+            new MockMultipartFile(SUBMIT_CODE_MULTIPART_KEY_NAME, "func1.c", "text/plain",
+                    "int plus(int a, int b) { /*different content*/ return a + b;}".getBytes()),
+            new MockMultipartFile(SUBMIT_CODE_MULTIPART_KEY_NAME, "func2.c", "text/plain",
+                    "int minus(int a, int b) {return a - b; /*different content*/}".getBytes())};
 
     protected final Report stubReport = ProblemStubs.compositeReport();
+
+    @Configuration
+    public static class TestConfig {
+        @Bean
+        @Primary
+        public ConnectionFactory mockRabbitMqConnectionFactory() {
+            return new CachingConnectionFactory(new MockConnectionFactory());
+        }
+
+        @Bean
+        @Primary
+        public SaveSubmissionWithCodesStrategy useVerdictShortcut(MongoTemplate mongoTemplate, GridFsTemplate gridFsTemplate) {
+            return new VerdictShortcut(mongoTemplate, gridFsTemplate);
+        }
+
+    }
 
     @BeforeEach
     void setup() {
@@ -224,15 +247,20 @@ public class AbstractSubmissionControllerTest extends AbstractSpringBootTest {
         return requestWithToken(() -> get(API_PREFIX + "/{submissionId}/submittedCodes/{submittedCodesFileId}",
                 problem.getId(), studentId, submissionId, submittedCodesFile), studentToken)
                 .andExpect(status().isOk())
-                .andExpect(zip().content(mockFiles));
+                .andExpect(zip().content(codes1));
     }
+
 
     protected void givenSubmission(Submission submission) {
         submissionRepository.save(submission);
     }
 
     protected SubmissionView submitCodeAndGet(int studentId, String token) throws Exception {
-        String responseJson = submitCode(studentId, token)
+        return submitCodeAndGet(studentId, token, codes1);
+    }
+
+    protected SubmissionView submitCodeAndGet(int studentId, String token, MockMultipartFile... files) throws Exception {
+        String responseJson = submitCode(studentId, token, files)
                 .andExpect(status().isAccepted())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("id").exists())
@@ -245,15 +273,17 @@ public class AbstractSubmissionControllerTest extends AbstractSpringBootTest {
         return objectMapper.readValue(responseJson, SubmissionView.class);
     }
 
-    protected ResultActions submitCode(int studentId, String token) throws Exception {
+    protected ResultActions submitCode(int studentId, String token, MockMultipartFile... files) throws Exception {
         return requestWithToken(() ->
-                multipartRequestWithSubmittedCodes(studentId), token);
+                multipartRequestWithSubmittedCodes(studentId, files), token);
     }
 
-    protected MockMultipartHttpServletRequestBuilder multipartRequestWithSubmittedCodes(int studentId) {
-        return multipart(API_PREFIX, problem.getId(), studentId)
-                .file(mockFiles[0])
-                .file(mockFiles[1]);
+    protected MockMultipartHttpServletRequestBuilder multipartRequestWithSubmittedCodes(int studentId, MockMultipartFile... files) {
+        var call = multipart(API_PREFIX, problem.getId(), studentId);
+        for (MockMultipartFile file : files) {
+            call = call.file(file);
+        }
+        return call;
     }
 
     protected List<SubmissionView> getSubmissionsInPage(int studentId, String studentToken, int page) throws Exception {
@@ -270,16 +300,5 @@ public class AbstractSubmissionControllerTest extends AbstractSpringBootTest {
                                              String token) throws Exception {
         return mockMvc.perform(requestBuilderSupplier.get()
                 .header("Authorization", "bearer " + token));
-    }
-
-    @Configuration
-    public static class TestConfig {
-
-        @Bean
-        @Primary
-        public ConnectionFactory mockRabbitMqConnectionFactory() {
-            return new CachingConnectionFactory(new MockConnectionFactory());
-        }
-
     }
 }

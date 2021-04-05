@@ -14,6 +14,7 @@
 package tw.waterball.judgegirl.springboot.submission.impl.mongo;
 
 import com.mongodb.client.result.UpdateResult;
+import lombok.AllArgsConstructor;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
@@ -28,6 +29,7 @@ import tw.waterball.judgegirl.springboot.profiles.productions.Mongo;
 import tw.waterball.judgegirl.springboot.submission.impl.mongo.data.DataMapper;
 import tw.waterball.judgegirl.springboot.submission.impl.mongo.data.SubmissionData;
 import tw.waterball.judgegirl.springboot.submission.impl.mongo.data.VerdictData;
+import tw.waterball.judgegirl.springboot.submission.impl.mongo.strategy.SaveSubmissionWithCodesStrategy;
 import tw.waterball.judgegirl.springboot.utils.MongoUtils;
 import tw.waterball.judgegirl.submissionservice.domain.repositories.SubmissionRepository;
 import tw.waterball.judgegirl.submissionservice.domain.usecases.dto.SubmissionQueryParams;
@@ -36,6 +38,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
+import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Update.update;
@@ -46,15 +49,12 @@ import static tw.waterball.judgegirl.springboot.utils.MongoUtils.downloadFileRes
  */
 @Mongo
 @Component
+@AllArgsConstructor
 public class MongoSubmissionRepository implements SubmissionRepository {
     private final static int PAGE_SIZE = 30;
     private final MongoTemplate mongoTemplate;
     private final GridFsTemplate gridFsTemplate;
-
-    public MongoSubmissionRepository(MongoTemplate mongoTemplate, GridFsTemplate gridFsTemplate) {
-        this.mongoTemplate = mongoTemplate;
-        this.gridFsTemplate = gridFsTemplate;
-    }
+    private final SaveSubmissionWithCodesStrategy saveSubmissionWithCodesStrategy;
 
     @Override
     public List<Submission> findByProblemIdAndJudgeStatus(int problemId, JudgeStatus judgeStatus) {
@@ -84,6 +84,12 @@ public class MongoSubmissionRepository implements SubmissionRepository {
     @Override
     public List<Submission> findBySummaryJudgeStatus(JudgeStatus summaryJudgeStatus) {
         return null; // TODO implement
+    }
+
+    @Override
+    public Submission saveSubmissionWithCodes(Submission submission, List<FileResource> originalCodes) {
+        String fileName = format("%d-%s-%d.zip", submission.getStudentId(), submission.getProblemId(), System.currentTimeMillis());
+        return saveSubmissionWithCodesStrategy.perform(submission, originalCodes, fileName);
     }
 
     @Override

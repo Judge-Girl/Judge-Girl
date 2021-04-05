@@ -1,4 +1,4 @@
-/*
+package tw.waterball.judgegirl.springboot.submission.controllers;/*
  * Copyright 2020 Johnny850807 (Waterball) 潘冠辰
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
@@ -11,10 +11,14 @@
  *   limitations under the License.
  */
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import tw.waterball.judgegirl.commons.utils.Delay;
 import tw.waterball.judgegirl.entities.problem.JudgeStatus;
+import tw.waterball.judgegirl.entities.submission.Judge;
+import tw.waterball.judgegirl.entities.submission.ProgramProfile;
+import tw.waterball.judgegirl.entities.submission.Verdict;
 import tw.waterball.judgegirl.springboot.submission.impl.mongo.data.SubmissionData;
 import tw.waterball.judgegirl.springboot.submission.impl.mongo.data.VerdictData;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
@@ -28,9 +32,12 @@ import java.util.Set;
 
 import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static tw.waterball.judgegirl.entities.problem.JudgeStatus.AC;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -46,6 +53,29 @@ public class SubmissionControllerTest extends AbstractSubmissionControllerTest {
                         toJson(singletonList(submissionView))));
 
         requestDownloadSubmittedCodes(STUDENT1_ID, STUDENT1_TOKEN, submissionView.id, submissionView.submittedCodesFileId);
+    }
+
+    @DisplayName("When submit same submitted codes many times, " +
+            "the submittedCodesFileId will be the same and the verdict is directly included as the response.")
+    @Test
+    void testVerdictShortcut() throws Exception {
+        SubmissionView submissionView = submitCodeAndGet(ADMIN_ID, ADMIN_TOKEN, codes1);
+        Verdict verdict = new Verdict(List.of(new Judge("T", AC, new ProgramProfile(10, 10, ""), 10)));
+        submissionRepository.issueVerdictOfSubmission(submissionView.id, verdict);
+
+        for (int i = 0; i < 3; i++) {
+            SubmissionView duplicateSubmission = submitCodeAndGet(ADMIN_ID, ADMIN_TOKEN, codes1);
+            assertEquals(submissionView.getSubmittedCodesFileId(), duplicateSubmission.getSubmittedCodesFileId());
+            assertEquals(verdict.getSummaryStatus(), duplicateSubmission.verdict.getSummaryStatus());
+            assertEquals(verdict.getTotalGrade(), duplicateSubmission.verdict.getTotalGrade());
+        }
+
+        // should deploy the judger only once, as other submissions are duplicate and have verdict-shortcuts
+        verify(judgerDeployer, times(1)).deployJudger(any(), anyInt(), any());
+
+        // different files --> should respond un-judged submission
+        SubmissionView shouldBeUnJudged = submitCodeAndGet(ADMIN_ID, ADMIN_TOKEN, codes2);
+        assertFalse(shouldBeUnJudged.isJudged);
     }
 
 
@@ -87,7 +117,7 @@ public class SubmissionControllerTest extends AbstractSubmissionControllerTest {
         requestWithToken(() -> get(API_PREFIX + "/{submissionId}/submittedCodes/{submittedCodesFileId}",
                 problem.getId(), STUDENT1_ID, submissionView.getId(), submissionView.submittedCodesFileId), ADMIN_TOKEN)
                 .andExpect(status().isOk())
-                .andExpect(ZipResultMatcher.zip().content(mockFiles));
+                .andExpect(ZipResultMatcher.zip().content(codes1));
     }
 
     @Test

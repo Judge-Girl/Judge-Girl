@@ -32,7 +32,7 @@ public class ThrottleSubmissionUseCase {
         this.submissionRepository = submissionRepository;
     }
 
-    public void execute(SubmitCodeRequest request) {
+    public void execute(SubmitCodeRequest request) throws SubmissionThrottlingException {
         SubmissionThrottling throttling = submissionRepository.findSubmissionThrottling(
                 request.getProblemId(), request.getStudentId())
                 .orElse(new SubmissionThrottling(request.problemId, request.studentId, 0L));
