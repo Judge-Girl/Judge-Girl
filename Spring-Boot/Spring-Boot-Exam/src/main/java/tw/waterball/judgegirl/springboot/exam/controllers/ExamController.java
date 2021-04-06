@@ -35,11 +35,20 @@ public class ExamController {
     private final DeleteQuestionUseCase deleteQuestionUseCase;
     private final GetExamOverviewUseCase getExamOverviewUseCase;
     private final AnswerQuestionUseCase answerQuestionUseCase;
+    private final UpdateExamUseCase updateExamUseCase;
 
     @PostMapping("/exams")
     public ExamView createExam(@RequestBody CreateExamUseCase.Request request) {
         CreateExamPresenter presenter = new CreateExamPresenter();
         createExamUseCase.execute(request, presenter);
+        return presenter.present();
+    }
+
+    @PutMapping("/exams/{examId}")
+    public ExamView updateExam(@PathVariable int examId, @RequestBody UpdateExamUseCase.Request request) {
+        request.setExamId(examId);
+        UpdateExamPresenter presenter = new UpdateExamPresenter();
+        updateExamUseCase.execute(request, presenter);
         return presenter.present();
     }
 
@@ -134,6 +143,19 @@ class CreateExamPresenter implements CreateExamUseCase.Presenter {
     }
 }
 
+class UpdateExamPresenter implements UpdateExamUseCase.Presenter {
+    private Exam exam;
+
+    @Override
+    public void setExam(Exam exam) {
+        this.exam = exam;
+    }
+
+    public ExamView present() {
+        return ExamView.toViewModel(exam);
+    }
+}
+
 class GetExamsPresenter implements GetExamsUseCase.Presenter {
     private List<Exam> exams;
 
@@ -185,4 +207,3 @@ class GetExamOverviewPresenter implements GetExamOverviewUseCase.Presenter {
     }
 
 }
-

@@ -17,7 +17,7 @@ public class GetExamOverviewUseCase {
     private final ExamRepository examRepository;
     private final ProblemServiceDriver problemServiceDriver;
 
-    public void execute(Request request, Presenter presenter) {
+    public void execute(Request request, Presenter presenter) throws NotFoundException {
         Exam exam = examRepository.findById(request.examId).orElseThrow(NotFoundException::new);
         presenter.setExam(exam);
         // TODO: should be improved to fetch all the problems in one query
