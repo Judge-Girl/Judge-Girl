@@ -18,14 +18,18 @@ public class UpdateExamUseCase {
         this.examRepository = examRepository;
     }
 
-    public void execute(Request request, Presenter presenter) throws NotFoundException {
+    public void execute(Request request, Presenter presenter) throws NotFoundException, IllegalStateException {
         Exam exam = examRepository.findById(request.examId).orElseThrow(NotFoundException::new);
+        updateExam(exam, request);
+        presenter.setExam(examRepository.save(exam));
+    }
+
+    private void updateExam(Exam exam, Request request) throws IllegalStateException {
         exam.setName(request.name);
         exam.setStartTime(request.startTime);
         exam.setEndTime(request.endTime);
         exam.setDescription(request.description);
         exam.validate();
-        presenter.setExam(examRepository.save(exam));
     }
 
     public interface Presenter {
