@@ -17,7 +17,7 @@ public class CreateExamUseCase {
         this.examRepository = examRepository;
     }
 
-    public void execute(Request request, Presenter presenter) {
+    public void execute(Request request, Presenter presenter) throws IllegalStateException {
         Exam exam = new Exam(request.name, request.startTime, request.endTime, request.description);
         exam.validate();
         presenter.setExam(examRepository.save(exam));

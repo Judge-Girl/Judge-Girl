@@ -23,6 +23,7 @@ import tw.waterball.judgegirl.examservice.domain.repositories.ExamFilter;
 import tw.waterball.judgegirl.examservice.domain.repositories.ExamRepository;
 import tw.waterball.judgegirl.examservice.domain.usecases.CreateExamUseCase;
 import tw.waterball.judgegirl.examservice.domain.usecases.CreateQuestionUseCase;
+import tw.waterball.judgegirl.examservice.domain.usecases.UpdateExamUseCase;
 import tw.waterball.judgegirl.problemapi.clients.FakeProblemServiceDriver;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.springboot.exam.SpringBootExamApplication;
@@ -148,6 +149,29 @@ class ExamControllerTest extends AbstractSpringBootTest {
         createExam(exam)
                 .andExpect(status().isBadRequest());
 
+    }
+
+    @Test
+    void WhenUpdateExamWithExistingExamId_ShouldSucceed() throws Exception {
+        Date firstTime = new Date();
+        ExamView examView = createExamAndGet(firstTime, firstTime, "examTitle");
+        Date secondTime = new Date();
+        updateExam(new UpdateExamUseCase.Request(examView.getId(), "new name", secondTime, secondTime, "new problem statement"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("id").value(examView.getId()))
+                .andExpect(jsonPath("name").value("new name"))
+                .andExpect(jsonPath("startTime").value(secondTime))
+                .andExpect(jsonPath("endTime").value(secondTime))
+                .andExpect(jsonPath("description").value("new problem statement"));
+    }
+
+    @Test
+    void WhenUpdateExamWithNonExistingExamId_ShouldRespondNotFound() throws Exception {
+        Date firstTime = new Date();
+        ExamView examView = createExamAndGet(firstTime, firstTime, "examTitle");
+        Date secondTime = new Date();
+        updateExam(new UpdateExamUseCase.Request(examView.getId() + 1, "new name", secondTime, secondTime, "new problem statement"))
+                .andExpect(status().isNotFound());
     }
 
     @DisplayName("Given Student participates Exams A, B, C, D (only B, D are upcoming) " +
@@ -479,6 +503,12 @@ class ExamControllerTest extends AbstractSpringBootTest {
         return mockMvc.perform(post("/api/exams")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(new CreateExamUseCase.Request(exam.getName(), exam.getStartTime(), exam.getEndTime(), exam.getDescription()))));
+    }
+
+    private ResultActions updateExam(UpdateExamUseCase.Request request) throws Exception {
+        return mockMvc.perform(put("/api/exams/{examId}", request.getExamId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(toJson(request)));
     }
 
 
