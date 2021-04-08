@@ -100,6 +100,10 @@ public class Problem {
         return filterPluginTags;
     }
 
+    public void setFilterPluginTags(Set<JudgePluginTag> filterPluginTags) {
+        this.filterPluginTags = filterPluginTags;
+    }
+
     public List<String> getTags() {
         return tags;
     }

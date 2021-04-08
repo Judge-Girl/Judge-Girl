@@ -19,7 +19,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
-import tw.waterball.judgegirl.entities.problem.JudgePluginTag;
 import tw.waterball.judgegirl.entities.problem.Problem;
 import tw.waterball.judgegirl.entities.problem.Testcase;
 import tw.waterball.judgegirl.problemapi.views.ProblemItem;
@@ -29,7 +28,6 @@ import tw.waterball.judgegirl.problemservice.domain.usecases.*;
 import tw.waterball.judgegirl.springboot.utils.ResponseEntityUtils;
 
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**

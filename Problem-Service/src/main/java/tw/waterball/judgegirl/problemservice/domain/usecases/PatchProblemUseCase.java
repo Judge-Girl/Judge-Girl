@@ -7,6 +7,8 @@ import tw.waterball.judgegirl.problemservice.domain.repositories.PatchProblemPar
 import tw.waterball.judgegirl.problemservice.domain.repositories.ProblemRepository;
 
 import javax.inject.Named;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 
 import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
@@ -26,8 +28,9 @@ public class PatchProblemUseCase extends BaseProblemUseCase {
                             .description(request.description)
                             .matchPolicyPluginTag(request.judgePluginTag)
                             .filterPluginTags(request.filterPluginTags).build());
-        } else
+        } else {
             throw notFound("problem").id(request.problemId);
+        }
     }
 
     @Value
@@ -37,5 +40,13 @@ public class PatchProblemUseCase extends BaseProblemUseCase {
         public String description;
         public JudgePluginTag judgePluginTag;
         public Set<JudgePluginTag> filterPluginTags;
+
+        public Request(int problemId, String title, String description, JudgePluginTag judgePluginTag, Collection<JudgePluginTag> filterPluginTags) {
+            this.problemId = problemId;
+            this.title = title;
+            this.description = description;
+            this.judgePluginTag = judgePluginTag;
+            this.filterPluginTags = new HashSet<>(filterPluginTags);
+        }
     }
 }

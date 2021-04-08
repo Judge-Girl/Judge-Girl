@@ -266,15 +266,12 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    void GivenOneProblemSavedAndPatchProblemWithTitle_WhenQueryById_ShouldHaveNewTitle() throws Exception {
+    void GivenOneProblemSavedAndPatchProblemWithNewTitle_WhenQueryTheSameProblem_ShouldHaveNewTitle() throws Exception {
         Problem savedProblem = givenProblemsSaved(1).get(0);
         String newTitle = UUID.randomUUID().toString();
 
-        PatchProblemUseCase.Request request = new PatchProblemUseCase.Request();
-        patchProblem(savedProblem.getId(), PatchProblemUseCase.Request);
-        mockMvc.perform(patch("/api/problems/{problemId}/title", savedProblem.getId())
-                .contentType(MediaType.TEXT_PLAIN_VALUE).content(newTitle))
-                .andExpect(status().isOk());
+        savedProblem.setTitle(newTitle);
+        patchProblem(savedProblem);
 
         Problem queryProblem = mongoTemplate.findById(savedProblem.getId(), Problem.class);
         assertNotNull(queryProblem);
@@ -285,9 +282,10 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     void GivenOneProblemSavedAndPatchProblemWithDescription_WhenQueryById_ShouldHaveNewDescription() throws Exception {
         Problem savedProblem = givenProblemsSaved(1).get(0);
         String newDescription = UUID.randomUUID().toString();
-        mockMvc.perform(patch("/api/problems/{problemId}/description", savedProblem.getId())
-                .contentType(MediaType.TEXT_PLAIN_VALUE).content(newDescription))
-                .andExpect(status().isOk());
+
+        savedProblem.setDescription(newDescription);
+        patchProblem(savedProblem);
+
         Problem queryProblem = mongoTemplate.findById(savedProblem.getId(), Problem.class);
         assertNotNull(queryProblem);
         assertEquals(newDescription, queryProblem.getDescription());
@@ -301,49 +299,50 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         pluginMatchTag.setName("Test");
         pluginMatchTag.setVersion("1.0");
         pluginMatchTag.setType(JudgePluginTag.Type.OUTPUT_MATCH_POLICY);
-        mockMvc.perform(patch("/api/problems/{problemId}/plugins/match", savedProblem.getId())
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .content(objectMapper.writeValueAsString(pluginMatchTag)))
-                .andExpect(status().isOk());
+
+        savedProblem.setOutputMatchPolicyPluginTag(pluginMatchTag);
+        patchProblem(savedProblem);
+
         Problem queryProblem = mongoTemplate.findById(savedProblem.getId(), Problem.class);
         assertNotNull(queryProblem);
         JudgePluginTag queryPluginMatchTag = queryProblem.getOutputMatchPolicyPluginTag();
-        assertEquals(
-                objectMapper.writeValueAsString(pluginMatchTag),
-                objectMapper.writeValueAsString(queryPluginMatchTag));
+        assertEquals(pluginMatchTag, queryPluginMatchTag);
     }
 
     @Test
     void GivenOneProblemSavedAndPatchProblemWithPluginFilterTags_WhenQueryById_ShouldHaveNewTags() throws Exception {
         Problem savedProblem = givenProblemsSaved(1).get(0);
-        Set<JudgePluginTag> pluginFilterTags = new HashSet<>();
+        Set<JudgePluginTag> filterPluginTags = new HashSet<>();
         final int COUNT_FILTER = 10;
-        for (int i = 1; i <= COUNT_FILTER; i++) {
-            JudgePluginTag pluginFilterTag = new JudgePluginTag();
-            pluginFilterTag.setGroup("Judge Girl");
-            pluginFilterTag.setName(String.format("Test %d", i));
-            pluginFilterTag.setVersion(String.format("%d.0", i));
-            pluginFilterTag.setType(JudgePluginTag.Type.FILTER);
-            pluginFilterTags.add(pluginFilterTag);
+        for (int i = 1; i <= COUNT_FILTER; ++i) {
+            JudgePluginTag filterPluginTag = new JudgePluginTag();
+            filterPluginTag.setGroup("Judge Girl");
+            filterPluginTag.setName(String.format("Test %d", i));
+            filterPluginTag.setVersion(String.format("%d.0", i));
+            filterPluginTag.setType(JudgePluginTag.Type.FILTER);
+            filterPluginTags.add(filterPluginTag);
         }
-        mockMvc.perform(patch("/api/problems/{problemId}/plugins/filter", savedProblem.getId())
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .content(objectMapper.writeValueAsString(pluginFilterTags)))
-                .andExpect(status().isOk());
+
+        savedProblem.setFilterPluginTags(filterPluginTags);
+        patchProblem(savedProblem);
+
         Problem queryProblem = mongoTemplate.findById(savedProblem.getId(), Problem.class);
         assertNotNull(queryProblem);
         Set<JudgePluginTag> queryPluginFilterTags = new HashSet<>(queryProblem.getFilterPluginTags());
-        assertEquals(
-                objectMapper.writeValueAsString(pluginFilterTags),
-                objectMapper.writeValueAsString(queryPluginFilterTags));
+        assertEquals(queryPluginFilterTags, filterPluginTags);
     }
 
-    private void patchProblem(int problemId, PatchProblemUseCase.Request request) throws Exception {
-        mockMvc.perform(patch("/api/problems/{problemId}", request)
+    private void patchProblem(Problem problem) throws Exception {
+        mockMvc.perform(patch("/api/problems/{problemId}", problem.getId())
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .content(objectMapper.writeValueAsString(request)))
+                .content(objectMapper.writeValueAsString(
+                        new PatchProblemUseCase.Request(
+                                problem.getId(),
+                                problem.getTitle(),
+                                problem.getDescription(),
+                                problem.getOutputMatchPolicyPluginTag(),
+                                problem.getFilterPluginTags()))))
                 .andExpect(status().isOk());
     }
-
 }
 
