@@ -341,7 +341,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
                                 problem.getTitle(),
                                 problem.getDescription(),
                                 problem.getOutputMatchPolicyPluginTag(),
-                                problem.getFilterPluginTags()))))
+                                new HashSet<>(problem.getFilterPluginTags())))))
                 .andExpect(status().isOk());
     }
 }
