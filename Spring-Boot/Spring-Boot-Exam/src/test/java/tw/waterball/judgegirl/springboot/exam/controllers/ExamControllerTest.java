@@ -285,7 +285,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
         createQuestion(new CreateQuestionUseCase.Request(examView.getId(), 2, 5, 100, 1));
         deleteQuestion(examView.getId(), PROBLEM_ID)
                 .andExpect(status().isOk());
-        assertEquals(getExamOverview(examView.getId()).getQuestions().size(), 0);
+        assertEquals(0, getExamOverview(examView.getId()).getQuestions().size());
     }
 
     @Test

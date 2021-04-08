@@ -12,12 +12,12 @@ import tw.waterball.judgegirl.entities.exam.YouAreNotAnExamineeException;
 import tw.waterball.judgegirl.examservice.domain.repositories.ExamFilter;
 import tw.waterball.judgegirl.examservice.domain.usecases.*;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
+import tw.waterball.judgegirl.springboot.exam.presenters.ExamHomePresenter;
 import tw.waterball.judgegirl.springboot.exam.view.AnswerView;
-import tw.waterball.judgegirl.springboot.exam.view.ExamOverview;
+import tw.waterball.judgegirl.springboot.exam.view.ExamHome;
 import tw.waterball.judgegirl.springboot.exam.view.ExamView;
 import tw.waterball.judgegirl.springboot.exam.view.QuestionView;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,7 +33,7 @@ public class ExamController {
     private final GetExamsUseCase getExamsUseCase;
     private final CreateQuestionUseCase createQuestionUseCase;
     private final DeleteQuestionUseCase deleteQuestionUseCase;
-    private final GetExamOverviewUseCase getExamOverviewUseCase;
+    private final GetExamProgressOverviewUseCase getExamProgressOverviewUseCase;
     private final AnswerQuestionUseCase answerQuestionUseCase;
     private final UpdateExamUseCase updateExamUseCase;
 
@@ -103,10 +103,11 @@ public class ExamController {
         deleteQuestionUseCase.execute(new DeleteQuestionUseCase.Request(examId, problemId));
     }
 
-    @GetMapping("/exams/{examId}/overview")
-    public ExamOverview getExamOverview(@PathVariable int examId) {
-        GetExamOverviewPresenter presenter = new GetExamOverviewPresenter();
-        getExamOverviewUseCase.execute(new GetExamOverviewUseCase.Request(examId), presenter);
+    @GetMapping("/exams/{examId}/students/{studentId}/overview")
+    public ExamHome getExamOverview(@PathVariable int examId,
+                                    @PathVariable int studentId) {
+        ExamHomePresenter presenter = new ExamHomePresenter();
+        getExamProgressOverviewUseCase.execute(new GetExamProgressOverviewUseCase.Request(examId, studentId), presenter);
         return presenter.present();
     }
 
@@ -184,26 +185,4 @@ class CreateQuestionPresenter implements CreateQuestionUseCase.Presenter {
     public QuestionView present() {
         return QuestionView.toViewModel(question);
     }
-}
-
-class GetExamOverviewPresenter implements GetExamOverviewUseCase.Presenter {
-
-    private Exam exam;
-
-    private final List<ProblemView> problemViews = new ArrayList<>();
-
-    @Override
-    public void setExam(Exam exam) {
-        this.exam = exam;
-    }
-
-    @Override
-    public void addProblem(ProblemView problemView) {
-        problemViews.add(problemView);
-    }
-
-    public ExamOverview present() {
-        return ExamOverview.toViewModel(exam, problemViews);
-    }
-
 }
