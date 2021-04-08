@@ -9,6 +9,8 @@ import tw.waterball.judgegirl.problemservice.domain.repositories.ProblemReposito
 import javax.inject.Named;
 import java.util.Set;
 
+import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
+
 @Named
 public class PatchProblemUseCase extends BaseProblemUseCase {
     public PatchProblemUseCase(ProblemRepository problemRepository) {
@@ -24,9 +26,8 @@ public class PatchProblemUseCase extends BaseProblemUseCase {
                             .description(request.description)
                             .matchPolicyPluginTag(request.judgePluginTag)
                             .filterPluginTags(request.filterPluginTags).build());
-            return;
-        }
-        throw new NotFoundException(request.problemId, "problem");
+        } else
+            throw notFound("problem").id(request.problemId);
     }
 
     @Value

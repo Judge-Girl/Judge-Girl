@@ -32,6 +32,7 @@ import tw.waterball.judgegirl.entities.stubs.ProblemStubs;
 import tw.waterball.judgegirl.problemapi.views.ProblemItem;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.problemservice.domain.repositories.ProblemRepository;
+import tw.waterball.judgegirl.problemservice.domain.usecases.PatchProblemUseCase;
 import tw.waterball.judgegirl.springboot.problem.SpringBootProblemApplication;
 import tw.waterball.judgegirl.springboot.problem.repositories.MongoProblemRepository;
 import tw.waterball.judgegirl.springboot.profiles.Profiles;
@@ -268,9 +269,13 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     void GivenOneProblemSavedAndPatchProblemWithTitle_WhenQueryById_ShouldHaveNewTitle() throws Exception {
         Problem savedProblem = givenProblemsSaved(1).get(0);
         String newTitle = UUID.randomUUID().toString();
+
+        PatchProblemUseCase.Request request = new PatchProblemUseCase.Request();
+        patchProblem(savedProblem.getId(), PatchProblemUseCase.Request);
         mockMvc.perform(patch("/api/problems/{problemId}/title", savedProblem.getId())
                 .contentType(MediaType.TEXT_PLAIN_VALUE).content(newTitle))
                 .andExpect(status().isOk());
+
         Problem queryProblem = mongoTemplate.findById(savedProblem.getId(), Problem.class);
         assertNotNull(queryProblem);
         assertEquals(newTitle, queryProblem.getTitle());
@@ -331,6 +336,13 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         assertEquals(
                 objectMapper.writeValueAsString(pluginFilterTags),
                 objectMapper.writeValueAsString(queryPluginFilterTags));
+    }
+
+    private void patchProblem(int problemId, PatchProblemUseCase.Request request) throws Exception {
+        mockMvc.perform(patch("/api/problems/{problemId}", request)
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk());
     }
 
 }

@@ -140,13 +140,8 @@ public class MongoProblemRepository implements ProblemRepository {
         Query query = new Query(where("_id").is(problemId));
         params.getTitle().ifPresent(title -> update.set("title", title));
         params.getDescription().ifPresent(des -> update.set("description", des));
-        params.getMatchPolicyPluginTag().ifPresent(tag ->
-                update.set("outputMatchPolicyPluginTag", tag));
-        params.getFilterPluginTags().ifPresent(tags -> {
-            if (!tags.isEmpty()) {
-                update.addToSet("filterPluginTags").each(tags);
-            }
-        });
+        params.getMatchPolicyPluginTag().ifPresent(tag -> update.set("outputMatchPolicyPluginTag", tag));
+        params.getFilterPluginTags().ifPresent(tags -> update.set("filterPluginTags", tags));
         mongoTemplate.updateFirst(query, update, Problem.class);
     }
 

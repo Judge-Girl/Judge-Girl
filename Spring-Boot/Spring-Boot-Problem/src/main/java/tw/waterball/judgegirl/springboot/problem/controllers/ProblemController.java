@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
  */
 @CrossOrigin
 @RestController
-@RequestMapping(value = "/api/problems", method = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PATCH})
+@RequestMapping(value = "/api/problems")
 @AllArgsConstructor
 public class ProblemController {
     private final GetProblemUseCase getProblemUseCase;
@@ -106,30 +106,11 @@ public class ProblemController {
         return saveProblemWithTitleUseCase.execute(title);
     }
 
-    @PatchMapping(value = "/{problemId}/title",
-            consumes = MediaType.TEXT_PLAIN_VALUE)
-    public void patchProblemWithTitle(@PathVariable int problemId, @RequestBody String title) {
-        patchProblemUseCase.execute(new PatchProblemUseCase.Request(problemId, title, null, null, null));
-    }
-
-    @PatchMapping(value = "/{problemId}/description",
-            consumes = MediaType.TEXT_PLAIN_VALUE)
-    public void patchProblemWithDescription(@PathVariable int problemId, @RequestBody String description) {
-        patchProblemUseCase.execute(new PatchProblemUseCase.Request(problemId, null, description, null, null));
-    }
-
-    @PatchMapping(value = "/{problemId}/plugins/match",
+    @PatchMapping(value = "/{problemId}",
             consumes = MediaType.APPLICATION_JSON_VALUE)
-    public void patchProblemWithPluginMatchTags(@PathVariable int problemId,
-                                                @RequestBody JudgePluginTag judgePluginTag) {
-        patchProblemUseCase.execute(new PatchProblemUseCase.Request(problemId, null, null, judgePluginTag, null));
-    }
-
-    @PatchMapping(value = "/{problemId}/plugins/filter",
-            consumes = MediaType.APPLICATION_JSON_VALUE)
-    public void patchProblemWithPluginFilterTags(@PathVariable int problemId,
-                                                 @RequestBody Set<JudgePluginTag> judgePluginTagSet) {
-        patchProblemUseCase.execute(new PatchProblemUseCase.Request(problemId, null, null, null, judgePluginTagSet));
+    public void patchProblem(@PathVariable int problemId,
+                             @RequestBody PatchProblemUseCase.Request request) {
+        patchProblemUseCase.execute(request);
     }
 }
 
