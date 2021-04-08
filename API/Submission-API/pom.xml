@@ -37,10 +37,7 @@
         <dependency>
             <groupId>tw.waterball.judge-girl</groupId>
             <artifactId>submission-service</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-amqp</artifactId>
+            <optional>true</optional>
         </dependency>
     </dependencies>
 </project>

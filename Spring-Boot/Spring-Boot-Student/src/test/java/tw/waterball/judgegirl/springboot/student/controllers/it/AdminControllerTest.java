@@ -37,7 +37,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static tw.waterball.judgegirl.springboot.student.view.StudentView.toViewModel;
 
-@ActiveProfiles(Profiles.JWT)
+@ActiveProfiles(value = Profiles.JWT)
 @ContextConfiguration(classes = SpringBootStudentApplication.class)
 class AdminControllerTest extends AbstractSpringBootTest {
 

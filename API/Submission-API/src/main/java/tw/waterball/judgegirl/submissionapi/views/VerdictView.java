@@ -16,8 +16,8 @@ package tw.waterball.judgegirl.submissionapi.views;
 import lombok.*;
 import org.jetbrains.annotations.Nullable;
 import tw.waterball.judgegirl.entities.problem.JudgeStatus;
-import tw.waterball.judgegirl.entities.submission.Judge;
-import tw.waterball.judgegirl.entities.submission.Verdict;
+import tw.waterball.judgegirl.entities.submission.verdict.Judge;
+import tw.waterball.judgegirl.entities.submission.verdict.Verdict;
 
 import java.util.Date;
 import java.util.List;
@@ -40,7 +40,7 @@ public class VerdictView {
     private ReportView report;
     private Date issueTime;
 
-    public static VerdictView fromEntity(@Nullable Verdict verdict) {
+    public static VerdictView toViewModel(@Nullable Verdict verdict) {
         if (verdict == null) {
             return null;
         }
@@ -50,7 +50,7 @@ public class VerdictView {
                 verdict.getCompileErrorMessage(),
                 verdict.getMaximumRuntime(),
                 verdict.getMaximumMemoryUsage(),
-                ReportView.fromEntity(verdict.getReport()),
+                ReportView.toViewModel(verdict.getReport()),
                 verdict.getIssueTime());
     }
 

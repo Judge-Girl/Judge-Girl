@@ -14,10 +14,9 @@
 package tw.waterball.judgegirl.springboot.student;
 
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import tw.waterball.judgegirl.studentservice.ScanRoot;
+import tw.waterball.judgegirl.springboot.profiles.JudgeGirlApplication;
 
-@SpringBootApplication(scanBasePackageClasses = ScanRoot.class)
+@JudgeGirlApplication
 public class SpringBootStudentApplication {
 
     public static void main(String[] args) {

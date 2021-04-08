@@ -1,10 +1,13 @@
 package tw.waterball.judgegirl.springboot.exam.controllers;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.github.fridujo.rabbitmq.mock.MockConnectionFactory;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
+import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
@@ -18,7 +21,12 @@ import org.springframework.test.web.servlet.ResultActions;
 import tw.waterball.judgegirl.entities.exam.Answer;
 import tw.waterball.judgegirl.entities.exam.Exam;
 import tw.waterball.judgegirl.entities.exam.Question;
+import tw.waterball.judgegirl.entities.exam.Record;
 import tw.waterball.judgegirl.entities.problem.Language;
+import tw.waterball.judgegirl.entities.problem.Problem;
+import tw.waterball.judgegirl.entities.submission.Bag;
+import tw.waterball.judgegirl.entities.submission.Submission;
+import tw.waterball.judgegirl.entities.submission.verdict.VerdictIssuedEvent;
 import tw.waterball.judgegirl.examservice.domain.repositories.ExamFilter;
 import tw.waterball.judgegirl.examservice.domain.repositories.ExamRepository;
 import tw.waterball.judgegirl.examservice.domain.usecases.CreateExamUseCase;
@@ -27,12 +35,14 @@ import tw.waterball.judgegirl.examservice.domain.usecases.UpdateExamUseCase;
 import tw.waterball.judgegirl.problemapi.clients.FakeProblemServiceDriver;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.springboot.exam.SpringBootExamApplication;
+import tw.waterball.judgegirl.springboot.exam.handler.VerdictIssuedEventHandler;
 import tw.waterball.judgegirl.springboot.exam.view.AnswerView;
-import tw.waterball.judgegirl.springboot.exam.view.ExamOverview;
+import tw.waterball.judgegirl.springboot.exam.view.ExamHome;
 import tw.waterball.judgegirl.springboot.exam.view.ExamView;
 import tw.waterball.judgegirl.springboot.exam.view.QuestionView;
 import tw.waterball.judgegirl.springboot.profiles.Profiles;
 import tw.waterball.judgegirl.submissionapi.clients.SubmissionServiceDriver;
+import tw.waterball.judgegirl.submissionapi.clients.VerdictPublisher;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
 
@@ -43,6 +53,7 @@ import java.util.List;
 
 import static java.util.Arrays.stream;
 import static java.util.Collections.singletonList;
+import static java.util.Collections.singletonMap;
 import static java.util.concurrent.TimeUnit.HOURS;
 import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -56,10 +67,15 @@ import static tw.waterball.judgegirl.commons.utils.DateUtils.afterCurrentTime;
 import static tw.waterball.judgegirl.commons.utils.DateUtils.beforeCurrentTime;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.atTheSameTime;
 import static tw.waterball.judgegirl.entities.exam.Question.NO_QUOTA;
+import static tw.waterball.judgegirl.entities.stubs.ProblemStubs.problemTemplate;
+import static tw.waterball.judgegirl.entities.stubs.SubmissionStubBuilder.randomJudgedSubmissionFromProblem;
+import static tw.waterball.judgegirl.entities.stubs.SubmissionStubBuilder.submission;
+import static tw.waterball.judgegirl.examservice.domain.usecases.AnswerQuestionUseCase.BAG_KEY_EXAM_ID;
+import static tw.waterball.judgegirl.problemapi.views.ProblemView.toViewModel;
 import static tw.waterball.judgegirl.submissionapi.clients.SubmissionApiClient.SUBMIT_CODE_MULTIPART_KEY_NAME;
 import static tw.waterball.judgegirl.testkit.stubs.MultipartFileStubs.codes;
 
-@ActiveProfiles(Profiles.JWT)
+@ActiveProfiles({Profiles.JWT, Profiles.AMQP})
 @ContextConfiguration(classes = SpringBootExamApplication.class)
 class ExamControllerTest extends AbstractSpringBootTest {
     public static final int PROBLEM_ID = 2;
@@ -76,15 +92,27 @@ class ExamControllerTest extends AbstractSpringBootTest {
     ExamRepository examRepository;
     @Autowired
     FakeProblemServiceDriver problemServiceDriver;
+    @Autowired
+    VerdictPublisher verdictPublisher;
+    @Autowired
+    VerdictIssuedEventHandler verdictIssuedEventHandler;
+
     @MockBean
     SubmissionServiceDriver submissionServiceDriver;
     private ProblemView problem;
+    private Submission randomSubmission;
     private ProblemView anotherProblem;
 
     private final MockMultipartFile[] mockFiles = codes(SUBMIT_CODE_MULTIPART_KEY_NAME, 2);
 
     @Configuration
     public static class TestConfig {
+        @Bean
+        @Primary
+        public ConnectionFactory mockRabbitMqConnectionFactory() {
+            return new CachingConnectionFactory(new MockConnectionFactory());
+        }
+
         @Bean
         @Primary
         public FakeProblemServiceDriver fakeProblemServiceDriver() {
@@ -100,21 +128,19 @@ class ExamControllerTest extends AbstractSpringBootTest {
     }
 
     private void fakeProblemServiceDriver() {
-        problem = new ProblemView();
-        problem.setId(PROBLEM_ID);
-        problem.setTitle("problem1");
+        Problem p1 = problemTemplate().id(PROBLEM_ID).build(), p2 = problemTemplate().id(ANOTHER_PROBLEM_ID).build();
+        problem = toViewModel(p1);
+        randomSubmission = randomJudgedSubmissionFromProblem(p1, STUDENT_ID, 2, 10);
         problemServiceDriver.addProblemView(problem);
-        anotherProblem = new ProblemView();
-        anotherProblem.setId(ANOTHER_PROBLEM_ID);
-        anotherProblem.setTitle("another-problem");
+        anotherProblem = toViewModel(p2);
         problemServiceDriver.addProblemView(anotherProblem);
+
     }
 
     private void mockSubmissionServiceDriver() {
         when(submissionServiceDriver.submit(any()))
                 .thenReturn(new SubmissionView(SUBMISSION_ID, STUDENT_ID, PROBLEM_ID, LANG_ENV, null, "fileId", new Date()));
     }
-
 
     @AfterEach
     void cleanup() {
@@ -279,23 +305,35 @@ class ExamControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    void GivenOneExamWithTwoQuestions_WhenGetTheExamOverview_ShouldRespondCorrectly() throws Exception {
-        Date current = new Date();
-        ExamView examView = createExamAndGet(current, current, "sample-exam");
-        createQuestion(new CreateQuestionUseCase.Request(examView.getId(), PROBLEM_ID, 5, 30, 1)).andExpect(status().isOk());
-        createQuestion(new CreateQuestionUseCase.Request(examView.getId(), ANOTHER_PROBLEM_ID, 5, 70, 2)).andExpect(status().isOk());
+    void testGetTheExamOverview() throws Exception {
+        final int QUOTA = 5;
+        Date start = beforeCurrentTime(1, HOURS), end = afterCurrentTime(1, HOURS);
+        ExamView exam = createExamAndGet(start, end, "sample-exam");
+        QuestionView q1 = createQuestionAndGet(new CreateQuestionUseCase.Request(exam.getId(), PROBLEM_ID, QUOTA, 30, 1));
+        QuestionView q2 = createQuestionAndGet(new CreateQuestionUseCase.Request(exam.getId(), ANOTHER_PROBLEM_ID, QUOTA, 70, 2));
+        givenStudentParticipatingExam(STUDENT_ID, exam);
+        answerQuestion(STUDENT_ID, exam).andExpect(status().isOk());
+        publishVerdict(exam, randomSubmission);
 
-        ExamOverview examOverview = getExamOverview(examView.getId());
+        awaitVerdictIssuedEvent();
+        ExamHome examHome = getExamOverview(exam.getId());
+        ExamHome.QuestionItem firstQuestion = examHome.getQuestionById(new Question.Id(q1.examId, q1.problemId)).orElseThrow();
+        ExamHome.QuestionItem secondQuestion = examHome.getQuestionById(new Question.Id(q2.examId, q2.problemId)).orElseThrow();
 
-        assertEquals(examOverview.getId(), examView.getId());
-        assertEquals(examOverview.getName(), "sample-exam");
-        assertEquals(examOverview.getStartTime(), current);
-        assertEquals(examOverview.getEndTime(), current);
-        assertEquals(examOverview.getDescription(), "problem statement");
-        assertEquals(examOverview.getQuestions().size(), 2);
-        assertEquals(examOverview.getTotalScore(), 100);
-        assertEquals(examOverview.getQuestions().get(0).getProblemTitle(), problem.getTitle());
-        assertEquals(examOverview.getQuestions().get(1).getProblemTitle(), anotherProblem.getTitle());
+        assertEquals(exam.getId(), examHome.getId());
+        assertEquals("sample-exam", examHome.getName());
+        assertEquals(start, examHome.getStartTime());
+        assertEquals(end, examHome.getEndTime());
+        assertEquals("problem statement", examHome.getDescription());
+        assertEquals(2, examHome.getQuestions().size());
+        assertEquals(20, examHome.getTotalScore());
+
+        assertEquals(QUOTA - 1, firstQuestion.getRemainingQuota());
+        assertEquals(QUOTA, secondQuestion.getRemainingQuota());
+        assertEquals(randomSubmission.getVerdict().orElseThrow().getTotalGrade(), firstQuestion.getYourScore());
+        assertEquals(0, secondQuestion.getYourScore());
+        assertEquals(firstQuestion.getProblemTitle(), problem.getTitle());
+        assertEquals(secondQuestion.getProblemTitle(), anotherProblem.getTitle());
     }
 
     @Test
@@ -364,7 +402,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
         ExamView currentExam = createExamAndGet(beforeCurrentTime(1, HOURS), afterCurrentTime(1, HOURS), "A");
         createQuestion(new CreateQuestionUseCase.Request(currentExam.getId(), PROBLEM_ID, NO_QUOTA, 100, 1));
 
-        answerQuestion(currentExam, STUDENT_ID)
+        answerQuestion(STUDENT_ID, currentExam)
                 .andExpect(status().isForbidden());
     }
 
@@ -374,7 +412,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
         givenStudentParticipatingExam(STUDENT_ID, pastExam);
         createQuestion(new CreateQuestionUseCase.Request(pastExam.getId(), PROBLEM_ID, NO_QUOTA, 100, 1));
 
-        answerQuestion(pastExam, STUDENT_ID)
+        answerQuestion(STUDENT_ID, pastExam)
                 .andExpect(status().is4xxClientError());
     }
 
@@ -384,14 +422,60 @@ class ExamControllerTest extends AbstractSpringBootTest {
         createQuestion(new CreateQuestionUseCase.Request(upcomingExam.getId(), PROBLEM_ID, NO_QUOTA, 100, 1));
         givenStudentParticipatingExam(STUDENT_ID, upcomingExam);
 
-        answerQuestion(upcomingExam, STUDENT_ID)
+        answerQuestion(STUDENT_ID, upcomingExam)
                 .andExpect(status().is4xxClientError());
+    }
+
+    @Test
+    void WheneverReceiveNewVerdict_ShouldUpdateBestRecordOfAQuestion() throws Exception {
+        ExamView exam = createExamAndGet(beforeCurrentTime(1, HOURS), afterCurrentTime(1, HOURS), "A");
+        createQuestion(new CreateQuestionUseCase.Request(exam.id, PROBLEM_ID, NO_QUOTA, 100, 1));
+
+        publishVerdict(exam, submission("A").CE());
+        var bestRecord = awaitVerdictIssuedEventAndGetBestRecord(exam.id);
+        assertEquals(0, bestRecord.getScore());
+
+        publishVerdict(exam, submission("B").WA(10, 10)
+                .AC(10, 10, 20));
+        bestRecord = awaitVerdictIssuedEventAndGetBestRecord(exam.id);
+        assertEquals(20, bestRecord.getScore());
+
+        publishVerdict(exam, submission("C").AC(50, 50, 10)
+                .AC(10, 10, 20));
+        bestRecord = awaitVerdictIssuedEventAndGetBestRecord(exam.id);
+        assertEquals(30, bestRecord.getScore());
+
+
+        publishVerdict(exam, submission("D").AC(25, 25, 10)
+                .AC(10, 10, 20));
+        bestRecord = awaitVerdictIssuedEventAndGetBestRecord(exam.id);
+        assertEquals(30, bestRecord.getScore());
+        assertEquals(25, bestRecord.getMaximumRuntime());
+        assertEquals(25, bestRecord.getMaximumMemoryUsage());
+
+
+    }
+
+    private void publishVerdict(ExamView exam, Submission submission) {
+        verdictPublisher.publish(new VerdictIssuedEvent(PROBLEM_ID, STUDENT_ID, problem.title, SUBMISSION_ID,
+                submission.getVerdict().orElseThrow()
+                , new Bag(singletonMap(BAG_KEY_EXAM_ID, String.valueOf(exam.id)))));
+    }
+
+
+    private Record awaitVerdictIssuedEventAndGetBestRecord(int examId) {
+        awaitVerdictIssuedEvent();
+        return examRepository.findBestRecordOfQuestion(new Question.Id(examId, PROBLEM_ID), STUDENT_ID).orElseThrow();
+    }
+
+    private void awaitVerdictIssuedEvent() {
+        verdictIssuedEventHandler.onHandlingCompletion$.doWait(3000);
     }
 
     @DisplayName("Give 8 students participating a current exam, one question in the exam with submission quota = 3, " +
             "When 8 students answer that question 4 times at the same time, all should succeed in the first 3 times and fail in the 4th time.")
     @Test
-    void testAnswerQuestionWithSubmissionQuotas() throws Exception {
+    void testAnswerQuestionConcurrentlyWithSubmissionQuotas() throws Exception {
         int SUBMISSION_QUOTA = 3;
         Integer[] studentIds = {333, 555, 5, 6, 7, 22, 56, 44};
         ExamView exam = createExamAndGet(beforeCurrentTime(1, HOURS), afterCurrentTime(1, HOURS), "A");
@@ -400,12 +484,13 @@ class ExamControllerTest extends AbstractSpringBootTest {
 
         atTheSameTime(studentIds, studentId -> {
             for (int i = 0; i < 3; i++) {
-                AnswerView answer = getBody(answerQuestion(exam, studentId).andExpect(status().isOk()), AnswerView.class);
+                AnswerView answer = getBody(answerQuestion(studentId, exam).andExpect(status().isOk()), AnswerView.class);
                 shouldHaveSavedAnswer(answer);
             }
-            answerQuestion(exam, studentId).andExpect(status().is4xxClientError());
+            answerQuestion(studentId, exam).andExpect(status().is4xxClientError());
         });
     }
+
 
     private void shouldHaveSavedAnswer(AnswerView answer) {
         examRepository.findAnswer(new Answer.Id(answer.number, new Question.Id(answer.examId, answer.problemId), answer.studentId))
@@ -421,7 +506,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
                         () -> fail("The answer is not saved."));
     }
 
-    private ResultActions answerQuestion(ExamView exam, int studentId) throws Exception {
+    private ResultActions answerQuestion(int studentId, ExamView exam) throws Exception {
         return mockMvc.perform(multipart("/api/exams/{examId}/problems/{problemId}/{langEnvName}/students/{studentId}/answers",
                 exam.getId(), problem.getId(), LANG_ENV, studentId)
                 .file(mockFiles[0])
@@ -524,8 +609,9 @@ class ExamControllerTest extends AbstractSpringBootTest {
         });
     }
 
-    private ExamOverview getExamOverview(int examId) throws Exception {
-        return getBody(mockMvc.perform(get("/api/exams/{examId}/overview", examId)).andExpect(status().isOk()), ExamOverview.class);
+    private ExamHome getExamOverview(int examId) throws Exception {
+        return getBody(mockMvc.perform(get("/api/exams/{examId}/students/{studentId}/overview",
+                examId, STUDENT_ID)).andExpect(status().isOk()), ExamHome.class);
     }
 
     private void createExamParticipation(int studentId, int examId) {

@@ -13,7 +13,7 @@
 
 package tw.waterball.judgegirl.plugins.impl.cqi;
 
-import tw.waterball.judgegirl.entities.submission.Report;
+import tw.waterball.judgegirl.entities.submission.report.Report;
 
 import java.util.HashMap;
 import java.util.List;
@@ -21,9 +21,10 @@ import java.util.Map;
 
 public class CodingStyleAnalyzeReport extends Report {
     public static final String NAME = "CodingStyleAnalyzeReport";
-    private int csaScore;
-    private String formula;
-    private List<String> illegalNamingStyleList, globalVariableList;
+    private final int csaScore;
+    private final String formula;
+    private final List<String> illegalNamingStyleList;
+    private final List<String> globalVariableList;
 
     public CodingStyleAnalyzeReport(int csaScore, String formula, List<String> illegalNamingStyleList, List<String> globalVariableList) {
         super(NAME);

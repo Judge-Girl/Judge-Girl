@@ -40,6 +40,10 @@ public class Answer {
         return getId().getNumber();
     }
 
+    public Question.Id getQuestionId() {
+        return getId().getQuestionId();
+    }
+
     public int getExamId() {
         return getId().questionId.getExamId();
     }

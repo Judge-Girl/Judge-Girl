@@ -19,9 +19,11 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
 import tw.waterball.judgegirl.entities.problem.*;
-import tw.waterball.judgegirl.entities.submission.Judge;
-import tw.waterball.judgegirl.entities.submission.ProgramProfile;
+import tw.waterball.judgegirl.entities.submission.Bag;
 import tw.waterball.judgegirl.entities.submission.Submission;
+import tw.waterball.judgegirl.entities.submission.verdict.Judge;
+import tw.waterball.judgegirl.entities.submission.verdict.ProgramProfile;
+import tw.waterball.judgegirl.entities.submission.verdict.VerdictIssuedEvent;
 import tw.waterball.judgegirl.judger.CCJudger;
 import tw.waterball.judgegirl.judger.DefaultCCJudgerFactory;
 import tw.waterball.judgegirl.plugins.impl.match.AllMatchPolicyPlugin;
@@ -30,13 +32,14 @@ import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.submissionapi.clients.SubmissionServiceDriver;
 import tw.waterball.judgegirl.submissionapi.clients.VerdictPublisher;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
-import tw.waterball.judgegirl.submissionapi.views.VerdictIssuedEvent;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
+import static java.util.Collections.singletonMap;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -73,7 +76,10 @@ public class PrefixSumTest {
             .build();
 
     private static final int studentId = 1;
-    private static final Submission submission = new Submission(studentId, problem.getId(), languageEnv.getName(), "fileId");
+    private static final Map<String, String> submissionBag = singletonMap("BagKey", "BagKey");
+    private static final Submission submission = new Submission(studentId, problem.getId(), languageEnv.getName(), "fileId") {{
+        setBag(new Bag(submissionBag));
+    }};
     private ProblemServiceDriver problemServiceDriver;
     private SubmissionServiceDriver submissionServiceDriver;
     private VerdictPublisher verdictPublisher;
@@ -116,6 +122,7 @@ public class PrefixSumTest {
         assertEquals(problem.getTitle(), event.getProblemTitle());
         assertEquals(submission.getId(), event.getSubmissionId());
         assertNull(event.getVerdict().getCompileErrorMessage(), "Compile error message should be null if the compile succeeded.");
+        assertEquals(submissionBag, event.getSubmissionBag(), "The bag should also be published");
     }
 
 
@@ -203,8 +210,8 @@ public class PrefixSumTest {
 
     private void mockServiceDrivers(JudgeStatus judgeStatus) throws IOException {
         when(submissionServiceDriver.getSubmission(
-                problemId, studentId, submission.getId())).thenReturn(SubmissionView.fromEntity(submission));
-        when(problemServiceDriver.getProblem(problem.getId())).thenReturn(ProblemView.fromEntity(problem));
+                problemId, studentId, submission.getId())).thenReturn(SubmissionView.toViewModel(submission));
+        when(problemServiceDriver.getProblem(problem.getId())).thenReturn(ProblemView.toViewModel(problem));
 
         mockDownloadRequests(judgeStatus);
     }

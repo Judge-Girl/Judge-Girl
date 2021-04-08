@@ -13,7 +13,7 @@
 
 package tw.waterball.judgegirl.plugins.impl.cqi;
 
-import tw.waterball.judgegirl.entities.submission.Report;
+import tw.waterball.judgegirl.entities.submission.report.Report;
 
 import java.util.Collections;
 import java.util.Map;
@@ -24,7 +24,7 @@ import java.util.Map;
  */
 public class CyclomaticComplexityReport extends Report {
     public final static String NAME = "CyclomaticComplexityReport";
-    private int ccScore;
+    private final int ccScore;
 
     public CyclomaticComplexityReport(int ccScore) {
         super(NAME);

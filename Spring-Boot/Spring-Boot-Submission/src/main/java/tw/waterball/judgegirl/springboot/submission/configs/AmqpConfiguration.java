@@ -13,14 +13,15 @@
 
 package tw.waterball.judgegirl.springboot.submission.configs;
 
-import org.springframework.amqp.core.*;
+import org.springframework.amqp.core.Binding;
+import org.springframework.amqp.core.BindingBuilder;
+import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.core.TopicExchange;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import tw.waterball.judgegirl.springboot.profiles.productions.Amqp;
-import tw.waterball.judgegirl.submissionapi.clients.AmqpVerdictPublisher;
-import tw.waterball.judgegirl.submissionapi.clients.VerdictPublisher;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -28,18 +29,7 @@ import tw.waterball.judgegirl.submissionapi.clients.VerdictPublisher;
 @Amqp
 @Configuration
 public class AmqpConfiguration {
-
-    @Bean
-    public VerdictPublisher verdictPublisher(AmqpAdmin amqpAdmin,
-                                             AmqpTemplate amqpTemplate,
-                                             @Value("${judge-girl.amqp.verdict-exchange-name}")
-                                                     String submissionExchangeName,
-                                             @Value("${judge-girl.amqp.verdict-issued-routing-key-format}")
-                                                     String verdictIssuedRoutingKeyFormat) {
-        return new AmqpVerdictPublisher(amqpAdmin, amqpTemplate,
-                submissionExchangeName, verdictIssuedRoutingKeyFormat);
-    }
-
+    
     @Bean
     public Queue submissionServiceQueue(
             @Value("${judge-girl.amqp.submission-service-queue}")

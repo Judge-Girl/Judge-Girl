@@ -17,6 +17,9 @@ import lombok.*;
 
 import java.util.Objects;
 
+import static java.lang.System.currentTimeMillis;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
@@ -25,7 +28,6 @@ import java.util.Objects;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-
 public class SubmissionThrottling {
     private String id;
     private int problemId;
@@ -38,10 +40,23 @@ public class SubmissionThrottling {
         this.lastSubmitTime = lastSubmitTime;
     }
 
+    public void throttle(long minSubmissionInterval) throws SubmissionThrottlingException {
+        long intervalSeconds = MILLISECONDS.toSeconds(currentTimeMillis() - getLastSubmitTime());
+        long minSubmissionIntervalSeconds = MILLISECONDS.toSeconds(minSubmissionInterval);
+        if (intervalSeconds < minSubmissionIntervalSeconds) {
+            throw new SubmissionThrottlingException((minSubmissionIntervalSeconds - intervalSeconds));
+        }
+        setLastSubmitTime(currentTimeMillis());
+    }
+
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         SubmissionThrottling that = (SubmissionThrottling) o;
         return problemId == that.problemId &&
                 studentId == that.studentId &&

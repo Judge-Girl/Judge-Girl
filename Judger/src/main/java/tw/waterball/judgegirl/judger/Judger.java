@@ -16,7 +16,11 @@ package tw.waterball.judgegirl.judger;
 import lombok.AllArgsConstructor;
 import lombok.Value;
 import tw.waterball.judgegirl.entities.problem.*;
-import tw.waterball.judgegirl.entities.submission.*;
+import tw.waterball.judgegirl.entities.submission.Submission;
+import tw.waterball.judgegirl.entities.submission.verdict.Judge;
+import tw.waterball.judgegirl.entities.submission.verdict.ProgramProfile;
+import tw.waterball.judgegirl.entities.submission.verdict.Verdict;
+import tw.waterball.judgegirl.entities.submission.verdict.VerdictIssuer;
 import tw.waterball.judgegirl.judger.infra.compile.CompileResult;
 import tw.waterball.judgegirl.judger.infra.testexecutor.TestcaseExecutionResult;
 
@@ -149,10 +153,10 @@ public abstract class Judger {
     @Value
     @AllArgsConstructor
     public static class JudgeContext {
-        public final int studentId;
-        public final Problem problem;
-        public final List<Testcase> testcases;
-        public final Submission submission;
+        public int studentId;
+        public Problem problem;
+        public List<Testcase> testcases;
+        public Submission submission;
     }
 
     protected boolean isCompiledLanguage() {

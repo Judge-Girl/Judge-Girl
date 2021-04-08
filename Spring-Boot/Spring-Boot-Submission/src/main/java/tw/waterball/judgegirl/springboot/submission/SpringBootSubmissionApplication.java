@@ -14,13 +14,9 @@
 package tw.waterball.judgegirl.springboot.submission;
 
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.ComponentScan;
+import tw.waterball.judgegirl.springboot.profiles.JudgeGirlApplication;
 
-@ComponentScan(basePackageClasses = {
-        tw.waterball.judgegirl.springboot.ScanRoot.class,
-        tw.waterball.judgegirl.submissionservice.ScanRoot.class})
-@SpringBootApplication
+@JudgeGirlApplication
 public class SpringBootSubmissionApplication {
 
     public static void main(String[] args) {

@@ -15,6 +15,7 @@ package tw.waterball.judgegirl.submissionservice.domain.usecases;
 
 import lombok.*;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
+import tw.waterball.judgegirl.entities.submission.Bag;
 
 import java.util.List;
 
@@ -33,11 +34,13 @@ public class SubmitCodeRequest {
     public String languageEnvName;
     public int studentId;
     public List<FileResource> fileResources;
+    public Bag submissionBag;
 
-    public SubmitCodeRequest(int problemId, String languageEnvName, int studentId, List<FileResource> fileResources) {
+    public SubmitCodeRequest(int problemId, String languageEnvName, int studentId, List<FileResource> fileResources, Bag submissionBag) {
         this.problemId = problemId;
         this.languageEnvName = languageEnvName;
         this.studentId = studentId;
         this.fileResources = fileResources;
+        this.submissionBag = submissionBag;
     }
 }

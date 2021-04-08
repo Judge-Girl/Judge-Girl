@@ -13,7 +13,7 @@
 
 package tw.waterball.judgegirl.submissionapi.clients;
 
-import tw.waterball.judgegirl.submissionapi.views.VerdictIssuedEvent;
+import tw.waterball.judgegirl.entities.submission.verdict.VerdictIssuedEvent;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)

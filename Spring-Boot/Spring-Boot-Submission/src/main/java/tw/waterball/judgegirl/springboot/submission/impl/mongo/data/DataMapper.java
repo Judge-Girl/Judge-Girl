@@ -13,9 +13,10 @@
 
 package tw.waterball.judgegirl.springboot.submission.impl.mongo.data;
 
-import tw.waterball.judgegirl.entities.submission.Report;
+import tw.waterball.judgegirl.entities.submission.Bag;
 import tw.waterball.judgegirl.entities.submission.Submission;
-import tw.waterball.judgegirl.entities.submission.Verdict;
+import tw.waterball.judgegirl.entities.submission.report.Report;
+import tw.waterball.judgegirl.entities.submission.verdict.Verdict;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -45,7 +46,8 @@ public class DataMapper {
                 submission.getStudentId(),
                 toData(verdict),
                 submission.getSubmittedCodesFileId(),
-                submission.getSubmissionTime()
+                submission.getSubmissionTime(),
+                submission.getBag()
         );
     }
 
@@ -59,6 +61,7 @@ public class DataMapper {
                 verdict.getTotalGrade(),
                 verdict.getSummaryStatus(),
                 verdict.getCompileErrorMessage(),
+                verdict.getReport().getName(),
                 verdict.getReport().getRawData()
         );
     }
@@ -75,7 +78,7 @@ public class DataMapper {
                 data.getSubmittedCodesFileId(),
                 data.getSubmissionTime()
         );
-
+        submission.setBag(new Bag(data.getBag()));
         Verdict verdict = toEntity(data.getVerdict());
         submission.setVerdict(verdict);
         return submission;
@@ -89,7 +92,7 @@ public class DataMapper {
         Verdict verdict = data.getCompileErrorMessage() == null ?
                 new Verdict(data.getJudges(), data.getIssueTime()) :
                 Verdict.compileError(data.getCompileErrorMessage(), data.getIssueTime());
-        verdict.setReport(Report.fromData(data.getReportData()));
+        verdict.setReport(Report.fromData(data.getReportName(), data.getReportData()));
         return verdict;
     }
 }

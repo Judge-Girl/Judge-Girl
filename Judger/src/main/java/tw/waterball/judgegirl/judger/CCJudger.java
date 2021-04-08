@@ -25,7 +25,8 @@ import tw.waterball.judgegirl.entities.problem.Problem;
 import tw.waterball.judgegirl.entities.problem.SubmittedCodeSpec;
 import tw.waterball.judgegirl.entities.problem.Testcase;
 import tw.waterball.judgegirl.entities.submission.Submission;
-import tw.waterball.judgegirl.entities.submission.Verdict;
+import tw.waterball.judgegirl.entities.submission.verdict.Verdict;
+import tw.waterball.judgegirl.entities.submission.verdict.VerdictIssuedEvent;
 import tw.waterball.judgegirl.judger.infra.compile.CompileResult;
 import tw.waterball.judgegirl.judger.infra.compile.Compiler;
 import tw.waterball.judgegirl.judger.infra.compile.CompilerFactory;
@@ -39,8 +40,6 @@ import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.submissionapi.clients.SubmissionServiceDriver;
 import tw.waterball.judgegirl.submissionapi.clients.VerdictPublisher;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
-import tw.waterball.judgegirl.submissionapi.views.VerdictIssuedEvent;
-import tw.waterball.judgegirl.submissionapi.views.VerdictView;
 
 import java.io.File;
 import java.io.IOException;
@@ -314,8 +313,7 @@ public class CCJudger extends PluginExtendedJudger {
                         getStudent(),
                         getProblem().getTitle(),
                         getSubmission().getId(),
-                        VerdictView.fromEntity(verdict)));
-
+                        verdict, getSubmission().getBag()));
     }
 
     @SneakyThrows

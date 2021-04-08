@@ -72,7 +72,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     @BeforeEach
     void setup() {
         problem = ProblemStubs
-                .template()
+                .problemTemplate()
                 .build();
     }
 
@@ -111,7 +111,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         mockMvc.perform(get("/api/problems/{problemId}", problem.getId()))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().json(toJson(ProblemView.fromEntity(problem))));
+                .andExpect(content().json(toJson(ProblemView.toViewModel(problem))));
     }
 
     @Test
@@ -165,7 +165,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     }
 
     private Problem givenProblemWithTags(int id, String... tags) {
-        final Problem targetProblem = ProblemStubs.template().id(id)
+        final Problem targetProblem = ProblemStubs.problemTemplate().id(id)
                 .tags(asList(tags)).build();
         mongoTemplate.save(targetProblem);
         return targetProblem;
@@ -247,7 +247,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     private List<Problem> givenProblemsSaved(int count) {
         Random random = new Random();
         List<Problem> problems = IntStream.range(0, count).mapToObj((id) ->
-                ProblemStubs.template().id(id)
+                ProblemStubs.problemTemplate().id(id)
                         .title(String.valueOf(random.nextInt())).build())
                 .collect(Collectors.toList());
         problems.forEach(mongoTemplate::save);

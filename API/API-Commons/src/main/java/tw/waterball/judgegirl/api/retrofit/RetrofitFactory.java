@@ -14,29 +14,38 @@
 package tw.waterball.judgegirl.api.retrofit;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import okhttp3.Interceptor;
+import okhttp3.OkHttpClient;
 import retrofit2.Retrofit;
 import retrofit2.converter.jackson.JacksonConverterFactory;
 
 import javax.inject.Inject;
 
+import static java.util.Arrays.stream;
+
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
 public class RetrofitFactory {
-    private ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper;
 
     @Inject
     public RetrofitFactory(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
 
-    public Retrofit create(String scheme, String host, int port) {
+    public Retrofit create(String scheme, String host, int port, Interceptor... interceptors) {
         if (host.endsWith("/")) {
             throw new IllegalArgumentException("The base url should not end with '/'");
         }
+
+        OkHttpClient.Builder httpClientBuilder = new OkHttpClient.Builder();
+        stream(interceptors).forEach(httpClientBuilder::addInterceptor);
+
         return new Retrofit.Builder()
                 .addConverterFactory(JacksonConverterFactory.create(objectMapper))
                 .baseUrl(String.format("%s://%s:%d", scheme, host, port))
+                .client(httpClientBuilder.build())
                 .build();
     }
 }

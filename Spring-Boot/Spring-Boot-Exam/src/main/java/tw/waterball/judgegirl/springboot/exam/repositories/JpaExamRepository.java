@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import tw.waterball.judgegirl.entities.exam.Answer;
 import tw.waterball.judgegirl.entities.exam.Exam;
 import tw.waterball.judgegirl.entities.exam.Question;
+import tw.waterball.judgegirl.entities.exam.Record;
 import tw.waterball.judgegirl.examservice.domain.repositories.ExamFilter;
 import tw.waterball.judgegirl.examservice.domain.repositories.ExamRepository;
 import tw.waterball.judgegirl.springboot.exam.repositories.jpa.*;
@@ -33,6 +34,7 @@ public class JpaExamRepository implements ExamRepository {
     private final JpaQuestionDataPort jpaQuestionDataPort;
     private final JpaExamParticipationDataPort jpaExamParticipationDataPort;
     private final JpaAnswerDataPort jpaAnswerDataPort;
+    private final JpaBestRecordDataPort jpaBestRecordDataPort;
 
     @Override
     public Optional<Exam> findById(int examId) {
@@ -72,6 +74,17 @@ public class JpaExamRepository implements ExamRepository {
             log.error("Error during exams filtering.", err);
             throw err;
         }
+    }
+
+    @Override
+    public void saveBestRecordOfQuestion(Record record) {
+        jpaBestRecordDataPort.save(BestRecordData.toData(record));
+    }
+
+    @Override
+    public Optional<Record> findBestRecordOfQuestion(Question.Id questionId, int studentId) {
+        return jpaBestRecordDataPort.findById(new BestRecordData.Id(new QuestionData.Id(questionId), studentId))
+                .map(BestRecordData::toEntity);
     }
 
     @Override
@@ -133,4 +146,5 @@ public class JpaExamRepository implements ExamRepository {
     public boolean hasStudentParticipatedExam(int studentId, int examId) {
         return jpaExamParticipationDataPort.existsById_StudentIdAndId_ExamId(studentId, examId);
     }
+
 }

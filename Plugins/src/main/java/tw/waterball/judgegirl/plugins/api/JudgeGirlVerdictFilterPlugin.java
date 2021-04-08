@@ -14,7 +14,7 @@
 package tw.waterball.judgegirl.plugins.api;
 
 import tw.waterball.judgegirl.entities.problem.JudgePluginTag;
-import tw.waterball.judgegirl.entities.submission.VerdictIssuer;
+import tw.waterball.judgegirl.entities.submission.verdict.VerdictIssuer;
 
 /**
  * The filter that add new runtime behaviors and modify some parts of the verdict.

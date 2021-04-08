@@ -15,8 +15,8 @@ package tw.waterball.judgegirl.entities.stubs;
 
 import tw.waterball.judgegirl.entities.problem.*;
 import tw.waterball.judgegirl.entities.problem.Problem.ProblemBuilder;
-import tw.waterball.judgegirl.entities.submission.CompositeReport;
-import tw.waterball.judgegirl.entities.submission.Report;
+import tw.waterball.judgegirl.entities.submission.report.CompositeReport;
+import tw.waterball.judgegirl.entities.submission.report.Report;
 
 import static java.util.Collections.singletonMap;
 import static tw.waterball.judgegirl.entities.problem.JudgePluginTag.Type.OUTPUT_MATCH_POLICY;
@@ -29,7 +29,7 @@ public class ProblemStubs {
     @SuppressWarnings("WeakerAccess")
     public final static int ID = 1;
 
-    public static ProblemBuilder template() {
+    public static ProblemBuilder problemTemplate() {
         return Problem.builder()
                 .id(ID)
                 .title("Title")
