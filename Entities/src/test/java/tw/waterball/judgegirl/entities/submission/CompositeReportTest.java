@@ -14,6 +14,8 @@
 package tw.waterball.judgegirl.entities.submission;
 
 import org.junit.jupiter.api.Test;
+import tw.waterball.judgegirl.entities.submission.report.CompositeReport;
+import tw.waterball.judgegirl.entities.submission.report.Report;
 
 import static java.util.Collections.singletonMap;
 import static org.junit.jupiter.api.Assertions.assertEquals;

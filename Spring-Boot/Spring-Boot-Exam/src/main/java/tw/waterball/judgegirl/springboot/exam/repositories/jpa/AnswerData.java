@@ -17,6 +17,7 @@ import java.util.Date;
 @IdClass(AnswerData.Id.class)
 public class AnswerData {
     @javax.persistence.Id
+    // TODO: SEQUENCE should be removed after the SQL table declared
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Integer number;
     @javax.persistence.Id

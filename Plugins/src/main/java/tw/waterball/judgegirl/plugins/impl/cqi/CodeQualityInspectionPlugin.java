@@ -23,7 +23,7 @@ import tw.waterball.judgegirl.cqi.cyclomatic.CyclomaticComplexityCalculatorImpl;
 import tw.waterball.judgegirl.entities.problem.JudgePluginTag;
 import tw.waterball.judgegirl.entities.problem.LanguageEnv;
 import tw.waterball.judgegirl.entities.problem.Problem;
-import tw.waterball.judgegirl.entities.submission.VerdictIssuer;
+import tw.waterball.judgegirl.entities.submission.verdict.VerdictIssuer;
 import tw.waterball.judgegirl.plugins.api.AbstractJudgeGirlPlugin;
 import tw.waterball.judgegirl.plugins.api.JudgeGirlVerdictFilterPlugin;
 import tw.waterball.judgegirl.plugins.api.LanguageEnvAware;
@@ -50,8 +50,8 @@ public class CodeQualityInspectionPlugin extends AbstractJudgeGirlPlugin
     public final static String VERSION = "1.0";
     public final static JudgePluginTag TAG = new JudgePluginTag(JudgePluginTag.Type.FILTER, GROUP, NAME, VERSION);
 
-    private CyclomaticComplexityCalculator ccCalculator;
-    private CodingStyleAnalyzer csAnalyzer;
+    private final CyclomaticComplexityCalculator ccCalculator;
+    private final CodingStyleAnalyzer csAnalyzer;
     private CodeQualityInspectionReport report;
     private Problem problem;
     private LanguageEnv languageEnv;

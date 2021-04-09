@@ -4,27 +4,33 @@ import lombok.AllArgsConstructor;
 import lombok.Value;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
 import tw.waterball.judgegirl.entities.exam.*;
+import tw.waterball.judgegirl.entities.submission.Bag;
+import tw.waterball.judgegirl.entities.submission.verdict.Verdict;
+import tw.waterball.judgegirl.entities.submission.verdict.VerdictIssuedEvent;
 import tw.waterball.judgegirl.examservice.domain.repositories.ExamRepository;
 import tw.waterball.judgegirl.submissionapi.clients.SubmissionServiceDriver;
+import tw.waterball.judgegirl.submissionapi.clients.SubmitCodeRequest;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
-import tw.waterball.judgegirl.submissionservice.domain.usecases.SubmitCodeRequest;
-import tw.waterball.judgegirl.submissionservice.domain.usecases.exceptions.SubmissionThrottlingException;
 
 import javax.inject.Named;
 import java.util.List;
+import java.util.OptionalInt;
 
+import static java.util.Collections.singletonMap;
 import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
+import static tw.waterball.judgegirl.commons.utils.ComparableUtils.betterAndNewer;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
 @Named
 @AllArgsConstructor
-public class AnswerQuestionUseCase {
-    private final SubmissionServiceDriver submissionServiceDriver;
+public class AnswerQuestionUseCase implements VerdictIssuedEventListener {
+    public static final String BAG_KEY_EXAM_ID = "exam-id";
+    private final SubmissionServiceDriver submissionService;
     private final ExamRepository examRepository;
 
-    public void execute(Request request, Presenter presenter) throws ExamHasNotBeenStartedException, NoSubmissionQuotaException, SubmissionThrottlingException {
+    public void execute(Request request, Presenter presenter) throws ExamHasNotBeenStartedException, NoSubmissionQuotaException {
         Exam exam = findExam(request);
         Question question = findQuestion(request, exam);
 
@@ -32,10 +38,10 @@ public class AnswerQuestionUseCase {
         examMustHaveBeenStarted(exam);
         answerCountMustNotExceedQuota(request, question);
 
-        SubmissionView submissionView = submissionServiceDriver.submit(submitCodeRequest(request));
-        Answer answer = new Answer(new Answer.Id(question.getId(), request.studentId), submissionView.id);
-
+        SubmissionView submissionView = submissionService.submit(submitCodeRequest(request));
+        Answer answer = answer(request, question, submissionView);
         answer = examRepository.saveAnswer(answer);
+
         presenter.setAnswer(answer);
     }
 
@@ -71,7 +77,12 @@ public class AnswerQuestionUseCase {
 
     private SubmitCodeRequest submitCodeRequest(Request request) {
         return new SubmitCodeRequest(request.problemId,
-                request.langEnvName, request.studentId, request.fileResources);
+                request.langEnvName, request.studentId, request.fileResources,
+                new Bag(singletonMap(BAG_KEY_EXAM_ID, String.valueOf(request.examId))));
+    }
+
+    private Answer answer(Request request, Question question, SubmissionView submissionView) {
+        return new Answer(new Answer.Id(question.getId(), request.studentId), submissionView.id);
     }
 
     @Value
@@ -86,4 +97,31 @@ public class AnswerQuestionUseCase {
     public interface Presenter {
         void setAnswer(Answer answer);
     }
+
+    @Override
+    public void onVerdictIssued(VerdictIssuedEvent event) {
+        getExamIdFromBag(event.getSubmissionBag())
+                .ifPresent(examId -> handleVerdictIssuedEvent(event, examId));
+    }
+
+    private void handleVerdictIssuedEvent(VerdictIssuedEvent event, int examId) {
+        Record record = record(event, examId);
+        Record bestRecord = examRepository.findBestRecordOfQuestion(record.getQuestionId(), event.getStudentId())
+                .map(currentBest -> betterAndNewer(currentBest, record))
+                .orElse(record);
+
+        examRepository.saveBestRecordOfQuestion(bestRecord);
+    }
+
+    private OptionalInt getExamIdFromBag(Bag submissionBag) {
+        return submissionBag.getAsInteger(BAG_KEY_EXAM_ID);
+    }
+
+    private Record record(VerdictIssuedEvent event, int examId) {
+        Verdict newVerdict = event.getVerdict();
+        return new Record(new Question.Id(examId, event.getProblemId()),
+                event.getStudentId(), newVerdict.getSummaryStatus(), newVerdict.getMaximumRuntime(), newVerdict.getMaximumMemoryUsage(),
+                newVerdict.getTotalGrade());
+    }
+
 }

@@ -25,6 +25,8 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.*;
 
+import static java.util.Collections.emptyList;
+import static java.util.Objects.requireNonNullElse;
 import static tw.waterball.judgegirl.entities.problem.JudgePluginTag.Type.FILTER;
 import static tw.waterball.judgegirl.entities.problem.JudgePluginTag.Type.OUTPUT_MATCH_POLICY;
 
@@ -54,10 +56,10 @@ public class Problem {
             JudgePluginTag> filterPluginTags;
 
     @Singular
-    private List<@NotBlank String> tags;
+    private List<@NotBlank String> tags = new ArrayList<>();
 
     @Singular
-    private List<@Valid Testcase> testcases;
+    private List<@Valid Testcase> testcases = new ArrayList<>();
 
     @NotNull
     private boolean visible;
@@ -105,7 +107,7 @@ public class Problem {
     }
 
     public List<String> getTags() {
-        return tags;
+        return requireNonNullElse(tags, emptyList());
     }
 
     public void setTags(List<String> tags) {
@@ -156,6 +158,11 @@ public class Problem {
 
     public Map<String, LanguageEnv> getLanguageEnvs() {
         return languageEnvs;
+    }
+
+    public int getTotalGrade() {
+        return testcases.stream()
+                .mapToInt(Testcase::getGrade).sum();
     }
 
     public List<Testcase> getTestcases() {

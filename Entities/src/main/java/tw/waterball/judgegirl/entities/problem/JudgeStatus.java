@@ -17,6 +17,7 @@ package tw.waterball.judgegirl.entities.problem;
  * @author - johnny850807@gmail.com (Waterball)
  */
 public enum JudgeStatus {
+
     /**
      * All Correct
      */
@@ -68,6 +69,8 @@ public enum JudgeStatus {
      */
     SYSTEM_ERR("System Error");
 
+    public static JudgeStatus[] NORMAL_STATUSES = {AC, TLE, MLE, WA, CE, OLE, RE, PE};
+
     private final String fullName;
 
     JudgeStatus(String fullName) {
@@ -76,5 +79,27 @@ public enum JudgeStatus {
 
     public String getFullName() {
         return fullName;
+    }
+
+    public int getOrder() {
+        switch (this) {
+            case AC:
+                return Integer.MAX_VALUE; // the best
+            case WA:
+            case RE:
+            case MLE:
+            case TLE:
+            case OLE:
+            case PE:
+                return 300;
+            case CE:
+                return 200;
+            case SYSTEM_ERR:
+                return 0;
+            case NONE:
+                return -1;
+            default:
+                throw new IllegalStateException("enums has not been totally covered.");
+        }
     }
 }

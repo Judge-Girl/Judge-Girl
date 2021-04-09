@@ -19,9 +19,9 @@
 //import org.mockito.ArgumentCaptor;
 //import tw.waterball.judgegirl.commons.models.files.FileResource;
 //import tw.waterball.judgegirl.entities.problem.*;
-//import tw.waterball.judgegirl.entities.submission.Report;
+//import tw.waterball.judgegirl.entities.submission.report.Report;
 //import tw.waterball.judgegirl.entities.submission.Submission;
-//import tw.waterball.judgegirl.entities.submission.VerdictIssuer;
+//import tw.waterball.judgegirl.entities.submission.verdict.VerdictIssuer;
 //import tw.waterball.judgegirl.judger.CCJudger;
 //import tw.waterball.judgegirl.judger.DefaultCCJudgerFactory;
 //import tw.waterball.judgegirl.plugins.api.AbstractJudgeGirlPlugin;
@@ -33,7 +33,7 @@
 //import tw.waterball.judgegirl.submissionapi.clients.SubmissionServiceDriver;
 //import tw.waterball.judgegirl.submissionapi.clients.VerdictPublisher;
 //import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
-//import tw.waterball.judgegirl.submissionapi.views.VerdictIssuedEvent;
+//import tw.waterball.judgegirl.entities.submission.verdict.VerdictIssuedEvent;
 //
 //import java.io.ByteArrayInputStream;
 //import java.io.IOException;

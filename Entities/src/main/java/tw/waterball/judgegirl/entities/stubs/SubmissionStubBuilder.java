@@ -2,16 +2,18 @@ package tw.waterball.judgegirl.entities.stubs;
 
 import lombok.AllArgsConstructor;
 import tw.waterball.judgegirl.entities.problem.JudgeStatus;
-import tw.waterball.judgegirl.entities.submission.Judge;
-import tw.waterball.judgegirl.entities.submission.ProgramProfile;
+import tw.waterball.judgegirl.entities.problem.Language;
+import tw.waterball.judgegirl.entities.problem.Problem;
 import tw.waterball.judgegirl.entities.submission.Submission;
-import tw.waterball.judgegirl.entities.submission.Verdict;
+import tw.waterball.judgegirl.entities.submission.verdict.Judge;
+import tw.waterball.judgegirl.entities.submission.verdict.ProgramProfile;
+import tw.waterball.judgegirl.entities.submission.verdict.Verdict;
 
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
+import static java.lang.System.currentTimeMillis;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.IntStream.range;
 import static tw.waterball.judgegirl.entities.problem.JudgeStatus.*;
 
 /**
@@ -86,5 +88,25 @@ public class SubmissionStubBuilder extends Submission {
     private SubmissionStubBuilder judge(JudgeStatus status, long runtime, long memoryUsage, int grade) {
         judges.add(new Judge("T", status, new ProgramProfile(runtime, memoryUsage, ""), grade));
         return this;
+    }
+
+    public static Submission randomJudgedSubmissionFromProblem(Problem problem, int studentId, int howManyACs, int gradePerAc) {
+        var judges = new ArrayList<Judge>();
+        List<JudgeStatus> statuses = range(0, howManyACs).mapToObj(i -> AC).collect(toList());
+        Random random = new Random(currentTimeMillis());
+        JudgeStatus[] NORMAL_JUDGE_STATUSES = JudgeStatus.NORMAL_STATUSES;
+        for (int i = 0; i < problem.getTestcases().size() - howManyACs; i++) {
+            statuses.add(NORMAL_JUDGE_STATUSES[random.nextInt(NORMAL_JUDGE_STATUSES.length)]);
+        }
+        for (int i = 0; i < problem.getTestcases().size(); i++) {
+            judges.add(new Judge(problem.getTestcases().get(i).getName(),
+                    statuses.get(i), new ProgramProfile(10, 10,
+                    statuses.get(i) == RE ? "Error" : ""),
+                    statuses.get(i) == AC ? gradePerAc : 0));
+        }
+        Submission submission = new Submission(UUID.randomUUID().toString(), studentId, problem.getId(),
+                Language.C.toString(), "fileId");
+        submission.setVerdict(new Verdict(judges));
+        return submission;
     }
 }

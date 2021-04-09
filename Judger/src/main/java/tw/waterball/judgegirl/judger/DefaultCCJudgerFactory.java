@@ -33,7 +33,7 @@ import tw.waterball.judgegirl.plugins.api.JudgeGirlPlugin;
 import tw.waterball.judgegirl.plugins.api.PresetJudgeGirlPluginLocator;
 import tw.waterball.judgegirl.problemapi.clients.ProblemApiClient;
 import tw.waterball.judgegirl.problemapi.clients.ProblemServiceDriver;
-import tw.waterball.judgegirl.submissionapi.clients.AmqpVerdictPublisher;
+import tw.waterball.judgegirl.springboot.amqp.AmqpVerdictPublisher;
 import tw.waterball.judgegirl.submissionapi.clients.SubmissionApiClient;
 import tw.waterball.judgegirl.submissionapi.clients.SubmissionServiceDriver;
 import tw.waterball.judgegirl.submissionapi.clients.VerdictPublisher;

@@ -21,9 +21,7 @@ public class Question {
 
     @PositiveOrZero
     private int questionOrder;
-
-    private Exam exam;
-
+    
     public Question(int examId, int problemId, int quota, int score, int questionOrder) {
         this.id = new Id(examId, problemId);
         this.quota = quota;

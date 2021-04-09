@@ -25,6 +25,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import static java.util.Collections.emptyList;
+import static java.util.Objects.requireNonNullElse;
+
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
@@ -43,7 +46,7 @@ public class ProblemView {
     public List<Testcase> testcases;
     public boolean visible;
 
-    public static ProblemView fromEntity(Problem problem) {
+    public static ProblemView toViewModel(Problem problem) {
         return new ProblemView(
                 problem.getId(),
                 problem.getTitle(),
@@ -64,14 +67,12 @@ public class ProblemView {
                 .title(view.getTitle())
                 .description(view.description)
                 .outputMatchPolicyPluginTag(view.judgeMatchPolicyPluginTag)
-                .tags(view.tags)
+                .tags(requireNonNullElse(view.tags, emptyList()))
                 .testcases(view.testcases)
-                .testcaseIOsFileId(view.testcaseIOsFileId);
+                .testcaseIOsFileId(view.testcaseIOsFileId)
+                .filterPluginTags(requireNonNullElse(view.judgeFilterPluginTags, emptyList()));
         for (LanguageEnv languageEnv : view.languageEnvs) {
             builder.languageEnv(languageEnv.getName(), languageEnv);
-        }
-        if (view.judgeFilterPluginTags != null) {
-            builder.filterPluginTags(view.judgeFilterPluginTags);
         }
         return builder.build();
     }

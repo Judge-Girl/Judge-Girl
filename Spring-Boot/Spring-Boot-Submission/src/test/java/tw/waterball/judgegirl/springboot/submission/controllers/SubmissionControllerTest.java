@@ -1,4 +1,4 @@
-package tw.waterball.judgegirl.springboot.submission.controllers;/*
+/*
  * Copyright 2020 Johnny850807 (Waterball) 潘冠辰
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
@@ -10,19 +10,17 @@ package tw.waterball.judgegirl.springboot.submission.controllers;/*
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
+package tw.waterball.judgegirl.springboot.submission.controllers;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.http.MediaType;
-import tw.waterball.judgegirl.commons.utils.Delay;
-import tw.waterball.judgegirl.entities.problem.JudgeStatus;
-import tw.waterball.judgegirl.entities.submission.Judge;
-import tw.waterball.judgegirl.entities.submission.ProgramProfile;
-import tw.waterball.judgegirl.entities.submission.Verdict;
-import tw.waterball.judgegirl.springboot.submission.impl.mongo.data.SubmissionData;
-import tw.waterball.judgegirl.springboot.submission.impl.mongo.data.VerdictData;
+import tw.waterball.judgegirl.entities.submission.verdict.Judge;
+import tw.waterball.judgegirl.entities.submission.verdict.ProgramProfile;
+import tw.waterball.judgegirl.entities.submission.verdict.Verdict;
+import tw.waterball.judgegirl.entities.submission.verdict.VerdictIssuedEvent;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
-import tw.waterball.judgegirl.submissionapi.views.VerdictIssuedEvent;
 import tw.waterball.judgegirl.testkit.resultmatchers.ZipResultMatcher;
 
 import java.util.ArrayList;
@@ -31,6 +29,8 @@ import java.util.List;
 import java.util.Set;
 
 import static java.util.Collections.singletonList;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -38,6 +38,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static tw.waterball.judgegirl.entities.problem.JudgeStatus.AC;
+import static tw.waterball.judgegirl.submissionapi.views.VerdictView.toViewModel;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -55,53 +56,26 @@ public class SubmissionControllerTest extends AbstractSubmissionControllerTest {
         requestDownloadSubmittedCodes(STUDENT1_ID, STUDENT1_TOKEN, submissionView.id, submissionView.submittedCodesFileId);
     }
 
-    @DisplayName("When submit same submitted codes many times, " +
-            "the submittedCodesFileId will be the same and the verdict is directly included as the response.")
     @Test
-    void testVerdictShortcut() throws Exception {
-        SubmissionView submissionView = submitCodeAndGet(ADMIN_ID, ADMIN_TOKEN, codes1);
-        Verdict verdict = new Verdict(List.of(new Judge("T", AC, new ProgramProfile(10, 10, ""), 10)));
-        submissionRepository.issueVerdictOfSubmission(submissionView.id, verdict);
+    void WhenSubmitCodeWithAdminToken_ShouldCompleteJudgeFlow_SaveAndBringSubmissionBagToJudger() throws Exception {
+        SubmissionView submission = submitCodeAndGet(ADMIN_ID, ADMIN_TOKEN);
+        assertThat("Admin's submission should have bag in the responded submission",
+                submissionBag.entrySet(), everyItem(is(in(submission.getBag().entrySet()))));
 
-        for (int i = 0; i < 3; i++) {
-            SubmissionView duplicateSubmission = submitCodeAndGet(ADMIN_ID, ADMIN_TOKEN, codes1);
-            assertEquals(submissionView.getSubmittedCodesFileId(), duplicateSubmission.getSubmittedCodesFileId());
-            assertEquals(verdict.getSummaryStatus(), duplicateSubmission.verdict.getSummaryStatus());
-            assertEquals(verdict.getTotalGrade(), duplicateSubmission.verdict.getTotalGrade());
-        }
+        shouldCompleteJudgeFlow(submission,
+                shouldBringSubmissionBagToJudger());
 
-        // should deploy the judger only once, as other submissions are duplicate and have verdict-shortcuts
-        verify(judgerDeployer, times(1)).deployJudger(any(), anyInt(), any());
-
-        // different files --> should respond un-judged submission
-        SubmissionView shouldBeUnJudged = submitCodeAndGet(ADMIN_ID, ADMIN_TOKEN, codes2);
-        assertFalse(shouldBeUnJudged.isJudged);
+        var savedSubmission = submissionRepository.findById(submission.id).orElseThrow();
+        assertThat("The submission's bag should have been saved",
+                submissionBag.entrySet(), everyItem(is(in(savedSubmission.getBag().entrySet()))));
     }
 
-
-    // TODO: drunk code, need improving
-    // A White-Box test: Strictly test the submission behavior
     @Test
-    void WhenSubmitCodeWithValidToken_ShouldSaveIt_DeployJudger_ListenToVerdictIssuedEvent_AndHandleTheEvent() throws Exception {
-        SubmissionView submissionView = submitCodeAndGet(STUDENT1_ID, STUDENT1_TOKEN);
-        verifyJudgerDeployed(submissionView);
-
-        // Publish the verdict through message queue after three seconds
-        Delay.delay(3000);
-        VerdictIssuedEvent verdictIssuedEvent = generateVerdictIssuedEvent(submissionView);
-        verdictPublisher.publish(verdictIssuedEvent);
-
-        // Verify the submission is updated with the verdict
-        verdictIssuedEventHandler.onHandlingCompletion$.doWait(3000);
-        SubmissionData updatedSubmissionData = mongoTemplate.findById(submissionView.getId(), SubmissionData.class);
-        assertNotNull(updatedSubmissionData);
-        VerdictData verdictData = updatedSubmissionData.getVerdict();
-        assertEquals(50, verdictData.getTotalGrade());
-        assertEquals(JudgeStatus.WA, verdictData.getSummaryStatus());
-        assertEquals(new HashSet<>(verdictIssuedEvent.getVerdict().getJudges()),
-                new HashSet<>(verdictData.getJudges()));
-        assertEquals(stubReport.getRawData(), verdictData.getReportData());
+    void WhenSubmitCodeWithValidToken_ShouldCompleteJudgeFlow() throws Exception {
+        SubmissionView submission = submitCodeAndGet(STUDENT1_ID, STUDENT1_TOKEN);
+        shouldCompleteJudgeFlow(submission);
     }
+
 
     @Test
     void GivenStudent1Submission_WhenGetThatSubmissionUsingAdminToken_ShouldRespondSuccessfully() throws Exception {
@@ -186,6 +160,34 @@ public class SubmissionControllerTest extends AbstractSubmissionControllerTest {
     void WhenSubmitCodeUnderStudent1UsingStudent2Token_ShouldBeForbidden() throws Exception {
         submitCode(STUDENT1_ID, STUDENT2_TOKEN)
                 .andExpect(status().isForbidden());
+    }
+
+    @DisplayName("[Verdict-Shortcut] When submit same submitted codes many times, " +
+            "the submittedCodesFileId will be the same and the verdict is directly included as the response.")
+    @Test
+    void testVerdictShortcut() throws Exception {
+        SubmissionView submissionView = submitCodeAndGet(ADMIN_ID, ADMIN_TOKEN, codes1);
+        Verdict verdict = new Verdict(List.of(new Judge("T", AC, new ProgramProfile(10, 10, ""), 10)));
+        submissionRepository.issueVerdictOfSubmission(submissionView.id, verdict);
+
+        int DUPLICATE_SUBMISSIONS = 3;
+        for (int i = 0; i < DUPLICATE_SUBMISSIONS; i++) {
+            SubmissionView duplicateSubmission = submitCodeAndGet(ADMIN_ID, ADMIN_TOKEN, codes1);
+            assertEquals(toViewModel(verdict), duplicateSubmission.getVerdict());
+        }
+
+        // should deploy the judger only once, as other submissions are duplicate and have verdict-shortcuts
+        verify(judgerDeployer, times(1)).deployJudger(any(), anyInt(), any());
+
+        ArgumentCaptor<VerdictIssuedEvent> argumentCaptor = ArgumentCaptor.forClass(VerdictIssuedEvent.class);
+        verify(verdictPublisher, times(DUPLICATE_SUBMISSIONS)).publish(argumentCaptor.capture());
+        argumentCaptor.getAllValues()
+                .forEach(event -> assertEquals(verdict.getBestJudge().getTestcaseName(),
+                        event.getVerdict().getBestJudge().getTestcaseName()));
+
+        // different files --> should respond un-judged submission
+        SubmissionView shouldBeUnJudged = submitCodeAndGet(ADMIN_ID, ADMIN_TOKEN, codes2);
+        assertFalse(shouldBeUnJudged.isJudged);
     }
 
 

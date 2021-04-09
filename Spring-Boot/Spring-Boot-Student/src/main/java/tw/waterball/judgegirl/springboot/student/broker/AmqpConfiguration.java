@@ -10,6 +10,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import tw.waterball.judgegirl.springboot.profiles.productions.Amqp;
 
+import java.util.UUID;
+
+import static java.lang.String.format;
+
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
@@ -18,9 +22,11 @@ import tw.waterball.judgegirl.springboot.profiles.productions.Amqp;
 public class AmqpConfiguration {
     public static final String BROKER_QUEUE = "brokerQueue";
 
-    @Bean
-    public Queue brokerQueue(@Value("${judge-girl.amqp.broker-queue}") String brokerQueueName) {
-        return new Queue(brokerQueueName, true);
+    @Bean(BROKER_QUEUE)
+    public Queue brokerQueue(@Value("${judge-girl.amqp.broker-queue-format}") String brokerQueueNameFormat) {
+        // (*) Broker-Services must not share the same queue. Use UUID to distinguish their queues.
+        String queueName = format(brokerQueueNameFormat, UUID.randomUUID().toString());
+        return new Queue(queueName, true);
     }
 
     @Bean
@@ -35,7 +41,7 @@ public class AmqpConfiguration {
                            @Qualifier("verdictExchange") TopicExchange exchange) {
         return BindingBuilder.bind(queue)
                 .to(exchange)
-                .with(String.format(verdictIssuedRoutingKeyFormat, "*"));
+                .with(format(verdictIssuedRoutingKeyFormat, "*"));
     }
 
 }

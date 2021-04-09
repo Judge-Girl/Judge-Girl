@@ -36,7 +36,7 @@ services:
   exam-service:
     build: Spring-Boot/Spring-Boot-Exam
     environment:
-      spring.profiles.active: prod,mysql
+      spring.profiles.active: prod,amqp,mysql
       MYSQL_HOST: "${MYSQL_HOST}"
       RABBIT_HOST: "${RABBIT_HOST}"
     labels:

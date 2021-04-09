@@ -19,7 +19,7 @@ import tw.waterball.judgegirl.entities.problem.JudgePluginTag;
 import tw.waterball.judgegirl.entities.problem.LanguageEnv;
 import tw.waterball.judgegirl.entities.problem.Problem;
 import tw.waterball.judgegirl.entities.problem.Testcase;
-import tw.waterball.judgegirl.entities.submission.VerdictIssuer;
+import tw.waterball.judgegirl.entities.submission.verdict.VerdictIssuer;
 import tw.waterball.judgegirl.plugins.api.*;
 import tw.waterball.judgegirl.plugins.api.codeinspection.JudgeGirlSourceCodeFilterPlugin;
 import tw.waterball.judgegirl.plugins.api.match.JudgeGirlMatchPolicyPlugin;
@@ -36,7 +36,7 @@ import java.util.Map;
 @SuppressWarnings("WeakerAccess")
 public abstract class PluginExtendedJudger extends Judger {
     private final static Logger logger = LogManager.getLogger(PluginExtendedJudger.class);
-    private JudgeGirlPluginLocator pluginLocator;
+    private final JudgeGirlPluginLocator pluginLocator;
 
     public PluginExtendedJudger(JudgeGirlPluginLocator pluginLocator) {
         this.pluginLocator = pluginLocator;

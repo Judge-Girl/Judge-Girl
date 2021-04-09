@@ -17,7 +17,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import tw.waterball.judgegirl.entities.problem.JudgeStatus;
-import tw.waterball.judgegirl.entities.submission.Judge;
+import tw.waterball.judgegirl.entities.submission.verdict.Judge;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -36,5 +36,6 @@ public class VerdictData {
     private int totalGrade;
     private JudgeStatus summaryStatus;
     private String compileErrorMessage;
+    private String reportName;
     private Map<String, ?> reportData;
 }

@@ -18,9 +18,12 @@ import lombok.Builder;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import tw.waterball.judgegirl.entities.submission.verdict.Verdict;
 
 import java.util.Date;
 import java.util.Optional;
+import java.util.OptionalInt;
+import java.util.OptionalLong;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -39,6 +42,10 @@ public class Submission implements Comparable<Submission> {
 
     private String submittedCodesFileId;
     private Date submissionTime = new Date();
+
+    // A submission client may want to transfer additional custom messages,
+    // the bag will be brought throughout the judge-flow.
+    private Bag bag = Bag.empty();
 
     public Submission(String id, int studentId, int problemId, String languageEnvName, String submittedCodesFileId, Date submissionTime) {
         this(id, studentId, problemId, languageEnvName, submittedCodesFileId);
@@ -101,6 +108,14 @@ public class Submission implements Comparable<Submission> {
         this.submittedCodesFileId = submittedCodesFileId;
     }
 
+    public void setBag(Bag bag) {
+        this.bag = bag;
+    }
+
+    public Bag getBag() {
+        return bag;
+    }
+
     public Date getSubmissionTime() {
         return submissionTime;
     }
@@ -134,5 +149,18 @@ public class Submission implements Comparable<Submission> {
         }
         return getVerdict().orElseThrow()
                 .compareTo(submission.getVerdict().orElseThrow());
+    }
+
+
+    public Optional<String> getBagMessageAsString(String key) {
+        return bag.getAsString(key);
+    }
+
+    public OptionalInt getBagMessageAsInteger(String key) {
+        return bag.getAsInteger(key);
+    }
+
+    public OptionalLong getBagMessageAsLong(String key) {
+        return bag.getAsLong(key);
     }
 }

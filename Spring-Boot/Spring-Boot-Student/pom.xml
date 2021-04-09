@@ -31,6 +31,10 @@
         </dependency>
         <dependency>
             <groupId>tw.waterball.judge-girl</groupId>
+            <artifactId>spring-boot-amqp</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>tw.waterball.judge-girl</groupId>
             <artifactId>student-service</artifactId>
         </dependency>
         <dependency>
@@ -45,6 +49,11 @@
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
             <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.github.fridujo</groupId>
+            <artifactId>rabbitmq-mock</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.h2database</groupId>

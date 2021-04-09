@@ -14,13 +14,9 @@
 package tw.waterball.judgegirl.springboot.exam;
 
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.ComponentScan;
+import tw.waterball.judgegirl.springboot.profiles.JudgeGirlApplication;
 
-@ComponentScan(basePackageClasses = {
-        tw.waterball.judgegirl.springboot.ScanRoot.class,
-        tw.waterball.judgegirl.examservice.ScanRoot.class})
-@SpringBootApplication
+@JudgeGirlApplication
 public class SpringBootExamApplication {
 
     public static void main(String[] args) {

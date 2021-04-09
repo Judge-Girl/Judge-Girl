@@ -6,6 +6,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
+import org.springframework.stereotype.Component;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
 import tw.waterball.judgegirl.commons.models.files.StreamingResource;
 import tw.waterball.judgegirl.entities.submission.Submission;
@@ -32,6 +33,7 @@ import static tw.waterball.judgegirl.springboot.submission.impl.mongo.data.DataM
 @ConditionalOnProperty(name = "judge-girl.submission-service.save-strategy",
         havingValue = DuplicateDetectionCopyOnWrite.STRATEGY_NAME)
 @AllArgsConstructor
+@Component
 public class DuplicateDetectionCopyOnWrite implements SaveSubmissionWithCodesStrategy {
     public final static String STRATEGY_NAME = "copy-on-write";
     protected final MongoTemplate mongoTemplate;

@@ -119,7 +119,7 @@ class GetProblemPresenter implements GetProblemUseCase.Presenter {
     }
 
     ProblemView present() {
-        return ProblemView.fromEntity(problem);
+        return ProblemView.toViewModel(problem);
     }
 }
 

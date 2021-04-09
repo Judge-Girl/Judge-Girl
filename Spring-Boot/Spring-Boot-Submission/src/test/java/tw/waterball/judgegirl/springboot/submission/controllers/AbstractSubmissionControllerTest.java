@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -38,36 +39,46 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder;
 import tw.waterball.judgegirl.commons.token.TokenService;
 import tw.waterball.judgegirl.entities.problem.JudgeStatus;
 import tw.waterball.judgegirl.entities.problem.Language;
 import tw.waterball.judgegirl.entities.problem.Problem;
 import tw.waterball.judgegirl.entities.stubs.ProblemStubs;
-import tw.waterball.judgegirl.entities.submission.*;
+import tw.waterball.judgegirl.entities.submission.Bag;
+import tw.waterball.judgegirl.entities.submission.Submission;
+import tw.waterball.judgegirl.entities.submission.SubmissionThrottling;
+import tw.waterball.judgegirl.entities.submission.report.Report;
+import tw.waterball.judgegirl.entities.submission.verdict.Judge;
+import tw.waterball.judgegirl.entities.submission.verdict.ProgramProfile;
+import tw.waterball.judgegirl.entities.submission.verdict.VerdictIssuedEvent;
 import tw.waterball.judgegirl.problemapi.clients.ProblemServiceDriver;
-import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.springboot.profiles.Profiles;
 import tw.waterball.judgegirl.springboot.submission.SpringBootSubmissionApplication;
+import tw.waterball.judgegirl.springboot.submission.handler.VerdictIssuedEventHandler;
+import tw.waterball.judgegirl.springboot.submission.impl.mongo.data.SubmissionData;
+import tw.waterball.judgegirl.springboot.submission.impl.mongo.data.VerdictData;
 import tw.waterball.judgegirl.springboot.submission.impl.mongo.strategy.SaveSubmissionWithCodesStrategy;
 import tw.waterball.judgegirl.springboot.submission.impl.mongo.strategy.VerdictShortcut;
 import tw.waterball.judgegirl.submissionapi.clients.VerdictPublisher;
 import tw.waterball.judgegirl.submissionapi.views.ReportView;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
-import tw.waterball.judgegirl.submissionapi.views.VerdictIssuedEvent;
 import tw.waterball.judgegirl.submissionapi.views.VerdictView;
 import tw.waterball.judgegirl.submissionservice.deployer.JudgerDeployer;
 import tw.waterball.judgegirl.submissionservice.domain.repositories.SubmissionRepository;
 import tw.waterball.judgegirl.submissionservice.domain.usecases.SubmitCodeUseCase;
 import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
+import tw.waterball.judgegirl.testkit.semantics.Spec;
 
+import java.util.Arrays;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -75,7 +86,12 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static tw.waterball.judgegirl.commons.token.TokenService.Identity.admin;
 import static tw.waterball.judgegirl.commons.token.TokenService.Identity.student;
+import static tw.waterball.judgegirl.commons.utils.Delay.delay;
+import static tw.waterball.judgegirl.problemapi.views.ProblemView.toViewModel;
+import static tw.waterball.judgegirl.submissionapi.clients.SubmissionApiClient.HEADER_BAG_KEY_PREFIX;
 import static tw.waterball.judgegirl.submissionapi.clients.SubmissionApiClient.SUBMIT_CODE_MULTIPART_KEY_NAME;
+import static tw.waterball.judgegirl.submissionapi.views.SubmissionView.toViewModel;
+import static tw.waterball.judgegirl.submissionapi.views.VerdictView.toEntity;
 import static tw.waterball.judgegirl.testkit.resultmatchers.ZipResultMatcher.zip;
 
 /**
@@ -89,7 +105,7 @@ public class AbstractSubmissionControllerTest extends AbstractSpringBootTest {
     public static final int STUDENT1_ID = 22;
     public static final int STUDENT2_ID = 34;
     protected final String API_PREFIX = "/api/problems/{problemId}/" + Language.C.toString() + "/students/{studentId}/submissions";
-    protected final Problem problem = ProblemStubs.template().build();
+    protected final Problem problem = ProblemStubs.problemTemplate().build();
     protected final String SUBMISSION_EXCHANGE_NAME = "submissions";
     protected String ADMIN_TOKEN;
     protected String STUDENT1_TOKEN;
@@ -115,11 +131,12 @@ public class AbstractSubmissionControllerTest extends AbstractSpringBootTest {
 
     @Autowired
     MongoTemplate mongoTemplate;
-
+    
     @Autowired
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     SubmitCodeUseCase submitCodeUseCase;
 
-    @Autowired
+    @SpyBean
     VerdictPublisher verdictPublisher;
 
     @MockBean
@@ -157,6 +174,13 @@ public class AbstractSubmissionControllerTest extends AbstractSpringBootTest {
 
     protected final Report stubReport = ProblemStubs.compositeReport();
 
+    protected final Bag submissionBag = new Bag() {{
+        put("int", "1");
+        put("long", "1");
+        put("string", "h");
+    }};
+
+
     @Configuration
     public static class TestConfig {
         @Bean
@@ -184,26 +208,65 @@ public class AbstractSubmissionControllerTest extends AbstractSpringBootTest {
 
     private void mockGetProblemById() {
         when(problemServiceDriver.getProblem(problem.getId())).thenReturn(
-                ProblemView.fromEntity(problem));
+                toViewModel(problem));
     }
 
     @AfterEach
     void clean() {
         mongoTemplate.dropCollection(Submission.class);
-        // throttling must be disabled, otherwise the following submissions will fail (be throttled)
+        // throttling must be cleared, otherwise the following submissions will fail (be throttled)
         mongoTemplate.dropCollection(SubmissionThrottling.class);
     }
 
-    protected void verifyJudgerDeployed(SubmissionView submissionView) {
+    @SafeVarargs
+    protected final VerdictIssuedEvent shouldCompleteJudgeFlow(SubmissionView submission, Spec<Submission>... specs) {
+        shouldDeployJudger(submission, specs);
+
+        VerdictIssuedEvent verdictIssuedEvent = publishVerdictAfterTheWhile(submission);
+
+        shouldNotifyVerdictIssuedEventHandler();
+        verdictShouldHaveBeenSavedCorrectly(submission, verdictIssuedEvent);
+        return verdictIssuedEvent;
+    }
+
+    protected void shouldDeployJudger(SubmissionView submissionView, Spec<Submission>[] specs) {
         ArgumentCaptor<Problem> problemArgumentCaptor = ArgumentCaptor.forClass(Problem.class);
         ArgumentCaptor<Integer> studentIdArgumentCaptor = ArgumentCaptor.forClass(Integer.class);
         ArgumentCaptor<Submission> submissionArgumentCaptor = ArgumentCaptor.forClass(Submission.class);
 
         verify(judgerDeployer).deployJudger(problemArgumentCaptor.capture(), studentIdArgumentCaptor.capture(),
                 submissionArgumentCaptor.capture());
-        assertEquals(STUDENT1_ID, studentIdArgumentCaptor.getValue());
-        assertEquals(ProblemView.fromEntity(problem), ProblemView.fromEntity(problemArgumentCaptor.getValue()));
-        assertEquals(submissionView, SubmissionView.fromEntity(submissionArgumentCaptor.getValue()));
+        Submission actualSubmission = submissionArgumentCaptor.getValue();
+        assertEquals(submissionView.studentId, studentIdArgumentCaptor.getValue());
+        assertEquals(toViewModel(problem), toViewModel(problemArgumentCaptor.getValue()));
+        assertEquals(submissionView, toViewModel(actualSubmission));
+        Arrays.stream(specs).forEach(s -> s.verify(actualSubmission));
+    }
+
+    protected Spec<Submission> shouldBringSubmissionBagToJudger() {
+        return submission -> assertEquals(submissionBag, submission.getBag());
+    }
+
+    protected VerdictIssuedEvent publishVerdictAfterTheWhile(SubmissionView submissionView) {
+        delay(3000);
+        VerdictIssuedEvent verdictIssuedEvent = generateVerdictIssuedEvent(submissionView);
+        verdictPublisher.publish(verdictIssuedEvent);
+        return verdictIssuedEvent;
+    }
+
+    protected void shouldNotifyVerdictIssuedEventHandler() {
+        verdictIssuedEventHandler.onHandlingCompletion$.doWait(5000);
+    }
+
+    protected void verdictShouldHaveBeenSavedCorrectly(SubmissionView submissionView, VerdictIssuedEvent verdictIssuedEvent) {
+        SubmissionData updatedSubmissionData = mongoTemplate.findById(submissionView.getId(), SubmissionData.class);
+        assertNotNull(updatedSubmissionData);
+        VerdictData verdictData = updatedSubmissionData.getVerdict();
+        assertEquals(50, verdictData.getTotalGrade());
+        assertEquals(JudgeStatus.WA, verdictData.getSummaryStatus());
+        assertEquals(new HashSet<>(verdictIssuedEvent.getVerdict().getJudges()),
+                new HashSet<>(verdictData.getJudges()));
+        assertEquals(stubReport.getRawData(), verdictData.getReportData());
     }
 
     protected VerdictIssuedEvent generateVerdictIssuedEvent(SubmissionView submissionView) {
@@ -212,17 +275,17 @@ public class AbstractSubmissionControllerTest extends AbstractSpringBootTest {
                 .studentId(submissionView.studentId)
                 .problemTitle(problem.getTitle())
                 .submissionId(submissionView.getId())
-                .verdict(VerdictView.builder()
+                .verdict(toEntity(VerdictView.builder()
                         .judge(new Judge("t1", JudgeStatus.AC, new ProgramProfile(5, 5, ""), 20))
                         .judge(new Judge("t2", JudgeStatus.AC, new ProgramProfile(6, 6, ""), 30))
                         .judge(new Judge("t3", JudgeStatus.WA, new ProgramProfile(7, 7, ""), 0))
                         .issueTime(new Date())
-                        .report(ReportView.fromEntity(ProblemStubs.compositeReport()))
-                        .build()).build();
+                        .report(ReportView.toViewModel(ProblemStubs.compositeReport()))
+                        .build())).build();
     }
 
 
-    protected List<SubmissionView> givenParallelStudentSubmissions(int studentId, int count) throws Exception {
+    protected List<SubmissionView> givenParallelStudentSubmissions(int studentId, int count) {
         return IntStream.range(0, count).parallel()
                 .mapToObj(i -> {
                     try {
@@ -260,17 +323,14 @@ public class AbstractSubmissionControllerTest extends AbstractSpringBootTest {
     }
 
     protected SubmissionView submitCodeAndGet(int studentId, String token, MockMultipartFile... files) throws Exception {
-        String responseJson = submitCode(studentId, token, files)
+        return getBody(submitCode(studentId, token, files)
                 .andExpect(status().isAccepted())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("id").exists())
                 .andExpect(jsonPath("studentId").value(studentId))
                 .andExpect(jsonPath("problemId").value(problem.getId()))
                 .andExpect(jsonPath("submittedCodesFileId").exists())
-                .andExpect(jsonPath("submissionTime").exists())
-                .andReturn().getResponse().getContentAsString();
-
-        return objectMapper.readValue(responseJson, SubmissionView.class);
+                .andExpect(jsonPath("submissionTime").exists()), SubmissionView.class);
     }
 
     protected ResultActions submitCode(int studentId, String token, MockMultipartFile... files) throws Exception {
@@ -278,12 +338,16 @@ public class AbstractSubmissionControllerTest extends AbstractSpringBootTest {
                 multipartRequestWithSubmittedCodes(studentId, files), token);
     }
 
-    protected MockMultipartHttpServletRequestBuilder multipartRequestWithSubmittedCodes(int studentId, MockMultipartFile... files) {
+    protected MockHttpServletRequestBuilder multipartRequestWithSubmittedCodes(int studentId, MockMultipartFile... files) {
         var call = multipart(API_PREFIX, problem.getId(), studentId);
         for (MockMultipartFile file : files) {
             call = call.file(file);
         }
-        return call;
+        MockHttpServletRequestBuilder addingHeaders = call;
+        for (var entry : submissionBag.entrySet()) {
+            addingHeaders = call.header(HEADER_BAG_KEY_PREFIX + entry.getKey(), entry.getValue());
+        }
+        return addingHeaders;
     }
 
     protected List<SubmissionView> getSubmissionsInPage(int studentId, String studentToken, int page) throws Exception {
@@ -301,4 +365,5 @@ public class AbstractSubmissionControllerTest extends AbstractSpringBootTest {
         return mockMvc.perform(requestBuilderSupplier.get()
                 .header("Authorization", "bearer " + token));
     }
+
 }

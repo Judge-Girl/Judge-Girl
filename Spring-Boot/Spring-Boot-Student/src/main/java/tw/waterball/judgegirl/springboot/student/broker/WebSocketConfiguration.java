@@ -12,11 +12,11 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @Configuration
 @EnableWebSocketMessageBroker
 public class WebSocketConfiguration implements WebSocketMessageBrokerConfigurer {
-    public static final String DESTINATION_PREFIX = "topic";
+    public static final String STOMP_ROOT_DESTINATION_PREFIX = "/topic";
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
-        registry.enableSimpleBroker("/" + DESTINATION_PREFIX);
+        registry.enableSimpleBroker(STOMP_ROOT_DESTINATION_PREFIX);
         registry.setApplicationDestinationPrefixes("/app");
     }
 
