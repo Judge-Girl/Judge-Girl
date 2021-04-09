@@ -100,8 +100,8 @@ public class Problem {
         return filterPluginTags;
     }
 
-    public void setFilterPluginTags(Set<JudgePluginTag> filterPluginTags) {
-        this.filterPluginTags = filterPluginTags;
+    public void setFilterPluginTags(Collection<JudgePluginTag> filterPluginTags) {
+        this.filterPluginTags = new HashSet<>(filterPluginTags);
     }
 
     public List<String> getTags() {

@@ -15,7 +15,6 @@ package tw.waterball.judgegirl.springboot.problem.controllers;
 
 import lombok.AllArgsConstructor;
 import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
@@ -104,8 +103,7 @@ public class ProblemController {
         return saveProblemWithTitleUseCase.execute(title);
     }
 
-    @PatchMapping(value = "/{problemId}",
-            consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PatchMapping(value = "/{problemId}")
     public void patchProblem(@PathVariable int problemId,
                              @RequestBody PatchProblemUseCase.Request request) {
         patchProblemUseCase.execute(request);

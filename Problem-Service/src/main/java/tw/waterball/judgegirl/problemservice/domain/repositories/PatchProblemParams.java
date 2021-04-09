@@ -4,8 +4,8 @@ import lombok.Builder;
 import org.jetbrains.annotations.Nullable;
 import tw.waterball.judgegirl.entities.problem.JudgePluginTag;
 
+import java.util.Collection;
 import java.util.Optional;
-import java.util.Set;
 
 @Builder
 public class PatchProblemParams {
@@ -16,7 +16,7 @@ public class PatchProblemParams {
     @Nullable
     private final JudgePluginTag matchPolicyPluginTag;
     @Nullable
-    private final Set<JudgePluginTag> filterPluginTags;
+    private final Collection<JudgePluginTag> filterPluginTags;
 
     public Optional<String> getTitle() {
         return Optional.ofNullable(title);
@@ -30,7 +30,7 @@ public class PatchProblemParams {
         return Optional.ofNullable(matchPolicyPluginTag);
     }
 
-    public Optional<Set<JudgePluginTag>> getFilterPluginTags() {
+    public Optional<Collection<JudgePluginTag>> getFilterPluginTags() {
         return Optional.ofNullable(filterPluginTags);
     }
 }

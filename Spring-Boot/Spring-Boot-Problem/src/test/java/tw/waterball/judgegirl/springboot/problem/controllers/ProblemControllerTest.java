@@ -267,33 +267,33 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
 
     @Test
     void GivenOneProblemSavedAndPatchProblemWithNewTitle_WhenQueryTheSameProblem_ShouldHaveNewTitle() throws Exception {
-        Problem savedProblem = givenProblemsSaved(1).get(0);
+        Problem savedProblem = givenOneProblemSaved();
         String newTitle = UUID.randomUUID().toString();
 
         savedProblem.setTitle(newTitle);
         patchProblem(savedProblem);
 
-        Problem queryProblem = mongoTemplate.findById(savedProblem.getId(), Problem.class);
-        assertNotNull(queryProblem);
-        assertEquals(newTitle, queryProblem.getTitle());
+        Problem actualProblem = mongoTemplate.findById(savedProblem.getId(), Problem.class);
+        assertNotNull(actualProblem);
+        assertEquals(newTitle, actualProblem.getTitle());
     }
 
     @Test
     void GivenOneProblemSavedAndPatchProblemWithDescription_WhenQueryById_ShouldHaveNewDescription() throws Exception {
-        Problem savedProblem = givenProblemsSaved(1).get(0);
+        Problem savedProblem = givenOneProblemSaved();
         String newDescription = UUID.randomUUID().toString();
 
         savedProblem.setDescription(newDescription);
         patchProblem(savedProblem);
 
-        Problem queryProblem = mongoTemplate.findById(savedProblem.getId(), Problem.class);
-        assertNotNull(queryProblem);
-        assertEquals(newDescription, queryProblem.getDescription());
+        Problem actualProblem = mongoTemplate.findById(savedProblem.getId(), Problem.class);
+        assertNotNull(actualProblem);
+        assertEquals(newDescription, actualProblem.getDescription());
     }
 
     @Test
     void GivenOneProblemSavedAndPatchProblemWithPluginMatchTags_WhenQueryById_ShouldHaveNewTags() throws Exception {
-        Problem savedProblem = givenProblemsSaved(1).get(0);
+        Problem savedProblem = givenOneProblemSaved();
         JudgePluginTag pluginMatchTag = new JudgePluginTag();
         pluginMatchTag.setGroup("Judge Girl");
         pluginMatchTag.setName("Test");
@@ -303,15 +303,15 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         savedProblem.setOutputMatchPolicyPluginTag(pluginMatchTag);
         patchProblem(savedProblem);
 
-        Problem queryProblem = mongoTemplate.findById(savedProblem.getId(), Problem.class);
-        assertNotNull(queryProblem);
-        JudgePluginTag queryPluginMatchTag = queryProblem.getOutputMatchPolicyPluginTag();
-        assertEquals(pluginMatchTag, queryPluginMatchTag);
+        Problem actualProblem = mongoTemplate.findById(savedProblem.getId(), Problem.class);
+        assertNotNull(actualProblem);
+        JudgePluginTag actualPluginMatchTag = actualProblem.getOutputMatchPolicyPluginTag();
+        assertEquals(pluginMatchTag, actualPluginMatchTag);
     }
 
     @Test
     void GivenOneProblemSavedAndPatchProblemWithPluginFilterTags_WhenQueryById_ShouldHaveNewTags() throws Exception {
-        Problem savedProblem = givenProblemsSaved(1).get(0);
+        Problem savedProblem = givenOneProblemSaved();
         Set<JudgePluginTag> filterPluginTags = new HashSet<>();
         final int COUNT_FILTER = 10;
         for (int i = 1; i <= COUNT_FILTER; ++i) {
@@ -326,9 +326,9 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         savedProblem.setFilterPluginTags(filterPluginTags);
         patchProblem(savedProblem);
 
-        Problem queryProblem = mongoTemplate.findById(savedProblem.getId(), Problem.class);
-        assertNotNull(queryProblem);
-        Set<JudgePluginTag> queryPluginFilterTags = new HashSet<>(queryProblem.getFilterPluginTags());
+        Problem actualProblem = mongoTemplate.findById(savedProblem.getId(), Problem.class);
+        assertNotNull(actualProblem);
+        Set<JudgePluginTag> queryPluginFilterTags = new HashSet<>(actualProblem.getFilterPluginTags());
         assertEquals(queryPluginFilterTags, filterPluginTags);
     }
 
@@ -343,6 +343,10 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
                                 problem.getOutputMatchPolicyPluginTag(),
                                 new HashSet<>(problem.getFilterPluginTags())))))
                 .andExpect(status().isOk());
+    }
+
+    private Problem givenOneProblemSaved() {
+        return givenProblemsSaved(1).get(0);
     }
 }
 

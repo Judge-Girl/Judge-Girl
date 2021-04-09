@@ -1,13 +1,15 @@
 package tw.waterball.judgegirl.problemservice.domain.usecases;
 
-import lombok.Value;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.entities.problem.JudgePluginTag;
 import tw.waterball.judgegirl.problemservice.domain.repositories.PatchProblemParams;
 import tw.waterball.judgegirl.problemservice.domain.repositories.ProblemRepository;
 
 import javax.inject.Named;
-import java.util.Set;
+import java.util.Collection;
 
 import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
 
@@ -31,28 +33,15 @@ public class PatchProblemUseCase extends BaseProblemUseCase {
         }
     }
 
-    @Value
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class Request {
-        public int problemId;
+        public static final int NOT_PRESENT = -1;
+        public int problemId = NOT_PRESENT;
         public String title;
         public String description;
         public JudgePluginTag judgePluginTag;
-        public Set<JudgePluginTag> filterPluginTags;
-
-        public Request() {
-            problemId = 0;
-            title = null;
-            description = null;
-            judgePluginTag = null;
-            filterPluginTags = null;
-        }
-
-        public Request(int problemId, String title, String description, JudgePluginTag judgePluginTag, Set<JudgePluginTag> filterPluginTags) {
-            this.problemId = problemId;
-            this.title = title;
-            this.description = description;
-            this.judgePluginTag = judgePluginTag;
-            this.filterPluginTags = filterPluginTags;
-        }
+        public Collection<JudgePluginTag> filterPluginTags;
     }
 }
