@@ -45,15 +45,15 @@ public class Answer {
     }
 
     public int getExamId() {
-        return getId().questionId.getExamId();
+        return getId().getQuestionId().getExamId();
     }
 
     public int getProblemId() {
-        return getId().questionId.getProblemId();
+        return getId().getQuestionId().getProblemId();
     }
 
     public int getStudentId() {
-        return getId().studentId;
+        return getId().getStudentId();
     }
 
 }
