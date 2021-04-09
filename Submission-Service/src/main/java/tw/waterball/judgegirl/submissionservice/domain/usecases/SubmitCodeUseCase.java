@@ -55,7 +55,7 @@ public class SubmitCodeUseCase {
         Submission submission = saveSubmissionWithCodes(submission(request), request.fileResources);
 
         mayDeployJudgerIfNotJudged(request, problem, submission)
-                .otherwise(eventBus::publish);
+                .otherwise(this::publishVerdict);
 
         presenter.setSubmission(submission);
     }
@@ -95,5 +95,10 @@ public class SubmitCodeUseCase {
         log.info("Completed: {}", request);
         return empty();
     }
+
+    private void publishVerdict(VerdictIssuedEvent verdictIssuedEvent) {
+        eventBus.publish(verdictIssuedEvent);
+    }
+
 
 }

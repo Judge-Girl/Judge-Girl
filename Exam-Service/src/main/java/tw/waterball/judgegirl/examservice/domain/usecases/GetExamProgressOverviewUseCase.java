@@ -23,8 +23,8 @@ public class GetExamProgressOverviewUseCase {
     public void execute(Request request, Presenter presenter) {
         Exam exam = findExam(request);
         showExam(presenter, exam);
-        showProblemOfEachQuestion(presenter, exam);
-        showTheBestRecordOfEachQuestionTheStudentAchieved(request, presenter, exam);
+        showEachQuestion(presenter, exam);
+        showBestRecordOfEachQuestionTheStudentAchieved(request, presenter, exam);
         showRemainingQuotaOfEachQuestion(request.studentId, exam, presenter);
     }
 
@@ -36,7 +36,7 @@ public class GetExamProgressOverviewUseCase {
         presenter.showExam(exam);
     }
 
-    private void showProblemOfEachQuestion(Presenter presenter, Exam exam) {
+    private void showEachQuestion(Presenter presenter, Exam exam) {
         // TODO: should be improved to fetch all the problems in one query
         for (Question question : exam.getQuestions()) {
             Problem problem = toEntity(problemService.getProblem(question.getId().getProblemId()));
@@ -44,7 +44,7 @@ public class GetExamProgressOverviewUseCase {
         }
     }
 
-    private void showTheBestRecordOfEachQuestionTheStudentAchieved(Request request, Presenter presenter, Exam exam) {
+    private void showBestRecordOfEachQuestionTheStudentAchieved(Request request, Presenter presenter, Exam exam) {
         exam.getQuestions().forEach(question ->
                 examRepository.findBestRecordOfQuestion(question.getId(), request.studentId)
                         .ifPresent(presenter::showBestRecordOfQuestion));

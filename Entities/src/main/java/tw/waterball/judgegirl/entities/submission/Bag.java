@@ -9,6 +9,7 @@ import static java.util.Collections.singletonMap;
 
 /**
  * Submission's Bag to transfer additional messages.
+ * Note: All of the messages (key, value) in the bag will be converted to lower-case.
  *
  * @author - johnny850807@gmail.com (Waterball)
  */
@@ -49,11 +50,12 @@ public class Bag extends HashMap<String, String> {
 
     public Optional<String> getAsString(String key) {
         var value = get(key.toLowerCase());
-        return value == null ? Optional.empty() : Optional.of(value);
+        return Optional.ofNullable(value);
     }
 
     public OptionalInt getAsInteger(String key) {
         var value = get(key.toLowerCase());
+
         return value == null ? OptionalInt.empty() : OptionalInt.of(parseInt(value));
     }
 
