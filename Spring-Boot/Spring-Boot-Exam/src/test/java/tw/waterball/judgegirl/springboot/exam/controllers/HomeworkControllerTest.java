@@ -58,7 +58,7 @@ public class HomeworkControllerTest extends AbstractSpringBootTest {
 
         HomeworkView homework = createHomeworkAndGet(HOMEWORK_NAME, problemIds);
 
-        homeworkShouldIncludeProblemIds(homework, problemIds.length, problemIds);
+        homeworkShouldIncludeProblemIds(homework, problemIds);
     }
 
     @DisplayName("Given created two problems [0, 1], " +
@@ -71,7 +71,7 @@ public class HomeworkControllerTest extends AbstractSpringBootTest {
         Integer[] problemIds = {0, 1, 2};
         HomeworkView homework = createHomeworkAndGet(HOMEWORK_NAME, problemIds);
 
-        homeworkShouldIncludeProblemIds(homework, 2, problemIds);
+        homeworkShouldIncludeProblemIds(homework, 0, 1);
     }
 
     @Test
@@ -121,10 +121,9 @@ public class HomeworkControllerTest extends AbstractSpringBootTest {
     }
 
     private void homeworkShouldIncludeProblemIds(HomeworkView homework,
-                                                 int expectIdAmount,
                                                  Integer... problemIds) {
         List<Integer> homeworkProblemIds = homework.problemIds;
-        assertEquals(expectIdAmount, homeworkProblemIds.size());
+        assertEquals(problemIds.length, homeworkProblemIds.size());
         for (int index = 0; index < homeworkProblemIds.size(); index++) {
             assertEquals(problemIds[index], homeworkProblemIds.get(index));
         }
