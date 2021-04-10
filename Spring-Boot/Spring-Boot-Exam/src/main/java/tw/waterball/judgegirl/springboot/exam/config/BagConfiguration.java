@@ -2,7 +2,7 @@ package tw.waterball.judgegirl.springboot.exam.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import tw.waterball.judgegirl.examservice.domain.usecases.AnswerQuestionUseCase;
+import tw.waterball.judgegirl.examservice.domain.usecases.exam.AnswerQuestionUseCase;
 import tw.waterball.judgegirl.submissionapi.clients.BagInterceptor;
 
 /**

@@ -1,4 +1,4 @@
-package tw.waterball.judgegirl.examservice.domain.usecases;
+package tw.waterball.judgegirl.examservice.domain.usecases.exam;
 
 import lombok.AllArgsConstructor;
 import org.jetbrains.annotations.NotNull;
