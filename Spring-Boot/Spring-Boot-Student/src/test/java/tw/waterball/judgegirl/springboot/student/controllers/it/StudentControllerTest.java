@@ -167,6 +167,21 @@ public class StudentControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
+    void GivenThreeStudents_A_B_C_SignedUp_WhenGetStudents_B_C_D_ByEmail_ShouldRespond_B_C() throws Exception {
+        Student A = new Student("nameA", "a@example.com", "12345678");
+        Student B = new Student("nameB", "b@example.com", "12345678");
+        Student C = new Student("nameC", "c@example.com", "12345678");
+        signUpStudents(A, B, C);
+
+        String[] emails = {"b@example.com", "c@example.com", "d@example.com"};
+        List<StudentView> students = getStudentsByEmail(emails);
+
+        assertEquals(2, students.size());
+        assertStudent(B, students.get(0));
+        assertStudent(C, students.get(1));
+    }
+
+    @Test
     void GivenOneStudentSignedUp_WhenAuth_ShouldRespondLoginResponseWithNewToken() throws Exception {
         signUp(student);
         LoginResponse loginResponse = loginAndGetResponseBody(student.getEmail(), student.getPassword());
@@ -257,6 +272,12 @@ public class StudentControllerTest extends AbstractSpringBootTest {
         return getBody(signUp(student).andExpect(status().isOk()), StudentView.class);
     }
 
+    private void signUpStudents(Student... students) throws Exception {
+        for (Student value : students) {
+            signUp(value);
+        }
+    }
+
     @SneakyThrows
     private ResultActions signUp(String name, String email, String password) {
         Student newStudent = new Student(name, email, password);
@@ -302,6 +323,19 @@ public class StudentControllerTest extends AbstractSpringBootTest {
     private ResultActions getStudentById(Integer id, String tokenString) throws Exception {
         return mockMvc.perform(get("/api/students/{id}", id)
                 .header("Authorization", bearerWithToken(tokenString)));
+    }
+
+    private List<StudentView> getStudentsByEmail(String[] emails) throws Exception {
+        return getBody(mockMvc.perform(post("/api/students/search")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(toJson(emails)))
+                .andExpect(status().isOk()), new TypeReference<>() {
+        });
+    }
+
+    private void assertStudent(Student expected, StudentView actual) {
+        assertEquals(expected.getName(), actual.name);
+        assertEquals(expected.getEmail(), expected.getEmail());
     }
 
     private LoginResponse authAndGetResponseBody(String tokenString) throws Exception {
