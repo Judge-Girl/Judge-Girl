@@ -40,7 +40,7 @@ class CreateHomeworkPresenter implements CreateHomeworkUseCase.Presenter {
     private Homework homework;
 
     @Override
-    public void setHomework(Homework homework) {
+    public void showHomework(Homework homework) {
         this.homework = homework;
     }
 
@@ -54,7 +54,7 @@ class GetHomeworkPresenter implements GetHomeworkUseCase.Presenter {
     private Homework homework;
 
     @Override
-    public void setHomework(Homework homework) {
+    public void showHomework(Homework homework) {
         this.homework = homework;
     }
 

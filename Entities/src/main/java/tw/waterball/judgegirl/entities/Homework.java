@@ -7,6 +7,7 @@ import lombok.Setter;
 import tw.waterball.judgegirl.commons.utils.JSR380Utils;
 
 import javax.validation.constraints.NotBlank;
+import java.util.List;
 
 /**
  * @author - wally55077@gmail.com
@@ -22,9 +23,9 @@ public class Homework {
     @NotBlank
     private String name;
 
-    private String problemIds;
+    private List<Integer> problemIds;
 
-    public Homework(String name, String problemIds) {
+    public Homework(String name, List<Integer> problemIds) {
         this.name = name;
         this.problemIds = problemIds;
     }

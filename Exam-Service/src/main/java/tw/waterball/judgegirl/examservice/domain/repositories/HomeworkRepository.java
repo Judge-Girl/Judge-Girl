@@ -9,4 +9,6 @@ public interface HomeworkRepository {
     Homework save(Homework homework);
 
     Optional<Homework> findHomeworkById(int homeworkId);
+
+    void deleteAll();
 }

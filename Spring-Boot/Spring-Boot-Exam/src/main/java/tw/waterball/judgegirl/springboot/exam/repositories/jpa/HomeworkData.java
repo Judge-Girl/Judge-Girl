@@ -10,6 +10,9 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author - wally55077@gmail.com
@@ -27,6 +30,7 @@ public class HomeworkData {
 
     private String name;
 
+    // split by commas
     private String problemIds;
 
     public HomeworkData(String name, String problemIds) {
@@ -35,11 +39,20 @@ public class HomeworkData {
     }
 
     public static HomeworkData toData(Homework homework) {
-        return new HomeworkData(homework.getName(), homework.getProblemIds());
+        String problemIds = homework.getProblemIds()
+                .stream()
+                .map(String::valueOf)
+                .collect(Collectors.joining(","));
+        return new HomeworkData(homework.getName(), problemIds);
     }
 
     public static Homework toEntity(HomeworkData homeworkData) {
-        return new Homework(homeworkData.getId(), homeworkData.getName(), homeworkData.getProblemIds());
+        List<Integer> problemIds = Arrays
+                .stream(homeworkData.getProblemIds().split(","))
+                .filter(problemId -> !problemId.isBlank())
+                .map(Integer::parseInt)
+                .collect(Collectors.toList());
+        return new Homework(homeworkData.getId(), homeworkData.getName(), problemIds);
     }
 
 }

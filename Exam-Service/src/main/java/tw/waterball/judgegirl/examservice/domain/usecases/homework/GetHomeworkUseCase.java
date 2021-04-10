@@ -20,12 +20,12 @@ public class GetHomeworkUseCase {
             throws NotFoundException {
         Homework homework = homeworkRepository.findHomeworkById(homeworkId)
                 .orElseThrow(NotFoundException::new);
-        presenter.setHomework(homework);
+        presenter.showHomework(homework);
     }
 
     public interface Presenter {
 
-        void setHomework(Homework homework);
+        void showHomework(Homework homework);
 
     }
 

@@ -11,6 +11,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.ResultActions;
 import tw.waterball.judgegirl.entities.problem.Problem;
 import tw.waterball.judgegirl.entities.stubs.ProblemStubs;
+import tw.waterball.judgegirl.examservice.domain.repositories.HomeworkRepository;
 import tw.waterball.judgegirl.examservice.domain.usecases.homework.CreateHomeworkUseCase;
 import tw.waterball.judgegirl.problemapi.clients.FakeProblemServiceDriver;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
@@ -41,44 +42,79 @@ public class HomeworkControllerTest extends AbstractSpringBootTest {
     @MockBean
     private SubmissionServiceDriver submissionServiceDriver;
 
+    @Autowired
+    private HomeworkRepository homeworkRepository;
+
     @AfterEach
     void cleanUp() {
         problemServiceDriver.clear();
+        homeworkRepository.deleteAll();
     }
 
     @Test
-    public void GivenThreeProblemsCreated_WhenCreateHomeworkWithProblemIds_ShouldCreateSuccessfully() throws Exception {
-        Integer[] createProblemIds = {1, 2, 3};
-        createProblems(createProblemIds);
+    public void GivenThreeProblemsCreated_WhenCreateHomeworkThatIncludesManyProblems_ShouldCreateSuccessfully() throws Exception {
+        Integer[] problemIds = {0, 1, 2};
+        createProblems(problemIds);
 
-        HomeworkView homework = getBody(createHomework(HOMEWORK_NAME, createProblemIds)
-                .andExpect(status().isOk()), HomeworkView.class);
+        HomeworkView homework = createHomeworkAndGet(HOMEWORK_NAME, problemIds);
 
-        List<String> homeworkProblemIds = homework.problemIds;
-        assertEquals(createProblemIds.length, homeworkProblemIds.size());
-        for (int i = 0; i < homeworkProblemIds.size(); i++) {
-            assertEquals(String.valueOf(createProblemIds[i]), homeworkProblemIds.get(i));
-        }
+        homeworkShouldIncludeProblemIds(homework, problemIds.length, problemIds);
     }
 
     @DisplayName("Given created two problems [0, 1], " +
-            "When create homework with two problems id [0, 1] and a non existing problem id 2, " +
-            "Should respond two problems id in the homework")
+            "When create homework to include two problem by ids [0, 1, 2] " +
+            "Should respond [0, 1]")
     @Test
     public void testAddProblemsIntoHomeworkByNonExistingProblemIdAndTwoCreatedProblemIds() throws Exception {
-        Integer[] createProblemIds = {0, 1};
-        createProblems(createProblemIds);
+        createProblems(0, 1);
 
-        int nonExistingProblemId = 2;
-        Integer[] testCaseProblemIds = {0, 1, nonExistingProblemId};
-        HomeworkView homework = getBody(createHomework(HOMEWORK_NAME, testCaseProblemIds)
+        Integer[] problemIds = {0, 1, 2};
+        HomeworkView homework = createHomeworkAndGet(HOMEWORK_NAME, problemIds);
+
+        homeworkShouldIncludeProblemIds(homework, 2, problemIds);
+    }
+
+    private HomeworkView createHomeworkAndGet(String homeworkName, Integer... problemIds) throws Exception {
+        return getBody(createHomework(homeworkName, problemIds), HomeworkView.class);
+    }
+
+    private ResultActions createHomework(String homeworkName, Integer... problemIds) throws Exception {
+        CreateHomeworkUseCase.Request request = new CreateHomeworkUseCase.Request(homeworkName, Arrays.asList(problemIds));
+        return mockMvc.perform(post(HOMEWORK_PATH)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(toJson(request)))
+                .andExpect(status().isOk());
+    }
+
+    private void homeworkShouldIncludeProblemIds(HomeworkView homework,
+                                                 int expectIdAmount,
+                                                 Integer... problemIds) {
+        List<Integer> homeworkProblemIds = homework.problemIds;
+        assertEquals(expectIdAmount, homeworkProblemIds.size());
+        for (int index = 0; index < homeworkProblemIds.size(); index++) {
+            assertEquals(problemIds[index], homeworkProblemIds.get(index));
+        }
+    }
+
+    @Test
+    public void GivenOneHomeworkCreated_WhenGetHomeworkById_ShouldRespondHomework() throws Exception {
+        HomeworkView homework = createHomeworkAndGet(HOMEWORK_NAME);
+
+        HomeworkView actualHomework = getBody(getHomework(homework.id)
                 .andExpect(status().isOk()), HomeworkView.class);
 
-        List<String> homeworkProblemIds = homework.problemIds;
-        assertEquals(createProblemIds.length, homeworkProblemIds.size());
-        for (int index = 0; index < homeworkProblemIds.size(); index++) {
-            assertEquals(String.valueOf(createProblemIds[index]), homeworkProblemIds.get(index));
-        }
+        assertEquals(homework, actualHomework);
+    }
+
+    @Test
+    public void WhenGetHomeworkByNonExistingHomeworkId_ShouldRespondNotFound() throws Exception {
+        int nonExistingHomeworkId = 123123;
+        getHomework(nonExistingHomeworkId)
+                .andExpect(status().isNotFound());
+    }
+
+    private ResultActions getHomework(int homeworkId) throws Exception {
+        return mockMvc.perform(get(HOMEWORK_PATH + "/{homeworkId}", homeworkId));
     }
 
     private void createProblems(Integer... problemIds) {
@@ -93,41 +129,4 @@ public class HomeworkControllerTest extends AbstractSpringBootTest {
         problemView.id = problemId;
         return problemView;
     }
-
-    @Test
-    public void GivenOneHomeworkCreated_WhenGetHomeworkById_ShouldRespondHomework() throws Exception {
-        HomeworkView homework = createHomeworkAndGet();
-
-        HomeworkView body = getBody(getHomework(homework.id).andExpect(status().isOk()), HomeworkView.class);
-
-        assertEquals(homework, body);
-    }
-
-    @Test
-    public void WhenGetHomeworkByNonExistingHomeworkId_ShouldRespondNotFound() throws Exception {
-        int nonExistingHomeworkId = 123123;
-        getHomework(nonExistingHomeworkId)
-                .andExpect(status().isNotFound());
-    }
-
-    private HomeworkView createHomeworkAndGet() throws Exception {
-        return getBody(createHomework(), HomeworkView.class);
-    }
-
-    private ResultActions createHomework() throws Exception {
-        Integer[] problemIds = {1, 2, 3};
-        return createHomework(HOMEWORK_NAME, problemIds);
-    }
-
-    private ResultActions createHomework(String homeworkName, Integer... problemIds) throws Exception {
-        CreateHomeworkUseCase.Request request = new CreateHomeworkUseCase.Request(homeworkName, Arrays.asList(problemIds));
-        return mockMvc.perform(post(HOMEWORK_PATH)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(toJson(request)));
-    }
-
-    private ResultActions getHomework(int homeworkId) throws Exception {
-        return mockMvc.perform(get(HOMEWORK_PATH + "/{homeworkId}", homeworkId));
-    }
-
 }

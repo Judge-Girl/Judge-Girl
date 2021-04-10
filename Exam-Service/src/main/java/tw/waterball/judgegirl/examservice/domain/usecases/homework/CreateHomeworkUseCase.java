@@ -2,7 +2,6 @@ package tw.waterball.judgegirl.examservice.domain.usecases.homework;
 
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
-import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.entities.Homework;
 import tw.waterball.judgegirl.examservice.domain.repositories.HomeworkRepository;
 import tw.waterball.judgegirl.problemapi.clients.ProblemServiceDriver;
@@ -11,6 +10,8 @@ import javax.inject.Named;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.isNotFound;
 
 /**
  * @author - wally55077@gmail.com
@@ -25,27 +26,22 @@ public class CreateHomeworkUseCase {
 
     public void execute(Request request, Presenter presenter) {
         String name = request.name;
-        String existsProblemIds = request.problemIds.stream()
+        List<Integer> problemIds = request.problemIds
+                .stream()
                 .filter(this::isProblemExists)
-                .map(String::valueOf)
-                .collect(Collectors.joining(","));
-        Homework homework = new Homework(name, existsProblemIds);
+                .collect(Collectors.toList());
+        Homework homework = new Homework(name, problemIds);
         homework.validate();
-        presenter.setHomework(homeworkRepository.save(homework));
+        presenter.showHomework(homeworkRepository.save(homework));
     }
 
     private boolean isProblemExists(int problemId) {
-        try {
-            problemServiceDriver.getProblem(problemId);
-            return true;
-        } catch (NotFoundException nfe) {
-            return false;
-        }
+        return isNotFound(() -> problemServiceDriver.getProblem(problemId));
     }
 
     public interface Presenter {
 
-        void setHomework(Homework homework);
+        void showHomework(Homework homework);
 
     }
 

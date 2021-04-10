@@ -32,4 +32,9 @@ public class JpaHomeworkRepository implements HomeworkRepository {
         return jpaHomeworkDataPort.findById(homeworkId)
                 .map(HomeworkData::toEntity);
     }
+
+    @Override
+    public void deleteAll() {
+        jpaHomeworkDataPort.deleteAll();
+    }
 }
