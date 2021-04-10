@@ -74,6 +74,16 @@ public class HomeworkControllerTest extends AbstractSpringBootTest {
         homeworkShouldIncludeProblemIds(homework, 2, problemIds);
     }
 
+    @Test
+    public void GivenOneHomeworkCreated_WhenGetHomeworkById_ShouldRespondHomework() throws Exception {
+        HomeworkView homework = createHomeworkAndGet(HOMEWORK_NAME);
+
+        HomeworkView actualHomework = getBody(getHomework(homework.id)
+                .andExpect(status().isOk()), HomeworkView.class);
+
+        assertEquals(homework, actualHomework);
+    }
+
     private HomeworkView createHomeworkAndGet(String homeworkName, Integer... problemIds) throws Exception {
         return getBody(createHomework(homeworkName, problemIds), HomeworkView.class);
     }
@@ -84,26 +94,6 @@ public class HomeworkControllerTest extends AbstractSpringBootTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(request)))
                 .andExpect(status().isOk());
-    }
-
-    private void homeworkShouldIncludeProblemIds(HomeworkView homework,
-                                                 int expectIdAmount,
-                                                 Integer... problemIds) {
-        List<Integer> homeworkProblemIds = homework.problemIds;
-        assertEquals(expectIdAmount, homeworkProblemIds.size());
-        for (int index = 0; index < homeworkProblemIds.size(); index++) {
-            assertEquals(problemIds[index], homeworkProblemIds.get(index));
-        }
-    }
-
-    @Test
-    public void GivenOneHomeworkCreated_WhenGetHomeworkById_ShouldRespondHomework() throws Exception {
-        HomeworkView homework = createHomeworkAndGet(HOMEWORK_NAME);
-
-        HomeworkView actualHomework = getBody(getHomework(homework.id)
-                .andExpect(status().isOk()), HomeworkView.class);
-
-        assertEquals(homework, actualHomework);
     }
 
     @Test
@@ -128,5 +118,15 @@ public class HomeworkControllerTest extends AbstractSpringBootTest {
         ProblemView problemView = ProblemView.toViewModel(problem);
         problemView.id = problemId;
         return problemView;
+    }
+
+    private void homeworkShouldIncludeProblemIds(HomeworkView homework,
+                                                 int expectIdAmount,
+                                                 Integer... problemIds) {
+        List<Integer> homeworkProblemIds = homework.problemIds;
+        assertEquals(expectIdAmount, homeworkProblemIds.size());
+        for (int index = 0; index < homeworkProblemIds.size(); index++) {
+            assertEquals(problemIds[index], homeworkProblemIds.get(index));
+        }
     }
 }

@@ -42,9 +42,9 @@ public class NotFoundException extends RuntimeException {
     public static boolean isNotFound(Runnable runnable) {
         try {
             runnable.run();
-            return true;
-        } catch (NotFoundException err) {
             return false;
+        } catch (NotFoundException err) {
+            return true;
         }
     }
 

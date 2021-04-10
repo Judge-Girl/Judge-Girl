@@ -36,7 +36,7 @@ public class CreateHomeworkUseCase {
     }
 
     private boolean isProblemExists(int problemId) {
-        return isNotFound(() -> problemServiceDriver.getProblem(problemId));
+        return !isNotFound(() -> problemServiceDriver.getProblem(problemId));
     }
 
     public interface Presenter {

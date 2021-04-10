@@ -11,6 +11,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -47,11 +48,14 @@ public class HomeworkData {
     }
 
     public static Homework toEntity(HomeworkData homeworkData) {
-        List<Integer> problemIds = Arrays
-                .stream(homeworkData.getProblemIds().split(","))
-                .filter(problemId -> !problemId.isBlank())
-                .map(Integer::parseInt)
-                .collect(Collectors.toList());
+        List<Integer> problemIds;
+        if (homeworkData.getProblemIds().isBlank()) {
+            problemIds = Collections.emptyList();
+        } else {
+            problemIds = Arrays.stream(homeworkData.getProblemIds().split("\\s*,\\s*"))
+                    .map(Integer::parseInt)
+                    .collect(Collectors.toList());
+        }
         return new Homework(homeworkData.getId(), homeworkData.getName(), problemIds);
     }
 
