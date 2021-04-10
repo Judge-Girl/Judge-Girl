@@ -148,7 +148,7 @@ class GetStudentsByEmailListPresenter implements GetStudentsByEmailListUseCase.P
     private List<Student> students;
 
     @Override
-    public void setStudents(List<Student> students) {
+    public void showStudents(List<Student> students) {
         this.students = students;
     }
 

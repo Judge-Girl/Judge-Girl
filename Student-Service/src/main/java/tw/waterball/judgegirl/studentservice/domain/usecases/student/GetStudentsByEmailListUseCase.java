@@ -34,7 +34,7 @@ public class GetStudentsByEmailListUseCase {
 
     public void execute(Request request, Presenter presenter) {
         List<Student> students = studentRepository.findByEmailIn(request.emails);
-        presenter.setStudents(students);
+        presenter.showStudents(students);
     }
 
     @AllArgsConstructor
@@ -44,6 +44,6 @@ public class GetStudentsByEmailListUseCase {
     }
 
     public interface Presenter {
-        void setStudents(List<Student> students);
+        void showStudents(List<Student> students);
     }
 }

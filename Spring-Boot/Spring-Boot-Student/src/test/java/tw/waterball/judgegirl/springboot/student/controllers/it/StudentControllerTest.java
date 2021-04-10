@@ -167,7 +167,7 @@ public class StudentControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    void GivenThreeStudents_A_B_C_SignedUp_WhenGetStudents_B_C_D_ByEmail_ShouldRespond_B_C() throws Exception {
+    void GivenThreeStudents_A_B_C_SignedUp_WhenGetStudents_B_C_D_ByEmails_ShouldRespond_B_C() throws Exception {
         Student A = new Student("nameA", "a@example.com", "12345678");
         Student B = new Student("nameB", "b@example.com", "12345678");
         Student C = new Student("nameC", "c@example.com", "12345678");
@@ -176,9 +176,13 @@ public class StudentControllerTest extends AbstractSpringBootTest {
         String[] emails = {"b@example.com", "c@example.com", "d@example.com"};
         List<StudentView> students = getStudentsByEmail(emails);
 
+        studentsShouldHaveEmails(students, "b@example.com", "c@example.com");
+    }
+
+    private void studentsShouldHaveEmails(List<StudentView> students, String... emails) {
         assertEquals(2, students.size());
-        assertStudent(B, students.get(0));
-        assertStudent(C, students.get(1));
+        assertEquals(emails[0], students.get(0).email);
+        assertEquals(emails[1], students.get(1).email);
     }
 
     @Test
@@ -331,11 +335,6 @@ public class StudentControllerTest extends AbstractSpringBootTest {
                 .content(toJson(emails)))
                 .andExpect(status().isOk()), new TypeReference<>() {
         });
-    }
-
-    private void assertStudent(Student expected, StudentView actual) {
-        assertEquals(expected.getName(), actual.name);
-        assertEquals(expected.getEmail(), expected.getEmail());
     }
 
     private LoginResponse authAndGetResponseBody(String tokenString) throws Exception {
