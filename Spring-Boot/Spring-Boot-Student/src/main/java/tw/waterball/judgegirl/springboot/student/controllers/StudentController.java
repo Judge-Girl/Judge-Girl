@@ -24,6 +24,7 @@ import tw.waterball.judgegirl.springboot.student.view.StudentView;
 import tw.waterball.judgegirl.studentservice.domain.usecases.student.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static tw.waterball.judgegirl.commons.token.TokenService.Identity.admin;
 import static tw.waterball.judgegirl.commons.token.TokenService.Identity.student;
@@ -40,6 +41,7 @@ public class StudentController {
     private final LoginUseCase loginUseCase;
     private final SignUpUseCase signUpUseCase;
     private final GetStudentUseCase getStudentUseCase;
+    private final GetStudentsByEmailListUseCase getStudentsByEmailListUseCase;
     private final GetStudentsWithFilterUseCase getStudentsWithFilterUseCase;
     private final AuthUseCase authUseCase;
     private final ChangePasswordUseCase changePasswordUseCase;
@@ -70,6 +72,13 @@ public class StudentController {
                     getStudentUseCase.execute(studentId, presenter);
                     return presenter.present();
                 });
+    }
+
+    @PostMapping("/search")
+    public List<StudentView> getStudentsByEmailList(@RequestBody String[] emails) {
+        GetStudentsByEmailListPresenter presenter = new GetStudentsByEmailListPresenter();
+        getStudentsByEmailListUseCase.execute(emails, presenter);
+        return presenter.present();
     }
 
     @PostMapping("/auth")
@@ -132,6 +141,21 @@ class AuthPresenter implements AuthUseCase.Presenter {
     LoginResponse present() {
         return new LoginResponse(token.getStudentId(), student.getEmail(), token.toString(),
                 token.getExpiration().getTime(), student.isAdmin());
+    }
+}
+
+class GetStudentsByEmailListPresenter implements GetStudentsByEmailListUseCase.Presenter {
+    private List<Student> students;
+
+    @Override
+    public void showStudents(List<Student> students) {
+        this.students = students;
+    }
+
+    List<StudentView> present() {
+        return students.stream()
+                .map(StudentView::toViewModel)
+                .collect(Collectors.toList());
     }
 }
 
