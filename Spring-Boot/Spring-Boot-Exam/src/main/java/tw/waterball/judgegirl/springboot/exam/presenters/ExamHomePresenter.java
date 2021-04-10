@@ -4,7 +4,7 @@ import tw.waterball.judgegirl.entities.exam.Exam;
 import tw.waterball.judgegirl.entities.exam.Question;
 import tw.waterball.judgegirl.entities.exam.Record;
 import tw.waterball.judgegirl.entities.problem.Problem;
-import tw.waterball.judgegirl.examservice.domain.usecases.GetExamProgressOverviewUseCase;
+import tw.waterball.judgegirl.examservice.domain.usecases.exam.GetExamProgressOverviewUseCase;
 import tw.waterball.judgegirl.springboot.exam.view.ExamHome;
 import tw.waterball.judgegirl.springboot.exam.view.ExamHome.QuestionItem;
 

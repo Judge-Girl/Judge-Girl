@@ -39,6 +39,15 @@ public class NotFoundException extends RuntimeException {
                 StringUtils.capitalize(resourceName), attributeName, id));
     }
 
+    public static boolean isNotFound(Runnable runnable) {
+        try {
+            runnable.run();
+            return false;
+        } catch (NotFoundException err) {
+            return true;
+        }
+    }
+
     public static NotFoundExceptionBuilder notFound(String resourceName) {
         return new NotFoundExceptionBuilder(resourceName);
     }

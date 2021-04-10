@@ -1,4 +1,4 @@
-package tw.waterball.judgegirl.examservice.domain.usecases;
+package tw.waterball.judgegirl.examservice.domain.usecases.exam;
 
 import lombok.AllArgsConstructor;
 import lombok.Value;
@@ -8,6 +8,7 @@ import tw.waterball.judgegirl.entities.submission.Bag;
 import tw.waterball.judgegirl.entities.submission.verdict.Verdict;
 import tw.waterball.judgegirl.entities.submission.verdict.VerdictIssuedEvent;
 import tw.waterball.judgegirl.examservice.domain.repositories.ExamRepository;
+import tw.waterball.judgegirl.examservice.domain.usecases.VerdictIssuedEventListener;
 import tw.waterball.judgegirl.submissionapi.clients.SubmissionServiceDriver;
 import tw.waterball.judgegirl.submissionapi.clients.SubmitCodeRequest;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
