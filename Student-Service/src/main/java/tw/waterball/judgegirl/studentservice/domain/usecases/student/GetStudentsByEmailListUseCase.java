@@ -14,7 +14,6 @@
 package tw.waterball.judgegirl.studentservice.domain.usecases.student;
 
 import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import tw.waterball.judgegirl.entities.Student;
 import tw.waterball.judgegirl.studentservice.domain.repositories.StudentRepository;
 
@@ -25,22 +24,13 @@ import java.util.List;
  * @author chaoyulee chaoyu2330@gmail.com
  */
 @Named
+@AllArgsConstructor
 public class GetStudentsByEmailListUseCase {
     private final StudentRepository studentRepository;
 
-    public GetStudentsByEmailListUseCase(StudentRepository studentRepository) {
-        this.studentRepository = studentRepository;
-    }
-
-    public void execute(Request request, Presenter presenter) {
-        List<Student> students = studentRepository.findByEmailIn(request.emails);
+    public void execute(String[] emails, Presenter presenter) {
+        List<Student> students = studentRepository.findByEmailIn(emails);
         presenter.showStudents(students);
-    }
-
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class Request {
-        public String[] emails;
     }
 
     public interface Presenter {

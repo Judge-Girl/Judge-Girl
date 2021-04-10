@@ -77,7 +77,7 @@ public class StudentController {
     @PostMapping("/search")
     public List<StudentView> getStudentsByEmailList(@RequestBody String[] emails) {
         GetStudentsByEmailListPresenter presenter = new GetStudentsByEmailListPresenter();
-        getStudentsByEmailListUseCase.execute(new GetStudentsByEmailListUseCase.Request(emails), presenter);
+        getStudentsByEmailListUseCase.execute(emails, presenter);
         return presenter.present();
     }
 
