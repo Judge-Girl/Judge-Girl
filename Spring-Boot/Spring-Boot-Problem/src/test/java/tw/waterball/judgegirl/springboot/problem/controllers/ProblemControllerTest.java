@@ -26,6 +26,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.ResultActions;
 import tw.waterball.judgegirl.commons.utils.ZipUtils;
 import tw.waterball.judgegirl.entities.problem.*;
 import tw.waterball.judgegirl.entities.stubs.ProblemStubs;
@@ -348,5 +349,46 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     private Problem givenOneProblemSaved() {
         return givenProblemsSaved(1).get(0);
     }
+
+    @Test
+    void GivenThreeProblemsSaved_WhenGetProblemsByIds_ShouldRespondThatThreeProblems() throws Exception {
+        saveProblems(3);
+
+        List<Problem> body = getBody(getProblems(0, 1, 2).andExpect(status().isOk()), new TypeReference<>() {
+        });
+
+        assertEquals(3, body.size());
+    }
+
+    @Test
+    void GivenOneProblemsSaved_WhenGetTwoProblemsByIds_ShouldRespondThatOneProblem() throws Exception {
+        saveProblems(1);
+
+        List<Problem> body = getBody(getProblems(0, 1).andExpect(status().isOk()), new TypeReference<>() {
+        });
+
+        assertEquals(1, body.size());
+    }
+
+    private ResultActions getProblems(Integer... problemIds) throws Exception {
+        return mockMvc.perform(get("/api/problems").queryParam("ids", Arrays.stream(problemIds).map(String::valueOf).collect(Collectors.joining(","))));
+    }
+
+    private void saveProblems(int size) {
+        for (int i = 0; i < size; i++) {
+            Problem problem = ProblemStubs
+                    .problemTemplate()
+                    .build();
+            problem.setId(i);
+            byte[] providedCodesZip = ZipUtils.zipFilesFromResources("/stubs/file1.c", "/stubs/file2.c");
+
+            byte[] testcaseIOsZip = ZipUtils.zipFilesFromResources("/stubs/in/", "/stubs/out/");
+
+            problemRepository.save(problem,
+                    singletonMap(problem.getLanguageEnv(Language.C), new ByteArrayInputStream(providedCodesZip))
+                    , new ByteArrayInputStream(testcaseIOsZip));
+        }
+    }
+
 }
 

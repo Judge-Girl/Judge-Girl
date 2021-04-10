@@ -31,10 +31,7 @@ import tw.waterball.judgegirl.springboot.profiles.productions.Mongo;
 import tw.waterball.judgegirl.springboot.utils.MongoUtils;
 
 import java.io.InputStream;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static java.lang.String.format;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
@@ -148,6 +145,13 @@ public class MongoProblemRepository implements ProblemRepository {
     @Override
     public boolean problemExists(int problemId) {
         return mongoTemplate.exists(query(where("_id").is(problemId)), Problem.class);
+
+    }
+
+    @Override
+    public List<Problem> findProblemsByIds(int[] problemIds) {
+        Integer[] ids = Arrays.stream(problemIds).boxed().toArray(Integer[]::new);
+        return mongoTemplate.find(query(where("_id").in(ids)), Problem.class);
     }
 
     @Document("tag")

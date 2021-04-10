@@ -18,6 +18,7 @@ import tw.waterball.judgegirl.problemservice.domain.repositories.ProblemQueryPar
 import tw.waterball.judgegirl.problemservice.domain.repositories.ProblemRepository;
 
 import javax.inject.Named;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -25,7 +26,7 @@ import java.util.List;
  */
 @Named
 public class GetProblemListUseCase {
-    private ProblemRepository problemRepository;
+    private final ProblemRepository problemRepository;
 
     public GetProblemListUseCase(ProblemRepository problemRepository) {
         this.problemRepository = problemRepository;
@@ -33,10 +34,14 @@ public class GetProblemListUseCase {
 
     public void execute(ProblemQueryParams problemQueryParams, Presenter presenter) {
         List<Problem> problems = problemRepository.find(problemQueryParams);
-        presenter.setProblemList(problems);
+        presenter.showProblems(problems);
+    }
+
+    public void execute(int[] problemIds, Presenter presenter) {
+        presenter.showProblems(problemRepository.findProblemsByIds(problemIds));
     }
 
     public interface Presenter {
-        void setProblemList(List<Problem> problems);
+        void showProblems(List<Problem> problems);
     }
 }
