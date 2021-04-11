@@ -49,5 +49,5 @@ public interface ProblemRepository {
 
     boolean problemExists(int problemId);
 
-    List<Problem> findProblemsByIds(int[] problemIds);
+    List<Problem> findProblemsByIds(int... problemIds);
 }

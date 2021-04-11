@@ -13,6 +13,7 @@
 
 package tw.waterball.judgegirl.problemservice.domain.usecases;
 
+import lombok.AllArgsConstructor;
 import tw.waterball.judgegirl.entities.problem.Problem;
 import tw.waterball.judgegirl.problemservice.domain.repositories.ProblemQueryParams;
 import tw.waterball.judgegirl.problemservice.domain.repositories.ProblemRepository;
@@ -25,12 +26,9 @@ import java.util.List;
  * @author - johnny850807@gmail.com (Waterball)
  */
 @Named
+@AllArgsConstructor
 public class GetProblemListUseCase {
     private final ProblemRepository problemRepository;
-
-    public GetProblemListUseCase(ProblemRepository problemRepository) {
-        this.problemRepository = problemRepository;
-    }
 
     public void execute(ProblemQueryParams problemQueryParams, Presenter presenter) {
         List<Problem> problems = problemRepository.find(problemQueryParams);

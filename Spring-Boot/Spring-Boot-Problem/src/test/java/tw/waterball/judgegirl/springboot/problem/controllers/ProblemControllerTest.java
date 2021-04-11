@@ -26,7 +26,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.ResultActions;
 import tw.waterball.judgegirl.commons.utils.ZipUtils;
 import tw.waterball.judgegirl.entities.problem.*;
 import tw.waterball.judgegirl.entities.stubs.ProblemStubs;
@@ -351,35 +350,40 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    void GivenThreeProblemsSaved_WhenGetProblemsByIds_ShouldRespondThatThreeProblems() throws Exception {
-        saveProblems(3);
+    void GivenProblems_1_2_3_Saved_WhenGetProblemsByIds_ShouldRespondThat1_2_3() throws Exception {
+        saveProblems(1, 2, 3);
 
-        List<Problem> body = getBody(getProblems(0, 1, 2).andExpect(status().isOk()), new TypeReference<>() {
-        });
+        List<Problem> actualProblems = getProblems(1, 2, 3);
 
-        assertEquals(3, body.size());
+        problemsShouldHaveIds(actualProblems, 1, 2, 3);
     }
 
     @Test
-    void GivenOneProblemsSaved_WhenGetTwoProblemsByIds_ShouldRespondThatOneProblem() throws Exception {
+    void Given_1_ProblemsSaved_WhenGet_1_2_ProblemsByIds_ShouldRespondThat_1_() throws Exception {
         saveProblems(1);
 
-        List<Problem> body = getBody(getProblems(0, 1).andExpect(status().isOk()), new TypeReference<>() {
+        List<Problem> actualProblems = getProblems(1, 2);
+
+        problemsShouldHaveIds(actualProblems, 1);
+    }
+
+    private void problemsShouldHaveIds(List<Problem> actualProblems, Integer... problemIds) {
+        Set<Integer> idsSet = Set.of(problemIds);
+        actualProblems.forEach(problem -> assertTrue(idsSet.contains(problem.getId())));
+    }
+
+    private List<Problem> getProblems(Integer... problemIds) throws Exception {
+        return getBody(mockMvc.perform(get("/api/problems").queryParam("ids", Arrays.stream(problemIds).map(String::valueOf).collect(Collectors.joining(","))))
+                .andExpect(status().isOk()), new TypeReference<>() {
         });
-
-        assertEquals(1, body.size());
     }
 
-    private ResultActions getProblems(Integer... problemIds) throws Exception {
-        return mockMvc.perform(get("/api/problems").queryParam("ids", Arrays.stream(problemIds).map(String::valueOf).collect(Collectors.joining(","))));
-    }
-
-    private void saveProblems(int size) {
-        for (int i = 0; i < size; i++) {
+    private void saveProblems(int... problemIds) {
+        Arrays.stream(problemIds).forEach(problemId -> {
             Problem problem = ProblemStubs
                     .problemTemplate()
                     .build();
-            problem.setId(i);
+            problem.setId(problemId);
             byte[] providedCodesZip = ZipUtils.zipFilesFromResources("/stubs/file1.c", "/stubs/file2.c");
 
             byte[] testcaseIOsZip = ZipUtils.zipFilesFromResources("/stubs/in/", "/stubs/out/");
@@ -387,7 +391,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
             problemRepository.save(problem,
                     singletonMap(problem.getLanguageEnv(Language.C), new ByteArrayInputStream(providedCodesZip))
                     , new ByteArrayInputStream(testcaseIOsZip));
-        }
+        });
     }
 
 }

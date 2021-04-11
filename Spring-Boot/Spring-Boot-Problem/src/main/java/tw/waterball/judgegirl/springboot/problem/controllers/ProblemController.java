@@ -27,8 +27,9 @@ import tw.waterball.judgegirl.problemservice.domain.usecases.*;
 import tw.waterball.judgegirl.springboot.utils.ResponseEntityUtils;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
+
+import static java.util.Objects.nonNull;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -58,7 +59,7 @@ public class ProblemController {
                                          @RequestParam(value = "page", defaultValue = "0") int page,
                                          @RequestParam(required = false) int[] ids) {
         GetProblemListPresenter presenter = new GetProblemListPresenter();
-        if (Objects.nonNull(ids)) {
+        if (nonNull(ids)) {
             getProblemListUseCase.execute(ids, presenter);
         } else {
             String[] tags = tagsSplitByCommas == null ? new String[0] : tagsSplitByCommas.split("\\s*,\\s*");
