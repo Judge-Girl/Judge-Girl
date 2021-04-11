@@ -218,13 +218,14 @@ public class AbstractSubmissionControllerTest extends AbstractSpringBootTest {
     protected final VerdictIssuedEvent shouldCompleteJudgeFlow(SubmissionView submission,
                                                                VerdictView verdict,
                                                                JudgeStatus judgeStatus,
+                                                               int expectTotalGrade,
                                                                Spec<Submission>... specs) {
         shouldDeployJudger(submission, specs);
 
         VerdictIssuedEvent verdictIssuedEvent = publishVerdictAfterTheWhile(submission, verdict);
 
-        shouldNotifyVerdictIssuedEventHandler();
-        verdictShouldHaveBeenSavedCorrectly(submission, judgeStatus, verdictIssuedEvent);
+        shouldNotifyVerdictIssuedEventHandler(5000);
+        verdictShouldHaveBeenSavedCorrectly(submission, judgeStatus, expectTotalGrade, verdictIssuedEvent);
         return verdictIssuedEvent;
     }
 
@@ -247,23 +248,24 @@ public class AbstractSubmissionControllerTest extends AbstractSpringBootTest {
     }
 
     protected VerdictIssuedEvent publishVerdictAfterTheWhile(SubmissionView submissionView, VerdictView verdict) {
-        delay(3000);
+        delay(1000);
         VerdictIssuedEvent verdictIssuedEvent = generateVerdictIssuedEvent(submissionView, verdict);
         verdictPublisher.publish(verdictIssuedEvent);
         return verdictIssuedEvent;
     }
 
-    protected void shouldNotifyVerdictIssuedEventHandler() {
-        verdictIssuedEventHandler.onHandlingCompletion$.doWait(5000);
+    protected void shouldNotifyVerdictIssuedEventHandler(long timeout) {
+        verdictIssuedEventHandler.onHandlingCompletion$.doWait(timeout);
     }
 
     protected void verdictShouldHaveBeenSavedCorrectly(SubmissionView submissionView,
                                                        JudgeStatus judgeStatus,
+                                                       int expectTotalGrade,
                                                        VerdictIssuedEvent verdictIssuedEvent) {
         SubmissionData updatedSubmissionData = mongoTemplate.findById(submissionView.getId(), SubmissionData.class);
         assertNotNull(updatedSubmissionData);
         VerdictData verdictData = updatedSubmissionData.getVerdict();
-        assertEquals(50, verdictData.getTotalGrade());
+        assertEquals(expectTotalGrade, verdictData.getTotalGrade());
         assertEquals(judgeStatus, verdictData.getSummaryStatus());
         assertEquals(new HashSet<>(verdictIssuedEvent.getVerdict().getJudges()),
                 new HashSet<>(verdictData.getJudges()));
@@ -358,8 +360,9 @@ public class AbstractSubmissionControllerTest extends AbstractSpringBootTest {
     }
 
     protected List<SubmissionView> getSubmissionsInPage(int studentId, String studentToken, int page) throws Exception {
-        return getBody(requestWithToken(() -> get(API_PREFIX + "?page={page}",
-                problem.getId(), studentId, page), studentToken).andExpect(status().isOk())
+        return getBody(requestWithToken(() -> get(API_PREFIX, problem.getId(), studentId)
+                .queryParam("page", String.valueOf(page)), studentToken)
+                .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON)), new TypeReference<>() {
         });
     }

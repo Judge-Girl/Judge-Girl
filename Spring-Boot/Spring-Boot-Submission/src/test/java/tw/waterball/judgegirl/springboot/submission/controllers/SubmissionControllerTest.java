@@ -19,7 +19,6 @@ import org.springframework.http.MediaType;
 import org.springframework.util.LinkedMultiValueMap;
 import tw.waterball.judgegirl.entities.problem.JudgeStatus;
 import tw.waterball.judgegirl.entities.problem.Language;
-import tw.waterball.judgegirl.entities.stubs.VerdictStubBuilder;
 import tw.waterball.judgegirl.entities.submission.verdict.Judge;
 import tw.waterball.judgegirl.entities.submission.verdict.ProgramProfile;
 import tw.waterball.judgegirl.entities.submission.verdict.Verdict;
@@ -44,6 +43,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static tw.waterball.judgegirl.entities.problem.JudgeStatus.AC;
 import static tw.waterball.judgegirl.entities.stubs.SubmissionStubBuilder.submission;
+import static tw.waterball.judgegirl.entities.stubs.VerdictStubBuilder.verdict;
 import static tw.waterball.judgegirl.submissionapi.views.VerdictView.toViewModel;
 
 /**
@@ -68,13 +68,12 @@ public class SubmissionControllerTest extends AbstractSubmissionControllerTest {
         assertThat("Admin's submission should have bag in the responded submission",
                 submissionBag.entrySet(), everyItem(is(in(submission.getBag().entrySet()))));
 
-        VerdictView verdict = VerdictView.toViewModel(
-                VerdictStubBuilder.verdict()
-                        .AC(5, 5, 20)
-                        .AC(6, 6, 30)
-                        .WA(7, 7).build());
+        VerdictView verdict = toViewModel(verdict()
+                .AC(5, 5, 20)
+                .AC(6, 6, 30)
+                .WA(7, 7).build());
         shouldCompleteJudgeFlow(submission, verdict,
-                JudgeStatus.WA, shouldBringSubmissionBagToJudger());
+                JudgeStatus.WA, 50, shouldBringSubmissionBagToJudger());
 
         var savedSubmission = submissionRepository.findById(submission.id).orElseThrow();
         assertThat("The submission's bag should have been saved",
@@ -85,12 +84,11 @@ public class SubmissionControllerTest extends AbstractSubmissionControllerTest {
     void WhenSubmitCodeWithValidToken_ShouldCompleteJudgeFlow() throws Exception {
         SubmissionView submission = submitCodeAndGet(STUDENT1_ID, STUDENT1_TOKEN);
 
-        VerdictView verdict = VerdictView.toViewModel(
-                VerdictStubBuilder.verdict()
-                        .AC(5, 5, 20)
-                        .AC(6, 6, 30)
-                        .WA(7, 7).build());
-        shouldCompleteJudgeFlow(submission, verdict, JudgeStatus.WA);
+        VerdictView verdict = toViewModel(verdict()
+                .AC(5, 5, 20)
+                .AC(6, 6, 30)
+                .WA(7, 7).build());
+        shouldCompleteJudgeFlow(submission, verdict, JudgeStatus.WA, 50);
     }
 
 
@@ -223,14 +221,26 @@ public class SubmissionControllerTest extends AbstractSubmissionControllerTest {
         assertFalse(shouldBeUnJudged.judged);
     }
 
+
     @Test
-    void GiveSubmitTwoCodesWithAdminToken_WhenGetBestSubmission_ShouldRespondTheBestOne() throws Exception {
-//        SubmissionView firstSubmission = submitCodeAndGet(ADMIN_ID, ADMIN_TOKEN);
-//        SubmissionView secondSubmission = submitCodeAndGet(ADMIN_ID, ADMIN_TOKEN);
-//        shouldCompleteJudgeFlow(firstSubmission);
-//        shouldCompleteJudgeFlow(secondSubmission);
+    void GiveSubmitTwoCodesWithAdminTokenAndJudgeFlowHasCompleted_WhenGetBestSubmission_ShouldRespondTheBestOne() throws Exception {
+        SubmissionView firstSubmission = submitCodeAndGet(ADMIN_ID, ADMIN_TOKEN);
+        SubmissionView secondSubmission = submitCodeAndGet(ADMIN_ID, ADMIN_TOKEN);
+        publishVerdictAfterTheWhile(firstSubmission,
+                toViewModel(verdict().AC(1, 100, 10).build()));
+        shouldNotifyVerdictIssuedEventHandler(3000);
+        publishVerdictAfterTheWhile(secondSubmission,
+                toViewModel(verdict().RE(2, 200).build()));
+        shouldNotifyVerdictIssuedEventHandler(3000);
 
+        SubmissionView bestSubmission = getBestSubmission(ADMIN_ID);
 
+        assertEquals(AC, bestSubmission.getVerdict().getSummaryStatus());
+    }
+
+    private SubmissionView getBestSubmission(int studentId) throws Exception {
+        return getBody(mockMvc.perform(get(API_PREFIX + "/best", problem.getId(), studentId))
+                .andExpect(status().isOk()), SubmissionView.class);
     }
 
 
