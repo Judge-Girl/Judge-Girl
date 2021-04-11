@@ -1,6 +1,6 @@
 package tw.waterball.judgegirl.entities.stubs;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import tw.waterball.judgegirl.entities.problem.JudgeStatus;
 import tw.waterball.judgegirl.entities.problem.Language;
 import tw.waterball.judgegirl.entities.problem.Problem;
@@ -29,10 +29,10 @@ import static tw.waterball.judgegirl.entities.problem.JudgeStatus.*;
  * @author - johnny850807@gmail.com (Waterball)
  */
 @SuppressWarnings("ALL")
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class SubmissionStubBuilder extends Submission {
     private final String submissionId;
-    private final VerdictStubBuilder verdict = VerdictStubBuilder.verdict();
+    private VerdictStubBuilder verdictBuilder;
 
     public static SubmissionStubBuilder submission(String id) {
         return new SubmissionStubBuilder(id);
@@ -63,13 +63,14 @@ public class SubmissionStubBuilder extends Submission {
     }
 
     public SubmissionStubBuilder CE() {
-        verdict.CE();
+        lazyInitializeVerdictIfNull();
+        verdictBuilder.CE();
         return this;
     }
 
     public Submission build() {
         Submission submission = new Submission(submissionId, 1, 1, "C", "s", new Date());
-        submission.setVerdict(verdict.build());
+        submission.setVerdict(verdictBuilder.build());
         return submission;
     }
 
@@ -80,12 +81,19 @@ public class SubmissionStubBuilder extends Submission {
 
     @Override
     public Optional<Verdict> mayHaveVerdict() {
-        return verdict.mayHaveVerdict();
+        return verdictBuilder == null ? Optional.empty() : Optional.of(verdictBuilder.build());
     }
 
     private SubmissionStubBuilder judge(JudgeStatus status, long runtime, long memoryUsage, int grade) {
-        verdict.judge(status, runtime, memoryUsage, grade);
+        lazyInitializeVerdictIfNull();
+        verdictBuilder.judge(status, runtime, memoryUsage, grade);
         return this;
+    }
+
+    private void lazyInitializeVerdictIfNull() {
+        if (verdictBuilder == null) {
+            verdictBuilder = VerdictStubBuilder.verdict();
+        }
     }
 
     public static Submission randomJudgedSubmissionFromProblem(Problem problem, int studentId, int howManyACs, int gradePerAc) {

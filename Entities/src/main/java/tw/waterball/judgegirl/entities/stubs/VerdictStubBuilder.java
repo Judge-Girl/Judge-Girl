@@ -7,7 +7,6 @@ import tw.waterball.judgegirl.entities.submission.verdict.Verdict;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Optional;
 
 import static tw.waterball.judgegirl.entities.problem.JudgeStatus.*;
 
@@ -55,11 +54,7 @@ public class VerdictStubBuilder {
         judges.add(new Judge("T", status, new ProgramProfile(runtime, memoryUsage, ""), grade));
         return this;
     }
-
-    public Optional<Verdict> mayHaveVerdict() {
-        return judges.isEmpty() ? Optional.empty() : Optional.of(new Verdict(judges));
-    }
-
+    
     public Verdict build() {
         Verdict verdict = new Verdict(judges);
         verdict.setReport(ProblemStubs.compositeReport());
