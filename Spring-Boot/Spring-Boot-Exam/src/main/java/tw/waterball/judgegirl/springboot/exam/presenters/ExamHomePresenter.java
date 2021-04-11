@@ -20,7 +20,7 @@ import static tw.waterball.judgegirl.commons.utils.StreamUtils.zipToList;
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
-public class ExamHomePresenter implements GetExamProgressOverviewUseCase.ExamOverviewPresenter {
+public class ExamHomePresenter implements GetExamProgressOverviewUseCase.Presenter {
     private Exam exam;
     private final List<Record> bestRecords = new ArrayList<>();
     private final List<Problem> problems = new ArrayList<>();
