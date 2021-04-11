@@ -16,11 +16,14 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.http.MediaType;
+import tw.waterball.judgegirl.entities.problem.JudgeStatus;
+import tw.waterball.judgegirl.entities.stubs.SubmissionStubBuilder;
 import tw.waterball.judgegirl.entities.submission.verdict.Judge;
 import tw.waterball.judgegirl.entities.submission.verdict.ProgramProfile;
 import tw.waterball.judgegirl.entities.submission.verdict.Verdict;
 import tw.waterball.judgegirl.entities.submission.verdict.VerdictIssuedEvent;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
+import tw.waterball.judgegirl.submissionapi.views.VerdictView;
 import tw.waterball.judgegirl.testkit.resultmatchers.ZipResultMatcher;
 
 import java.util.ArrayList;
@@ -47,23 +50,28 @@ public class SubmissionControllerTest extends AbstractSubmissionControllerTest {
 
     @Test
     void testSubmitAndThenDownload() throws Exception {
-        SubmissionView submissionView = submitCodeAndGet(STUDENT1_ID, STUDENT1_TOKEN);
+        SubmissionView submissionView = submitCodeAndGet(AbstractSubmissionControllerTest.STUDENT1_ID, STUDENT1_TOKEN);
 
-        requestGetSubmission(STUDENT1_ID, STUDENT1_TOKEN)
+        requestGetSubmission(AbstractSubmissionControllerTest.STUDENT1_ID, STUDENT1_TOKEN)
                 .andExpect(content().json(
                         toJson(singletonList(submissionView))));
 
-        requestDownloadSubmittedCodes(STUDENT1_ID, STUDENT1_TOKEN, submissionView.id, submissionView.submittedCodesFileId);
+        requestDownloadSubmittedCodes(AbstractSubmissionControllerTest.STUDENT1_ID, STUDENT1_TOKEN, submissionView.id, submissionView.submittedCodesFileId);
     }
 
     @Test
     void WhenSubmitCodeWithAdminToken_ShouldCompleteJudgeFlow_SaveAndBringSubmissionBagToJudger() throws Exception {
-        SubmissionView submission = submitCodeAndGet(ADMIN_ID, ADMIN_TOKEN);
+        SubmissionView submission = submitCodeAndGet(AbstractSubmissionControllerTest.ADMIN_ID, ADMIN_TOKEN);
         assertThat("Admin's submission should have bag in the responded submission",
                 submissionBag.entrySet(), everyItem(is(in(submission.getBag().entrySet()))));
 
-        shouldCompleteJudgeFlow(submission,
-                shouldBringSubmissionBagToJudger());
+        VerdictView verdict = createVerdictAndGet(submission,
+                SubmissionStubBuilder.submission(submission.id)
+                        .AC(5, 5, 20)
+                        .AC(6, 6, 30)
+                        .WA(7, 7).build());
+        shouldCompleteJudgeFlow(submission, verdict,
+                JudgeStatus.WA, shouldBringSubmissionBagToJudger());
 
         var savedSubmission = submissionRepository.findById(submission.id).orElseThrow();
         assertThat("The submission's bag should have been saved",
@@ -72,24 +80,30 @@ public class SubmissionControllerTest extends AbstractSubmissionControllerTest {
 
     @Test
     void WhenSubmitCodeWithValidToken_ShouldCompleteJudgeFlow() throws Exception {
-        SubmissionView submission = submitCodeAndGet(STUDENT1_ID, STUDENT1_TOKEN);
-        shouldCompleteJudgeFlow(submission);
+        SubmissionView submission = submitCodeAndGet(AbstractSubmissionControllerTest.STUDENT1_ID, STUDENT1_TOKEN);
+
+        VerdictView verdict = createVerdictAndGet(submission,
+                SubmissionStubBuilder.submission(submission.id)
+                        .AC(5, 5, 20)
+                        .AC(6, 6, 30)
+                        .WA(7, 7).build());
+        shouldCompleteJudgeFlow(submission, verdict, JudgeStatus.WA);
     }
 
 
     @Test
     void GivenStudent1Submission_WhenGetThatSubmissionUsingAdminToken_ShouldRespondSuccessfully() throws Exception {
-        SubmissionView submissionView = submitCodeAndGet(STUDENT1_ID, STUDENT1_TOKEN);
+        SubmissionView submissionView = submitCodeAndGet(AbstractSubmissionControllerTest.STUDENT1_ID, STUDENT1_TOKEN);
 
         // verify get submissions
-        requestWithToken(() -> get(API_PREFIX, problem.getId(), STUDENT1_ID), ADMIN_TOKEN)
+        requestWithToken(() -> get(API_PREFIX, problem.getId(), AbstractSubmissionControllerTest.STUDENT1_ID), ADMIN_TOKEN)
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().json(toJson(singletonList(submissionView))));
 
         // verify download submitted codes
         requestWithToken(() -> get(API_PREFIX + "/{submissionId}/submittedCodes/{submittedCodesFileId}",
-                problem.getId(), STUDENT1_ID, submissionView.getId(), submissionView.submittedCodesFileId), ADMIN_TOKEN)
+                problem.getId(), AbstractSubmissionControllerTest.STUDENT1_ID, submissionView.getId(), submissionView.submittedCodesFileId), ADMIN_TOKEN)
                 .andExpect(status().isOk())
                 .andExpect(ZipResultMatcher.zip().content(codes1));
     }
@@ -97,48 +111,48 @@ public class SubmissionControllerTest extends AbstractSubmissionControllerTest {
     @Test
     void WhenGetStudent1SubmissionsWithStudent2Token_ShouldBeForbidden() throws Exception {
         requestWithToken(() -> get(API_PREFIX, problem.getId(),
-                STUDENT1_ID), STUDENT2_TOKEN)
+                AbstractSubmissionControllerTest.STUDENT1_ID), STUDENT2_TOKEN)
                 .andExpect(status().isForbidden());
     }
 
     @Test
     void GivenStudent1Submission_WhenGetThatSubmissionUsingStudent2Token_ShouldRespondForbidden() throws Exception {
-        SubmissionView submissionView = submitCodeAndGet(STUDENT1_ID, STUDENT1_TOKEN);
+        SubmissionView submissionView = submitCodeAndGet(AbstractSubmissionControllerTest.STUDENT1_ID, STUDENT1_TOKEN);
         requestWithToken(() -> get(API_PREFIX + "/{submissionId}",
-                problem.getId(), STUDENT1_ID, submissionView.getId()), STUDENT2_TOKEN)
+                problem.getId(), AbstractSubmissionControllerTest.STUDENT1_ID, submissionView.getId()), STUDENT2_TOKEN)
                 .andExpect(status().isForbidden());
     }
 
     @Test
     void GivenStudent1Submission_WhenGetThatSubmissionUnderStudent2_ShouldRespondNotFound() throws Exception {
-        SubmissionView submissionView = submitCodeAndGet(STUDENT1_ID, STUDENT1_TOKEN);
+        SubmissionView submissionView = submitCodeAndGet(AbstractSubmissionControllerTest.STUDENT1_ID, STUDENT1_TOKEN);
         requestWithToken(() -> get(API_PREFIX + "/{submissionId}",
-                problem.getId(), STUDENT2_ID, submissionView.getId()), STUDENT2_TOKEN)
+                problem.getId(), AbstractSubmissionControllerTest.STUDENT2_ID, submissionView.getId()), STUDENT2_TOKEN)
                 .andExpect(status().isNotFound());
     }
 
     @Test
     void GivenStudent1Submission_WhenDownloadItsSubmittedCodesUnderStudent2_ShouldRespondNotFound() throws Exception {
-        SubmissionView submissionView = submitCodeAndGet(STUDENT1_ID, STUDENT1_TOKEN);
+        SubmissionView submissionView = submitCodeAndGet(AbstractSubmissionControllerTest.STUDENT1_ID, STUDENT1_TOKEN);
         requestWithToken(() -> get(API_PREFIX + "/{submissionId}/submittedCodes/{submittedCodesFileId}",
-                problem.getId(), STUDENT2_ID, submissionView.getId(),
+                problem.getId(), AbstractSubmissionControllerTest.STUDENT2_ID, submissionView.getId(),
                 submissionView.submittedCodesFileId), STUDENT2_TOKEN)
                 .andExpect(status().isNotFound());
     }
 
     @Test
     void GivenStudent1Submission_WhenDownloadItsSubmittedCodeUsingStudent2Token_ShouldBeForbidden() throws Exception {
-        SubmissionView submissionView = submitCodeAndGet(STUDENT1_ID, STUDENT1_TOKEN);
+        SubmissionView submissionView = submitCodeAndGet(AbstractSubmissionControllerTest.STUDENT1_ID, STUDENT1_TOKEN);
 
         requestWithToken(() -> get(API_PREFIX + "/{submissionId}/submittedCodes/{submittedCodesFileId}",
-                problem.getId(), STUDENT1_ID, submissionView.getId(), submissionView.submittedCodesFileId), STUDENT2_TOKEN)
+                problem.getId(), AbstractSubmissionControllerTest.STUDENT1_ID, submissionView.getId(), submissionView.submittedCodesFileId), STUDENT2_TOKEN)
                 .andExpect(status().isForbidden());
     }
 
     @Test
     void GivenParallelSubmissions_WhenGetThoseSubmissionsInPage_ShouldReturnOnlyTheSubmissionsInThatPage() throws Exception {
         List<SubmissionView> submissionViews =
-                givenParallelStudentSubmissions(STUDENT1_ID, 50);
+                givenParallelStudentSubmissions(AbstractSubmissionControllerTest.STUDENT1_ID, 50);
 
         Set<SubmissionView> actualSubmissionsInPreviousPage = new HashSet<>();
         List<SubmissionView> actualSubmissions;
@@ -146,7 +160,7 @@ public class SubmissionControllerTest extends AbstractSubmissionControllerTest {
 
         int page = 0;
         do {
-            actualSubmissions = getSubmissionsInPage(STUDENT1_ID, STUDENT1_TOKEN, page++);
+            actualSubmissions = getSubmissionsInPage(AbstractSubmissionControllerTest.STUDENT1_ID, STUDENT1_TOKEN, page++);
             assertTrue(actualSubmissions.stream()
                     .noneMatch(actualSubmissionsInPreviousPage::contains));
             actualAllSubmissions.addAll(actualSubmissions);
@@ -158,7 +172,7 @@ public class SubmissionControllerTest extends AbstractSubmissionControllerTest {
 
     @Test
     void WhenSubmitCodeUnderStudent1UsingStudent2Token_ShouldBeForbidden() throws Exception {
-        submitCode(STUDENT1_ID, STUDENT2_TOKEN)
+        submitCode(AbstractSubmissionControllerTest.STUDENT1_ID, STUDENT2_TOKEN)
                 .andExpect(status().isForbidden());
     }
 
@@ -166,13 +180,13 @@ public class SubmissionControllerTest extends AbstractSubmissionControllerTest {
             "the submittedCodesFileId will be the same and the verdict is directly included as the response.")
     @Test
     void testVerdictShortcut() throws Exception {
-        SubmissionView submissionView = submitCodeAndGet(ADMIN_ID, ADMIN_TOKEN, codes1);
+        SubmissionView submissionView = submitCodeAndGet(AbstractSubmissionControllerTest.ADMIN_ID, ADMIN_TOKEN, codes1);
         Verdict verdict = new Verdict(List.of(new Judge("T", AC, new ProgramProfile(10, 10, ""), 10)));
         submissionRepository.issueVerdictOfSubmission(submissionView.id, verdict);
 
         int DUPLICATE_SUBMISSIONS = 3;
         for (int i = 0; i < DUPLICATE_SUBMISSIONS; i++) {
-            SubmissionView duplicateSubmission = submitCodeAndGet(ADMIN_ID, ADMIN_TOKEN, codes1);
+            SubmissionView duplicateSubmission = submitCodeAndGet(AbstractSubmissionControllerTest.ADMIN_ID, ADMIN_TOKEN, codes1);
             assertEquals(toViewModel(verdict), duplicateSubmission.getVerdict());
         }
 
@@ -186,8 +200,18 @@ public class SubmissionControllerTest extends AbstractSubmissionControllerTest {
                         event.getVerdict().getBestJudge().getTestcaseName()));
 
         // different files --> should respond un-judged submission
-        SubmissionView shouldBeUnJudged = submitCodeAndGet(ADMIN_ID, ADMIN_TOKEN, codes2);
+        SubmissionView shouldBeUnJudged = submitCodeAndGet(AbstractSubmissionControllerTest.ADMIN_ID, ADMIN_TOKEN, codes2);
         assertFalse(shouldBeUnJudged.isJudged);
+    }
+
+    @Test
+    void GiveSubmitTwoCodesWithAdminToken_WhenGetBestSubmission_ShouldRespondTheBestOne() throws Exception {
+//        SubmissionView firstSubmission = submitCodeAndGet(AbstractSubmissionControllerTest.ADMIN_ID, ADMIN_TOKEN);
+//        SubmissionView secondSubmission = submitCodeAndGet(AbstractSubmissionControllerTest.ADMIN_ID, ADMIN_TOKEN);
+//        shouldCompleteJudgeFlow(firstSubmission);
+//        shouldCompleteJudgeFlow(secondSubmission);
+
+
     }
 
 
