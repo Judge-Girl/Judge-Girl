@@ -366,6 +366,18 @@ class ExamControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
+    void testGetExamById() throws Exception {
+        var exam = createExamAndGet(new Date(), new Date(), "exam");
+        var q1 = createQuestionAndGet(new CreateQuestionUseCase.Request(exam.id, PROBLEM_ID, 3, 50, 1));
+        var q2 = createQuestionAndGet(new CreateQuestionUseCase.Request(exam.id, ANOTHER_PROBLEM_ID, 3, 50, 2));
+        exam.questions.add(q1);
+        exam.questions.add(q2);
+
+        var actualExam = getExamById(exam.id);
+        assertEquals(exam, actualExam);
+    }
+
+    @Test
     void GivenStudentDoesntParticipateACurrentExam_WhenAnswerExamQuestion_ShouldBeForbidden() throws Exception {
         ExamView currentExam = createExamAndGet(beforeCurrentTime(1, HOURS), afterCurrentTime(1, HOURS), "A");
         createQuestion(new CreateQuestionUseCase.Request(currentExam.getId(), PROBLEM_ID, NO_QUOTA, 100, 1));
@@ -422,7 +434,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    void testGetTheExamOverview() throws Exception {
+    void testGetStudentExamProgressOverview() throws Exception {
         final int QUOTA = 5;
         final int SCORE = submissionWith2ACs20Point.mayHaveVerdict().orElseThrow().getTotalGrade();
         Date start = beforeCurrentTime(1, HOURS), end = afterCurrentTime(1, HOURS);
@@ -611,6 +623,11 @@ class ExamControllerTest extends AbstractSpringBootTest {
         return getBody(mockMvc.perform(get("/api/students/{studentId}/exams?status=" + status, studentId))
                 .andExpect(status().isOk()), new TypeReference<>() {
         });
+    }
+
+    private ExamView getExamById(int examId) throws Exception {
+        return getBody(mockMvc.perform(get("/api/exams/{examId}",
+                examId)).andExpect(status().isOk()), ExamView.class);
     }
 
     private ExamHome getExamOverview(int examId) throws Exception {

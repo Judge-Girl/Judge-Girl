@@ -17,15 +17,12 @@ public class CreateExamUseCase {
         this.examRepository = examRepository;
     }
 
-    public void execute(Request request, Presenter presenter) throws IllegalStateException {
+    public void execute(Request request, ExamPresenter presenter) throws IllegalStateException {
         Exam exam = new Exam(request.name, request.startTime, request.endTime, request.description);
         exam.validate();
-        presenter.setExam(examRepository.save(exam));
+        presenter.showExam(examRepository.save(exam));
     }
 
-    public interface Presenter {
-        void setExam(Exam exam);
-    }
 
     @Data
     @AllArgsConstructor

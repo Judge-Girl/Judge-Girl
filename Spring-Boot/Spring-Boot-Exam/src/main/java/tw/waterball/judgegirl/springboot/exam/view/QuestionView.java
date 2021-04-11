@@ -1,12 +1,13 @@
 package tw.waterball.judgegirl.springboot.exam.view;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import tw.waterball.judgegirl.entities.exam.Question;
 
-@EqualsAndHashCode
+@Data
 @Builder
-@Getter
-@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class QuestionView {
