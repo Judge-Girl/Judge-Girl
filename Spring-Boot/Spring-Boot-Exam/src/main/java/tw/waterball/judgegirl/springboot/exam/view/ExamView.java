@@ -20,7 +20,7 @@ public class ExamView {
     public Date startTime;
     public Date endTime;
     public String description;
-    public List<QuestionView> questionViews;
+    public List<QuestionView> questions;
 
     public static ExamView toViewModel(Exam exam) {
         return ExamView.builder()
@@ -29,7 +29,7 @@ public class ExamView {
                 .startTime(exam.getStartTime())
                 .endTime(exam.getEndTime())
                 .description(exam.getDescription())
-                .questionViews(exam.getQuestions().stream().map(QuestionView::toViewModel).collect(Collectors.toList()))
+                .questions(exam.getQuestions().stream().map(QuestionView::toViewModel).collect(Collectors.toList()))
                 .build();
     }
 }

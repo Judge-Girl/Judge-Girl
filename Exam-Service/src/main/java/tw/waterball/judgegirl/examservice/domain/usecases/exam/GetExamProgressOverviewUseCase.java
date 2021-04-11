@@ -1,7 +1,6 @@
 package tw.waterball.judgegirl.examservice.domain.usecases.exam;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.entities.exam.Exam;
 import tw.waterball.judgegirl.entities.exam.Question;
@@ -11,6 +10,7 @@ import tw.waterball.judgegirl.examservice.domain.repositories.ExamRepository;
 import tw.waterball.judgegirl.problemapi.clients.ProblemServiceDriver;
 
 import javax.inject.Named;
+import java.util.Optional;
 
 import static tw.waterball.judgegirl.problemapi.views.ProblemView.toEntity;
 
@@ -67,11 +67,13 @@ public class GetExamProgressOverviewUseCase {
         void showRemainingQuotaOfQuestion(Question question, int remainingQuota);
     }
 
-    @Data
     @AllArgsConstructor
     public static class Request {
-
         public int examId;
-        public int studentId;
+        public Integer studentId;
+
+        public Optional<Integer> getStudentId() {
+            return Optional.of(studentId);
+        }
     }
 }

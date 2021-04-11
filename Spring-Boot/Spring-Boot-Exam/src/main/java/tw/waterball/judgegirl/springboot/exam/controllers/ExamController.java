@@ -14,6 +14,7 @@ import tw.waterball.judgegirl.examservice.domain.repositories.ExamFilter;
 import tw.waterball.judgegirl.examservice.domain.usecases.exam.*;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.springboot.exam.presenters.ExamHomePresenter;
+import tw.waterball.judgegirl.springboot.exam.presenters.ExamPresenter;
 import tw.waterball.judgegirl.springboot.exam.view.AnswerView;
 import tw.waterball.judgegirl.springboot.exam.view.ExamHome;
 import tw.waterball.judgegirl.springboot.exam.view.ExamView;
@@ -38,20 +39,20 @@ public class ExamController {
     private final GetExamProgressOverviewUseCase getExamProgressOverviewUseCase;
     private final AnswerQuestionUseCase answerQuestionUseCase;
     private final UpdateExamUseCase updateExamUseCase;
+    private final GetExamUseCase getExamUseCase;
+    private final ExamPresenter examPresenter;
 
     @PostMapping("/exams")
     public ExamView createExam(@RequestBody CreateExamUseCase.Request request) {
-        CreateExamPresenter presenter = new CreateExamPresenter();
-        createExamUseCase.execute(request, presenter);
-        return presenter.present();
+        createExamUseCase.execute(request, examPresenter);
+        return examPresenter.present();
     }
 
     @PutMapping("/exams/{examId}")
     public ExamView updateExam(@PathVariable int examId, @RequestBody UpdateExamUseCase.Request request) {
         request.setExamId(examId);
-        UpdateExamPresenter presenter = new UpdateExamPresenter();
-        updateExamUseCase.execute(request, presenter);
-        return presenter.present();
+        updateExamUseCase.execute(request, examPresenter);
+        return examPresenter.present();
     }
 
     @GetMapping("/exams")
@@ -105,6 +106,13 @@ public class ExamController {
         deleteQuestionUseCase.execute(new DeleteQuestionUseCase.Request(examId, problemId));
     }
 
+
+    @GetMapping("/exams/{examId}")
+    public ExamView getExamById(@PathVariable int examId) {
+        getExamUseCase.execute(examId, examPresenter);
+        return examPresenter.present();
+    }
+
     @GetMapping("/exams/{examId}/students/{studentId}/overview")
     public ExamHome getExamOverview(@PathVariable int examId,
                                     @PathVariable int studentId) {
@@ -133,37 +141,12 @@ class AnswerQuestionPresenter implements AnswerQuestionUseCase.Presenter {
     }
 }
 
-class CreateExamPresenter implements CreateExamUseCase.Presenter {
-    private Exam exam;
-
-    @Override
-    public void setExam(Exam exam) {
-        this.exam = exam;
-    }
-
-    public ExamView present() {
-        return ExamView.toViewModel(exam);
-    }
-}
-
-class UpdateExamPresenter implements UpdateExamUseCase.Presenter {
-    private Exam exam;
-
-    @Override
-    public void setExam(Exam exam) {
-        this.exam = exam;
-    }
-
-    public ExamView present() {
-        return ExamView.toViewModel(exam);
-    }
-}
 
 class GetExamsPresenter implements GetExamsUseCase.Presenter {
     private List<Exam> exams;
 
     @Override
-    public void setExams(List<Exam> exams) {
+    public void showExams(List<Exam> exams) {
         this.exams = exams;
     }
 

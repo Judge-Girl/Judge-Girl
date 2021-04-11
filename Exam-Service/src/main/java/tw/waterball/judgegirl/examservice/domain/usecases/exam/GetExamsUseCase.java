@@ -16,11 +16,11 @@ public class GetExamsUseCase {
 
     public void execute(ExamFilter filter, @NotNull Presenter presenter) {
         List<Exam> exams = examRepository.findExams(filter);
-        presenter.setExams(exams);
+        presenter.showExams(exams);
     }
 
     public interface Presenter {
-        void setExams(List<Exam> exams);
+        void showExams(List<Exam> exams);
     }
 
 }
