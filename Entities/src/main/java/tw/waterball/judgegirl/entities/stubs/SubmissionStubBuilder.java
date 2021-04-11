@@ -32,7 +32,7 @@ import static tw.waterball.judgegirl.entities.problem.JudgeStatus.*;
 @AllArgsConstructor
 public class SubmissionStubBuilder extends Submission {
     private final String submissionId;
-    private final List<Judge> judges = new LinkedList<>();
+    private final VerdictStubBuilder verdict = VerdictStubBuilder.verdict();
 
     public static SubmissionStubBuilder submission(String id) {
         return new SubmissionStubBuilder(id);
@@ -63,15 +63,13 @@ public class SubmissionStubBuilder extends Submission {
     }
 
     public SubmissionStubBuilder CE() {
-        judges.add(new Judge("T", CE, ProgramProfile.onlyCompileError("error"), 0));
+        verdict.CE();
         return this;
     }
 
     public Submission build() {
         Submission submission = new Submission(submissionId, 1, 1, "C", "s", new Date());
-        if (!judges.isEmpty()) {
-            submission.setVerdict(new Verdict(judges));
-        }
+        submission.setVerdict(verdict.build());
         return submission;
     }
 
@@ -82,11 +80,11 @@ public class SubmissionStubBuilder extends Submission {
 
     @Override
     public Optional<Verdict> mayHaveVerdict() {
-        return judges.isEmpty() ? Optional.empty() : Optional.of(new Verdict(judges));
+        return verdict.mayHaveVerdict();
     }
 
     private SubmissionStubBuilder judge(JudgeStatus status, long runtime, long memoryUsage, int grade) {
-        judges.add(new Judge("T", status, new ProgramProfile(runtime, memoryUsage, ""), grade));
+        verdict.judge(status, runtime, memoryUsage, grade);
         return this;
     }
 

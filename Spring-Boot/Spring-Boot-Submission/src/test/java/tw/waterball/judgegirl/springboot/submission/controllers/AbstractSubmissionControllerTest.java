@@ -195,10 +195,10 @@ public class AbstractSubmissionControllerTest extends AbstractSpringBootTest {
 
     @BeforeEach
     void setup() {
-        ADMIN_TOKEN = tokenService.createToken(admin(AbstractSubmissionControllerTest.ADMIN_ID)).toString();
+        ADMIN_TOKEN = tokenService.createToken(admin(ADMIN_ID)).toString();
         amqpAdmin.declareExchange(new TopicExchange(SUBMISSION_EXCHANGE_NAME));
-        STUDENT1_TOKEN = tokenService.createToken(student(AbstractSubmissionControllerTest.STUDENT1_ID)).toString();
-        STUDENT2_TOKEN = tokenService.createToken(student(AbstractSubmissionControllerTest.STUDENT2_ID)).toString();
+        STUDENT1_TOKEN = tokenService.createToken(student(STUDENT1_ID)).toString();
+        STUDENT2_TOKEN = tokenService.createToken(student(STUDENT2_ID)).toString();
         mockGetProblemById();
     }
 
