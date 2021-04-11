@@ -14,6 +14,7 @@ import tw.waterball.judgegirl.examservice.domain.repositories.ExamFilter;
 import tw.waterball.judgegirl.examservice.domain.usecases.exam.*;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.springboot.exam.presenters.ExamHomePresenter;
+import tw.waterball.judgegirl.springboot.exam.presenters.ExamPresenter;
 import tw.waterball.judgegirl.springboot.exam.view.AnswerView;
 import tw.waterball.judgegirl.springboot.exam.view.ExamHome;
 import tw.waterball.judgegirl.springboot.exam.view.ExamView;
@@ -39,7 +40,7 @@ public class ExamController {
     private final AnswerQuestionUseCase answerQuestionUseCase;
     private final UpdateExamUseCase updateExamUseCase;
     private final GetExamUseCase getExamUseCase;
-    private final tw.waterball.judgegirl.springboot.exam.presenters.ExamPresenter examPresenter;
+    private final ExamPresenter examPresenter;
 
     @PostMapping("/exams")
     public ExamView createExam(@RequestBody CreateExamUseCase.Request request) {
