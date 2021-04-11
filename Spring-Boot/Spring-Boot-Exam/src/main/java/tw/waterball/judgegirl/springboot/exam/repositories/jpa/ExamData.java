@@ -36,7 +36,7 @@ public class ExamData {
 
     public Exam toEntity() {
         return new Exam(id, name, startTime, endTime, description,
-                mapToList(questions, QuestionData::toEntity));
+                mapToList(questions, QuestionData::toEntity), mapToList(examParticipations, ExamParticipationData::toEntity));
     }
 
     public static ExamData toData(Exam exam) {
@@ -47,8 +47,8 @@ public class ExamData {
                 .endTime(exam.getEndTime())
                 .description(exam.getDescription())
                 .questions(mapToList(exam.getQuestions(), QuestionData::toData))
+                .examParticipations(mapToList(exam.getExamParticipations(), ExamParticipationData::toData))
                 .build();
     }
-
 
 }

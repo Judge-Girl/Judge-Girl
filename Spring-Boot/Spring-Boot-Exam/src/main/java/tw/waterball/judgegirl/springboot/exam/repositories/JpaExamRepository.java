@@ -5,10 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
-import tw.waterball.judgegirl.entities.exam.Answer;
-import tw.waterball.judgegirl.entities.exam.Exam;
-import tw.waterball.judgegirl.entities.exam.Question;
-import tw.waterball.judgegirl.entities.exam.Record;
+import tw.waterball.judgegirl.entities.exam.*;
 import tw.waterball.judgegirl.examservice.domain.repositories.ExamFilter;
 import tw.waterball.judgegirl.examservice.domain.repositories.ExamRepository;
 import tw.waterball.judgegirl.springboot.exam.repositories.jpa.*;
@@ -102,6 +99,11 @@ public class JpaExamRepository implements ExamRepository {
         ExamParticipationData data = jpaExamParticipationDataPort.save(
                 new ExamParticipationData(examId, studentId));
         jpaExamParticipationDataPort.save(data);
+    }
+
+    @Override
+    public void deleteParticipation(ExamParticipation.Id id) {
+        jpaExamParticipationDataPort.deleteById(new ExamParticipationData.Id(id));
     }
 
     @Override

@@ -1,9 +1,6 @@
 package tw.waterball.judgegirl.examservice.domain.repositories;
 
-import tw.waterball.judgegirl.entities.exam.Answer;
-import tw.waterball.judgegirl.entities.exam.Exam;
-import tw.waterball.judgegirl.entities.exam.Question;
-import tw.waterball.judgegirl.entities.exam.Record;
+import tw.waterball.judgegirl.entities.exam.*;
 
 import java.util.Collection;
 import java.util.List;
@@ -28,6 +25,8 @@ public interface ExamRepository {
     void addQuestion(Question question);
 
     void addParticipation(int examId, int studentId);
+
+    void deleteParticipation(ExamParticipation.Id id);
 
     void deleteQuestionById(Question.Id id);
 

@@ -40,6 +40,9 @@ public class Exam {
     @Valid
     private List<Question> questions = new ArrayList<>();
 
+    @Valid
+    private List<ExamParticipation> examParticipations = new ArrayList<>();
+
     public Exam(String name, Date startTime, Date endTime, String description) {
         this.name = name;
         this.startTime = startTime;

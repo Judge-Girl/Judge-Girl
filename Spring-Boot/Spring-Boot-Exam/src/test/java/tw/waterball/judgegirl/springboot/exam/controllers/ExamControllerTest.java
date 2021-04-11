@@ -637,6 +637,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
 
     private void createExamParticipation(int studentId, int examId) {
         examRepository.addParticipation(examId, studentId);
+
     }
 
     private ResultActions createQuestion(CreateQuestionUseCase.Request request) throws Exception {

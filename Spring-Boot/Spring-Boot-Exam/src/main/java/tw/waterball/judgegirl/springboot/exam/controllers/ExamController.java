@@ -41,6 +41,8 @@ public class ExamController {
     private final UpdateExamUseCase updateExamUseCase;
     private final GetExamUseCase getExamUseCase;
     private final ExamPresenter examPresenter;
+    private final AddExamParticipationUseCase addExamParticipationUseCase;
+    private final DeleteExamParticipationUseCase deleteExamParticipationUseCase;
 
     @PostMapping("/exams")
     public ExamView createExam(@RequestBody CreateExamUseCase.Request request) {
@@ -121,6 +123,19 @@ public class ExamController {
         return presenter.present();
     }
 
+    @PostMapping("/exams/{examId}/students")
+    public List<String> addExamParticipation(@PathVariable int examId, @RequestBody AddExamParticipationUseCase.Request request) {
+        request.examId = examId;
+        AddExamParticipationPresenter presenter = new AddExamParticipationPresenter();
+        addExamParticipationUseCase.execute(request, presenter);
+        return presenter.present();
+    }
+
+    @DeleteMapping("/exams/{examId}/students")
+    public void deleteExamParticipation(@PathVariable int examId, @RequestBody DeleteExamParticipationUseCase.Request request) {
+        request.examId = examId;
+        deleteExamParticipationUseCase.execute(request);
+    }
 
     @ResponseStatus(HttpStatus.FORBIDDEN)
     @ExceptionHandler({YouAreNotAnExamineeException.class})
@@ -169,5 +184,18 @@ class CreateQuestionPresenter implements CreateQuestionUseCase.Presenter {
 
     public QuestionView present() {
         return QuestionView.toViewModel(question);
+    }
+}
+
+class AddExamParticipationPresenter implements AddExamParticipationUseCase.Presenter {
+    private List<String> errorList;
+
+    @Override
+    public void setErrorEmails(List<String> emails) {
+        errorList = emails;
+    }
+
+    public List<String> present() {
+        return errorList;
     }
 }
