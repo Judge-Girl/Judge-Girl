@@ -11,10 +11,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import tw.waterball.judgegirl.entities.exam.ExamHasNotBeenStartedException;
 import tw.waterball.judgegirl.entities.exam.NoSubmissionQuotaException;
-import tw.waterball.judgegirl.entities.exam.Record;
 import tw.waterball.judgegirl.entities.submission.SubmissionThrottlingException;
-import tw.waterball.judgegirl.entities.submission.verdict.VerdictIssuedEvent;
-import tw.waterball.judgegirl.examservice.domain.usecases.AnswerQuestionUseCase;
+import tw.waterball.judgegirl.examservice.domain.usecases.exam.AnswerQuestionUseCase;
 
 import static tw.waterball.judgegirl.springboot.exam.view.AnswerView.toViewModel;
 
@@ -27,9 +25,9 @@ import static tw.waterball.judgegirl.springboot.exam.view.AnswerView.toViewModel
 public class LoggingAspect {
     private final ObjectMapper objectMapper;
 
-    @Around("execution(* tw.waterball.judgegirl.examservice.domain.usecases.AnswerQuestionUseCase.execute(" +
-            "tw.waterball.judgegirl.examservice.domain.usecases.AnswerQuestionUseCase.Request, " +
-            "tw.waterball.judgegirl.examservice.domain.usecases.AnswerQuestionUseCase.Presenter))")
+    @Around("execution(* tw.waterball.judgegirl.examservice.domain.usecases.exam.AnswerQuestionUseCase.execute(" +
+            "tw.waterball.judgegirl.examservice.domain.usecases.exam.AnswerQuestionUseCase.Request, " +
+            "tw.waterball.judgegirl.examservice.domain.usecases.exam.AnswerQuestionUseCase.Presenter))")
     public Object logAnswerQuestionUseCase(ProceedingJoinPoint joinPoint) throws Throwable {
         var args = joinPoint.getArgs();
         var request = (AnswerQuestionUseCase.Request) args[0];
@@ -58,18 +56,6 @@ public class LoggingAspect {
             log.error("[Answer Question Failed: No Submission Quota] {}", requestToJson);
             throw err;
         }
-    }
-
-    @Around("execution(* tw.waterball.judgegirl.examservice.domain.usecases.AnswerQuestionUseCase.updateBestRecordFromVerdict(..))")
-    public Object logOnVerdictIssued(ProceedingJoinPoint joinPoint) throws Throwable {
-        var args = joinPoint.getArgs();
-        var event = (VerdictIssuedEvent) args[0];
-        var useCase = (AnswerQuestionUseCase) joinPoint.getTarget();
-        Logger log = LoggerFactory.getLogger(useCase.getClass());
-        log.info("[Saving Best Record From Verdict Issued Event] {}", toJson(event));
-        Record bestRecord = (Record) joinPoint.proceed(args);
-        log.info("[Saved Best Record] {}", toJson(bestRecord));
-        return bestRecord;
     }
 
 
