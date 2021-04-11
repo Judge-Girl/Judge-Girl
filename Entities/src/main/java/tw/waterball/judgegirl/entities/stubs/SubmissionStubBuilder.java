@@ -1,6 +1,6 @@
 package tw.waterball.judgegirl.entities.stubs;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import tw.waterball.judgegirl.entities.problem.JudgeStatus;
 import tw.waterball.judgegirl.entities.problem.Language;
 import tw.waterball.judgegirl.entities.problem.Problem;
@@ -29,10 +29,10 @@ import static tw.waterball.judgegirl.entities.problem.JudgeStatus.*;
  * @author - johnny850807@gmail.com (Waterball)
  */
 @SuppressWarnings("ALL")
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class SubmissionStubBuilder extends Submission {
     private final String submissionId;
-    private final List<Judge> judges = new LinkedList<>();
+    private VerdictStubBuilder verdictBuilder;
 
     public static SubmissionStubBuilder submission(String id) {
         return new SubmissionStubBuilder(id);
@@ -63,15 +63,14 @@ public class SubmissionStubBuilder extends Submission {
     }
 
     public SubmissionStubBuilder CE() {
-        judges.add(new Judge("T", CE, ProgramProfile.onlyCompileError("error"), 0));
+        lazyInitializeVerdictIfNull();
+        verdictBuilder.CE();
         return this;
     }
 
     public Submission build() {
         Submission submission = new Submission(submissionId, 1, 1, "C", "s", new Date());
-        if (!judges.isEmpty()) {
-            submission.setVerdict(new Verdict(judges));
-        }
+        submission.setVerdict(verdictBuilder.build());
         return submission;
     }
 
@@ -82,12 +81,19 @@ public class SubmissionStubBuilder extends Submission {
 
     @Override
     public Optional<Verdict> mayHaveVerdict() {
-        return judges.isEmpty() ? Optional.empty() : Optional.of(new Verdict(judges));
+        return verdictBuilder == null ? Optional.empty() : Optional.of(verdictBuilder.build());
     }
 
     private SubmissionStubBuilder judge(JudgeStatus status, long runtime, long memoryUsage, int grade) {
-        judges.add(new Judge("T", status, new ProgramProfile(runtime, memoryUsage, ""), grade));
+        lazyInitializeVerdictIfNull();
+        verdictBuilder.judge(status, runtime, memoryUsage, grade);
         return this;
+    }
+
+    private void lazyInitializeVerdictIfNull() {
+        if (verdictBuilder == null) {
+            verdictBuilder = VerdictStubBuilder.verdict();
+        }
     }
 
     public static Submission randomJudgedSubmissionFromProblem(Problem problem, int studentId, int howManyACs, int gradePerAc) {

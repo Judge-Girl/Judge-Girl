@@ -48,8 +48,6 @@ import tw.waterball.judgegirl.entities.submission.Bag;
 import tw.waterball.judgegirl.entities.submission.Submission;
 import tw.waterball.judgegirl.entities.submission.SubmissionThrottling;
 import tw.waterball.judgegirl.entities.submission.report.Report;
-import tw.waterball.judgegirl.entities.submission.verdict.Judge;
-import tw.waterball.judgegirl.entities.submission.verdict.ProgramProfile;
 import tw.waterball.judgegirl.entities.submission.verdict.VerdictIssuedEvent;
 import tw.waterball.judgegirl.problemapi.clients.ProblemServiceDriver;
 import tw.waterball.judgegirl.springboot.profiles.Profiles;
@@ -60,7 +58,6 @@ import tw.waterball.judgegirl.springboot.submission.impl.mongo.data.VerdictData;
 import tw.waterball.judgegirl.springboot.submission.impl.mongo.strategy.SaveSubmissionWithCodesStrategy;
 import tw.waterball.judgegirl.springboot.submission.impl.mongo.strategy.VerdictShortcut;
 import tw.waterball.judgegirl.submissionapi.clients.VerdictPublisher;
-import tw.waterball.judgegirl.submissionapi.views.ReportView;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 import tw.waterball.judgegirl.submissionapi.views.VerdictView;
 import tw.waterball.judgegirl.submissionservice.deployer.JudgerDeployer;
@@ -70,7 +67,6 @@ import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
 import tw.waterball.judgegirl.testkit.semantics.Spec;
 
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.function.Supplier;
@@ -104,7 +100,7 @@ public class AbstractSubmissionControllerTest extends AbstractSpringBootTest {
     public static final int ADMIN_ID = 12345;
     public static final int STUDENT1_ID = 22;
     public static final int STUDENT2_ID = 34;
-    protected final String API_PREFIX = "/api/problems/{problemId}/" + Language.C.toString() + "/students/{studentId}/submissions";
+    protected final String API_PREFIX = "/api/problems/{problemId}/" + Language.C + "/students/{studentId}/submissions";
     protected final Problem problem = ProblemStubs.problemTemplate().build();
     protected final String SUBMISSION_EXCHANGE_NAME = "submissions";
     protected String ADMIN_TOKEN;
@@ -219,13 +215,16 @@ public class AbstractSubmissionControllerTest extends AbstractSpringBootTest {
     }
 
     @SafeVarargs
-    protected final VerdictIssuedEvent shouldCompleteJudgeFlow(SubmissionView submission, Spec<Submission>... specs) {
+    protected final VerdictIssuedEvent shouldCompleteJudgeFlow(SubmissionView submission,
+                                                               VerdictView verdict,
+                                                               JudgeStatus judgeStatus,
+                                                               Spec<Submission>... specs) {
         shouldDeployJudger(submission, specs);
 
-        VerdictIssuedEvent verdictIssuedEvent = publishVerdictAfterTheWhile(submission);
+        VerdictIssuedEvent verdictIssuedEvent = publishVerdictAfterTheWhile(submission, verdict);
 
         shouldNotifyVerdictIssuedEventHandler();
-        verdictShouldHaveBeenSavedCorrectly(submission, verdictIssuedEvent);
+        verdictShouldHaveBeenSavedCorrectly(submission, judgeStatus, verdictIssuedEvent);
         return verdictIssuedEvent;
     }
 
@@ -247,9 +246,9 @@ public class AbstractSubmissionControllerTest extends AbstractSpringBootTest {
         return submission -> assertEquals(submissionBag, submission.getBag());
     }
 
-    protected VerdictIssuedEvent publishVerdictAfterTheWhile(SubmissionView submissionView) {
+    protected VerdictIssuedEvent publishVerdictAfterTheWhile(SubmissionView submissionView, VerdictView verdict) {
         delay(3000);
-        VerdictIssuedEvent verdictIssuedEvent = generateVerdictIssuedEvent(submissionView);
+        VerdictIssuedEvent verdictIssuedEvent = generateVerdictIssuedEvent(submissionView, verdict);
         verdictPublisher.publish(verdictIssuedEvent);
         return verdictIssuedEvent;
     }
@@ -258,31 +257,26 @@ public class AbstractSubmissionControllerTest extends AbstractSpringBootTest {
         verdictIssuedEventHandler.onHandlingCompletion$.doWait(5000);
     }
 
-    protected void verdictShouldHaveBeenSavedCorrectly(SubmissionView submissionView, VerdictIssuedEvent verdictIssuedEvent) {
+    protected void verdictShouldHaveBeenSavedCorrectly(SubmissionView submissionView,
+                                                       JudgeStatus judgeStatus,
+                                                       VerdictIssuedEvent verdictIssuedEvent) {
         SubmissionData updatedSubmissionData = mongoTemplate.findById(submissionView.getId(), SubmissionData.class);
         assertNotNull(updatedSubmissionData);
         VerdictData verdictData = updatedSubmissionData.getVerdict();
         assertEquals(50, verdictData.getTotalGrade());
-        assertEquals(JudgeStatus.WA, verdictData.getSummaryStatus());
+        assertEquals(judgeStatus, verdictData.getSummaryStatus());
         assertEquals(new HashSet<>(verdictIssuedEvent.getVerdict().getJudges()),
                 new HashSet<>(verdictData.getJudges()));
         assertEquals(stubReport.getRawData(), verdictData.getReportData());
     }
 
-    protected VerdictIssuedEvent generateVerdictIssuedEvent(SubmissionView submissionView) {
+    protected VerdictIssuedEvent generateVerdictIssuedEvent(SubmissionView submissionView, VerdictView verdict) {
         return VerdictIssuedEvent.builder()
                 .problemId(problem.getId())
                 .studentId(submissionView.studentId)
                 .problemTitle(problem.getTitle())
                 .submissionId(submissionView.getId())
-                .submissionTime(submissionView.submissionTime)
-                .verdict(toEntity(VerdictView.builder()
-                        .judge(new Judge("t1", JudgeStatus.AC, new ProgramProfile(5, 5, ""), 20))
-                        .judge(new Judge("t2", JudgeStatus.AC, new ProgramProfile(6, 6, ""), 30))
-                        .judge(new Judge("t3", JudgeStatus.WA, new ProgramProfile(7, 7, ""), 0))
-                        .issueTime(new Date())
-                        .report(ReportView.toViewModel(ProblemStubs.compositeReport()))
-                        .build())).build();
+                .verdict(toEntity(verdict)).build();
     }
 
 

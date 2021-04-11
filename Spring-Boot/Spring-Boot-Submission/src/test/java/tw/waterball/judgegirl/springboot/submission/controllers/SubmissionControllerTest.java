@@ -16,11 +16,14 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.http.MediaType;
+import tw.waterball.judgegirl.entities.problem.JudgeStatus;
+import tw.waterball.judgegirl.entities.stubs.VerdictStubBuilder;
 import tw.waterball.judgegirl.entities.submission.verdict.Judge;
 import tw.waterball.judgegirl.entities.submission.verdict.ProgramProfile;
 import tw.waterball.judgegirl.entities.submission.verdict.Verdict;
 import tw.waterball.judgegirl.entities.submission.verdict.VerdictIssuedEvent;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
+import tw.waterball.judgegirl.submissionapi.views.VerdictView;
 import tw.waterball.judgegirl.testkit.resultmatchers.ZipResultMatcher;
 
 import java.util.ArrayList;
@@ -62,8 +65,13 @@ public class SubmissionControllerTest extends AbstractSubmissionControllerTest {
         assertThat("Admin's submission should have bag in the responded submission",
                 submissionBag.entrySet(), everyItem(is(in(submission.getBag().entrySet()))));
 
-        shouldCompleteJudgeFlow(submission,
-                shouldBringSubmissionBagToJudger());
+        VerdictView verdict = VerdictView.toViewModel(
+                VerdictStubBuilder.verdict()
+                        .AC(5, 5, 20)
+                        .AC(6, 6, 30)
+                        .WA(7, 7).build());
+        shouldCompleteJudgeFlow(submission, verdict,
+                JudgeStatus.WA, shouldBringSubmissionBagToJudger());
 
         var savedSubmission = submissionRepository.findById(submission.id).orElseThrow();
         assertThat("The submission's bag should have been saved",
@@ -73,7 +81,13 @@ public class SubmissionControllerTest extends AbstractSubmissionControllerTest {
     @Test
     void WhenSubmitCodeWithValidToken_ShouldCompleteJudgeFlow() throws Exception {
         SubmissionView submission = submitCodeAndGet(STUDENT1_ID, STUDENT1_TOKEN);
-        shouldCompleteJudgeFlow(submission);
+
+        VerdictView verdict = VerdictView.toViewModel(
+                VerdictStubBuilder.verdict()
+                        .AC(5, 5, 20)
+                        .AC(6, 6, 30)
+                        .WA(7, 7).build());
+        shouldCompleteJudgeFlow(submission, verdict, JudgeStatus.WA);
     }
 
 
@@ -96,8 +110,7 @@ public class SubmissionControllerTest extends AbstractSubmissionControllerTest {
 
     @Test
     void WhenGetStudent1SubmissionsWithStudent2Token_ShouldBeForbidden() throws Exception {
-        requestWithToken(() -> get(API_PREFIX, problem.getId(),
-                STUDENT1_ID), STUDENT2_TOKEN)
+        requestWithToken(() -> get(API_PREFIX, problem.getId(), STUDENT1_ID), STUDENT2_TOKEN)
                 .andExpect(status().isForbidden());
     }
 
@@ -188,6 +201,16 @@ public class SubmissionControllerTest extends AbstractSubmissionControllerTest {
         // different files --> should respond un-judged submission
         SubmissionView shouldBeUnJudged = submitCodeAndGet(ADMIN_ID, ADMIN_TOKEN, codes2);
         assertFalse(shouldBeUnJudged.isJudged);
+    }
+
+    @Test
+    void GiveSubmitTwoCodesWithAdminToken_WhenGetBestSubmission_ShouldRespondTheBestOne() throws Exception {
+//        SubmissionView firstSubmission = submitCodeAndGet(ADMIN_ID, ADMIN_TOKEN);
+//        SubmissionView secondSubmission = submitCodeAndGet(ADMIN_ID, ADMIN_TOKEN);
+//        shouldCompleteJudgeFlow(firstSubmission);
+//        shouldCompleteJudgeFlow(secondSubmission);
+
+
     }
 
 
