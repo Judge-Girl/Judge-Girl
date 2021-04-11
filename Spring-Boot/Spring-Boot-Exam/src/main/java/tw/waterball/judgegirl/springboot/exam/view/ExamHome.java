@@ -1,28 +1,31 @@
 package tw.waterball.judgegirl.springboot.exam.view;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.jetbrains.annotations.Nullable;
 import tw.waterball.judgegirl.entities.exam.Question;
 import tw.waterball.judgegirl.entities.exam.Record;
+import tw.waterball.judgegirl.entities.problem.JudgeStatus;
 import tw.waterball.judgegirl.entities.problem.Problem;
 
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
-@EqualsAndHashCode
+@Data
 @Builder
-@Getter
-@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class ExamHome {
-    private Integer id;
-    private String name;
-    private Date startTime;
-    private Date endTime;
-    private String description;
-    private List<QuestionItem> questions;
-    private int totalScore;
+    public Integer id;
+    public String name;
+    public Date startTime;
+    public Date endTime;
+    public String description;
+    public List<QuestionItem> questions;
+    public int totalScore;
 
     public Optional<QuestionItem> getQuestionById(Question.Id questionId) {
         return questions.stream()
@@ -30,35 +33,56 @@ public class ExamHome {
                 .findFirst();
     }
 
-    @EqualsAndHashCode
     @Builder
-    @Getter
-    @Setter
+    @Data
     @AllArgsConstructor
     @NoArgsConstructor
     public static class QuestionItem {
-        private int examId;
-        private int problemId;
-        private int quota;
-        private int remainingQuota;
-        private int yourScore;
-        private int maxScore;
-        private int questionOrder;
-        private String problemTitle;
+        public int examId;
+        public int problemId;
+        public int quota;
+        public int remainingQuota;
+        public int maxScore;
+        public int questionOrder;
+        public BestRecord bestRecord;
+        public String problemTitle;
 
         public static QuestionItem toViewModel(Question question, Problem problem,
                                                int remainingQuota,
-                                               Record bestRecord) {
-            return QuestionItem.builder()
+                                               @Nullable Record bestRecord) {
+            var builder = QuestionItem.builder()
                     .examId(question.getExamId())
                     .problemId(question.getId().getProblemId())
                     .quota(question.getQuota())
                     .remainingQuota(remainingQuota)
-                    .yourScore(bestRecord == null ? 0 : bestRecord.getScore())
                     .maxScore(problem.getTotalGrade())
                     .questionOrder(question.getQuestionOrder())
-                    .problemTitle(problem.getTitle())
-                    .build();
+                    .problemTitle(problem.getTitle());
+            if (bestRecord != null) {
+                builder = builder.bestRecord(new BestRecord(bestRecord));
+            }
+            return builder.build();
+        }
+
+        public int getYourScore() {
+            return bestRecord == null ? 0 : bestRecord.getScore();
+        }
+    }
+
+    @Builder
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class BestRecord {
+        public int score;
+        public JudgeStatus status;
+        public long maximumRuntime;
+        public long maximumMemoryUsage;
+        public Date submissionTime;
+
+        public BestRecord(Record record) {
+            this(record.getScore(), record.getStatus(), record.getMaximumRuntime(),
+                    record.getMaximumMemoryUsage(), record.getSubmissionTime());
         }
     }
 }

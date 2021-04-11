@@ -69,7 +69,7 @@ public class Submission implements Comparable<Submission> {
     }
 
     public boolean isJudged() {
-        return getVerdict().isPresent();
+        return mayHaveVerdict().isPresent();
     }
 
     public String getId() {
@@ -92,7 +92,7 @@ public class Submission implements Comparable<Submission> {
         return problemId;
     }
 
-    public Optional<Verdict> getVerdict() {
+    public Optional<Verdict> mayHaveVerdict() {
         return Optional.ofNullable(verdict);
     }
 
@@ -124,10 +124,6 @@ public class Submission implements Comparable<Submission> {
         this.submissionTime = submissionTime;
     }
 
-    public Date getJudgeTime() {
-        return getVerdict().map(Verdict::getIssueTime).orElse(null);
-    }
-
     public String getLanguageEnvName() {
         return languageEnvName;
     }
@@ -147,8 +143,8 @@ public class Submission implements Comparable<Submission> {
         if (!submission.isJudged()) {
             return 1;
         }
-        return getVerdict().orElseThrow()
-                .compareTo(submission.getVerdict().orElseThrow());
+        return mayHaveVerdict().orElseThrow()
+                .compareTo(submission.mayHaveVerdict().orElseThrow());
     }
 
 

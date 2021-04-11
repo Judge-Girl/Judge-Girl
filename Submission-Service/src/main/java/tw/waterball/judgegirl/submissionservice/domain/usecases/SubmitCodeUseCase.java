@@ -87,9 +87,9 @@ public class SubmitCodeUseCase {
 
     private Otherwise<VerdictIssuedEvent> mayDeployJudgerIfNotJudged(SubmitCodeRequest request, Problem problem, Submission submission) {
         if (submission.isJudged()) {
-            Verdict verdict = submission.getVerdict().orElseThrow();
-            return of(new VerdictIssuedEvent(problem.getId(), submission.getStudentId(),
-                    problem.getTitle(), submission.getId(), verdict, request.submissionBag));
+            Verdict verdict = submission.mayHaveVerdict().orElseThrow();
+            return of(new VerdictIssuedEvent(problem.getId(), problem.getTitle(), submission.getStudentId(),
+                    submission.getId(), verdict, submission.getSubmissionTime(), request.submissionBag));
         }
         judgerDeployer.deployJudger(problem, request.getStudentId(), submission);
         log.info("Completed: {}", request);

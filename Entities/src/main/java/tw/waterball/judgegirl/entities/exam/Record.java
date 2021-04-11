@@ -5,6 +5,8 @@ import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import tw.waterball.judgegirl.entities.problem.JudgeStatus;
 
+import java.util.Date;
+
 /**
  * A record that a student achieves in a question.
  *
@@ -19,6 +21,7 @@ public class Record implements Comparable<Record> {
     private final long maximumRuntime;
     private final long maximumMemoryUsage;
     private final int score;
+    private final Date submissionTime;
 
     @Override
     public int compareTo(@NotNull Record record) {

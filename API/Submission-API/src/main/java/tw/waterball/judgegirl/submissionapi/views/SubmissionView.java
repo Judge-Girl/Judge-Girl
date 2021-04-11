@@ -65,7 +65,7 @@ public class SubmissionView {
         if (submission == null) {
             return null;
         }
-        Verdict verdict = submission.getVerdict().orElse(null);
+        Verdict verdict = submission.mayHaveVerdict().orElse(null);
         return new SubmissionView(submission.getId(),
                 submission.getStudentId(),
                 submission.getProblemId(),

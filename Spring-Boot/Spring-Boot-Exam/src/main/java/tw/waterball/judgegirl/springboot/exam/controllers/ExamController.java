@@ -1,6 +1,7 @@
 package tw.waterball.judgegirl.springboot.exam.controllers;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,6 +26,7 @@ import static tw.waterball.judgegirl.springboot.utils.MultipartFileUtils.convert
 import static tw.waterball.judgegirl.submissionapi.clients.SubmissionApiClient.SUBMIT_CODE_MULTIPART_KEY_NAME;
 
 @CrossOrigin
+@Slf4j
 @RequestMapping("/api")
 @AllArgsConstructor
 @RestController
@@ -122,7 +124,7 @@ class AnswerQuestionPresenter implements AnswerQuestionUseCase.Presenter {
     private Answer answer;
 
     @Override
-    public void setAnswer(Answer answer) {
+    public void showAnswer(Answer answer) {
         this.answer = answer;
     }
 

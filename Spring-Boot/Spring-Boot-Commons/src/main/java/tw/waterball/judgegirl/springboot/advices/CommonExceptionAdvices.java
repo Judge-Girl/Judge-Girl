@@ -13,7 +13,7 @@
 
 package tw.waterball.judgegirl.springboot.advices;
 
-import org.springframework.core.Ordered;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,24 +25,28 @@ import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
+@Slf4j
 @ControllerAdvice
-@Order(Ordered.LOWEST_PRECEDENCE)
+@Order
 public class CommonExceptionAdvices {
     public CommonExceptionAdvices() {
     }
 
     @ExceptionHandler({NotFoundException.class})
     public ResponseEntity<?> handleNotFoundExceptions(Exception err) {
+        log.error("[NotFound]", err);
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(err.getMessage());
     }
 
     @ExceptionHandler({IllegalStateException.class, IllegalArgumentException.class})
     public ResponseEntity<?> handleIllegalExceptions(Exception err) {
+        log.error("[Illegal]", err);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(err.getMessage());
     }
 
     @ExceptionHandler({ApiRequestFailedException.class})
     public ResponseEntity<?> handleApiRequestFailedExceptions(ApiRequestFailedException err) {
+        log.error("[Api Failed]", err);
         if (err.isNetworkingError()) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }

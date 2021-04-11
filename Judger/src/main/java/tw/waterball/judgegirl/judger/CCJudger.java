@@ -130,7 +130,7 @@ public class CCJudger extends PluginExtendedJudger {
         Path tempSubmittedCodesPath = submissionHome.getPath().resolve(TEMP_SUBMITTED_CODES_DIR_NAME);
         FileUtils.copyDirectory(getSourceRootPath().toFile(), tempSubmittedCodesPath.toFile());
 
-        logger.info("<After downloadSubmittedCodes> Files under src: {}.", stream(getSourceRootPath().toFile().listFiles()).map(f -> f.getName() + (f.isDirectory() ? "/" : "")).collect(Collectors.joining(",")));
+        logger.info("<After downloadSubmittedCodes> Files under src: {}.", stream(requireNonNull(getSourceRootPath().toFile().listFiles())).map(f -> f.getName() + (f.isDirectory() ? "/" : "")).collect(Collectors.joining(",")));
     }
 
     @Override
@@ -141,7 +141,7 @@ public class CCJudger extends PluginExtendedJudger {
             ZipUtils.unzipToDestination(zip.getInputStream(), getSourceRootPath());
         }
 
-        logger.info("<After downloadProvidedCodes> Files under src: {}.", stream(getSourceRootPath().toFile().listFiles()).map(f -> f.getName() + (f.isDirectory() ? "/" : "")).collect(Collectors.joining(",")));
+        logger.info("<After downloadProvidedCodes> Files under src: {}.", stream(requireNonNull(getSourceRootPath().toFile().listFiles())).map(f -> f.getName() + (f.isDirectory() ? "/" : "")).collect(Collectors.joining(",")));
     }
 
     @Override
@@ -157,7 +157,7 @@ public class CCJudger extends PluginExtendedJudger {
     protected CompileResult doCompile() {
         String script = getLanguageEnv().getCompilation().getScript();
         Files.write(getCompileScriptPath(), script.getBytes());
-        logger.info("<After compile> Files under src: {}.", stream(getSourceRootPath().toFile().listFiles()).map(f -> f.getName() + (f.isDirectory() ? "/" : "")).collect(Collectors.joining(",")));
+        logger.info("<After compile> Files under src: {}.", stream(requireNonNull(getSourceRootPath().toFile().listFiles())).map(f -> f.getName() + (f.isDirectory() ? "/" : "")).collect(Collectors.joining(",")));
         Compiler compiler = compilerFactory.create(getSourceRootPath());
         CompileResult result = compiler.compile(getLanguageEnv().getCompilation());
         if (result.isSuccessful()) {
@@ -310,10 +310,10 @@ public class CCJudger extends PluginExtendedJudger {
     protected void publishVerdict(Verdict verdict) {
         verdictPublisher.publish(
                 new VerdictIssuedEvent(getProblem().getId(),
-                        getStudent(),
-                        getProblem().getTitle(),
+                        getProblem().getTitle(), getStudent(),
                         getSubmission().getId(),
-                        verdict, getSubmission().getBag()));
+                        verdict, getSubmission().getSubmissionTime(),
+                        getSubmission().getBag()));
     }
 
     @SneakyThrows

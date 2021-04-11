@@ -49,8 +49,10 @@ class VerdictBrokerTest extends AbstractSpringBootTest {
 
 
     private void publishVerdict(Submission submission) {
-        verdictPublisher.publish(new VerdictIssuedEvent(30, 30, "title", submission.getId(),
-                submission.getVerdict().orElseThrow(), new Bag(BAG_KEY_STOMP_ADDITIONAL_DESTINATIONS, "/additional/destinations1, /additional/destination2")));
+        verdictPublisher.publish(new VerdictIssuedEvent(30, "title", 30, submission.getId(),
+                submission.mayHaveVerdict().orElseThrow(),
+                submission.getSubmissionTime(),
+                new Bag(BAG_KEY_STOMP_ADDITIONAL_DESTINATIONS, "/additional/destinations1, /additional/destination2")));
     }
 
 }

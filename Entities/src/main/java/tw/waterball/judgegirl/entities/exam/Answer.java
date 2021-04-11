@@ -16,11 +16,6 @@ public class Answer {
     private final String submissionId;
     private final Date answerTime;
 
-    public Answer(Id id, String submissionId) {
-        this.id = id;
-        this.submissionId = submissionId;
-        answerTime = new Date();
-    }
 
     @Getter
     @Setter

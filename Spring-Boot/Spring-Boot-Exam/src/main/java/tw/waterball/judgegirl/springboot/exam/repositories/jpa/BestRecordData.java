@@ -9,6 +9,7 @@ import javax.persistence.Embeddable;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
 import java.io.Serializable;
+import java.util.Date;
 
 @Builder
 @Getter
@@ -23,6 +24,7 @@ public class BestRecordData {
     private long maximumRuntime;
     private long maximumMemoryUsage;
     private int score;
+    private Date submissionTime;
 
 
     @Data
@@ -43,12 +45,13 @@ public class BestRecordData {
 
     public Record toEntity() {
         return new Record(new Question.Id(getExamId(), getProblemId()), getStudentId(),
-                status, maximumRuntime, maximumMemoryUsage, score);
+                status, maximumRuntime, maximumMemoryUsage, score, submissionTime);
     }
 
     public static BestRecordData toData(Record value) {
         return new BestRecordData(new Id(new QuestionData.Id(value.getQuestionId()), value.getStudentId()),
-                value.getStatus(), value.getMaximumRuntime(), value.getMaximumMemoryUsage(), value.getScore());
+                value.getStatus(), value.getMaximumRuntime(), value.getMaximumMemoryUsage(),
+                value.getScore(), value.getSubmissionTime());
     }
 
     public int getExamId() {

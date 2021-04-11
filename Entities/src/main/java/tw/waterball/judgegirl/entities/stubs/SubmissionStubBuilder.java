@@ -81,7 +81,7 @@ public class SubmissionStubBuilder extends Submission {
     }
 
     @Override
-    public Optional<Verdict> getVerdict() {
+    public Optional<Verdict> mayHaveVerdict() {
         return judges.isEmpty() ? Optional.empty() : Optional.of(new Verdict(judges));
     }
 
