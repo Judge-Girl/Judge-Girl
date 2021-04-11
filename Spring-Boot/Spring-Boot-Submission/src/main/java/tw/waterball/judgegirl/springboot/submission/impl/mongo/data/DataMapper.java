@@ -38,7 +38,7 @@ public class DataMapper {
         if (submission == null) {
             return null;
         }
-        Verdict verdict = submission.getVerdict().orElse(null);
+        Verdict verdict = submission.mayHaveVerdict().orElse(null);
         return new SubmissionData(
                 submission.getId(),
                 submission.getProblemId(),

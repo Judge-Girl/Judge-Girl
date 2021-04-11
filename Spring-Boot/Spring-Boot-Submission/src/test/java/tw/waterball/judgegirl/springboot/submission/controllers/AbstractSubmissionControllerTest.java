@@ -131,7 +131,7 @@ public class AbstractSubmissionControllerTest extends AbstractSpringBootTest {
 
     @Autowired
     MongoTemplate mongoTemplate;
-    
+
     @Autowired
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     SubmitCodeUseCase submitCodeUseCase;
@@ -275,6 +275,7 @@ public class AbstractSubmissionControllerTest extends AbstractSpringBootTest {
                 .studentId(submissionView.studentId)
                 .problemTitle(problem.getTitle())
                 .submissionId(submissionView.getId())
+                .submissionTime(submissionView.submissionTime)
                 .verdict(toEntity(VerdictView.builder()
                         .judge(new Judge("t1", JudgeStatus.AC, new ProgramProfile(5, 5, ""), 20))
                         .judge(new Judge("t2", JudgeStatus.AC, new ProgramProfile(6, 6, ""), 30))

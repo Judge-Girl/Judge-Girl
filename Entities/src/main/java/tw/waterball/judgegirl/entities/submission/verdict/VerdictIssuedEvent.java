@@ -19,6 +19,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import tw.waterball.judgegirl.entities.submission.Bag;
 
+import java.util.Date;
+
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
@@ -28,9 +30,10 @@ import tw.waterball.judgegirl.entities.submission.Bag;
 @NoArgsConstructor
 public class VerdictIssuedEvent {
     private int problemId;
-    private int studentId;
     private String problemTitle;
+    private int studentId;
     private String submissionId;
     private Verdict verdict;
+    private Date submissionTime;
     private Bag submissionBag;
 }

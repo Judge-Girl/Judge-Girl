@@ -55,7 +55,7 @@ public class ExamHomePresenter implements GetExamProgressOverviewUseCase.Present
                 .endTime(exam.getEndTime())
                 .description(exam.getDescription())
                 .questions(questionItems)
-                .totalScore(questionItems.stream().mapToInt(QuestionItem::getYourScore).sum())
+                .totalScore(questionItems.stream().mapToInt(ExamHome.QuestionItem::getYourScore).sum())
                 .build();
     }
 

@@ -100,7 +100,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
     @MockBean
     SubmissionServiceDriver submissionServiceDriver;
     private ProblemView problem;
-    private Submission randomSubmission;
+    private Submission submissionWith2ACs20Point;
     private ProblemView anotherProblem;
 
     private final MockMultipartFile[] mockFiles = codes(SUBMIT_CODE_MULTIPART_KEY_NAME, 2);
@@ -130,7 +130,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
     private void fakeProblemServiceDriver() {
         Problem p1 = problemTemplate().id(PROBLEM_ID).build(), p2 = problemTemplate().id(ANOTHER_PROBLEM_ID).build();
         problem = toViewModel(p1);
-        randomSubmission = randomJudgedSubmissionFromProblem(p1, STUDENT_ID, 2, 10);
+        submissionWith2ACs20Point = randomJudgedSubmissionFromProblem(p1, STUDENT_ID, 2, 10);
         problemServiceDriver.addProblemView(problem);
         anotherProblem = toViewModel(p2);
         problemServiceDriver.addProblemView(anotherProblem);
@@ -305,38 +305,6 @@ class ExamControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    void testGetTheExamOverview() throws Exception {
-        final int QUOTA = 5;
-        Date start = beforeCurrentTime(1, HOURS), end = afterCurrentTime(1, HOURS);
-        ExamView exam = createExamAndGet(start, end, "sample-exam");
-        QuestionView q1 = createQuestionAndGet(new CreateQuestionUseCase.Request(exam.getId(), PROBLEM_ID, QUOTA, 30, 1));
-        QuestionView q2 = createQuestionAndGet(new CreateQuestionUseCase.Request(exam.getId(), ANOTHER_PROBLEM_ID, QUOTA, 70, 2));
-        givenStudentParticipatingExam(STUDENT_ID, exam);
-        answerQuestion(STUDENT_ID, exam).andExpect(status().isOk());
-        publishVerdict(exam, randomSubmission);
-
-        awaitVerdictIssuedEvent();
-        ExamHome examHome = getExamOverview(exam.getId());
-        ExamHome.QuestionItem firstQuestion = examHome.getQuestionById(new Question.Id(q1.examId, q1.problemId)).orElseThrow();
-        ExamHome.QuestionItem secondQuestion = examHome.getQuestionById(new Question.Id(q2.examId, q2.problemId)).orElseThrow();
-
-        assertEquals(exam.getId(), examHome.getId());
-        assertEquals("sample-exam", examHome.getName());
-        assertEquals(start, examHome.getStartTime());
-        assertEquals(end, examHome.getEndTime());
-        assertEquals("problem statement", examHome.getDescription());
-        assertEquals(2, examHome.getQuestions().size());
-        assertEquals(20, examHome.getTotalScore());
-
-        assertEquals(QUOTA - 1, firstQuestion.getRemainingQuota());
-        assertEquals(QUOTA, secondQuestion.getRemainingQuota());
-        assertEquals(randomSubmission.getVerdict().orElseThrow().getTotalGrade(), firstQuestion.getYourScore());
-        assertEquals(0, secondQuestion.getYourScore());
-        assertEquals(firstQuestion.getProblemTitle(), problem.getTitle());
-        assertEquals(secondQuestion.getProblemTitle(), anotherProblem.getTitle());
-    }
-
-    @Test
     void GivenExams_A_B_WhenGetAllExams_ShouldRespondExams_A_B() throws Exception {
         givenCurrentExams("A", "B");
 
@@ -445,21 +413,57 @@ class ExamControllerTest extends AbstractSpringBootTest {
         bestRecord = awaitVerdictIssuedEventAndGetBestRecord(exam.id);
         assertEquals(30, bestRecord.getScore());
 
-
         publishVerdict(exam, submission("D").AC(25, 25, 10)
                 .AC(10, 10, 20));
         bestRecord = awaitVerdictIssuedEventAndGetBestRecord(exam.id);
         assertEquals(30, bestRecord.getScore());
         assertEquals(25, bestRecord.getMaximumRuntime());
         assertEquals(25, bestRecord.getMaximumMemoryUsage());
+    }
 
+    @Test
+    void testGetTheExamOverview() throws Exception {
+        final int QUOTA = 5;
+        final int SCORE = submissionWith2ACs20Point.mayHaveVerdict().orElseThrow().getTotalGrade();
+        Date start = beforeCurrentTime(1, HOURS), end = afterCurrentTime(1, HOURS);
+        ExamView exam = createExamAndGet(start, end, "sample-exam");
+        QuestionView q1 = createQuestionAndGet(new CreateQuestionUseCase.Request(exam.getId(), PROBLEM_ID, QUOTA, 30, 1));
+        QuestionView q2 = createQuestionAndGet(new CreateQuestionUseCase.Request(exam.getId(), ANOTHER_PROBLEM_ID, QUOTA, 70, 2));
+        givenStudentParticipatingExam(STUDENT_ID, exam);
+        answerQuestion(STUDENT_ID, exam).andExpect(status().isOk());
+        publishVerdict(PROBLEM_ID, problem.getTitle(), exam, submissionWith2ACs20Point);
 
+        awaitVerdictIssuedEvent();
+        ExamHome examHome = getExamOverview(exam.getId());
+        ExamHome.QuestionItem firstQuestion = examHome.getQuestionById(new Question.Id(q1.examId, q1.problemId)).orElseThrow();
+        ExamHome.QuestionItem secondQuestion = examHome.getQuestionById(new Question.Id(q2.examId, q2.problemId)).orElseThrow();
+
+        assertEquals(exam.getId(), examHome.getId());
+        assertEquals("sample-exam", examHome.getName());
+        assertEquals(start, examHome.getStartTime());
+        assertEquals(end, examHome.getEndTime());
+        assertEquals("problem statement", examHome.getDescription());
+        assertEquals(2, examHome.getQuestions().size());
+        assertEquals(SCORE, examHome.getTotalScore());
+
+        assertEquals(QUOTA - 1, firstQuestion.getRemainingQuota());
+        assertEquals(SCORE, firstQuestion.getBestRecord().getScore());
+        assertEquals(QUOTA, secondQuestion.getRemainingQuota());
+        assertEquals(SCORE, firstQuestion.getYourScore());
+        assertEquals(0, secondQuestion.getYourScore());
+        assertEquals(firstQuestion.getProblemTitle(), problem.getTitle());
+        assertEquals(secondQuestion.getProblemTitle(), anotherProblem.getTitle());
     }
 
     private void publishVerdict(ExamView exam, Submission submission) {
-        verdictPublisher.publish(new VerdictIssuedEvent(PROBLEM_ID, STUDENT_ID, problem.title, SUBMISSION_ID,
-                submission.getVerdict().orElseThrow()
-                , new Bag(singletonMap(BAG_KEY_EXAM_ID, String.valueOf(exam.id)))));
+        publishVerdict(PROBLEM_ID, problem.getTitle(), exam, submission);
+    }
+
+    private void publishVerdict(int problemId, String problemTitle, ExamView exam, Submission submission) {
+        verdictPublisher.publish(new VerdictIssuedEvent(problemId, problemTitle, STUDENT_ID, SUBMISSION_ID,
+                submission.mayHaveVerdict().orElseThrow(),
+                submission.getSubmissionTime(),
+                new Bag(singletonMap(BAG_KEY_EXAM_ID, String.valueOf(exam.id)))));
     }
 
 
