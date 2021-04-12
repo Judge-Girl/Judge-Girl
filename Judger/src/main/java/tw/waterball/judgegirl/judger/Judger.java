@@ -18,7 +18,6 @@ import lombok.Value;
 import tw.waterball.judgegirl.entities.problem.*;
 import tw.waterball.judgegirl.entities.submission.Submission;
 import tw.waterball.judgegirl.entities.submission.verdict.Judge;
-import tw.waterball.judgegirl.entities.submission.verdict.ProgramProfile;
 import tw.waterball.judgegirl.entities.submission.verdict.Verdict;
 import tw.waterball.judgegirl.entities.submission.verdict.VerdictIssuer;
 import tw.waterball.judgegirl.judger.infra.compile.CompileResult;
@@ -89,14 +88,7 @@ public abstract class Judger {
     protected abstract CompileResult doCompile();
 
     protected Verdict issueCompileErrorVerdict(CompileResult compileResult) {
-        List<Judge> judges = getTestcases().stream()
-                .map((testcase) -> new Judge(
-                        testcase.getName(), JudgeStatus.CE,
-                        ProgramProfile.onlyCompileError(compileResult.getErrorMessage())
-                        , 0))
-                .collect(Collectors.toList());
-
-        return Verdict.compileError(compileResult.getErrorMessage(), judges);
+        return Verdict.compileError(compileResult.getErrorMessage());
     }
 
     protected abstract void onBeforeRunningTestcase(Testcase testcase);

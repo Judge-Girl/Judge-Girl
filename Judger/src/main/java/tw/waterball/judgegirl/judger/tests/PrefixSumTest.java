@@ -76,7 +76,7 @@ public class PrefixSumTest {
             .build();
 
     private static final int studentId = 1;
-    private static final Map<String, String> submissionBag = singletonMap("BagKey", "BagKey");
+    private static final Map<String, String> submissionBag = singletonMap("bag-key", "bag-key");
     private static final Submission submission = new Submission(studentId, problem.getId(), languageEnv.getName(), "fileId") {{
         setBag(new Bag(submissionBag));
     }};
@@ -139,14 +139,9 @@ public class PrefixSumTest {
     private void verifyCEPublished() {
         VerdictIssuedEvent event = captureVerdictIssuedEvent();
         for (int i = 0; i < testcases.size(); i++) {
-            Judge judge = event.getVerdict().getJudges().get(i);
-            Testcase testCase = testcases.get(i);
-            assertEquals(JudgeStatus.CE, judge.getStatus(), event.toString());
-            assertEquals(0, judge.getGrade());
-            assertEquals(testCase.getName(), judge.getTestcaseName());
-            ProgramProfile profile = judge.getProgramProfile();
-            assertEquals(0, profile.getRuntime());
-            assertEquals(0, profile.getMemoryUsage());
+            assertTrue(event.getVerdict().getJudges().isEmpty());
+            assertNotNull(event.getVerdict().getCompileErrorMessage());
+            assertEquals(JudgeStatus.CE, event.getVerdict().getSummaryStatus());
         }
         assertEquals(problemId, event.getProblemId());
         assertEquals(problem.getTitle(), event.getProblemTitle());
