@@ -39,7 +39,7 @@ public class SubmissionView {
     public String submittedCodesFileId;
     public Date submissionTime;
     public Map<String, String> bag;
-    public boolean isJudged;
+    public boolean judged;
 
     public SubmissionView(String id, int studentId, int problemId, String languageEnvName,
                           @Nullable VerdictView verdict, String submittedCodesFileId, Date submissionTime) {
@@ -55,7 +55,7 @@ public class SubmissionView {
         this.problemId = problemId;
         this.languageEnvName = languageEnvName;
         this.verdict = verdict;
-        this.isJudged = verdict != null;
+        this.judged = verdict != null;
         this.submittedCodesFileId = submittedCodesFileId;
         this.submissionTime = submissionTime;
         this.bag = bag;

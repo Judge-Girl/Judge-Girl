@@ -105,22 +105,34 @@ public class Verdict implements Comparable<Verdict> {
     }
 
     public long getMaximumRuntime() {
+        if (isCompileError()) {
+            return 0;
+        }
         return judges.stream()
                 .mapToLong(j -> j.getProgramProfile().getRuntime())
                 .max().orElseThrow(() -> new IllegalStateException("A verdict that doesn't have judges."));
     }
 
     public long getMaximumMemoryUsage() {
+        if (isCompileError()) {
+            return 0;
+        }
         return judges.stream()
                 .mapToLong(j -> j.getProgramProfile().getMemoryUsage())
                 .max().orElseThrow(() -> new IllegalStateException("A verdict that doesn't have judges."));
     }
 
     public Judge getWorseJudge() {
+        if (isCompileError()) {
+            return null;
+        }
         return Collections.min(judges);
     }
 
     public Judge getBestJudge() {
+        if (isCompileError()) {
+            return null;
+        }
         return Collections.max(judges);
     }
 
@@ -147,18 +159,6 @@ public class Verdict implements Comparable<Verdict> {
 
     public void setCompileErrorMessage(@Nullable String compileErrorMessage) {
         this.compileErrorMessage = compileErrorMessage;
-        validateCompileErrorStatusConsistency();
-    }
-
-    private void validateCompileErrorStatusConsistency() {
-        if (isCompileError()) {
-            boolean allJudgesAreCE = judges.stream()
-                    .allMatch(judge -> judge.getStatus() == JudgeStatus.CE);
-            if (!allJudgesAreCE) {
-                throw new IllegalStateException("Inconsistent status," +
-                        " all the judges in a compile error verdict should also have a status of CE.");
-            }
-        }
     }
 
     public Report getReport() {
@@ -179,6 +179,15 @@ public class Verdict implements Comparable<Verdict> {
     @Override
     public int compareTo(@NotNull Verdict verdict) {
         int myGrade = getTotalGrade(), hisGrade = verdict.getTotalGrade();
+        if (this.isCompileError() && verdict.isCompileError()) {
+            return 0;
+        }
+        if (this.isCompileError()) {
+            return -1;
+        }
+        if (verdict.isCompileError()) {
+            return 1;
+        }
         if (myGrade == hisGrade) {
             return getBestJudge().compareTo(verdict.getBestJudge());
         }

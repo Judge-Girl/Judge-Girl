@@ -220,7 +220,7 @@ public class SubmissionControllerTest extends AbstractSubmissionControllerTest {
 
         // different files --> should respond un-judged submission
         SubmissionView shouldBeUnJudged = submitCodeAndGet(ADMIN_ID, ADMIN_TOKEN, codes2);
-        assertFalse(shouldBeUnJudged.isJudged);
+        assertFalse(shouldBeUnJudged.judged);
     }
 
     @Test
