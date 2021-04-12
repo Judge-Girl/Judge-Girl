@@ -20,6 +20,9 @@ import tw.waterball.judgegirl.entities.submission.SubmissionThrottlingException;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 
 import java.util.List;
+import java.util.Map;
+
+import static java.util.Collections.emptyMap;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -32,7 +35,11 @@ public interface SubmissionServiceDriver {
 
     FileResource downloadSubmittedCodes(int problemId, int studentId, String submissionId, String submittedCodesFileId) throws NotFoundException;
 
-    List<SubmissionView> getSubmissions(int problemId, int studentId);
+    default List<SubmissionView> getSubmissions(int problemId, int studentId) {
+        return getSubmissions(problemId, studentId, emptyMap());
+    }
+
+    List<SubmissionView> getSubmissions(int problemId, int studentId, Map<String, String> bagQueryParameters);
 
     SubmissionView findBestRecord(List<String> submissionIds);
 
