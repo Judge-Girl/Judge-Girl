@@ -24,6 +24,8 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import static tw.waterball.judgegirl.commons.utils.StringUtils.isNullOrEmpty;
+
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
@@ -56,7 +58,7 @@ public class Verdict implements Comparable<Verdict> {
     private void mustNotHaveNoneJudgeStatus() {
         if (judges.stream().map(Judge::getStatus)
                 .anyMatch(status -> status == JudgeStatus.NONE)) {
-            throw new InvalidVerdictException("Verdict must have any NONE judge status in any of its judges.");
+            throw new InvalidVerdictException("Verdict must not have any NONE judge status in any of its judges.");
         }
     }
 
@@ -64,25 +66,18 @@ public class Verdict implements Comparable<Verdict> {
         this(compileErrorMessage, new Date());
     }
 
+    public static Verdict compileError(String compileErrorMessage) {
+        return new Verdict(compileErrorMessage.trim(), new Date());
+    }
+
+    public static Verdict compileError(String compileErrorMessage, Date issueTime) {
+        return new Verdict(compileErrorMessage.trim(), issueTime);
+    }
+
     public Verdict(String compileErrorMessage, Date issueTime) throws InvalidVerdictException {
         this.issueTime = issueTime;
         this.judges = Collections.emptyList();
         setCompileErrorMessage(compileErrorMessage);
-    }
-
-    public static Verdict compileError(String compileErrorMessage) {
-        return new Verdict(compileErrorMessage, new Date());
-    }
-
-    public static Verdict compileError(String compileErrorMessage, Date issueTime) {
-        return new Verdict(compileErrorMessage, issueTime);
-    }
-
-    @Deprecated
-    public static Verdict compileError(String compileErrorMessage, List<Judge> judges) {
-        Verdict verdict = new Verdict(judges);
-        verdict.setCompileErrorMessage(compileErrorMessage);
-        return verdict;
     }
 
     public Integer getTotalGrade() {
@@ -94,7 +89,7 @@ public class Verdict implements Comparable<Verdict> {
     }
 
     public JudgeStatus getSummaryStatus() {
-        if (compileErrorMessage != null && !compileErrorMessage.isEmpty()) {
+        if (isCompileError()) {
             return JudgeStatus.CE;
         }
         return judges.stream().map(Judge::getStatus)
@@ -110,22 +105,34 @@ public class Verdict implements Comparable<Verdict> {
     }
 
     public long getMaximumRuntime() {
+        if (isCompileError()) {
+            return 0;
+        }
         return judges.stream()
                 .mapToLong(j -> j.getProgramProfile().getRuntime())
                 .max().orElseThrow(() -> new IllegalStateException("A verdict that doesn't have judges."));
     }
 
     public long getMaximumMemoryUsage() {
+        if (isCompileError()) {
+            return 0;
+        }
         return judges.stream()
                 .mapToLong(j -> j.getProgramProfile().getMemoryUsage())
                 .max().orElseThrow(() -> new IllegalStateException("A verdict that doesn't have judges."));
     }
 
     public Judge getWorseJudge() {
+        if (isCompileError()) {
+            return null;
+        }
         return Collections.min(judges);
     }
 
     public Judge getBestJudge() {
+        if (isCompileError()) {
+            return null;
+        }
         return Collections.max(judges);
     }
 
@@ -142,7 +149,7 @@ public class Verdict implements Comparable<Verdict> {
     }
 
     public boolean isCompileError() {
-        return compileErrorMessage != null;
+        return !isNullOrEmpty(compileErrorMessage);
     }
 
     @Nullable
@@ -152,18 +159,6 @@ public class Verdict implements Comparable<Verdict> {
 
     public void setCompileErrorMessage(@Nullable String compileErrorMessage) {
         this.compileErrorMessage = compileErrorMessage;
-        validateCompileErrorStatusConsistency();
-    }
-
-    private void validateCompileErrorStatusConsistency() {
-        if (isCompileError()) {
-            boolean allJudgesAreCE = judges.stream()
-                    .allMatch(judge -> judge.getStatus() == JudgeStatus.CE);
-            if (!allJudgesAreCE) {
-                throw new IllegalStateException("Inconsistent status," +
-                        " all the judges in a compile error verdict should also have a status of CE.");
-            }
-        }
     }
 
     public Report getReport() {
@@ -184,6 +179,15 @@ public class Verdict implements Comparable<Verdict> {
     @Override
     public int compareTo(@NotNull Verdict verdict) {
         int myGrade = getTotalGrade(), hisGrade = verdict.getTotalGrade();
+        if (this.isCompileError() && verdict.isCompileError()) {
+            return 0;
+        }
+        if (this.isCompileError()) {
+            return -1;
+        }
+        if (verdict.isCompileError()) {
+            return 1;
+        }
         if (myGrade == hisGrade) {
             return getBestJudge().compareTo(verdict.getBestJudge());
         }
