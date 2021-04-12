@@ -36,9 +36,9 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.util.MultiValueMap;
 import tw.waterball.judgegirl.commons.token.TokenService;
 import tw.waterball.judgegirl.entities.problem.JudgeStatus;
 import tw.waterball.judgegirl.entities.problem.Language;
@@ -280,7 +280,7 @@ public class AbstractSubmissionControllerTest extends AbstractSpringBootTest {
     }
 
 
-    protected List<SubmissionView> givenParallelStudentSubmissions(int studentId, int count) {
+    protected List<SubmissionView> givenStudentSubmissionsSubmittedConcurrently(int studentId, int count) {
         return IntStream.range(0, count).parallel()
                 .mapToObj(i -> {
                     try {
@@ -292,6 +292,12 @@ public class AbstractSubmissionControllerTest extends AbstractSpringBootTest {
                     }
                 }).collect(Collectors.toList());
 
+    }
+
+    protected void submissionsShouldHaveIds(List<SubmissionView> submissions, String... ids) {
+        for (int i = 0; i < submissions.size(); i++) {
+            assertEquals(ids[i], submissions.get(i).getId());
+        }
     }
 
 
@@ -307,7 +313,6 @@ public class AbstractSubmissionControllerTest extends AbstractSpringBootTest {
                 .andExpect(status().isOk())
                 .andExpect(zip().content(codes1));
     }
-
 
     protected void givenSubmission(Submission submission) {
         submissionRepository.save(submission);
@@ -345,14 +350,18 @@ public class AbstractSubmissionControllerTest extends AbstractSpringBootTest {
         return addingHeaders;
     }
 
+    protected List<SubmissionView> getSubmissionsWithBagQuery(int studentId, String studentToken, MultiValueMap<String, String> bagQueryParameters) throws Exception {
+        return getBody(requestWithToken(() -> get(API_PREFIX,
+                problem.getId(), studentId).queryParams(bagQueryParameters), studentToken).andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON)), new TypeReference<>() {
+        });
+    }
+
     protected List<SubmissionView> getSubmissionsInPage(int studentId, String studentToken, int page) throws Exception {
-        MvcResult result = requestWithToken(() -> get(API_PREFIX + "?page={page}",
+        return getBody(requestWithToken(() -> get(API_PREFIX + "?page={page}",
                 problem.getId(), studentId, page), studentToken).andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andReturn();
-        return objectMapper.readValue(result.getResponse().getContentAsString(),
-                new TypeReference<>() {
-                });
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON)), new TypeReference<>() {
+        });
     }
 
     protected ResultActions requestWithToken(Supplier<MockHttpServletRequestBuilder> requestBuilderSupplier,

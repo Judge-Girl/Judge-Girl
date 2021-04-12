@@ -19,7 +19,7 @@ import tw.waterball.judgegirl.submissionapi.clients.VerdictPublisher;
 import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
 
 import static tw.waterball.judgegirl.entities.stubs.SubmissionStubBuilder.submission;
-import static tw.waterball.judgegirl.springboot.student.broker.VerdictBroker.BAG_KEY_STOMP_ADDITIONAL_DESTINATIONS;
+import static tw.waterball.judgegirl.springboot.student.broker.VerdictBroker.BAG_KEY_ADDITIONAL_DESTINATIONS;
 
 @ActiveProfiles(value = {Profiles.JWT, Profiles.AMQP})
 @ContextConfiguration(classes = SpringBootStudentApplication.class)
@@ -52,7 +52,7 @@ class VerdictBrokerTest extends AbstractSpringBootTest {
         verdictPublisher.publish(new VerdictIssuedEvent(30, "title", 30, submission.getId(),
                 submission.mayHaveVerdict().orElseThrow(),
                 submission.getSubmissionTime(),
-                new Bag(BAG_KEY_STOMP_ADDITIONAL_DESTINATIONS, "/additional/destinations1, /additional/destination2")));
+                new Bag(BAG_KEY_ADDITIONAL_DESTINATIONS, "/additional/destinations1, /additional/destination2")));
     }
 
 }

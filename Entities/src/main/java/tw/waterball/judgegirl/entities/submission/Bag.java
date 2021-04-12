@@ -1,11 +1,14 @@
 package tw.waterball.judgegirl.entities.submission;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.util.*;
 
 import static java.lang.Integer.parseInt;
 import static java.lang.Long.parseLong;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonMap;
+import static java.util.Objects.requireNonNullElse;
 
 /**
  * Submission's Bag to transfer additional messages.
@@ -27,8 +30,8 @@ public class Bag extends HashMap<String, String> {
         this(singletonMap(key, val));
     }
 
-    public Bag(Map<? extends String, ? extends String> m) {
-        super(m);
+    public Bag(@Nullable Map<? extends String, ? extends String> m) {
+        super(requireNonNullElse(m, emptyMap()));
         makeAllKeysAndValuesLowercase();
     }
 

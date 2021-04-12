@@ -34,7 +34,6 @@ import tw.waterball.judgegirl.springboot.utils.MongoUtils;
 import tw.waterball.judgegirl.submissionservice.domain.repositories.SubmissionRepository;
 import tw.waterball.judgegirl.submissionservice.domain.usecases.dto.SubmissionQueryParams;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -100,7 +99,7 @@ public class MongoSubmissionRepository implements SubmissionRepository {
     }
 
     @Override
-    public String saveZippedSubmittedCodesAndGetFileId(StreamingResource streamingResource) throws IOException {
+    public String saveZippedSubmittedCodesAndGetFileId(StreamingResource streamingResource) {
         return gridFsTemplate.store(streamingResource.getInputStream(),
                 streamingResource.getFileName()).toString();
     }
@@ -118,9 +117,12 @@ public class MongoSubmissionRepository implements SubmissionRepository {
 
     @Override
     public List<Submission> query(SubmissionQueryParams params) {
-        Query query = Query.query(where("problemId").is(params.getProblemId())
+        var criteria = where("problemId").is(params.getProblemId())
                 .and("languageEnvName").is(params.getLanguageEnvName())
-                .and("studentId").is(params.getStudentId()));
+                .and("studentId").is(params.getStudentId());
+
+        params.getBagQueryParameters().forEach((key, val) -> criteria.and("bag." + key).is(val));
+        Query query = Query.query(criteria);
         params.getPage().ifPresent(page -> query.skip(page * PAGE_SIZE).limit(PAGE_SIZE));
         List<SubmissionData> dataList = mongoTemplate.find(query, SubmissionData.class);
         return DataMapper.toEntity(dataList);

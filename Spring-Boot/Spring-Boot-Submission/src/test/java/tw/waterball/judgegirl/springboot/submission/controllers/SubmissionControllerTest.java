@@ -16,7 +16,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.http.MediaType;
+import org.springframework.util.LinkedMultiValueMap;
 import tw.waterball.judgegirl.entities.problem.JudgeStatus;
+import tw.waterball.judgegirl.entities.problem.Language;
 import tw.waterball.judgegirl.entities.stubs.VerdictStubBuilder;
 import tw.waterball.judgegirl.entities.submission.verdict.Judge;
 import tw.waterball.judgegirl.entities.submission.verdict.ProgramProfile;
@@ -41,6 +43,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static tw.waterball.judgegirl.entities.problem.JudgeStatus.AC;
+import static tw.waterball.judgegirl.entities.stubs.SubmissionStubBuilder.submission;
 import static tw.waterball.judgegirl.submissionapi.views.VerdictView.toViewModel;
 
 /**
@@ -149,9 +152,9 @@ public class SubmissionControllerTest extends AbstractSubmissionControllerTest {
     }
 
     @Test
-    void GivenParallelSubmissions_WhenGetThoseSubmissionsInPage_ShouldReturnOnlyTheSubmissionsInThatPage() throws Exception {
+    void GivenSubmissionsSubmittedConcurrently_WhenGetThoseSubmissionsInPage_ShouldReturnOnlyTheSubmissionsInThatPage() throws Exception {
         List<SubmissionView> submissionViews =
-                givenParallelStudentSubmissions(STUDENT1_ID, 50);
+                givenStudentSubmissionsSubmittedConcurrently(STUDENT1_ID, 50);
 
         Set<SubmissionView> actualSubmissionsInPreviousPage = new HashSet<>();
         List<SubmissionView> actualSubmissions;
@@ -167,6 +170,23 @@ public class SubmissionControllerTest extends AbstractSubmissionControllerTest {
         } while (!actualSubmissions.isEmpty());
 
         assertEquals(new HashSet<>(submissionViews), new HashSet<>(actualAllSubmissions));
+    }
+
+    @DisplayName("Given submissions with bag messages A(a=1,b=1), B(a=1,b=2), C(a=2,b=2), " +
+            "When get submissions with bag query parameters (a=1 & b=2), " +
+            "Should only respond B")
+    @Test
+    void testGetSubmissionsWithBagQueryParameters() throws Exception {
+        givenSubmission(submission("A").bag("a", "1").bag("b", "1").build(ADMIN_ID, problem.getId(), Language.C.toString()));
+        givenSubmission(submission("B").bag("a", "1").bag("b", "2").build(ADMIN_ID, problem.getId(), Language.C.toString()));
+        givenSubmission(submission("C").bag("a", "2").bag("b", "2").build(ADMIN_ID, problem.getId(), Language.C.toString()));
+
+        var bagQueryParameters = new LinkedMultiValueMap<String, String>();
+        bagQueryParameters.add("a", "1");
+        bagQueryParameters.add("b", "2");
+
+        var submissions = getSubmissionsWithBagQuery(ADMIN_ID, ADMIN_TOKEN, bagQueryParameters);
+        submissionsShouldHaveIds(submissions, "B");
     }
 
     @Test
