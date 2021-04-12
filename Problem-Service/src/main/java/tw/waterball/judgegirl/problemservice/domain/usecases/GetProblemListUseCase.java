@@ -19,7 +19,6 @@ import tw.waterball.judgegirl.problemservice.domain.repositories.ProblemQueryPar
 import tw.waterball.judgegirl.problemservice.domain.repositories.ProblemRepository;
 
 import javax.inject.Named;
-import java.util.Arrays;
 import java.util.List;
 
 /**

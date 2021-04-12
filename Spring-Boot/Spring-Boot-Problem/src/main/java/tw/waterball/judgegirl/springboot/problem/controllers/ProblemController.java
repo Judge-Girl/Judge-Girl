@@ -62,7 +62,7 @@ public class ProblemController {
         if (nonNull(ids)) {
             getProblemListUseCase.execute(ids, presenter);
         } else {
-            getProblemListUseCase.execute(new ProblemQueryParams((tags ==null? new String[0]:tags), page), presenter);
+            getProblemListUseCase.execute(new ProblemQueryParams((tags == null ? new String[0] : tags), page), presenter);
         }
         return presenter.present();
     }
