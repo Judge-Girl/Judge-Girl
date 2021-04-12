@@ -55,15 +55,14 @@ public class ProblemController {
     }
 
     @GetMapping
-    public List<ProblemItem> getProblems(@RequestParam(value = "tags", required = false) String[] tagsSplitByCommas,
+    public List<ProblemItem> getProblems(@RequestParam(value = "tags", required = false) String[] tags,
                                          @RequestParam(value = "page", defaultValue = "0") int page,
                                          @RequestParam(required = false) int[] ids) {
         GetProblemListPresenter presenter = new GetProblemListPresenter();
         if (nonNull(ids)) {
             getProblemListUseCase.execute(ids, presenter);
         } else {
-            String[] tags = tagsSplitByCommas ==null? new String[0]:tagsSplitByCommas;
-            getProblemListUseCase.execute(new ProblemQueryParams(tags, page), presenter);
+            getProblemListUseCase.execute(new ProblemQueryParams((tags ==null? new String[0]:tags), page), presenter);
         }
         return presenter.present();
     }
