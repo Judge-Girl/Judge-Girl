@@ -15,6 +15,7 @@ package tw.waterball.judgegirl.commons.token;
 
 import lombok.Getter;
 import lombok.Setter;
+import tw.waterball.judgegirl.commons.exceptions.ForbiddenAccessException;
 import tw.waterball.judgegirl.commons.utils.HttpHeaderUtils;
 
 import java.util.Date;
@@ -22,6 +23,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
+
+import static java.lang.String.format;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -33,12 +36,13 @@ public interface TokenService {
 
     Token parseAndValidate(String token) throws TokenInvalidException;
 
-    default <T> T returnIfTokenValid(int studentId, String authorization, Function<Token, T> tokenFunction) {
+    default <T> T returnIfTokenValid(int ownerStudentId, String authorization, Function<Token, T> tokenFunction) {
         TokenService.Token token = parseBearerTokenAndValidate(authorization);
-        if (token.canAccessStudent(studentId)) {
+        if (token.canAccessStudent(ownerStudentId)) {
             return tokenFunction.apply(token);
         } else {
-            throw new TokenInvalidException("Authentication failed.");
+            throw new ForbiddenAccessException(format("Student(id=%d) cannot access resources owned by student(id=%d)",
+                    token.getStudentId(), ownerStudentId));
         }
     }
 

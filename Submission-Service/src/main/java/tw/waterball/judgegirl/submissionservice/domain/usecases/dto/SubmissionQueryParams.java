@@ -16,6 +16,7 @@ package tw.waterball.judgegirl.submissionservice.domain.usecases.dto;
 
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -23,16 +24,19 @@ import java.util.Optional;
  */
 public class SubmissionQueryParams {
     @Nullable
-    private Integer page;
-    private int problemId;
-    private String languageEnvName;
-    private int studentId;
+    private final Integer page;
+    private final int problemId;
+    private final String languageEnvName;
+    private final int studentId;
+    private final Map<String, String> bagQueryParameters;
 
-    public SubmissionQueryParams(@Nullable Integer page, int problemId, String languageEnvName, int studentId) {
+    public SubmissionQueryParams(@Nullable Integer page, int problemId,
+                                 String languageEnvName, int studentId, Map<String, String> bagQueryParameters) {
         this.page = page;
         this.problemId = problemId;
         this.languageEnvName = languageEnvName;
         this.studentId = studentId;
+        this.bagQueryParameters = bagQueryParameters;
     }
 
     public Optional<Integer> getPage() {
@@ -49,5 +53,9 @@ public class SubmissionQueryParams {
 
     public int getStudentId() {
         return studentId;
+    }
+
+    public Map<String, String> getBagQueryParameters() {
+        return bagQueryParameters;
     }
 }

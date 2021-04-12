@@ -26,7 +26,7 @@ import static tw.waterball.judgegirl.springboot.student.broker.WebSocketConfigur
 @AllArgsConstructor
 public class VerdictBroker {
     // broadcast to additional destinations (split by commas)
-    public final static String BAG_KEY_STOMP_ADDITIONAL_DESTINATIONS = "broker-stomp-additional-destination";
+    public final static String BAG_KEY_ADDITIONAL_DESTINATIONS = "broker-additional-destinations";
     private final SimpMessagingTemplate simpMessaging;
 
     public final NotifyWaitLock onHandlingCompletion$ = new NotifyWaitLock();
@@ -40,7 +40,7 @@ public class VerdictBroker {
         List<String> destinations = new ArrayList<>(asList(studentDestination, problemDestination));
         Bag bag = event.getSubmissionBag();
         destinations.addAll(asList(
-                bag.getAsString(BAG_KEY_STOMP_ADDITIONAL_DESTINATIONS)
+                bag.getAsString(BAG_KEY_ADDITIONAL_DESTINATIONS)
                         .map(s -> s.split("\\s*,\\s*")).orElseGet(() -> new String[0])));
         log.info("Event: {}, Broadcast to => {}", event, String.join(", ", destinations));
         destinations.forEach(destination -> simpMessaging.convertAndSend(destination, event));

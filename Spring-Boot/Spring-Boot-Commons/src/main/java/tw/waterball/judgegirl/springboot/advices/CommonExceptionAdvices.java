@@ -20,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import tw.waterball.judgegirl.api.exceptions.ApiRequestFailedException;
+import tw.waterball.judgegirl.commons.exceptions.ForbiddenAccessException;
 import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 
 /**
@@ -33,20 +34,26 @@ public class CommonExceptionAdvices {
     }
 
     @ExceptionHandler({NotFoundException.class})
-    public ResponseEntity<?> handleNotFoundExceptions(Exception err) {
-        log.error("[NotFound]", err);
+    public ResponseEntity<?> handleNotFoundException(Exception err) {
+        log.error("[NotFound] {\"message\": \"{}\"}", err.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(err.getMessage());
     }
 
     @ExceptionHandler({IllegalStateException.class, IllegalArgumentException.class})
     public ResponseEntity<?> handleIllegalExceptions(Exception err) {
-        log.error("[Illegal]", err);
+        log.error("[Illegal] {\"message\": \"{}\"}", err.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(err.getMessage());
     }
 
+    @ExceptionHandler({ForbiddenAccessException.class})
+    public ResponseEntity<?> handleForbiddenAccessException(ForbiddenAccessException err) {
+        log.error("[Forbidden] {\"message\": \"{}\"}", err.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(err.getMessage());
+    }
+
     @ExceptionHandler({ApiRequestFailedException.class})
-    public ResponseEntity<?> handleApiRequestFailedExceptions(ApiRequestFailedException err) {
-        log.error("[Api Failed]", err);
+    public ResponseEntity<?> handleApiRequestFailedException(ApiRequestFailedException err) {
+        log.error("[Api Failed] {\"message\": \"{}\"}", err.getMessage());
         if (err.isNetworkingError()) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }

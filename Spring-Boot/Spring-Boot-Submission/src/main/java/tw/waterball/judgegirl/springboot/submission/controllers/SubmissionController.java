@@ -14,19 +14,15 @@
 package tw.waterball.judgegirl.springboot.submission.controllers;
 
 import lombok.AllArgsConstructor;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import tw.waterball.judgegirl.commons.models.files.FileResource;
-import tw.waterball.judgegirl.commons.token.TokenInvalidException;
 import tw.waterball.judgegirl.commons.token.TokenService;
-import tw.waterball.judgegirl.commons.utils.HttpHeaderUtils;
 import tw.waterball.judgegirl.entities.submission.Bag;
 import tw.waterball.judgegirl.entities.submission.Submission;
-import tw.waterball.judgegirl.springboot.utils.ResponseEntityUtils;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 import tw.waterball.judgegirl.submissionservice.domain.usecases.*;
 import tw.waterball.judgegirl.submissionservice.domain.usecases.dto.SubmissionQueryParams;
@@ -34,10 +30,10 @@ import tw.waterball.judgegirl.submissionservice.domain.usecases.dto.SubmissionQu
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static tw.waterball.judgegirl.springboot.utils.MultipartFileUtils.convertMultipartFilesToFileResources;
+import static tw.waterball.judgegirl.springboot.utils.ResponseEntityUtils.respondInputStreamResource;
 import static tw.waterball.judgegirl.submissionapi.clients.SubmissionApiClient.HEADER_BAG_KEY_PREFIX;
 import static tw.waterball.judgegirl.submissionapi.clients.SubmissionApiClient.SUBMIT_CODE_MULTIPART_KEY_NAME;
 
@@ -61,13 +57,13 @@ public class SubmissionController {
     }
 
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    ResponseEntity submit(@RequestHeader("Authorization") String bearerToken,
-                          @PathVariable int problemId,
-                          @PathVariable String langEnvName,
-                          @PathVariable int studentId,
-                          @RequestHeader HttpHeaders headers,
-                          @RequestParam(SUBMIT_CODE_MULTIPART_KEY_NAME) MultipartFile[] submittedCodes) {
-        return validateIdentity(studentId, bearerToken, (token) -> {
+    ResponseEntity<SubmissionView> submit(@RequestHeader("Authorization") String bearerToken,
+                                          @PathVariable int problemId,
+                                          @PathVariable String langEnvName,
+                                          @PathVariable int studentId,
+                                          @RequestHeader HttpHeaders headers,
+                                          @RequestParam(SUBMIT_CODE_MULTIPART_KEY_NAME) MultipartFile[] submittedCodes) {
+        return tokenService.returnIfTokenValid(studentId, bearerToken, (token) -> {
             boolean throttling = !token.isAdmin();
             Bag bag = getBagFromHeaders(token, headers);
             SubmitCodeRequest request = convertToSubmitCodeRequest(problemId, langEnvName, studentId, submittedCodes, bag, throttling);
@@ -103,69 +99,54 @@ public class SubmissionController {
     }
 
 
-    @GetMapping(value = "/{submissionId}",
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    ResponseEntity getSubmission(@RequestHeader("Authorization") String bearerToken,
+    @GetMapping(value = "/{submissionId}")
+    SubmissionView getSubmission(@RequestHeader("Authorization") String bearerToken,
                                  @PathVariable int problemId,
                                  @PathVariable String langEnvName,
                                  @PathVariable int studentId,
                                  @PathVariable String submissionId) {
-        return validateIdentity(studentId, bearerToken,
+        return tokenService.returnIfTokenValid(studentId, bearerToken,
                 (token) -> {
                     SubmissionPresenter presenter = new SubmissionPresenter();
                     getSubmissionUseCase.execute(
-                            new GetSubmissionUseCase.Request(problemId, langEnvName, studentId, submissionId),
-                            presenter);
-                    return ResponseEntity.ok(presenter.present());
+                            new GetSubmissionUseCase.Request(problemId, langEnvName, studentId, submissionId), presenter);
+                    return presenter.present();
                 });
     }
 
     @GetMapping
-    ResponseEntity getSubmissions(@RequestHeader("Authorization") String bearerToken,
-                                  @RequestParam(value = "page", required = false) Integer page,
-                                  @PathVariable int problemId,
-                                  @PathVariable String langEnvName,
-                                  @PathVariable int studentId) {
-        return validateIdentity(studentId, bearerToken,
-                (token) -> {
-                    GetSubmissionsPresenterImpl presenter = new GetSubmissionsPresenterImpl();
-                    getSubmissionsUseCase.execute(new SubmissionQueryParams(page, problemId, langEnvName, studentId), presenter);
-                    return ResponseEntity.ok(presenter.present());
-                });
+    List<SubmissionView> getSubmissions(@RequestHeader("Authorization") String bearerToken,
+                                        @RequestParam(value = "page", required = false) Integer page,
+                                        @PathVariable int problemId,
+                                        @PathVariable String langEnvName,
+                                        @PathVariable int studentId,
+                                        @RequestParam Map<String, String> bagQueryParameters) {
+        bagQueryParameters.remove("page"); // only non-reserved keywords will be accepted by the bag-query filter
+        return tokenService.returnIfTokenValid(studentId, bearerToken, (token) -> {
+            if (!token.isAdmin()) {
+                bagQueryParameters.clear(); // bag query feature is only supported for admin-only
+            }
+            GetSubmissionsPresenter presenter = new GetSubmissionsPresenter();
+            getSubmissionsUseCase.execute(new SubmissionQueryParams(page, problemId, langEnvName, studentId, bagQueryParameters), presenter);
+            return presenter.present();
+        });
     }
 
     @GetMapping(value = "/{submissionId}/submittedCodes/{submittedCodesFileId}",
             produces = "application/zip")
-    ResponseEntity downloadZippedSubmittedCodes(@RequestHeader("Authorization") String bearerToken,
-                                                @PathVariable int problemId,
-                                                @PathVariable String langEnvName,
-                                                @PathVariable int studentId,
-                                                @PathVariable String submissionId,
-                                                @PathVariable String submittedCodesFileId) {
-        return validateIdentity(studentId, bearerToken, (token) -> {
-            FileResource fileResource = downloadSubmittedCodesUseCase.execute(
-                    new DownloadSubmittedCodesUseCase.Request(
-                            studentId, langEnvName, submissionId, submittedCodesFileId)
-            );
-            return ResponseEntityUtils.respondInputStreamResource(fileResource);
-        });
+    ResponseEntity<InputStreamResource> downloadZippedSubmittedCodes(@RequestHeader("Authorization") String bearerToken,
+                                                                     @PathVariable int problemId,
+                                                                     @PathVariable String langEnvName,
+                                                                     @PathVariable int studentId,
+                                                                     @PathVariable String submissionId,
+                                                                     @PathVariable String submittedCodesFileId) {
+        return tokenService.returnIfTokenValid(studentId, bearerToken,
+                (token) -> respondInputStreamResource(
+                        downloadSubmittedCodesUseCase.execute(new DownloadSubmittedCodesUseCase.Request(
+                                studentId, langEnvName, submissionId, submittedCodesFileId)
+                        )));
     }
-
-    private <T> ResponseEntity validateIdentity(int studentId, String bearerToken, Function<TokenService.Token, ResponseEntity<T>> supplier) {
-        String tokenString = HttpHeaderUtils.parseBearerToken(bearerToken);
-        TokenService.Token token = tokenService.parseAndValidate(tokenString);
-        try {
-            if (token.canAccessStudent(studentId)) {
-                return supplier.apply(token);
-            } else {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
-                        String.format("Student(id=%s) cannot access Student(id=%s)'s resource",
-                                token.getClaimMap(), studentId));
-            }
-        } catch (TokenInvalidException err) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(err.toString());
-        }
-    }
+    
 }
 
 class SubmissionPresenter implements tw.waterball.judgegirl.submissionservice.domain.usecases.SubmissionPresenter {
@@ -182,7 +163,7 @@ class SubmissionPresenter implements tw.waterball.judgegirl.submissionservice.do
 }
 
 
-class GetSubmissionsPresenterImpl implements GetSubmissionsUseCase.Presenter {
+class GetSubmissionsPresenter implements GetSubmissionsUseCase.Presenter {
     private List<SubmissionView> submissionViews;
 
     @Override

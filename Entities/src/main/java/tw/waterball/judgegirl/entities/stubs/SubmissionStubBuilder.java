@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import tw.waterball.judgegirl.entities.problem.JudgeStatus;
 import tw.waterball.judgegirl.entities.problem.Language;
 import tw.waterball.judgegirl.entities.problem.Problem;
+import tw.waterball.judgegirl.entities.submission.Bag;
 import tw.waterball.judgegirl.entities.submission.Submission;
 import tw.waterball.judgegirl.entities.submission.verdict.Judge;
 import tw.waterball.judgegirl.entities.submission.verdict.ProgramProfile;
@@ -31,7 +32,10 @@ import static tw.waterball.judgegirl.entities.problem.JudgeStatus.*;
 @SuppressWarnings("ALL")
 @RequiredArgsConstructor
 public class SubmissionStubBuilder extends Submission {
+    public static final int DONT_CARE = 18729;
+    private static final String DONT_CARE_STRING = "DontCare";
     private final String submissionId;
+    private final Bag bag = new Bag();
     private VerdictStubBuilder verdictBuilder;
 
     public static SubmissionStubBuilder submission(String id) {
@@ -68,9 +72,21 @@ public class SubmissionStubBuilder extends Submission {
         return this;
     }
 
+    public SubmissionStubBuilder bag(String key, String message) {
+        bag.put(key, message);
+        return this;
+    }
+
     public Submission build() {
-        Submission submission = new Submission(submissionId, 1, 1, "C", "s", new Date());
-        submission.setVerdict(verdictBuilder.build());
+        return build(DONT_CARE, DONT_CARE, DONT_CARE_STRING);
+    }
+
+    public Submission build(int studentId, int problemId, String languageEnvName) {
+        Submission submission = new Submission(submissionId, studentId, problemId, languageEnvName, "s", new Date());
+        submission.setBag(bag);
+        if (verdictBuilder != null) {
+            submission.setVerdict(verdictBuilder.build());
+        }
         return submission;
     }
 
