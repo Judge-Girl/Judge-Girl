@@ -21,6 +21,8 @@ import tw.waterball.judgegirl.entities.submission.verdict.Verdict;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static tw.waterball.judgegirl.commons.utils.StringUtils.isNullOrEmpty;
+
 /**
  * A Data Mapper that maps Data Models to Entities and vice verse.
  * All mapping will return null given a null parameter.
@@ -89,9 +91,10 @@ public class DataMapper {
             return null;
         }
 
-        Verdict verdict = data.getCompileErrorMessage() == null ?
+        Verdict verdict = isNullOrEmpty(data.getCompileErrorMessage()) ?
                 new Verdict(data.getJudges(), data.getIssueTime()) :
                 Verdict.compileError(data.getCompileErrorMessage(), data.getIssueTime());
+
         verdict.setReport(Report.fromData(data.getReportName(), data.getReportData()));
         return verdict;
     }

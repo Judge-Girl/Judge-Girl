@@ -24,6 +24,8 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import static tw.waterball.judgegirl.commons.utils.StringUtils.isNullOrEmpty;
+
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
@@ -56,7 +58,7 @@ public class Verdict implements Comparable<Verdict> {
     private void mustNotHaveNoneJudgeStatus() {
         if (judges.stream().map(Judge::getStatus)
                 .anyMatch(status -> status == JudgeStatus.NONE)) {
-            throw new InvalidVerdictException("Verdict must have any NONE judge status in any of its judges.");
+            throw new InvalidVerdictException("Verdict must not have any NONE judge status in any of its judges.");
         }
     }
 
@@ -64,25 +66,18 @@ public class Verdict implements Comparable<Verdict> {
         this(compileErrorMessage, new Date());
     }
 
+    public static Verdict compileError(String compileErrorMessage) {
+        return new Verdict(compileErrorMessage.trim(), new Date());
+    }
+
+    public static Verdict compileError(String compileErrorMessage, Date issueTime) {
+        return new Verdict(compileErrorMessage.trim(), issueTime);
+    }
+
     public Verdict(String compileErrorMessage, Date issueTime) throws InvalidVerdictException {
         this.issueTime = issueTime;
         this.judges = Collections.emptyList();
         setCompileErrorMessage(compileErrorMessage);
-    }
-
-    public static Verdict compileError(String compileErrorMessage) {
-        return new Verdict(compileErrorMessage, new Date());
-    }
-
-    public static Verdict compileError(String compileErrorMessage, Date issueTime) {
-        return new Verdict(compileErrorMessage, issueTime);
-    }
-
-    @Deprecated
-    public static Verdict compileError(String compileErrorMessage, List<Judge> judges) {
-        Verdict verdict = new Verdict(judges);
-        verdict.setCompileErrorMessage(compileErrorMessage);
-        return verdict;
     }
 
     public Integer getTotalGrade() {
@@ -94,7 +89,7 @@ public class Verdict implements Comparable<Verdict> {
     }
 
     public JudgeStatus getSummaryStatus() {
-        if (compileErrorMessage != null && !compileErrorMessage.isEmpty()) {
+        if (isCompileError()) {
             return JudgeStatus.CE;
         }
         return judges.stream().map(Judge::getStatus)
@@ -142,7 +137,7 @@ public class Verdict implements Comparable<Verdict> {
     }
 
     public boolean isCompileError() {
-        return compileErrorMessage != null;
+        return !isNullOrEmpty(compileErrorMessage);
     }
 
     @Nullable
