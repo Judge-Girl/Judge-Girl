@@ -112,10 +112,10 @@ public class SubmissionApiClient extends BaseRetrofitAPI implements SubmissionSe
     }
 
     @Override
-    public List<SubmissionView> getSubmissions(int problemId, int studentId) {
+    public List<SubmissionView> getSubmissions(int problemId, int studentId, Map<String, String> bagQueryParameters) {
         return errorHandlingGetBody(() -> api.getSubmissions(
-                bearerWithToken(token),
-                problemId, CURRENTLY_ONLY_SUPPORT_C, studentId).execute());
+                bearerWithToken(token), problemId,
+                CURRENTLY_ONLY_SUPPORT_C, studentId, bagQueryParameters).execute());
     }
 
     @Override
@@ -153,7 +153,8 @@ public class SubmissionApiClient extends BaseRetrofitAPI implements SubmissionSe
         Call<List<SubmissionView>> getSubmissions(@Header("Authorization") String bearerToken,
                                                   @Path("problemId") int problemId,
                                                   @Path("langEnvName") String langEnvName,
-                                                  @Path("studentId") int studentId);
+                                                  @Path("studentId") int studentId,
+                                                  @QueryMap Map<String, String> bagQueryParameters);
 
         @GET("/api/problems/{problemId}/{langEnvName}/students/{studentId}/submissions/{submissionId}/submittedCodes/{submittedCodesFileId}")
         Call<ResponseBody> getSubmittedCodes(@Header("Authorization") String bearerToken,

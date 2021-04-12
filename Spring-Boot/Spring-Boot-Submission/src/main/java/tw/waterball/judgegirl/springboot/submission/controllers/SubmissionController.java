@@ -123,9 +123,6 @@ public class SubmissionController {
                                         @RequestParam Map<String, String> bagQueryParameters) {
         bagQueryParameters.remove("page"); // only non-reserved keywords will be accepted by the bag-query filter
         return tokenService.returnIfTokenValid(studentId, bearerToken, (token) -> {
-            if (!token.isAdmin()) {
-                bagQueryParameters.clear(); // bag query feature is only supported for admin-only
-            }
             GetSubmissionsPresenter presenter = new GetSubmissionsPresenter();
             getSubmissionsUseCase.execute(new SubmissionQueryParams(page, problemId, langEnvName, studentId, bagQueryParameters), presenter);
             return presenter.present();
@@ -146,7 +143,7 @@ public class SubmissionController {
                                 studentId, langEnvName, submissionId, submittedCodesFileId)
                         )));
     }
-    
+
 }
 
 class SubmissionPresenter implements tw.waterball.judgegirl.submissionservice.domain.usecases.SubmissionPresenter {
