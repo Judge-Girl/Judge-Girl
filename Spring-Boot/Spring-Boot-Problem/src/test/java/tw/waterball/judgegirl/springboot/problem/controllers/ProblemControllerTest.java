@@ -350,7 +350,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    void GivenProblems_1_2_3_Saved_WhenGetProblemsByIds_ShouldRespondThat1_2_3() throws Exception {
+    void GivenProblems_1_2_3_Saved_WhenGetProblemsByIds_1_2_3_ShouldRespondThat1_2_3() throws Exception {
         saveProblems(1, 2, 3);
 
         List<Problem> actualProblems = getProblems(1, 2, 3);
@@ -359,7 +359,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    void Given_1_ProblemsSaved_WhenGet_1_2_ProblemsByIds_ShouldRespondThat_1_() throws Exception {
+    void Given_1_ProblemsSaved_WhenGetProblemsByIds_1_2_ShouldRespondThat_1() throws Exception {
         saveProblems(1);
 
         List<Problem> actualProblems = getProblems(1, 2);
