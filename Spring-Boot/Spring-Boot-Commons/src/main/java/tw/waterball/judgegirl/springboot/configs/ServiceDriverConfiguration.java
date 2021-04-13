@@ -21,6 +21,8 @@ import tw.waterball.judgegirl.api.retrofit.RetrofitFactory;
 import tw.waterball.judgegirl.commons.token.TokenService;
 import tw.waterball.judgegirl.problemapi.clients.ProblemApiClient;
 import tw.waterball.judgegirl.problemapi.clients.ProblemServiceDriver;
+import tw.waterball.judgegirl.problemapi.clients.StudentApiClient;
+import tw.waterball.judgegirl.problemapi.clients.StudentServiceDriver;
 import tw.waterball.judgegirl.springboot.configs.properties.ServiceProps;
 import tw.waterball.judgegirl.springboot.profiles.productions.ServiceDriver;
 import tw.waterball.judgegirl.submissionapi.clients.BagInterceptor;
@@ -54,6 +56,20 @@ public class ServiceDriverConfiguration {
                 problemServiceInstance.getScheme(),
                 problemServiceInstance.getHost(),
                 problemServiceInstance.getPort(), adminToken);
+    }
+
+    @Bean
+    public StudentServiceDriver studentServiceDriver(
+            RetrofitFactory retrofitFactory,
+            TokenService tokenService,
+            ServiceProps.StudentService studentServiceInstance,
+            @Value("${judge-girl.client.student-service.studentId}") int studentId) {
+        String adminToken = tokenService.createToken(admin(studentId)).getToken();
+        return new StudentApiClient(retrofitFactory,
+                studentServiceInstance.getScheme(),
+                studentServiceInstance.getHost(),
+                studentServiceInstance.getPort(), adminToken);
+
     }
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")

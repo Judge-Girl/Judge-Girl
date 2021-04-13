@@ -29,6 +29,10 @@ public class ServiceProps {
     public static class ProblemService extends ServiceInstance {
     }
 
+    @ConfigurationProperties("judge-girl.client.student-service")
+    public static class StudentService extends ServiceInstance {
+    }
+
     @ConfigurationProperties("judge-girl.client.submission-service")
     public static class SubmissionService extends ServiceInstance {
     }
