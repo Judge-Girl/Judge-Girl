@@ -348,5 +348,51 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     private Problem givenOneProblemSaved() {
         return givenProblemsSaved(1).get(0);
     }
+
+    @Test
+    void GivenProblems_1_2_3_Saved_WhenGetProblemsByIds_1_2_3_ShouldRespondThat1_2_3() throws Exception {
+        saveProblems(1, 2, 3);
+
+        List<Problem> actualProblems = getProblems(1, 2, 3);
+
+        problemsShouldHaveIds(actualProblems, 1, 2, 3);
+    }
+
+    @Test
+    void Given_1_ProblemsSaved_WhenGetProblemsByIds_1_2_ShouldRespondThat_1() throws Exception {
+        saveProblems(1);
+
+        List<Problem> actualProblems = getProblems(1, 2);
+
+        problemsShouldHaveIds(actualProblems, 1);
+    }
+
+    private void problemsShouldHaveIds(List<Problem> actualProblems, Integer... problemIds) {
+        Set<Integer> idsSet = Set.of(problemIds);
+        actualProblems.forEach(problem -> assertTrue(idsSet.contains(problem.getId())));
+    }
+
+    private List<Problem> getProblems(Integer... problemIds) throws Exception {
+        return getBody(mockMvc.perform(get("/api/problems").queryParam("ids", Arrays.stream(problemIds).map(String::valueOf).collect(Collectors.joining(","))))
+                .andExpect(status().isOk()), new TypeReference<>() {
+        });
+    }
+
+    private void saveProblems(int... problemIds) {
+        Arrays.stream(problemIds).forEach(problemId -> {
+            Problem problem = ProblemStubs
+                    .problemTemplate()
+                    .build();
+            problem.setId(problemId);
+            byte[] providedCodesZip = ZipUtils.zipFilesFromResources("/stubs/file1.c", "/stubs/file2.c");
+
+            byte[] testcaseIOsZip = ZipUtils.zipFilesFromResources("/stubs/in/", "/stubs/out/");
+
+            problemRepository.save(problem,
+                    singletonMap(problem.getLanguageEnv(Language.C), new ByteArrayInputStream(providedCodesZip))
+                    , new ByteArrayInputStream(testcaseIOsZip));
+        });
+    }
+
 }
 

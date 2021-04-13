@@ -48,4 +48,6 @@ public interface ProblemRepository {
     void patchProblem(int problemId, PatchProblemParams params);
 
     boolean problemExists(int problemId);
+
+    List<Problem> findProblemsByIds(int... problemIds);
 }
