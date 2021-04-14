@@ -34,6 +34,7 @@
     <modules>
         <module>API-Commons</module>
         <module>Problem-API</module>
+        <module>Student-API</module>
         <module>Submission-API</module>
         <module>Judger-API</module>
     </modules>
