@@ -18,6 +18,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.ResultActions;
+import tw.waterball.judgegirl.entities.Student;
 import tw.waterball.judgegirl.entities.exam.Answer;
 import tw.waterball.judgegirl.entities.exam.Exam;
 import tw.waterball.judgegirl.entities.exam.Question;
@@ -33,6 +34,7 @@ import tw.waterball.judgegirl.examservice.domain.usecases.exam.CreateExamUseCase
 import tw.waterball.judgegirl.examservice.domain.usecases.exam.CreateQuestionUseCase;
 import tw.waterball.judgegirl.examservice.domain.usecases.exam.UpdateExamUseCase;
 import tw.waterball.judgegirl.problemapi.clients.FakeProblemServiceDriver;
+import tw.waterball.judgegirl.problemapi.clients.FakeStudentServiceDriver;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.springboot.exam.SpringBootExamApplication;
 import tw.waterball.judgegirl.springboot.exam.handler.VerdictIssuedEventHandler;
@@ -84,6 +86,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
     public static final int NONEXISTING_EXAM_ID = 9999;
     public static final int NONEXISTING_PROBLEM_ID = 9999;
     public static final int STUDENT_ID = 1;
+    public static final int ANOTHER_STUDENT_ID = 2;
     public static final String LANG_ENV = Language.C.toString();
     public static final String SUBMISSION_ID = "SubmissionId";
 
@@ -92,6 +95,8 @@ class ExamControllerTest extends AbstractSpringBootTest {
     ExamRepository examRepository;
     @Autowired
     FakeProblemServiceDriver problemServiceDriver;
+    @Autowired
+    FakeStudentServiceDriver studentServiceDriver;
     @Autowired
     VerdictPublisher verdictPublisher;
     @Autowired
@@ -118,12 +123,20 @@ class ExamControllerTest extends AbstractSpringBootTest {
         public FakeProblemServiceDriver fakeProblemServiceDriver() {
             return new FakeProblemServiceDriver();
         }
+
+
+        @Bean
+        @Primary
+        public FakeStudentServiceDriver fakeStudentServiceDriver() {
+            return new FakeStudentServiceDriver();
+        }
     }
 
 
     @BeforeEach
     void setup() {
         fakeProblemServiceDriver();
+        fakeStudentServiceDriver();
         mockSubmissionServiceDriver();
     }
 
@@ -137,6 +150,15 @@ class ExamControllerTest extends AbstractSpringBootTest {
 
     }
 
+    private void fakeStudentServiceDriver() {
+        Student student1 = new Student("student1", "student1@example.com", "password1");
+        student1.setId(STUDENT_ID);
+        Student student2 = new Student("student2", "student2@example.com", "password2");
+        student2.setId(ANOTHER_STUDENT_ID);
+        studentServiceDriver.addStudent(student1);
+        studentServiceDriver.addStudent(student2);
+    }
+
     private void mockSubmissionServiceDriver() {
         when(submissionServiceDriver.submit(any()))
                 .thenReturn(new SubmissionView(SUBMISSION_ID, STUDENT_ID, PROBLEM_ID, LANG_ENV, null, "fileId", new Date()));
@@ -146,6 +168,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
     void cleanup() {
         examRepository.deleteAll();
         problemServiceDriver.clear();
+        studentServiceDriver.clear();
     }
 
     @Test
@@ -198,6 +221,46 @@ class ExamControllerTest extends AbstractSpringBootTest {
         Date secondTime = new Date();
         updateExam(new UpdateExamUseCase.Request(examView.getId() + 1, "new name", secondTime, secondTime, "new problem statement"))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void WhenCreateExamParticipation_ShouldSucceedAndRespondErrorEmailList() throws Exception {
+        List<String> emails = new ArrayList<>();
+        emails.add("student1@example.com");
+        emails.add("student2@example.com");
+        emails.add("student3@example.com");
+        ExamView exam = createExamAndGet(new Date(), new Date(), "sample exam");
+        List<String> ErrorEmails = getBody(createExamParticipations(exam.getId(), emails)
+                .andExpect(status().isOk()), emails.getClass());
+        assertEquals(1, ErrorEmails.size());
+        assertEquals("student3@example.com", ErrorEmails.get(0));
+        exam = getExamById(exam.getId());
+        assertEquals(2, exam.students.size());
+    }
+
+    @Test
+    void WhenCreateExamParticipationWithNonExistingExam_ShouldRespondNotFound() throws Exception {
+        List<String> emails = new ArrayList<>();
+        emails.add("student1@example.com");
+        createExamParticipations(1, emails).andExpect(status().isNotFound());
+    }
+
+
+    @Test
+    void WhenDeleteExamParticipation_ShouldSucceed() throws Exception {
+        List<String> emails = new ArrayList<>();
+        emails.add("student1@example.com");
+        emails.add("student2@example.com");
+        emails.add("student3@example.com");
+        ExamView exam = createExamAndGet(new Date(), new Date(), "sample exam");
+        createExamParticipations(exam.getId(), emails).andExpect(status().isOk());
+        emails.clear();
+        emails.add("student1@example.com");
+        emails.add("student3@example.com");
+        deleteExamParticipations(exam.getId(), emails);
+        exam = getExamById(exam.getId());
+        assertEquals(1, exam.students.size());
+        assertEquals(ANOTHER_STUDENT_ID, exam.students.get(0));
     }
 
     @DisplayName("Given Student participates Exams A, B, C, D (only B, D are upcoming) " +
@@ -637,7 +700,18 @@ class ExamControllerTest extends AbstractSpringBootTest {
 
     private void createExamParticipation(int studentId, int examId) {
         examRepository.addParticipation(examId, studentId);
+    }
 
+    private ResultActions createExamParticipations(int examId, List<String> emails) throws Exception {
+        return mockMvc.perform(post("/api/exams/{examId}/students", examId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(toJson(emails)));
+    }
+
+    private ResultActions deleteExamParticipations(int examId, List<String> emails) throws Exception {
+        return mockMvc.perform(delete("/api/exams/{examId}/students", examId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(toJson(emails)));
     }
 
     private ResultActions createQuestion(CreateQuestionUseCase.Request request) throws Exception {

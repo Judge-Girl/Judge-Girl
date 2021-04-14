@@ -31,4 +31,12 @@ public class ExamParticipation {
         private final int studentId;
     }
 
+    public int getExamId() {
+        return id.getExamId();
+    }
+
+    public int getStudentId() {
+        return id.getStudentId();
+    }
+
 }

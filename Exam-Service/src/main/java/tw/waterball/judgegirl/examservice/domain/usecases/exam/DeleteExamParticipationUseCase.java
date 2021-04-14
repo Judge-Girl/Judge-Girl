@@ -7,29 +7,27 @@ import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.entities.Student;
 import tw.waterball.judgegirl.entities.exam.ExamParticipation;
 import tw.waterball.judgegirl.examservice.domain.repositories.ExamRepository;
+import tw.waterball.judgegirl.problemapi.clients.StudentServiceDriver;
 
 import javax.inject.Named;
-import java.util.ArrayList;
 import java.util.List;
 
 @Named
 public class DeleteExamParticipationUseCase {
     private final ExamRepository examRepository;
+    private final StudentServiceDriver studentServiceDriver;
 
-    public DeleteExamParticipationUseCase(ExamRepository examRepository) {
+    public DeleteExamParticipationUseCase(ExamRepository examRepository, StudentServiceDriver studentServiceDriver) {
         this.examRepository = examRepository;
+        this.studentServiceDriver = studentServiceDriver;
     }
 
     public void execute(Request request) throws NotFoundException {
         examRepository.findById(request.examId).orElseThrow(NotFoundException::new);
-        List<Student> students = emailsToStudents(request.emails);
+        List<Student> students = studentServiceDriver.getStudentsByEmails(request.emails);
         for (Student student : students) {
             examRepository.deleteParticipation(new ExamParticipation.Id(request.examId, student.getId()));
         }
-    }
-
-    List<Student> emailsToStudents(List<String> emails) {
-        return new ArrayList<>();
     }
 
     @Data

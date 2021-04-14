@@ -124,7 +124,9 @@ public class ExamController {
     }
 
     @PostMapping("/exams/{examId}/students")
-    public List<String> addExamParticipation(@PathVariable int examId, @RequestBody AddExamParticipationUseCase.Request request) {
+    public List<String> addExamParticipation(@PathVariable int examId, @RequestBody List<String> emails) {
+        AddExamParticipationUseCase.Request request = new AddExamParticipationUseCase.Request();
+        request.emails = emails;
         request.examId = examId;
         AddExamParticipationPresenter presenter = new AddExamParticipationPresenter();
         addExamParticipationUseCase.execute(request, presenter);
@@ -132,7 +134,9 @@ public class ExamController {
     }
 
     @DeleteMapping("/exams/{examId}/students")
-    public void deleteExamParticipation(@PathVariable int examId, @RequestBody DeleteExamParticipationUseCase.Request request) {
+    public void deleteExamParticipation(@PathVariable int examId, @RequestBody List<String> emails) {
+        DeleteExamParticipationUseCase.Request request = new DeleteExamParticipationUseCase.Request();
+        request.emails = emails;
         request.examId = examId;
         deleteExamParticipationUseCase.execute(request);
     }
