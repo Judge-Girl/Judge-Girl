@@ -23,7 +23,7 @@ import tw.waterball.judgegirl.springboot.configs.properties.ServiceProps;
  * @author - johnny850807@gmail.com (Waterball)
  */
 @EnableConfigurationProperties({JudgeGirlAmqpProps.class, JudgeGirlJudgerProps.class,
-        ServiceProps.ProblemService.class, ServiceProps.SubmissionService.class})
+        ServiceProps.ProblemService.class, ServiceProps.StudentService.class, ServiceProps.SubmissionService.class})
 @Configuration
 public class PropertiesConfig {
 
