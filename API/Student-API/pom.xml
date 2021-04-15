@@ -16,47 +16,24 @@
          xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <packaging>pom</packaging>
-
     <parent>
+        <artifactId>api</artifactId>
         <groupId>tw.waterball.judge-girl</groupId>
-        <artifactId>judge-girl</artifactId>
         <version>${revision}</version>
     </parent>
 
-    <name>API</name>
-    <artifactId>api</artifactId>
-
-    <properties>
-        <java.version>11</java.version>
-    </properties>
-
-    <modules>
-        <module>API-Commons</module>
-        <module>Problem-API</module>
-        <module>Student-API</module>
-        <module>Submission-API</module>
-        <module>Judger-API</module>
-    </modules>
+    <name>Student API</name>
+    <artifactId>student-api</artifactId>
 
     <dependencies>
         <dependency>
             <groupId>tw.waterball.judge-girl</groupId>
-            <artifactId>commons</artifactId>
+            <artifactId>student-service</artifactId>
+            <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.squareup.retrofit2</groupId>
-            <artifactId>retrofit</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.squareup.retrofit2</groupId>
-            <artifactId>converter-jackson</artifactId>
+            <groupId>tw.waterball.judge-girl</groupId>
+            <artifactId>api-commons</artifactId>
         </dependency>
     </dependencies>
-
-
 </project>
