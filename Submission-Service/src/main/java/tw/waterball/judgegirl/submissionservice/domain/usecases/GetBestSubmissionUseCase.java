@@ -8,20 +8,21 @@ import tw.waterball.judgegirl.submissionservice.domain.repositories.SubmissionRe
 import tw.waterball.judgegirl.submissionservice.domain.usecases.dto.SubmissionQueryParams;
 
 import javax.inject.Named;
+import java.util.Collections;
 
 /**
  * @author - wally55077@gmail.com
  */
 @Named
 @AllArgsConstructor
-public class GetBestProblemUseCase {
+public class GetBestSubmissionUseCase {
 
     private final SubmissionRepository submissionRepository;
 
     public void execute(Request request, Presenter presenter)
             throws NotFoundException {
         SubmissionQueryParams params = new SubmissionQueryParams(null,
-                request.problemId, request.langEnvName, request.studentId);
+                request.problemId, request.langEnvName, request.studentId, Collections.emptyMap());
         Submission bestSubmission = submissionRepository.query(params)
                 .stream()
                 .sorted()

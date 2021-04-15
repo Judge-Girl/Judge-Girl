@@ -224,7 +224,7 @@ public class AbstractSubmissionControllerTest extends AbstractSpringBootTest {
 
         VerdictIssuedEvent verdictIssuedEvent = publishVerdictAfterTheWhile(submission, verdict);
 
-        shouldNotifyVerdictIssuedEventHandler(5000);
+        shouldNotifyVerdictIssuedEventHandlerWithTimeout(5000);
         verdictShouldHaveBeenSavedCorrectly(submission, judgeStatus, expectTotalGrade, verdictIssuedEvent);
         return verdictIssuedEvent;
     }
@@ -254,7 +254,7 @@ public class AbstractSubmissionControllerTest extends AbstractSpringBootTest {
         return verdictIssuedEvent;
     }
 
-    protected void shouldNotifyVerdictIssuedEventHandler(long timeout) {
+    protected void shouldNotifyVerdictIssuedEventHandlerWithTimeout(long timeout) {
         verdictIssuedEventHandler.onHandlingCompletion$.doWait(timeout);
     }
 

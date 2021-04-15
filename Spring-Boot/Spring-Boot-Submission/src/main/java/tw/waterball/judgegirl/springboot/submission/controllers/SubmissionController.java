@@ -54,7 +54,7 @@ public class SubmissionController {
     private final GetSubmissionUseCase getSubmissionUseCase;
     private final GetSubmissionsUseCase getSubmissionsUseCase;
     private final DownloadSubmittedCodesUseCase downloadSubmittedCodesUseCase;
-    private final GetBestProblemUseCase getBestProblemUseCase;
+    private final GetBestSubmissionUseCase getBestSubmissionUseCase;
 
     @GetMapping("/health")
     public String health(@PathVariable String langEnvName, @PathVariable int problemId, @PathVariable int studentId) {
@@ -153,9 +153,9 @@ public class SubmissionController {
     public SubmissionView getBestSubmission(@PathVariable Integer problemId,
                                             @PathVariable String langEnvName,
                                             @PathVariable Integer studentId) {
-        GetBestProblemPresenter presenter = new GetBestProblemPresenter();
-        getBestProblemUseCase
-                .execute(new GetBestProblemUseCase.Request(problemId, langEnvName, studentId), presenter);
+        GetBestSubmissionPresenter presenter = new GetBestSubmissionPresenter();
+        getBestSubmissionUseCase
+                .execute(new GetBestSubmissionUseCase.Request(problemId, langEnvName, studentId), presenter);
         return presenter.present();
     }
 
@@ -174,7 +174,7 @@ public class SubmissionController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(err.toString());
         }
     }
-
+}
 
 class SubmissionPresenter implements tw.waterball.judgegirl.submissionservice.domain.usecases.SubmissionPresenter {
     private SubmissionView submissionView;
@@ -204,7 +204,7 @@ class GetSubmissionsPresenter implements GetSubmissionsUseCase.Presenter {
     }
 }
 
-class GetBestProblemPresenter implements GetBestProblemUseCase.Presenter {
+class GetBestSubmissionPresenter implements GetBestSubmissionUseCase.Presenter {
 
     private Submission bestSubmission;
 
