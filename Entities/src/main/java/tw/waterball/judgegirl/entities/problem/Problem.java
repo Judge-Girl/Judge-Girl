@@ -66,6 +66,9 @@ public class Problem {
 
     private String testcaseIOsFileId;
 
+    @NotNull
+    private boolean deleted;
+
     public void validate() {
         JSR380Utils.validate(this);
     }
@@ -136,6 +139,14 @@ public class Problem {
 
     public void setOutputMatchPolicyPluginTag(JudgePluginTag outputMatchPolicyPluginTag) {
         this.outputMatchPolicyPluginTag = outputMatchPolicyPluginTag;
+    }
+
+    public boolean isDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
     }
 
     public void addLanguageEnv(LanguageEnv languageEnv) {
