@@ -12,7 +12,7 @@ public class DeleteProblemUseCase extends BaseProblemUseCase {
     }
 
     public void execute(int problemId) {
-        problemRepository.deleteProblemById(problemId);
+        problemRepository.archiveProblemById(problemId);
     }
 
 }

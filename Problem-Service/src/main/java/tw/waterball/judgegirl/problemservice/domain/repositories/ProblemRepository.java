@@ -51,5 +51,5 @@ public interface ProblemRepository {
 
     List<Problem> findProblemsByIds(int... problemIds);
 
-    void deleteProblemById(int problemId);
+    void archiveProblemById(int problemId);
 }

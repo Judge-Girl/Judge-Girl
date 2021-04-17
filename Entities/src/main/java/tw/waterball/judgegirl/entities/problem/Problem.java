@@ -66,8 +66,7 @@ public class Problem {
 
     private String testcaseIOsFileId;
 
-    @NotNull
-    private boolean deleted;
+    private boolean archived;
 
     public void validate() {
         JSR380Utils.validate(this);
@@ -141,12 +140,12 @@ public class Problem {
         this.outputMatchPolicyPluginTag = outputMatchPolicyPluginTag;
     }
 
-    public boolean isDeleted() {
-        return deleted;
+    public boolean isArchived() {
+        return archived;
     }
 
-    public void setDeleted(boolean deleted) {
-        this.deleted = deleted;
+    public void setArchived(boolean archived) {
+        this.archived = archived;
     }
 
     public void addLanguageEnv(LanguageEnv languageEnv) {

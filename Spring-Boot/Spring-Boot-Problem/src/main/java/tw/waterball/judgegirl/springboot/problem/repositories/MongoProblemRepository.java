@@ -155,10 +155,10 @@ public class MongoProblemRepository implements ProblemRepository {
     }
 
     @Override
-    public void deleteProblemById(int problemId) {
+    public void archiveProblemById(int problemId) {
         Update update = new Update();
         Query query = new Query(where("_id").is(problemId));
-        update.set("deleted", true);
+        update.set("archived", true);
         mongoTemplate.updateFirst(query, update, Problem.class);
     }
 

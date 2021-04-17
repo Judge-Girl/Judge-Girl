@@ -368,7 +368,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    void GivenOneProblemCreated_WhenDeleteById_ShouldDeleteSuccessfully() throws Exception {
+    void GivenOneProblemCreated_WhenDeleteIt_ShouldArchiveItSuccessfully() throws Exception {
         int problemId = 1;
         saveProblems(problemId);
 

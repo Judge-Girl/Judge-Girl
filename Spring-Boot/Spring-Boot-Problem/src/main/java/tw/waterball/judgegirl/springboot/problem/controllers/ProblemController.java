@@ -110,14 +110,14 @@ public class ProblemController {
         return saveProblemWithTitleUseCase.execute(title);
     }
 
-    @PatchMapping(value = "/{problemId}")
+    @PatchMapping("/{problemId}")
     public void patchProblem(@PathVariable int problemId,
                              @RequestBody PatchProblemUseCase.Request request) {
         patchProblemUseCase.execute(request);
     }
 
-    @DeleteMapping(value = "/{problemId}")
-    public void deleteProblem(@PathVariable int problemId) {
+    @DeleteMapping("/{problemId}")
+    public void archiveOrDeleteProblem(@PathVariable int problemId) {
         deleteProblemUseCase.execute(problemId);
     }
 }
