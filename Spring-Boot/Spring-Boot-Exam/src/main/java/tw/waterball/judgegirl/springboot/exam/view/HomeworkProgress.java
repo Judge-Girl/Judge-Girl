@@ -3,9 +3,11 @@ package tw.waterball.judgegirl.springboot.exam.view;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import tw.waterball.judgegirl.entities.HomeworkProgress;
+import tw.waterball.judgegirl.entities.Homework;
+import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 import tw.waterball.judgegirl.submissionapi.views.VerdictView;
 
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -15,18 +17,17 @@ import java.util.TreeMap;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class HomeworkProgressView {
+public class HomeworkProgress {
 
     public HomeworkView homework;
 
     public Map<Integer, BestRecord> progress = new TreeMap<>();
 
-    public static HomeworkProgressView toViewModel(HomeworkProgress homeworkProgress) {
-        HomeworkView homework = HomeworkView.toViewModel(homeworkProgress.getHomework());
-        Map<Integer, BestRecord> progress = new TreeMap<>();
-        homeworkProgress.getProgress()
-                .forEach((problemId, verdict) -> progress.put(problemId, new BestRecord(VerdictView.toViewModel(verdict))));
-        return new HomeworkProgressView(homework, progress);
+    public static HomeworkProgress toViewModel(Homework homework, List<SubmissionView> progress) {
+        HomeworkProgress homeworkProgress = new HomeworkProgress();
+        homeworkProgress.homework = HomeworkView.toViewModel(homework);
+        progress.forEach(submission -> homeworkProgress.progress.put(submission.problemId, new BestRecord(submission.verdict)));
+        return homeworkProgress;
     }
 
     @Data

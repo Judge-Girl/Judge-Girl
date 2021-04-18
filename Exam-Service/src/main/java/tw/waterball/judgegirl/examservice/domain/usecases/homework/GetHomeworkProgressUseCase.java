@@ -4,18 +4,12 @@ import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.entities.Homework;
-import tw.waterball.judgegirl.entities.HomeworkProgress;
-import tw.waterball.judgegirl.entities.submission.verdict.Verdict;
 import tw.waterball.judgegirl.examservice.domain.repositories.HomeworkRepository;
 import tw.waterball.judgegirl.submissionapi.clients.SubmissionServiceDriver;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
-import tw.waterball.judgegirl.submissionapi.views.VerdictView;
 
 import javax.inject.Named;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.TreeMap;
 
 /**
  * @author - wally55077@gmail.com
@@ -30,18 +24,20 @@ public class GetHomeworkProgressUseCase {
 
     public void execute(Request request, Presenter presenter)
             throws NotFoundException {
-        Homework homework = homeworkRepository.findHomeworkById(request.homeworkId)
-                .orElseThrow(NotFoundException::new);
-        Map<Integer, Verdict> allBestRecord = findAllBestRecord(request.studentId, homework.getProblemIds());
-        HomeworkProgress homeworkProgress = new HomeworkProgress(homework, allBestRecord);
-        presenter.showHomeworkProgress(homeworkProgress);
+        Homework homework = findHomework(request);
+        presenter.showHomework(homework);
+        showBestRecords(request, homework, presenter);
     }
 
-    private Map<Integer, Verdict> findAllBestRecord(int studentId, List<Integer> problemIds) {
-        Map<Integer, Verdict> allBestRecord = new TreeMap<>();
-        problemIds.forEach(problemId -> findBestRecord(studentId, problemId)
-                .ifPresent(submission -> allBestRecord.put(problemId, VerdictView.toEntity(submission.verdict))));
-        return allBestRecord;
+    private Homework findHomework(Request request) {
+        return homeworkRepository.findHomeworkById(request.homeworkId)
+                .orElseThrow(NotFoundException::new);
+    }
+
+    private void showBestRecords(Request request, Homework homework, Presenter presenter) {
+        homework.getProblemIds().stream()
+                .flatMap(problemId -> findBestRecord(request.studentId, problemId).stream())
+                .forEach(presenter::showProgress);
     }
 
     private Optional<SubmissionView> findBestRecord(int studentId, int problemId) {
@@ -54,7 +50,9 @@ public class GetHomeworkProgressUseCase {
 
     public interface Presenter {
 
-        void showHomeworkProgress(HomeworkProgress homeworkProgress);
+        void showHomework(Homework homework);
+
+        void showProgress(SubmissionView progress);
 
     }
 

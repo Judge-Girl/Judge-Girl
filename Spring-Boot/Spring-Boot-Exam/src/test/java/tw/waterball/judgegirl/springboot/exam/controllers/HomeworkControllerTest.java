@@ -3,7 +3,6 @@ package tw.waterball.judgegirl.springboot.exam.controllers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
@@ -14,16 +13,13 @@ import tw.waterball.judgegirl.entities.problem.JudgeStatus;
 import tw.waterball.judgegirl.entities.problem.Problem;
 import tw.waterball.judgegirl.entities.stubs.ProblemStubs;
 import tw.waterball.judgegirl.entities.submission.Submission;
-import tw.waterball.judgegirl.entities.submission.verdict.Judge;
-import tw.waterball.judgegirl.entities.submission.verdict.ProgramProfile;
-import tw.waterball.judgegirl.entities.submission.verdict.Verdict;
 import tw.waterball.judgegirl.examservice.domain.repositories.HomeworkRepository;
 import tw.waterball.judgegirl.examservice.domain.usecases.homework.CreateHomeworkUseCase;
 import tw.waterball.judgegirl.problemapi.clients.FakeProblemServiceDriver;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.springboot.exam.SpringBootExamApplication;
-import tw.waterball.judgegirl.springboot.exam.view.HomeworkProgressView;
-import tw.waterball.judgegirl.springboot.exam.view.HomeworkProgressView.BestRecord;
+import tw.waterball.judgegirl.springboot.exam.view.HomeworkProgress;
+import tw.waterball.judgegirl.springboot.exam.view.HomeworkProgress.BestRecord;
 import tw.waterball.judgegirl.springboot.exam.view.HomeworkView;
 import tw.waterball.judgegirl.springboot.profiles.Profiles;
 import tw.waterball.judgegirl.submissionapi.clients.SubmissionServiceDriver;
@@ -33,14 +29,13 @@ import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static tw.waterball.judgegirl.entities.problem.JudgeStatus.AC;
-import static tw.waterball.judgegirl.entities.problem.JudgeStatus.CE;
+import static tw.waterball.judgegirl.entities.stubs.SubmissionStubBuilder.submission;
 import static tw.waterball.judgegirl.springboot.exam.controllers.ExamControllerTest.LANG_ENV;
 
 @ActiveProfiles(Profiles.JWT)
@@ -111,35 +106,45 @@ public class HomeworkControllerTest extends AbstractSpringBootTest {
                 .andExpect(status().isNotFound());
     }
 
-    @DisplayName("Given created two problems [1, 2] with submission [AC , CE] add into created homework" +
-            "When get homework progress by studentId [11] and homework id" +
-            "Should two best record [AC, CE] in homework progress")
+    @DisplayName("Given a homework consists of two problems [1, 2] and the student achieved AC in 1 and CE in 2," +
+            "When get the student's homework progress, " +
+            "Should respond the two best records [AC, CE] within the homework progress")
     @Test
-    public void testGetHomeworkProgressOverview() throws Exception {
-        HomeworkView homework = addTwoProblemsWithSubmissionIntoCreatedHomeWorkAndGet();
+    public void testGetHomeworkProgress() throws Exception {
+        var homework = createHomeworkConsistsOfProblems(PROBLEM1_ID, PROBLEM2_ID);
+        var bestRecord1 = achieveBestRecord(PROBLEM1_ID, submission("AC").AC(1, 1, 100).build(STUDENT_ID, PROBLEM1_ID, LANG_ENV));
+        var bestRecord2 = achieveBestRecord(PROBLEM2_ID, submission("CE").CE().build(STUDENT_ID, PROBLEM2_ID, LANG_ENV));
 
-        HomeworkProgressView homeworkProgress = getHomeworkProgress(STUDENT_ID, homework.id);
+        HomeworkProgress homeworkProgress = getHomeworkProgress(STUDENT_ID, homework.id);
 
-        homeworkProgressShouldIncludeTwoBestRecord(homework, homeworkProgress);
+        assertEquals(homework, homeworkProgress.homework);
+        homeworkProgressShouldIncludeBestRecords(homework, homeworkProgress, bestRecord1, bestRecord2);
     }
 
-    private void homeworkProgressShouldIncludeTwoBestRecord(HomeworkView homework, HomeworkProgressView homeworkProgress) {
+    private HomeworkView createHomeworkConsistsOfProblems(Integer... problemIds) throws Exception {
+        createProblems(problemIds);
+        return createHomeworkAndGet(HOMEWORK_NAME, problemIds);
+    }
+
+    private SubmissionView achieveBestRecord(int problemId, Submission submission) {
+        int studentId = submission.getStudentId();
+        when(submissionServiceDriver.findBestRecord(problemId, studentId))
+                .thenReturn(SubmissionView.toViewModel(submission));
+        return submissionServiceDriver.findBestRecord(problemId, studentId);
+    }
+
+    private void homeworkProgressShouldIncludeBestRecords(HomeworkView homework,
+                                                          HomeworkProgress homeworkProgress,
+                                                          SubmissionView... submissionViews) {
         assertEquals(homework, homeworkProgress.homework);
         Map<Integer, BestRecord> progress = homeworkProgress.progress;
-        assertEquals(2, progress.size());
-        assertEquals(AC, progress.get(PROBLEM1_ID).getBestRecord().getSummaryStatus());
-        assertEquals(CE, progress.get(PROBLEM2_ID).getBestRecord().getSummaryStatus());
-    }
-
-    private HomeworkView addTwoProblemsWithSubmissionIntoCreatedHomeWorkAndGet() throws Exception {
-        createProblems(PROBLEM1_ID, PROBLEM2_ID);
-        SubmissionView submissionAC = generateSubmissionAndGet(SUBMISSION1_ID, STUDENT_ID, PROBLEM1_ID, AC, AC);
-        Mockito.when(submissionServiceDriver.findBestRecord(PROBLEM1_ID, STUDENT_ID))
-                .thenReturn(submissionAC);
-        SubmissionView submissionCE = generateSubmissionAndGet(SUBMISSION2_ID, STUDENT_ID, PROBLEM2_ID, CE, CE, CE);
-        Mockito.when(submissionServiceDriver.findBestRecord(PROBLEM2_ID, STUDENT_ID))
-                .thenReturn(submissionCE);
-        return createHomeworkAndGet(HOMEWORK_NAME, PROBLEM1_ID, PROBLEM2_ID);
+        assertEquals(submissionViews.length, progress.size());
+        for (SubmissionView submissionView : submissionViews) {
+            JudgeStatus summaryStatus = submissionView.verdict.getSummaryStatus();
+            JudgeStatus actualSummaryStatus = progress.get(submissionView.problemId)
+                    .getBestRecord().getSummaryStatus();
+            assertEquals(summaryStatus, actualSummaryStatus);
+        }
     }
 
     private HomeworkView createHomeworkAndGet(String homeworkName, Integer... problemIds) throws Exception {
@@ -180,29 +185,9 @@ public class HomeworkControllerTest extends AbstractSpringBootTest {
         }
     }
 
-    private SubmissionView generateSubmissionAndGet(String submissionId, int studentId, int problemId,
-                                                    JudgeStatus... judgeStatuses) {
-        Submission submission = new Submission(studentId, problemId, LANG_ENV);
-        submission.setId(submissionId);
-        List<Judge> judges = Arrays.stream(judgeStatuses)
-                .map(this::generateJudgeAndGet)
-                .collect(Collectors.toList());
-        submission.setVerdict(new Verdict(judges));
-        return SubmissionView.toViewModel(submission);
-    }
-
-    private Judge generateJudgeAndGet(JudgeStatus judgeStatus) {
-        long runtime = System.currentTimeMillis() % 10;
-        long memoryUsage = System.currentTimeMillis() % 10;
-        int grade = Math.toIntExact(System.currentTimeMillis() % 100) + 1;
-        String errorMessage = judgeStatus == AC ? "" : judgeStatus.getFullName();
-        ProgramProfile programProfile = new ProgramProfile(runtime, memoryUsage, errorMessage);
-        return new Judge("T" + grade, judgeStatus, programProfile, grade);
-    }
-
-    private HomeworkProgressView getHomeworkProgress(int studentId, int homeworkId) throws Exception {
+    private HomeworkProgress getHomeworkProgress(int studentId, int homeworkId) throws Exception {
         return getBody(mockMvc.perform(get(HOMEWORK_PROGRESS_PATH, studentId, homeworkId))
-                .andExpect(status().isOk()), HomeworkProgressView.class);
+                .andExpect(status().isOk()), HomeworkProgress.class);
     }
 
 }

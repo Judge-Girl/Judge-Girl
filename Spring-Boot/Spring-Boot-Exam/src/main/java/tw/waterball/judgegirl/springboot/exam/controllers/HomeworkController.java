@@ -3,12 +3,15 @@ package tw.waterball.judgegirl.springboot.exam.controllers;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import tw.waterball.judgegirl.entities.Homework;
-import tw.waterball.judgegirl.entities.HomeworkProgress;
 import tw.waterball.judgegirl.examservice.domain.usecases.homework.CreateHomeworkUseCase;
 import tw.waterball.judgegirl.examservice.domain.usecases.homework.GetHomeworkProgressUseCase;
 import tw.waterball.judgegirl.examservice.domain.usecases.homework.GetHomeworkUseCase;
-import tw.waterball.judgegirl.springboot.exam.view.HomeworkProgressView;
+import tw.waterball.judgegirl.springboot.exam.view.HomeworkProgress;
 import tw.waterball.judgegirl.springboot.exam.view.HomeworkView;
+import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
+
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * @author - wally55077@gmail.com
@@ -38,8 +41,8 @@ public class HomeworkController {
     }
 
     @GetMapping("/students/{studentId}/homework/{homeworkId}/progress")
-    public HomeworkProgressView getHomeworkProgress(@PathVariable int studentId,
-                                                    @PathVariable int homeworkId) {
+    public HomeworkProgress getHomeworkProgress(@PathVariable int studentId,
+                                                @PathVariable int homeworkId) {
         GetHomeworkProgressPresenter presenter = new GetHomeworkProgressPresenter();
         getHomeworkProgressUseCase.execute(new GetHomeworkProgressUseCase.Request(studentId, homeworkId), presenter);
         return presenter.present();
@@ -77,17 +80,22 @@ class GetHomeworkPresenter implements GetHomeworkUseCase.Presenter {
 
 class GetHomeworkProgressPresenter implements GetHomeworkProgressUseCase.Presenter {
 
-    private HomeworkProgress homeworkProgress;
+    private final List<SubmissionView> progress = new LinkedList<>();
+    private Homework homework;
 
     @Override
-    public void showHomeworkProgress(HomeworkProgress homeworkProgress) {
-        this.homeworkProgress = homeworkProgress;
+    public void showHomework(Homework homework) {
+        this.homework = homework;
     }
 
-    public HomeworkProgressView present() {
-        return HomeworkProgressView.toViewModel(homeworkProgress);
+    @Override
+    public void showProgress(SubmissionView progress) {
+        this.progress.add(progress);
     }
 
+    public HomeworkProgress present() {
+        return HomeworkProgress.toViewModel(homework, progress);
+    }
 
 }
 
