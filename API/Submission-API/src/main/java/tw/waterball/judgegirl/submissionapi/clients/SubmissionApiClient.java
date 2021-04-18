@@ -128,6 +128,12 @@ public class SubmissionApiClient extends BaseRetrofitAPI implements SubmissionSe
                 String.join(",", submissionIds)).execute());
     }
 
+    @Override
+    public SubmissionView findBestRecord(int problemId, int studentId) throws NotFoundException {
+        return errorHandlingGetBody(() -> api.findBestRecord(
+                problemId, CURRENTLY_ONLY_SUPPORT_C, studentId).execute());
+    }
+
     private interface API {
         @Multipart
         @POST("/api/problems/{problemId}/{langEnvName}/students/{studentId}/submissions")
@@ -163,6 +169,11 @@ public class SubmissionApiClient extends BaseRetrofitAPI implements SubmissionSe
                                              @Path("studentId") int studentId,
                                              @Path("submissionId") String submissionId,
                                              @Path("submittedCodesFileId") String submittedCodesFileId);
+
+        @GET("/api/problems/{problemId}/{langEnvName}/students/{studentId}/submissions/best")
+        Call<SubmissionView> findBestRecord(@Path("problemId") int problemId,
+                                            @Path("langEnvName") String langEnvName,
+                                            @Path("studentId") int studentId);
     }
 
 }

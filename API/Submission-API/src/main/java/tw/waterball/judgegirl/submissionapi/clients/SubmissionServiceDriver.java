@@ -43,5 +43,7 @@ public interface SubmissionServiceDriver {
 
     SubmissionView findBestRecord(List<String> submissionIds);
 
+    SubmissionView findBestRecord(int problemId, int studentId) throws NotFoundException;
+
 
 }
