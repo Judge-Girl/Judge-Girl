@@ -7,9 +7,9 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface JpaExamParticipationDataPort extends JpaRepository<ExamParticipationData, ExamParticipationData.Id> {
+public interface JpaExamineeDataPort extends JpaRepository<ExamineeData, ExamineeData.Id> {
     boolean existsById_StudentIdAndId_ExamId(int studentId, int examId);
 
-    List<ExamParticipationData> findByStudentId(int studentId, Pageable pageable);
+    List<ExamineeData> findByStudentId(int studentId, Pageable pageable);
 
 }

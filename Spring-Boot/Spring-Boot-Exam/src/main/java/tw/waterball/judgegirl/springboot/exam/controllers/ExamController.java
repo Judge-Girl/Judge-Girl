@@ -41,8 +41,8 @@ public class ExamController {
     private final UpdateExamUseCase updateExamUseCase;
     private final GetExamUseCase getExamUseCase;
     private final ExamPresenter examPresenter;
-    private final AddExamParticipationUseCase addExamParticipationUseCase;
-    private final DeleteExamParticipationUseCase deleteExamParticipationUseCase;
+    private final AddExamineesUseCase addExamineesUseCase;
+    private final DeleteExamineesUseCase deleteExamineesUseCase;
 
     @PostMapping("/exams")
     public ExamView createExam(@RequestBody CreateExamUseCase.Request request) {
@@ -124,21 +124,21 @@ public class ExamController {
     }
 
     @PostMapping("/exams/{examId}/students")
-    public List<String> addExamParticipation(@PathVariable int examId, @RequestBody List<String> emails) {
-        AddExamParticipationUseCase.Request request = new AddExamParticipationUseCase.Request();
+    public List<String> addExaminee(@PathVariable int examId, @RequestBody List<String> emails) {
+        AddExamineesUseCase.Request request = new AddExamineesUseCase.Request();
         request.emails = emails;
         request.examId = examId;
-        AddExamParticipationPresenter presenter = new AddExamParticipationPresenter();
-        addExamParticipationUseCase.execute(request, presenter);
+        AddExamineesPresenter presenter = new AddExamineesPresenter();
+        addExamineesUseCase.execute(request, presenter);
         return presenter.present();
     }
 
     @DeleteMapping("/exams/{examId}/students")
-    public void deleteExamParticipation(@PathVariable int examId, @RequestBody List<String> emails) {
-        DeleteExamParticipationUseCase.Request request = new DeleteExamParticipationUseCase.Request();
+    public void deleteExaminee(@PathVariable int examId, @RequestBody List<String> emails) {
+        DeleteExamineesUseCase.Request request = new DeleteExamineesUseCase.Request();
         request.emails = emails;
         request.examId = examId;
-        deleteExamParticipationUseCase.execute(request);
+        deleteExamineesUseCase.execute(request);
     }
 
     @ResponseStatus(HttpStatus.FORBIDDEN)
@@ -191,11 +191,11 @@ class CreateQuestionPresenter implements CreateQuestionUseCase.Presenter {
     }
 }
 
-class AddExamParticipationPresenter implements AddExamParticipationUseCase.Presenter {
+class AddExamineesPresenter implements AddExamineesUseCase.Presenter {
     private List<String> errorList;
 
     @Override
-    public void setErrorEmails(List<String> emails) {
+    public void showNotFoundEmails(List<String> emails) {
         errorList = emails;
     }
 

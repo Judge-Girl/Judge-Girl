@@ -24,9 +24,13 @@ public interface ExamRepository {
 
     void addQuestion(Question question);
 
-    void addParticipation(int examId, int studentId);
+    void addExaminee(int examId, int studentId);
 
-    void deleteParticipation(ExamParticipation.Id id);
+    void deleteExaminee(Examinee.Id id);
+
+    void addExaminees(int examId, List<Integer> studentIds);
+
+    void deleteExaminees(int examId, List<Integer> studentIds);
 
     void deleteQuestionById(Question.Id id);
 

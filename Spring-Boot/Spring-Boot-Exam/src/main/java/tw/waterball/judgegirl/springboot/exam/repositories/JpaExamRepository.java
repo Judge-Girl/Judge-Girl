@@ -29,7 +29,7 @@ import static tw.waterball.judgegirl.springboot.exam.repositories.jpa.QuestionDa
 public class JpaExamRepository implements ExamRepository {
     private final JpaExamDataPort jpaExamDataPort;
     private final JpaQuestionDataPort jpaQuestionDataPort;
-    private final JpaExamParticipationDataPort jpaExamParticipationDataPort;
+    private final JpaExamineeDataPort jpaExamineeDataPort;
     private final JpaAnswerDataPort jpaAnswerDataPort;
     private final JpaBestRecordDataPort jpaBestRecordDataPort;
 
@@ -95,15 +95,31 @@ public class JpaExamRepository implements ExamRepository {
     }
 
     @Override
-    public void addParticipation(int examId, int studentId) {
-        ExamParticipationData data = jpaExamParticipationDataPort.save(
-                new ExamParticipationData(examId, studentId));
-        jpaExamParticipationDataPort.save(data);
+    public void addExaminee(int examId, int studentId) {
+        ExamineeData data = jpaExamineeDataPort.save(
+                new ExamineeData(examId, studentId));
+        jpaExamineeDataPort.save(data);
     }
 
     @Override
-    public void deleteParticipation(ExamParticipation.Id id) {
-        jpaExamParticipationDataPort.deleteById(new ExamParticipationData.Id(id));
+    public void deleteExaminee(Examinee.Id id) {
+        jpaExamineeDataPort.deleteById(new ExamineeData.Id(id));
+    }
+
+    @Override
+    @Transactional
+    public void addExaminees(int examId, List<Integer> studentIds) {
+        for (int studentId : studentIds) {
+            addExaminee(examId, studentId);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void deleteExaminees(int examId, List<Integer> studentIds) {
+        for (int studentId : studentIds) {
+            deleteExaminee(new Examinee.Id(examId, studentId));
+        }
     }
 
     @Override
@@ -146,7 +162,7 @@ public class JpaExamRepository implements ExamRepository {
 
     @Override
     public boolean hasStudentParticipatedExam(int studentId, int examId) {
-        return jpaExamParticipationDataPort.existsById_StudentIdAndId_ExamId(studentId, examId);
+        return jpaExamineeDataPort.existsById_StudentIdAndId_ExamId(studentId, examId);
     }
 
 }

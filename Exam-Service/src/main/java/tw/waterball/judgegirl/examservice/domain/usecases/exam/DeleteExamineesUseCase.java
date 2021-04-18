@@ -5,29 +5,41 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.entities.Student;
-import tw.waterball.judgegirl.entities.exam.ExamParticipation;
+import tw.waterball.judgegirl.entities.exam.Exam;
 import tw.waterball.judgegirl.examservice.domain.repositories.ExamRepository;
 import tw.waterball.judgegirl.problemapi.clients.StudentServiceDriver;
 
 import javax.inject.Named;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Named
-public class DeleteExamParticipationUseCase {
+public class DeleteExamineesUseCase {
     private final ExamRepository examRepository;
     private final StudentServiceDriver studentServiceDriver;
 
-    public DeleteExamParticipationUseCase(ExamRepository examRepository, StudentServiceDriver studentServiceDriver) {
+    public DeleteExamineesUseCase(ExamRepository examRepository, StudentServiceDriver studentServiceDriver) {
         this.examRepository = examRepository;
         this.studentServiceDriver = studentServiceDriver;
     }
 
     public void execute(Request request) throws NotFoundException {
-        examRepository.findById(request.examId).orElseThrow(NotFoundException::new);
-        List<Student> students = studentServiceDriver.getStudentsByEmails(request.emails);
-        for (Student student : students) {
-            examRepository.deleteParticipation(new ExamParticipation.Id(request.examId, student.getId()));
-        }
+        Exam exam = findExam(request);
+        List<Student> students = findStudents(request);
+        deleteExaminees(exam, students);
+    }
+
+
+    private Exam findExam(Request request) throws NotFoundException {
+        return examRepository.findById(request.examId).orElseThrow(NotFoundException::new);
+    }
+
+    private List<Student> findStudents(Request request) {
+        return studentServiceDriver.getStudentsByEmails(request.emails);
+    }
+
+    private void deleteExaminees(Exam exam, List<Student> students) {
+        examRepository.deleteExaminees(exam.getId(), students.stream().map(Student::getId).collect(Collectors.toList()));
     }
 
     @Data

@@ -2,10 +2,10 @@ package tw.waterball.judgegirl.problemapi.clients;
 
 import tw.waterball.judgegirl.entities.Student;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class FakeStudentServiceDriver implements StudentServiceDriver {
 
@@ -13,13 +13,7 @@ public class FakeStudentServiceDriver implements StudentServiceDriver {
 
     @Override
     public List<Student> getStudentsByEmails(List<String> emails) {
-        List<Student> studentList = new ArrayList<>();
-        for (String email : emails) {
-            if (students.containsKey(email)) {
-                studentList.add(students.get(email));
-            }
-        }
-        return studentList;
+        return students.values().stream().filter(student -> emails.contains(student.getEmail())).collect(Collectors.toList());
     }
 
     public void addStudent(Student student) {

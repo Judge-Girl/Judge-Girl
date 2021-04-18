@@ -18,6 +18,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.transaction.annotation.Transactional;
 import tw.waterball.judgegirl.entities.Student;
 import tw.waterball.judgegirl.entities.exam.Answer;
 import tw.waterball.judgegirl.entities.exam.Exam;
@@ -151,9 +152,9 @@ class ExamControllerTest extends AbstractSpringBootTest {
     }
 
     private void fakeStudentServiceDriver() {
-        Student student1 = new Student("student1", "student1@example.com", "password1");
+        Student student1 = new Student("studentA", "studentA@example.com", "passwordA");
         student1.setId(STUDENT_ID);
-        Student student2 = new Student("student2", "student2@example.com", "password2");
+        Student student2 = new Student("studentB", "studentB@example.com", "passwordB");
         student2.setId(ANOTHER_STUDENT_ID);
         studentServiceDriver.addStudent(student1);
         studentServiceDriver.addStudent(student2);
@@ -224,43 +225,49 @@ class ExamControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    void WhenCreateExamParticipation_ShouldSucceedAndRespondErrorEmailList() throws Exception {
+    @Transactional
+    void GivenStudents_A_B_WhenAddExaminees_A_B_C_ShouldSucceedAndRespondErrorEmailList_C() throws Exception {
         List<String> emails = new ArrayList<>();
-        emails.add("student1@example.com");
-        emails.add("student2@example.com");
-        emails.add("student3@example.com");
-        ExamView exam = createExamAndGet(new Date(), new Date(), "sample exam");
-        List<String> ErrorEmails = getBody(createExamParticipations(exam.getId(), emails)
+        emails.add("studentA@example.com");
+        emails.add("studentB@example.com");
+        emails.add("studentC@example.com");
+        ExamView examView = createExamAndGet(new Date(), new Date(), "sample exam");
+        List<String> ErrorEmails = getBody(createExaminees(examView.getId(), emails)
                 .andExpect(status().isOk()), emails.getClass());
         assertEquals(1, ErrorEmails.size());
-        assertEquals("student3@example.com", ErrorEmails.get(0));
-        exam = getExamById(exam.getId());
-        assertEquals(2, exam.students.size());
+        assertEquals("studentC@example.com", ErrorEmails.get(0));
+        anotherTransaction(()->{
+            Exam exam = examRepository.findById(examView.getId()).get();
+            assertEquals(2, exam.getExaminees().size());
+        });
     }
 
     @Test
-    void WhenCreateExamParticipationWithNonExistingExam_ShouldRespondNotFound() throws Exception {
+    void WhenCreateExamineesToNonExistingExam_ShouldRespondNotFound() throws Exception {
         List<String> emails = new ArrayList<>();
-        emails.add("student1@example.com");
-        createExamParticipations(1, emails).andExpect(status().isNotFound());
+        emails.add("studentA@example.com");
+        createExaminees(1, emails).andExpect(status().isNotFound());
     }
 
 
     @Test
-    void WhenDeleteExamParticipation_ShouldSucceed() throws Exception {
+    @Transactional
+    void GivenStudents_A_B_C_WhenDeleteExaminees_A_C_ShouldOnlyRemainBInExam() throws Exception {
         List<String> emails = new ArrayList<>();
-        emails.add("student1@example.com");
-        emails.add("student2@example.com");
-        emails.add("student3@example.com");
-        ExamView exam = createExamAndGet(new Date(), new Date(), "sample exam");
-        createExamParticipations(exam.getId(), emails).andExpect(status().isOk());
+        emails.add("studentA@example.com");
+        emails.add("studentB@example.com");
+        emails.add("studentC@example.com");
+        ExamView examView = createExamAndGet(new Date(), new Date(), "sample exam");
+        createExaminees(examView.getId(), emails).andExpect(status().isOk());
         emails.clear();
-        emails.add("student1@example.com");
-        emails.add("student3@example.com");
-        deleteExamParticipations(exam.getId(), emails);
-        exam = getExamById(exam.getId());
-        assertEquals(1, exam.students.size());
-        assertEquals(ANOTHER_STUDENT_ID, exam.students.get(0));
+        emails.add("studentA@example.com");
+        emails.add("studentC@example.com");
+        deleteExaminees(examView.getId(), emails);
+        anotherTransaction(()->{
+            Exam exam = examRepository.findById(examView.getId()).get();
+            assertEquals(1, exam.getExaminees().size());
+            assertEquals(ANOTHER_STUDENT_ID, exam.getExaminees().get(0).getId().getStudentId());
+        });
     }
 
     @DisplayName("Given Student participates Exams A, B, C, D (only B, D are upcoming) " +
@@ -632,7 +639,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
     private void givenStudentParticipatingExams(int studentId, List<ExamView>... exams) {
         List<ExamView> allExams = stream(exams).flatMap(List::stream).collect(toList());
         for (ExamView exam : allExams) {
-            createExamParticipation(studentId, exam.id);
+            createExaminee(studentId, exam.id);
         }
     }
 
@@ -698,17 +705,17 @@ class ExamControllerTest extends AbstractSpringBootTest {
                 examId, STUDENT_ID)).andExpect(status().isOk()), ExamHome.class);
     }
 
-    private void createExamParticipation(int studentId, int examId) {
-        examRepository.addParticipation(examId, studentId);
+    private void createExaminee(int studentId, int examId) {
+        examRepository.addExaminee(examId, studentId);
     }
 
-    private ResultActions createExamParticipations(int examId, List<String> emails) throws Exception {
+    private ResultActions createExaminees(int examId, List<String> emails) throws Exception {
         return mockMvc.perform(post("/api/exams/{examId}/students", examId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(emails)));
     }
 
-    private ResultActions deleteExamParticipations(int examId, List<String> emails) throws Exception {
+    private ResultActions deleteExaminees(int examId, List<String> emails) throws Exception {
         return mockMvc.perform(delete("/api/exams/{examId}/students", examId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(emails)));
