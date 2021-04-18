@@ -16,14 +16,11 @@ package tw.waterball.judgegirl.springboot.submission.controllers;
 import lombok.AllArgsConstructor;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import tw.waterball.judgegirl.commons.token.TokenInvalidException;
 import tw.waterball.judgegirl.commons.token.TokenService;
-import tw.waterball.judgegirl.commons.utils.HttpHeaderUtils;
 import tw.waterball.judgegirl.entities.submission.Bag;
 import tw.waterball.judgegirl.entities.submission.Submission;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
@@ -33,7 +30,6 @@ import tw.waterball.judgegirl.submissionservice.domain.usecases.dto.SubmissionQu
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static tw.waterball.judgegirl.springboot.utils.MultipartFileUtils.convertMultipartFilesToFileResources;
@@ -159,21 +155,6 @@ public class SubmissionController {
         return presenter.present();
     }
 
-    private <T> ResponseEntity validateIdentity(int studentId, String bearerToken, Function<TokenService.Token, ResponseEntity<T>> supplier) {
-        String tokenString = HttpHeaderUtils.parseBearerToken(bearerToken);
-        TokenService.Token token = tokenService.parseAndValidate(tokenString);
-        try {
-            if (token.canAccessStudent(studentId)) {
-                return supplier.apply(token);
-            } else {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
-                        String.format("Student(id=%s) cannot access Student(id=%s)'s resource",
-                                token.getClaimMap(), studentId));
-            }
-        } catch (TokenInvalidException err) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(err.toString());
-        }
-    }
 }
 
 class SubmissionPresenter implements tw.waterball.judgegirl.submissionservice.domain.usecases.SubmissionPresenter {
