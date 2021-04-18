@@ -14,14 +14,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Named
+@AllArgsConstructor
 public class DeleteExamineesUseCase {
     private final ExamRepository examRepository;
     private final StudentServiceDriver studentServiceDriver;
-
-    public DeleteExamineesUseCase(ExamRepository examRepository, StudentServiceDriver studentServiceDriver) {
-        this.examRepository = examRepository;
-        this.studentServiceDriver = studentServiceDriver;
-    }
 
     public void execute(Request request) throws NotFoundException {
         Exam exam = findExam(request);

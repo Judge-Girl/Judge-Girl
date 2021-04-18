@@ -124,7 +124,7 @@ public class ExamController {
     }
 
     @PostMapping("/exams/{examId}/students")
-    public List<String> addExaminee(@PathVariable int examId, @RequestBody List<String> emails) {
+    public List<String> addExaminees(@PathVariable int examId, @RequestBody List<String> emails) {
         AddExamineesUseCase.Request request = new AddExamineesUseCase.Request();
         request.emails = emails;
         request.examId = examId;
@@ -134,7 +134,7 @@ public class ExamController {
     }
 
     @DeleteMapping("/exams/{examId}/students")
-    public void deleteExaminee(@PathVariable int examId, @RequestBody List<String> emails) {
+    public void deleteExaminees(@PathVariable int examId, @RequestBody List<String> emails) {
         DeleteExamineesUseCase.Request request = new DeleteExamineesUseCase.Request();
         request.emails = emails;
         request.examId = examId;
