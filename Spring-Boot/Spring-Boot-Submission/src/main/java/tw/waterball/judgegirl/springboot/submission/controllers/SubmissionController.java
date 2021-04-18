@@ -50,6 +50,7 @@ public class SubmissionController {
     private final GetSubmissionUseCase getSubmissionUseCase;
     private final GetSubmissionsUseCase getSubmissionsUseCase;
     private final DownloadSubmittedCodesUseCase downloadSubmittedCodesUseCase;
+    private final GetBestSubmissionUseCase getBestSubmissionUseCase;
 
     @GetMapping("/health")
     public String health(@PathVariable String langEnvName, @PathVariable int problemId, @PathVariable int studentId) {
@@ -144,6 +145,16 @@ public class SubmissionController {
                         )));
     }
 
+    @GetMapping("/best")
+    public SubmissionView getBestSubmission(@PathVariable Integer problemId,
+                                            @PathVariable String langEnvName,
+                                            @PathVariable Integer studentId) {
+        GetBestSubmissionPresenter presenter = new GetBestSubmissionPresenter();
+        getBestSubmissionUseCase
+                .execute(new GetBestSubmissionUseCase.Request(problemId, langEnvName, studentId), presenter);
+        return presenter.present();
+    }
+
 }
 
 class SubmissionPresenter implements tw.waterball.judgegirl.submissionservice.domain.usecases.SubmissionPresenter {
@@ -172,4 +183,19 @@ class GetSubmissionsPresenter implements GetSubmissionsUseCase.Presenter {
     public List<SubmissionView> present() {
         return submissionViews;
     }
+}
+
+class GetBestSubmissionPresenter implements GetBestSubmissionUseCase.Presenter {
+
+    private Submission bestSubmission;
+
+    @Override
+    public void showBestSubmission(Submission bestSubmission) {
+        this.bestSubmission = bestSubmission;
+    }
+
+    SubmissionView present() {
+        return SubmissionView.toViewModel(bestSubmission);
+    }
+
 }
