@@ -38,5 +38,9 @@
             <groupId>tw.waterball.judge-girl</groupId>
             <artifactId>problem-api</artifactId>
         </dependency>
+        <dependency>
+            <groupId>tw.waterball.judge-girl</groupId>
+            <artifactId>student-api</artifactId>
+        </dependency>
     </dependencies>
 </project>

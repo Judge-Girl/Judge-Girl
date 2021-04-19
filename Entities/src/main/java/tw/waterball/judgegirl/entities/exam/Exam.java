@@ -37,8 +37,9 @@ public class Exam {
     @NotNull
     private String description;
 
-    @Valid
-    private List<Question> questions = new ArrayList<>();
+    private List<@Valid Question> questions = new ArrayList<>();
+
+    private List<@Valid Examinee> examinees = new ArrayList<>();
 
     public Exam(String name, Date startTime, Date endTime, String description) {
         this.name = name;
@@ -66,7 +67,7 @@ public class Exam {
         Date now = now();
         return getStartTime().before(now) && getEndTime().after(now);
     }
-    
+
     public Optional<Question> getQuestionByProblemId(int problemId) {
         return findFirst(questions, q -> q.getProblemId() == problemId);
     }

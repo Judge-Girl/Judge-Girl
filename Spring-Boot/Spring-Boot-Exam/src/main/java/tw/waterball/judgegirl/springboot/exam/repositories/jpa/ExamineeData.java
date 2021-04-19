@@ -1,7 +1,7 @@
 package tw.waterball.judgegirl.springboot.exam.repositories.jpa;
 
 import lombok.*;
-import tw.waterball.judgegirl.entities.exam.ExamParticipation;
+import tw.waterball.judgegirl.entities.exam.Examinee;
 
 import javax.persistence.Embeddable;
 import javax.persistence.EmbeddedId;
@@ -16,30 +16,30 @@ import java.io.Serializable;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
-public class ExamParticipationData {
+public class ExamineeData {
     @EmbeddedId
     private Id id;
     private Integer score = null;
     private Boolean absent = null;
 
-    public ExamParticipationData(int examId, int studentId) {
+    public ExamineeData(int examId, int studentId) {
         this(new Id(examId, studentId));
     }
 
-    public ExamParticipationData(Id id) {
+    public ExamineeData(Id id) {
         this.id = id;
     }
 
-    public ExamParticipation toEntity() {
-        return new ExamParticipation(new ExamParticipation.Id(id.examId, id.studentId),
+    public Examinee toEntity() {
+        return new Examinee(new Examinee.Id(id.examId, id.studentId),
                 score, absent);
     }
 
-    public static ExamParticipationData toData(ExamParticipation examParticipation) {
-        return ExamParticipationData.builder()
-                .id(new Id(examParticipation.getId()))
-                .score(examParticipation.getScore())
-                .absent(examParticipation.getAbsent())
+    public static ExamineeData toData(Examinee examinee) {
+        return ExamineeData.builder()
+                .id(new Id(examinee.getId()))
+                .score(examinee.getScore())
+                .absent(examinee.getAbsent())
                 .build();
     }
 
@@ -51,7 +51,7 @@ public class ExamParticipationData {
         private int examId;
         private int studentId;
 
-        public Id(ExamParticipation.Id id) {
+        public Id(Examinee.Id id) {
             examId = id.getExamId();
             studentId = id.getStudentId();
         }

@@ -5,10 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
-import tw.waterball.judgegirl.entities.exam.Answer;
-import tw.waterball.judgegirl.entities.exam.Exam;
-import tw.waterball.judgegirl.entities.exam.Question;
-import tw.waterball.judgegirl.entities.exam.Record;
+import tw.waterball.judgegirl.entities.exam.*;
 import tw.waterball.judgegirl.examservice.domain.repositories.ExamFilter;
 import tw.waterball.judgegirl.examservice.domain.repositories.ExamRepository;
 import tw.waterball.judgegirl.springboot.exam.repositories.jpa.*;
@@ -32,7 +29,7 @@ import static tw.waterball.judgegirl.springboot.exam.repositories.jpa.QuestionDa
 public class JpaExamRepository implements ExamRepository {
     private final JpaExamDataPort jpaExamDataPort;
     private final JpaQuestionDataPort jpaQuestionDataPort;
-    private final JpaExamParticipationDataPort jpaExamParticipationDataPort;
+    private final JpaExamineeDataPort jpaExamineeDataPort;
     private final JpaAnswerDataPort jpaAnswerDataPort;
     private final JpaBestRecordDataPort jpaBestRecordDataPort;
 
@@ -98,10 +95,31 @@ public class JpaExamRepository implements ExamRepository {
     }
 
     @Override
-    public void addParticipation(int examId, int studentId) {
-        ExamParticipationData data = jpaExamParticipationDataPort.save(
-                new ExamParticipationData(examId, studentId));
-        jpaExamParticipationDataPort.save(data);
+    public void addExaminee(int examId, int studentId) {
+        ExamineeData data = jpaExamineeDataPort.save(
+                new ExamineeData(examId, studentId));
+        jpaExamineeDataPort.save(data);
+    }
+
+    @Override
+    public void deleteExaminee(Examinee.Id id) {
+        jpaExamineeDataPort.deleteById(new ExamineeData.Id(id));
+    }
+
+    @Override
+    @Transactional
+    public void addExaminees(int examId, List<Integer> studentIds) {
+        for (int studentId : studentIds) {
+            addExaminee(examId, studentId);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void deleteExaminees(int examId, List<Integer> studentIds) {
+        for (int studentId : studentIds) {
+            deleteExaminee(new Examinee.Id(examId, studentId));
+        }
     }
 
     @Override
@@ -144,7 +162,7 @@ public class JpaExamRepository implements ExamRepository {
 
     @Override
     public boolean hasStudentParticipatedExam(int studentId, int examId) {
-        return jpaExamParticipationDataPort.existsById_StudentIdAndId_ExamId(studentId, examId);
+        return jpaExamineeDataPort.existsById_StudentIdAndId_ExamId(studentId, examId);
     }
 
 }

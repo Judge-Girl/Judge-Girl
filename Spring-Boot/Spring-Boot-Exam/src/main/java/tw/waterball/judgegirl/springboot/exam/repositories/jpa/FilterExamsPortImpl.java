@@ -23,7 +23,7 @@ public class FilterExamsPortImpl implements FilterExamsPort {
 
     @Override
     public List<ExamData> findStudentExams(int studentId, ExamFilter.Status status, Date now, Pageable pageable) {
-        String jql = "select e from ExamData e inner join e.examParticipations p";
+        String jql = "select e from ExamData e inner join e.examinees p";
         List<String> conditionStatements = getConditionStatements(status);
         conditionStatements.add("p.id.studentId = :studentId");
         jql = composeConditions(jql, conditionStatements);

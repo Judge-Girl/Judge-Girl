@@ -7,12 +7,12 @@ import java.io.Serializable;
 
 @AllArgsConstructor
 @Getter
-public class ExamParticipation {
+public class Examinee {
     private final Id id;
     private Integer score;
     private Boolean absent;
 
-    public ExamParticipation(int examId, int studentId) {
+    public Examinee(int examId, int studentId) {
         id = new Id(examId, studentId);
     }
 
@@ -29,6 +29,14 @@ public class ExamParticipation {
     public static class Id implements Serializable {
         private final int examId;
         private final int studentId;
+    }
+
+    public int getExamId() {
+        return id.getExamId();
+    }
+
+    public int getStudentId() {
+        return id.getStudentId();
     }
 
 }
