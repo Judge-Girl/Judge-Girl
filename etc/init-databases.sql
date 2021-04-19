@@ -1,4 +1,3 @@
-DROP DATABASE IF EXISTS judgegirl;
 CREATE DATABASE IF NOT EXISTS judgegirl;
 USE judgegirl;
 
@@ -8,7 +7,7 @@ USE judgegirl;
    then you should also update "Spring-Boot/Spring-Boot-Exam/src/test/resources/schema.sql"
  */
 
-create table exams
+create table if not exists exams
 (
     id          int auto_increment primary key,
     description varchar(255) null,
@@ -17,7 +16,7 @@ create table exams
     end_time    datetime     null
 );
 
-create table questions
+create table if not exists questions
 (
     exam_id        int not null,
     problem_id     int not null,
@@ -28,7 +27,7 @@ create table questions
     foreign key (exam_id) references exams (id) on delete cascade
 );
 
-create table examinees
+create table if not exists examinees
 (
     exam_id    int not null,
     student_id int not null,
@@ -38,7 +37,7 @@ create table examinees
     foreign key (exam_id) references exams (id) on delete cascade
 );
 
-create table answers
+create table if not exists answers
 (
     number        int          not null,
     exam_id       int          not null,
@@ -50,7 +49,7 @@ create table answers
     foreign key (exam_id) references exams (id) on delete cascade
 );
 
-create table best_records
+create table if not exists best_records
 (
     exam_id              int                                                                    not null,
     problem_id           int                                                                    not null,
@@ -64,7 +63,7 @@ create table best_records
     foreign key (exam_id) references exams (id) on delete cascade
 );
 
-create table homework
+create table if not exists homework
 (
     id          int auto_increment primary key,
     name        varchar(255) null,
@@ -77,7 +76,7 @@ create table homework
    then you should also update "Spring-Boot/Spring-Boot-Student/src/test/resources/schema.sql"
  */
 
-create table students
+create table if not exists students
 (
     id       int auto_increment primary key,
     admin    bit          not null,
@@ -88,7 +87,7 @@ create table students
 
 create unique index students_email_index on students (email);
 
-create table student_groups
+create table if not exists student_groups
 (
     id   int auto_increment primary key,
     name varchar(255) null unique
@@ -97,7 +96,7 @@ create table student_groups
 create unique index groups_name_index on student_groups (name);
 
 
-create table membership
+create table if not exists membership
 (
     group_id   int not null,
     student_id int not null,
