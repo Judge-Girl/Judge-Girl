@@ -13,8 +13,6 @@ steps:
       - printenv
   - name: Prepare
     commands:
-      - eval `ssh-agent`
-      - ssh-add ~/.ssh/id_rsa
       - git submodule update --recursive --init
       - export workspace=$(pwd)
       - cd /root/drone/judgegirl/judge-girl-secrets/
