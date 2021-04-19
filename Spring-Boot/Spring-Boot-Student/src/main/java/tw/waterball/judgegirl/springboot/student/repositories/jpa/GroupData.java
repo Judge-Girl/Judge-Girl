@@ -26,7 +26,7 @@ public class GroupData {
     private String name;
 
     @ManyToMany(cascade = CascadeType.MERGE)
-    @JoinTable(name = "groups_students",
+    @JoinTable(name = "member",
             joinColumns = @JoinColumn(name = "group_id"),
             inverseJoinColumns = @JoinColumn(name = "student_id"))
     private Set<StudentData> students = new HashSet<>();
