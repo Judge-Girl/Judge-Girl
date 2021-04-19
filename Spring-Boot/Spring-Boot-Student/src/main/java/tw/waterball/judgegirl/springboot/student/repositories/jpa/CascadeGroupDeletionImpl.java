@@ -21,10 +21,10 @@ public class CascadeGroupDeletionImpl implements CascadeGroupDeletion {
     @Transactional
     @Override
     public void deleteById(int groupId) {
-        em.createNativeQuery("DELETE FROM groups_students WHERE group_id = ?1")
+        em.createNativeQuery("DELETE FROM membership WHERE group_id = ?1")
                 .setParameter(1, groupId).executeUpdate();
 
-        int deletedCount = em.createNativeQuery("DELETE FROM \"groups\" WHERE id = ?1")
+        int deletedCount = em.createNativeQuery("DELETE FROM student_groups WHERE id = ?1")
                 .setParameter(1, groupId).executeUpdate();
 
         if (deletedCount == 0) {

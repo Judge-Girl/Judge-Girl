@@ -144,7 +144,11 @@ public class JpaExamRepository implements ExamRepository {
     }
 
     @Override
+    @Transactional
     public Answer saveAnswer(Answer answer) {
+        // TODO: find out if there is an auto-incremental way to generate the answer's number
+        int count = jpaAnswerDataPort.countAllByExamIdAndProblemIdAndStudentId(answer.getExamId(), answer.getProblemId(), answer.getStudentId());
+        answer.getId().setNumber(count + 1);
         AnswerData data = jpaAnswerDataPort.save(AnswerData.toData(answer));
         return data.toEntity();
     }

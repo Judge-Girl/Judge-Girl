@@ -1,11 +1,6 @@
-DROP DATABASE IF EXISTS judgegirl;
-CREATE DATABASE IF NOT EXISTS judgegirl;
-USE judgegirl;
-
-
-/*  Exam Service's schema definition
-   If the schema below is modified,
-   then you should also update "Spring-Boot/Spring-Boot-Exam/src/test/resources/schema.sql"
+/* Schema used for testing
+   Before commit any modifications to this file,
+   first check if the modifications should also be done in etc/init-databases.sql
  */
 
 create table exams
@@ -70,45 +65,6 @@ create table homework
     name        varchar(255) null,
     problem_ids varchar(255) null
 );
-
-
-/*  Student Service's schema definition
-   If the schema below is modified,
-   then you should also update "Spring-Boot/Spring-Boot-Student/src/test/resources/schema.sql"
- */
-
-create table students
-(
-    id       int auto_increment primary key,
-    admin    bit          not null,
-    email    varchar(255) null,
-    name     varchar(255) null,
-    password varchar(255) null
-);
-
-create unique index students_email_index on students (email);
-
-create table student_groups
-(
-    id   int auto_increment primary key,
-    name varchar(255) null unique
-);
-
-create unique index groups_name_index on student_groups (name);
-
-
-create table membership
-(
-    group_id   int not null,
-    student_id int not null,
-    primary key (group_id, student_id),
-    FOREIGN KEY (group_id) REFERENCES student_groups (id),
-    FOREIGN KEY (student_id) REFERENCES students (id)
-);
-
-
-
-
 
 
 
