@@ -5,8 +5,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tw.waterball.judgegirl.entities.Group;
 import tw.waterball.judgegirl.entities.Student;
-import tw.waterball.judgegirl.problemapi.clients.view.GroupView;
-import tw.waterball.judgegirl.problemapi.clients.view.StudentView;
+import tw.waterball.judgegirl.studentapi.clients.view.GroupView;
+import tw.waterball.judgegirl.studentapi.clients.view.StudentView;
 import tw.waterball.judgegirl.studentservice.domain.exceptions.DuplicateGroupNameException;
 import tw.waterball.judgegirl.studentservice.domain.usecases.group.*;
 

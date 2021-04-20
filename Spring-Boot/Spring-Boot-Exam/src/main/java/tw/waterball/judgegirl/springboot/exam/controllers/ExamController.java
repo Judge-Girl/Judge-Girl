@@ -13,7 +13,6 @@ import tw.waterball.judgegirl.entities.exam.Question;
 import tw.waterball.judgegirl.entities.exam.YouAreNotAnExamineeException;
 import tw.waterball.judgegirl.examservice.domain.repositories.ExamFilter;
 import tw.waterball.judgegirl.examservice.domain.usecases.exam.*;
-import tw.waterball.judgegirl.problemapi.clients.view.StudentView;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.springboot.exam.presenters.ExamHomePresenter;
 import tw.waterball.judgegirl.springboot.exam.presenters.ExamPresenter;
@@ -21,6 +20,7 @@ import tw.waterball.judgegirl.springboot.exam.view.AnswerView;
 import tw.waterball.judgegirl.springboot.exam.view.ExamHome;
 import tw.waterball.judgegirl.springboot.exam.view.ExamView;
 import tw.waterball.judgegirl.springboot.exam.view.QuestionView;
+import tw.waterball.judgegirl.studentapi.clients.view.StudentView;
 
 import java.util.List;
 import java.util.stream.Collectors;

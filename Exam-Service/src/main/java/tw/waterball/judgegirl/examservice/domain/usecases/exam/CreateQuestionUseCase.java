@@ -6,8 +6,8 @@ import lombok.NoArgsConstructor;
 import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.entities.exam.Question;
 import tw.waterball.judgegirl.examservice.domain.repositories.ExamRepository;
-import tw.waterball.judgegirl.problemapi.clients.ProblemServiceDriver;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
+import tw.waterball.judgegirl.studentapi.clients.ProblemServiceDriver;
 
 import javax.inject.Named;
 

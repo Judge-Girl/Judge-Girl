@@ -24,7 +24,7 @@ import tw.waterball.judgegirl.entities.submission.Submission;
 import tw.waterball.judgegirl.entities.submission.SubmissionThrottlingException;
 import tw.waterball.judgegirl.entities.submission.verdict.Verdict;
 import tw.waterball.judgegirl.entities.submission.verdict.VerdictIssuedEvent;
-import tw.waterball.judgegirl.problemapi.clients.ProblemServiceDriver;
+import tw.waterball.judgegirl.studentapi.clients.ProblemServiceDriver;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.submissionservice.deployer.JudgerDeployer;
 import tw.waterball.judgegirl.submissionservice.domain.repositories.SubmissionRepository;

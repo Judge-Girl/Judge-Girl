@@ -26,10 +26,10 @@ import org.springframework.test.web.servlet.ResultActions;
 import tw.waterball.judgegirl.commons.token.TokenService;
 import tw.waterball.judgegirl.entities.Admin;
 import tw.waterball.judgegirl.entities.Student;
-import tw.waterball.judgegirl.problemapi.clients.view.StudentView;
 import tw.waterball.judgegirl.springboot.profiles.Profiles;
 import tw.waterball.judgegirl.springboot.student.SpringBootStudentApplication;
 import tw.waterball.judgegirl.springboot.student.controllers.LoginResponse;
+import tw.waterball.judgegirl.studentapi.clients.view.StudentView;
 import tw.waterball.judgegirl.studentservice.domain.exceptions.StudentIdNotFoundException;
 import tw.waterball.judgegirl.studentservice.domain.repositories.StudentRepository;
 import tw.waterball.judgegirl.studentservice.domain.usecases.student.ChangePasswordUseCase;
@@ -47,7 +47,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static tw.waterball.judgegirl.commons.token.TokenService.Identity.student;
 import static tw.waterball.judgegirl.commons.utils.HttpHeaderUtils.bearerWithToken;
-import static tw.waterball.judgegirl.problemapi.clients.view.StudentView.toViewModel;
+import static tw.waterball.judgegirl.studentapi.clients.view.StudentView.toViewModel;
 
 
 /**

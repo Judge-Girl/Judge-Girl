@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import tw.waterball.judgegirl.entities.Homework;
 import tw.waterball.judgegirl.examservice.domain.repositories.HomeworkRepository;
-import tw.waterball.judgegirl.problemapi.clients.ProblemServiceDriver;
+import tw.waterball.judgegirl.studentapi.clients.ProblemServiceDriver;
 
 import javax.inject.Named;
 import java.util.ArrayList;

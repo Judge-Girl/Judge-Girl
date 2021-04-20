@@ -11,7 +11,7 @@
  *   limitations under the License.
  */
 
-package tw.waterball.judgegirl.problemapi.clients;
+package tw.waterball.judgegirl.studentapi.clients;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -31,8 +31,8 @@ import static tw.waterball.judgegirl.commons.utils.HttpHeaderUtils.bearerWithTok
  * @author - johnny850807@gmail.com (Wateqrball)
  */
 public class ProblemApiClient extends BaseRetrofitAPI implements ProblemServiceDriver {
-    private Api api;
-    private String adminToken;
+    private final Api api;
+    private final String adminToken;
 
     public ProblemApiClient(RetrofitFactory retrofitFactory,
                             String scheme,
