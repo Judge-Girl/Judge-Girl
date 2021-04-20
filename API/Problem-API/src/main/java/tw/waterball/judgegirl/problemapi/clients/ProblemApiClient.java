@@ -11,7 +11,7 @@
  *   limitations under the License.
  */
 
-package tw.waterball.judgegirl.studentapi.clients;
+package tw.waterball.judgegirl.problemapi.clients;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;

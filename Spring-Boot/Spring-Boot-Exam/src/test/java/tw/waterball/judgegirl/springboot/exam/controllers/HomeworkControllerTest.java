@@ -13,11 +13,11 @@ import tw.waterball.judgegirl.entities.problem.Problem;
 import tw.waterball.judgegirl.entities.stubs.ProblemStubs;
 import tw.waterball.judgegirl.examservice.domain.repositories.HomeworkRepository;
 import tw.waterball.judgegirl.examservice.domain.usecases.homework.CreateHomeworkUseCase;
+import tw.waterball.judgegirl.problemapi.clients.FakeProblemServiceDriver;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.springboot.exam.SpringBootExamApplication;
 import tw.waterball.judgegirl.springboot.exam.view.HomeworkView;
 import tw.waterball.judgegirl.springboot.profiles.Profiles;
-import tw.waterball.judgegirl.studentapi.clients.FakeProblemServiceDriver;
 import tw.waterball.judgegirl.submissionapi.clients.SubmissionServiceDriver;
 import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
 

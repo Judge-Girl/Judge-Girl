@@ -11,7 +11,7 @@
  *   limitations under the License.
  */
 
-package tw.waterball.judgegirl.studentapi.clients;
+package tw.waterball.judgegirl.problemapi.clients;
 
 import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.commons.models.files.FileResource;

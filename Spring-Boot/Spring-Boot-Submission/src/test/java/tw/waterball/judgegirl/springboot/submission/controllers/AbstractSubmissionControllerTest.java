@@ -49,7 +49,7 @@ import tw.waterball.judgegirl.entities.submission.Submission;
 import tw.waterball.judgegirl.entities.submission.SubmissionThrottling;
 import tw.waterball.judgegirl.entities.submission.report.Report;
 import tw.waterball.judgegirl.entities.submission.verdict.VerdictIssuedEvent;
-import tw.waterball.judgegirl.studentapi.clients.ProblemServiceDriver;
+import tw.waterball.judgegirl.problemapi.clients.ProblemServiceDriver;
 import tw.waterball.judgegirl.springboot.profiles.Profiles;
 import tw.waterball.judgegirl.springboot.submission.SpringBootSubmissionApplication;
 import tw.waterball.judgegirl.springboot.submission.handler.VerdictIssuedEventHandler;

@@ -7,7 +7,7 @@ import tw.waterball.judgegirl.entities.exam.Question;
 import tw.waterball.judgegirl.entities.exam.Record;
 import tw.waterball.judgegirl.entities.problem.Problem;
 import tw.waterball.judgegirl.examservice.domain.repositories.ExamRepository;
-import tw.waterball.judgegirl.studentapi.clients.ProblemServiceDriver;
+import tw.waterball.judgegirl.problemapi.clients.ProblemServiceDriver;
 
 import javax.inject.Named;
 import java.util.Optional;
