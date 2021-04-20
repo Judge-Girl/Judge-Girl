@@ -33,6 +33,7 @@ import tw.waterball.judgegirl.examservice.domain.repositories.ExamRepository;
 import tw.waterball.judgegirl.examservice.domain.usecases.exam.CreateExamUseCase;
 import tw.waterball.judgegirl.examservice.domain.usecases.exam.CreateQuestionUseCase;
 import tw.waterball.judgegirl.examservice.domain.usecases.exam.UpdateExamUseCase;
+import tw.waterball.judgegirl.examservice.domain.usecases.exam.UpdateQuestionUseCase;
 import tw.waterball.judgegirl.problemapi.clients.FakeProblemServiceDriver;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.springboot.exam.SpringBootExamApplication;
@@ -48,6 +49,7 @@ import tw.waterball.judgegirl.submissionapi.clients.VerdictPublisher;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
 
+import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -334,9 +336,28 @@ class ExamControllerTest extends AbstractSpringBootTest {
 
     @Test
     void WhenCreateQuestionForNonExistingProblem_ShouldRespondNotFound() throws Exception {
-        ExamView examView = createExamAndGet(new Date(), new Date(), "sample-exam");
-        createQuestion(new CreateQuestionUseCase.Request(examView.getId(), NONEXISTING_PROBLEM_ID, 5, 100, 1))
+        var exam = createExamAndGet(new Date(), new Date(), "sample-exam");
+        createQuestion(new CreateQuestionUseCase.Request(exam.getId(), NONEXISTING_PROBLEM_ID, 5, 100, 1))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @Transactional
+    void GivenOneExamAndOneQuestionCreated_WhenUpdateTheQuestion_ShouldSucceed() throws Exception {
+        var exam = createExamAndGet(new Date(), new Date(), "sample-exam");
+        createQuestion(new CreateQuestionUseCase.Request(exam.getId(), 2, 5, 100, 1));
+
+        anotherTransaction(() ->
+                updateQuestion(new UpdateQuestionUseCase.Request(exam.id, PROBLEM_ID, 6, 150, 2))
+                        .andExpect(status().isOk()));
+
+        anotherTransaction(() -> {
+            Question question = examRepository.findById(exam.getId()).orElseThrow().getQuestions().get(0);
+            assertEquals(6, question.getQuota());
+            assertEquals(150, question.getScore());
+            assertEquals(2, question.getQuestionOrder());
+        });
+
     }
 
     @Test
@@ -727,6 +748,11 @@ class ExamControllerTest extends AbstractSpringBootTest {
     private QuestionView createQuestionAndGet(CreateQuestionUseCase.Request question) throws Exception {
         return getBody(createQuestion(question)
                 .andExpect(status().isOk()), QuestionView.class);
+    }
+
+    private ResultActions updateQuestion(UpdateQuestionUseCase.Request request) throws Exception {
+        return mockMvc.perform(put("/api/exams/{examId}/problems/{problemId}", request.examId, request.problemId)
+                .contentType(MediaType.APPLICATION_JSON).content(toJson(request)));
     }
 
     private ResultActions deleteQuestion(int examId, int problemId) throws Exception {

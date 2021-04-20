@@ -14,6 +14,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
+import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.findFirst;
 import static tw.waterball.judgegirl.entities.date.DateProvider.now;
 
@@ -70,5 +71,17 @@ public class Exam {
 
     public Optional<Question> getQuestionByProblemId(int problemId) {
         return findFirst(questions, q -> q.getProblemId() == problemId);
+    }
+
+    public void updateQuestion(Question question) {
+        if (question.getExamId() != this.getId()) {
+            throw new IllegalArgumentException("Exam's id inconsistent.");
+        }
+        Question updatedQuestion = getQuestionByProblemId(question.getProblemId())
+                .orElseThrow(() -> notFound("question").id(question.getId()));
+
+        updatedQuestion.setQuestionOrder(question.getQuestionOrder());
+        updatedQuestion.setQuota(question.getQuota());
+        updatedQuestion.setScore(question.getScore());
     }
 }
