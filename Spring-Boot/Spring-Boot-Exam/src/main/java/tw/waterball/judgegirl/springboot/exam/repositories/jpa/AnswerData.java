@@ -4,7 +4,9 @@ import lombok.*;
 import tw.waterball.judgegirl.entities.exam.Answer;
 import tw.waterball.judgegirl.entities.exam.Question;
 
-import javax.persistence.*;
+import javax.persistence.Embeddable;
+import javax.persistence.Entity;
+import javax.persistence.IdClass;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -17,8 +19,6 @@ import java.util.Date;
 @IdClass(AnswerData.Id.class)
 public class AnswerData {
     @javax.persistence.Id
-    // TODO: SEQUENCE should be removed after the SQL table declared
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Integer number;
     @javax.persistence.Id
     private int examId;
@@ -64,4 +64,5 @@ public class AnswerData {
             this.studentId = id.getStudentId();
         }
     }
+
 }

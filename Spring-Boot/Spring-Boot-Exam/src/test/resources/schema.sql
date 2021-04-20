@@ -1,13 +1,9 @@
-CREATE DATABASE IF NOT EXISTS judgegirl;
-USE judgegirl;
-
-
-/*  Exam Service's schema definition
-   If the schema below is modified,
-   then you should also update "Spring-Boot/Spring-Boot-Exam/src/test/resources/schema.sql"
+/* Schema used for testing
+   Before commit any modifications to this file,
+   first check if the modifications should also be done in etc/init-databases.sql
  */
 
-create table if not exists exams
+create table exams
 (
     id          int auto_increment primary key,
     description varchar(255) null,
@@ -16,7 +12,7 @@ create table if not exists exams
     end_time    datetime     null
 );
 
-create table if not exists questions
+create table questions
 (
     exam_id        int not null,
     problem_id     int not null,
@@ -27,7 +23,7 @@ create table if not exists questions
     foreign key (exam_id) references exams (id) on delete cascade
 );
 
-create table if not exists examinees
+create table examinees
 (
     exam_id    int not null,
     student_id int not null,
@@ -37,7 +33,7 @@ create table if not exists examinees
     foreign key (exam_id) references exams (id) on delete cascade
 );
 
-create table if not exists answers
+create table answers
 (
     number        int          not null,
     exam_id       int          not null,
@@ -49,7 +45,7 @@ create table if not exists answers
     foreign key (exam_id) references exams (id) on delete cascade
 );
 
-create table if not exists best_records
+create table best_records
 (
     exam_id              int                                                                    not null,
     problem_id           int                                                                    not null,
@@ -63,51 +59,12 @@ create table if not exists best_records
     foreign key (exam_id) references exams (id) on delete cascade
 );
 
-create table if not exists homework
+create table homework
 (
     id          int auto_increment primary key,
     name        varchar(255) null,
     problem_ids varchar(255) null
 );
-
-
-/*  Student Service's schema definition
-   If the schema below is modified,
-   then you should also update "Spring-Boot/Spring-Boot-Student/src/test/resources/schema.sql"
- */
-
-create table if not exists students
-(
-    id       int auto_increment primary key,
-    admin    bit          not null,
-    email    varchar(255) null,
-    name     varchar(255) null,
-    password varchar(255) null
-);
-
-create unique index students_email_index on students (email);
-
-create table if not exists student_groups
-(
-    id   int auto_increment primary key,
-    name varchar(255) null unique
-);
-
-create unique index groups_name_index on student_groups (name);
-
-
-create table if not exists membership
-(
-    group_id   int not null,
-    student_id int not null,
-    primary key (group_id, student_id),
-    FOREIGN KEY (group_id) REFERENCES student_groups (id),
-    FOREIGN KEY (student_id) REFERENCES students (id)
-);
-
-
-
-
 
 
 

@@ -10,7 +10,7 @@ import java.util.*;
 /**
  * @author - wally55077@gmail.com
  */
-@Table(name = "\"groups\"" /*escape from keywords*/)
+@Table(name = "student_groups" /*escape from keywords*/)
 @Setter
 @Getter
 @Builder
@@ -26,7 +26,7 @@ public class GroupData {
     private String name;
 
     @ManyToMany(cascade = CascadeType.MERGE)
-    @JoinTable(name = "groups_students",
+    @JoinTable(name = "membership",
             joinColumns = @JoinColumn(name = "group_id"),
             inverseJoinColumns = @JoinColumn(name = "student_id"))
     private Set<StudentData> students = new HashSet<>();

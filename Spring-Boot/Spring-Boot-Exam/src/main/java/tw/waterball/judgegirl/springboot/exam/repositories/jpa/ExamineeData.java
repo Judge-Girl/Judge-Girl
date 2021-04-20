@@ -9,7 +9,7 @@ import javax.persistence.Entity;
 import javax.persistence.Table;
 import java.io.Serializable;
 
-@Table(name = "exam_participations")
+@Table(name = "examinees")
 @Builder
 @Getter
 @Setter

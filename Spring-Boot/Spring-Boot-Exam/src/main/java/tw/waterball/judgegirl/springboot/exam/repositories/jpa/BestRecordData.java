@@ -5,9 +5,7 @@ import tw.waterball.judgegirl.entities.exam.Question;
 import tw.waterball.judgegirl.entities.exam.Record;
 import tw.waterball.judgegirl.entities.problem.JudgeStatus;
 
-import javax.persistence.Embeddable;
-import javax.persistence.EmbeddedId;
-import javax.persistence.Entity;
+import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -20,6 +18,7 @@ import java.util.Date;
 public class BestRecordData {
     @EmbeddedId
     private Id id;
+    @Enumerated(EnumType.STRING)
     private JudgeStatus status;
     private long maximumRuntime;
     private long maximumMemoryUsage;

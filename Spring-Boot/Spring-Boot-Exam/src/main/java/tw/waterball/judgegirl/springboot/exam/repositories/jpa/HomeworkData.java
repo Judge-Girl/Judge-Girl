@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
  */
 @Setter
 @Getter
-@Entity
+@Entity(name = "homework")
 @NoArgsConstructor
 @AllArgsConstructor
 public class HomeworkData {
