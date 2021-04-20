@@ -11,7 +11,8 @@ import tw.waterball.judgegirl.problemapi.clients.StudentServiceDriver;
 
 import javax.inject.Named;
 import java.util.List;
-import java.util.stream.Collectors;
+
+import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
 
 @Named
 @AllArgsConstructor
@@ -35,7 +36,7 @@ public class DeleteExamineesUseCase {
     }
 
     private void deleteExaminees(Exam exam, List<Student> students) {
-        examRepository.deleteExaminees(exam.getId(), students.stream().map(Student::getId).collect(Collectors.toList()));
+        examRepository.deleteExaminees(exam.getId(), mapToList(students, Student::getId));
     }
 
     @Data

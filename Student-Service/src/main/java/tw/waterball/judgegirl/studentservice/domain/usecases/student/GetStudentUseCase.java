@@ -14,10 +14,12 @@
 package tw.waterball.judgegirl.studentservice.domain.usecases.student;
 
 import tw.waterball.judgegirl.entities.Student;
-import tw.waterball.judgegirl.studentservice.domain.exceptions.StudentIdNotFoundException;
 import tw.waterball.judgegirl.studentservice.domain.repositories.StudentRepository;
 
 import javax.inject.Named;
+import java.util.List;
+
+import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
 
 /**
  * @author chaoyulee chaoyu2330@gmail.com
@@ -30,19 +32,34 @@ public class GetStudentUseCase {
         this.studentRepository = studentRepository;
     }
 
-    public void execute(int studentId, Presenter presenter) {
-        presenter.setStudent(studentRepository
-                .findStudentById(studentId)
-                .orElseThrow(StudentIdNotFoundException::new));
-    }
-
     public Student execute(int studentId) {
         DefaultGetStudentPresenter presenter = new DefaultGetStudentPresenter();
         execute(studentId, presenter);
-        return presenter.getStudent();
+        return presenter.getStudents().get(0);
+    }
+
+    public void execute(int studentId, Presenter presenter) {
+        var students = studentRepository.findByIdIn(studentId);
+        if (students.isEmpty()) {
+            throw notFound("student").id(studentId);
+        }
+        presenter.showStudents(students);
+    }
+
+    public void execute(Request request, Presenter presenter) {
+        presenter.showStudents(studentRepository
+                .findByIdIn(request.ids));
+    }
+
+    public static class Request {
+        public Integer[] ids;
+
+        public Request(Integer... ids) {
+            this.ids = ids;
+        }
     }
 
     public interface Presenter {
-        void setStudent(Student student);
+        void showStudents(List<Student> students);
     }
 }

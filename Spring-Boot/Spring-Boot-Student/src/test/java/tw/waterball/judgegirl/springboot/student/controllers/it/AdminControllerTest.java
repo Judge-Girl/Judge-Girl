@@ -24,10 +24,10 @@ import org.springframework.test.web.servlet.ResultActions;
 import tw.waterball.judgegirl.commons.token.TokenService;
 import tw.waterball.judgegirl.entities.Admin;
 import tw.waterball.judgegirl.entities.Student;
+import tw.waterball.judgegirl.problemapi.clients.view.StudentView;
 import tw.waterball.judgegirl.springboot.profiles.Profiles;
 import tw.waterball.judgegirl.springboot.student.SpringBootStudentApplication;
 import tw.waterball.judgegirl.springboot.student.controllers.LoginResponse;
-import tw.waterball.judgegirl.springboot.student.view.StudentView;
 import tw.waterball.judgegirl.studentservice.domain.repositories.StudentRepository;
 import tw.waterball.judgegirl.studentservice.domain.usecases.student.LoginUseCase;
 import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
@@ -35,7 +35,7 @@ import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static tw.waterball.judgegirl.springboot.student.view.StudentView.toViewModel;
+import static tw.waterball.judgegirl.problemapi.clients.view.StudentView.toViewModel;
 
 @ActiveProfiles(value = Profiles.JWT)
 @ContextConfiguration(classes = SpringBootStudentApplication.class)

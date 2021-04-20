@@ -5,15 +5,21 @@ import tw.waterball.judgegirl.entities.Student;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+
+import static tw.waterball.judgegirl.commons.utils.StreamUtils.filterToList;
 
 public class FakeStudentServiceDriver implements StudentServiceDriver {
 
     private final Map<String, Student> students = new HashMap<>();
 
     @Override
+    public List<Student> getStudentsByIds(List<Integer> ids) {
+        return filterToList(students.values(), student -> ids.contains(student.getId()));
+    }
+
+    @Override
     public List<Student> getStudentsByEmails(List<String> emails) {
-        return students.values().stream().filter(student -> emails.contains(student.getEmail())).collect(Collectors.toList());
+        return filterToList(students.values(), student -> emails.contains(student.getEmail()));
     }
 
     public void addStudent(Student student) {

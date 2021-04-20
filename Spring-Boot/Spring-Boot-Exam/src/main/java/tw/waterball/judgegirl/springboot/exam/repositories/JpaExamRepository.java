@@ -75,7 +75,7 @@ public class JpaExamRepository implements ExamRepository {
 
     @Override
     public void saveBestRecordOfQuestion(Record record) {
-        jpaBestRecordDataPort.save(BestRecordData.toData(record));
+        jpaBestRecordDataPort.saveAndFlush(BestRecordData.toData(record));
     }
 
     @Override
@@ -87,7 +87,7 @@ public class JpaExamRepository implements ExamRepository {
     @Override
     public void addQuestion(Question question) {
         try {
-            jpaQuestionDataPort.save(toData(question));
+            jpaQuestionDataPort.saveAndFlush(toData(question));
         } catch (Exception err) {
             // exam doesn't exist
             throw notFound("exam").id(question.getExamId());
@@ -96,9 +96,7 @@ public class JpaExamRepository implements ExamRepository {
 
     @Override
     public void addExaminee(int examId, int studentId) {
-        ExamineeData data = jpaExamineeDataPort.save(
-                new ExamineeData(examId, studentId));
-        jpaExamineeDataPort.save(data);
+        jpaExamineeDataPort.saveAndFlush(new ExamineeData(examId, studentId));
     }
 
     @Override
@@ -107,19 +105,14 @@ public class JpaExamRepository implements ExamRepository {
     }
 
     @Override
-    @Transactional
     public void addExaminees(int examId, List<Integer> studentIds) {
-        for (int studentId : studentIds) {
-            addExaminee(examId, studentId);
-        }
+        jpaExamineeDataPort.saveAll(mapToList(studentIds, studentId -> new ExamineeData(examId, studentId)));
+
     }
 
     @Override
-    @Transactional
     public void deleteExaminees(int examId, List<Integer> studentIds) {
-        for (int studentId : studentIds) {
-            deleteExaminee(new Examinee.Id(examId, studentId));
-        }
+        jpaExamineeDataPort.deleteInBatch(mapToList(studentIds, studentId -> new ExamineeData(examId, studentId)));
     }
 
     @Override
@@ -133,7 +126,7 @@ public class JpaExamRepository implements ExamRepository {
 
     @Override
     public Exam save(Exam exam) {
-        ExamData data = jpaExamDataPort.save(toData(exam));
+        ExamData data = jpaExamDataPort.saveAndFlush(toData(exam));
         exam = data.toEntity();
         return exam;
     }
@@ -149,7 +142,7 @@ public class JpaExamRepository implements ExamRepository {
         // TODO: find out if there is an auto-incremental way to generate the answer's number
         int count = jpaAnswerDataPort.countAllByExamIdAndProblemIdAndStudentId(answer.getExamId(), answer.getProblemId(), answer.getStudentId());
         answer.getId().setNumber(count + 1);
-        AnswerData data = jpaAnswerDataPort.save(AnswerData.toData(answer));
+        AnswerData data = jpaAnswerDataPort.saveAndFlush(AnswerData.toData(answer));
         return data.toEntity();
     }
 

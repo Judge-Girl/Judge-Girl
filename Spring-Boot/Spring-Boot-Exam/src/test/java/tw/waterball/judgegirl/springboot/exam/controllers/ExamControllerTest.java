@@ -18,7 +18,6 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.transaction.annotation.Transactional;
 import tw.waterball.judgegirl.entities.Student;
 import tw.waterball.judgegirl.entities.exam.Answer;
 import tw.waterball.judgegirl.entities.exam.Exam;
@@ -86,10 +85,12 @@ class ExamControllerTest extends AbstractSpringBootTest {
 
     public static final int NONEXISTING_EXAM_ID = 9999;
     public static final int NONEXISTING_PROBLEM_ID = 9999;
-    public static final int STUDENT_ID = 1;
-    public static final int ANOTHER_STUDENT_ID = 2;
+    public static final int STUDENT_A_ID = 1;
+    public static final int STUDENT_B_ID = 2;
     public static final String LANG_ENV = Language.C.toString();
     public static final String SUBMISSION_ID = "SubmissionId";
+    public static final String STUDENT_A_EMAIL = "studentA@example.com";
+    public static final String STUDENT_B_EMAIL = "studentB@example.com";
 
 
     @Autowired
@@ -144,7 +145,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
     private void fakeProblemServiceDriver() {
         Problem p1 = problemTemplate().id(PROBLEM_ID).build(), p2 = problemTemplate().id(ANOTHER_PROBLEM_ID).build();
         problem = toViewModel(p1);
-        submissionWith2ACs20Point = randomJudgedSubmissionFromProblem(p1, STUDENT_ID, 2, 10);
+        submissionWith2ACs20Point = randomJudgedSubmissionFromProblem(p1, STUDENT_A_ID, 2, 10);
         problemServiceDriver.addProblemView(problem);
         anotherProblem = toViewModel(p2);
         problemServiceDriver.addProblemView(anotherProblem);
@@ -152,17 +153,17 @@ class ExamControllerTest extends AbstractSpringBootTest {
     }
 
     private void fakeStudentServiceDriver() {
-        Student student1 = new Student("studentA", "studentA@example.com", "passwordA");
-        student1.setId(STUDENT_ID);
-        Student student2 = new Student("studentB", "studentB@example.com", "passwordB");
-        student2.setId(ANOTHER_STUDENT_ID);
+        Student student1 = new Student("studentA", STUDENT_A_EMAIL, "passwordA");
+        student1.setId(STUDENT_A_ID);
+        Student student2 = new Student("studentB", STUDENT_B_EMAIL, "passwordB");
+        student2.setId(STUDENT_B_ID);
         studentServiceDriver.addStudent(student1);
         studentServiceDriver.addStudent(student2);
     }
 
     private void mockSubmissionServiceDriver() {
         when(submissionServiceDriver.submit(any()))
-                .thenReturn(new SubmissionView(SUBMISSION_ID, STUDENT_ID, PROBLEM_ID, LANG_ENV, null, "fileId", new Date()));
+                .thenReturn(new SubmissionView(SUBMISSION_ID, STUDENT_A_ID, PROBLEM_ID, LANG_ENV, null, "fileId", new Date()));
     }
 
     @AfterEach
@@ -225,64 +226,49 @@ class ExamControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    @Transactional
-    void GivenStudents_A_B_WhenAddExaminees_A_B_C_ShouldSucceedAndRespondErrorEmailList_C() throws Exception {
-        List<String> emails = new ArrayList<>();
-        emails.add("studentA@example.com");
-        emails.add("studentB@example.com");
-        emails.add("studentC@example.com");
-        ExamView examView = createExamAndGet(new Date(), new Date(), "sample exam");
+    void WhenAddExaminees_A_B_C_ShouldSucceedAndRespondErrorEmailList_C() throws Exception {
+        var exam = createExamAndGet(new Date(), new Date(), "sample exam");
 
-        List<String> ErrorEmails = getBody(createExaminees(examView.getId(), emails)
-                .andExpect(status().isOk()), emails.getClass());
+        List<String> errorEmails = getBody(
+                createExaminees(exam.id, STUDENT_A_EMAIL, STUDENT_B_EMAIL, "studentC@example.com")
+                        .andExpect(status().isOk()), new TypeReference<>() {
+                });
 
-        assertEquals(1, ErrorEmails.size());
-        assertEquals("studentC@example.com", ErrorEmails.get(0));
-        anotherTransaction(() -> {
-            Exam exam = examRepository.findById(examView.getId()).get();
-            assertEquals(2, exam.getExaminees().size());
-        });
+        assertEquals(1, errorEmails.size());
+        assertEquals("studentC@example.com", errorEmails.get(0));
+
+        List<Student> examinees = getExaminees(exam);
+        assertEquals(2, examinees.size());
     }
 
     @Test
     void WhenAddExamineesToNonExistingExam_ShouldRespondNotFound() throws Exception {
-        List<String> emails = new ArrayList<>();
-        emails.add("studentA@example.com");
-        createExaminees(1, emails).andExpect(status().isNotFound());
+        createExaminees(1, STUDENT_A_EMAIL)
+                .andExpect(status().isNotFound());
     }
 
-
     @Test
-    @Transactional
-    void GivenStudents_A_B_C_WhenDeleteExaminees_A_C_ShouldOnlyRemainBInExam() throws Exception {
-        List<String> emails = new ArrayList<>();
-        emails.add("studentA@example.com");
-        emails.add("studentB@example.com");
-        emails.add("studentC@example.com");
-        ExamView examView = createExamAndGet(new Date(), new Date(), "sample exam");
-        createExaminees(examView.getId(), emails).andExpect(status().isOk());
+    void GivenExaminees_A_B_C_WhenDeleteExaminees_A_C_ShouldOnlyRemainBInExam() throws Exception {
+        var exam = createExamAndGet(new Date(), new Date(), "sample exam");
+        createExaminees(exam.id, STUDENT_A_EMAIL, STUDENT_B_EMAIL, "studentC@example.com")
+                .andExpect(status().isOk());
 
-        emails.clear();
-        emails.add("studentA@example.com");
-        emails.add("studentC@example.com");
-        deleteExaminees(examView.getId(), emails);
+        deleteExaminees(exam.getId(), STUDENT_A_EMAIL, "studentC@example.com");
 
-        anotherTransaction(() -> {
-            Exam exam = examRepository.findById(examView.getId()).get();
-            assertEquals(1, exam.getExaminees().size());
-            assertEquals(ANOTHER_STUDENT_ID, exam.getExaminees().get(0).getId().getStudentId());
-        });
+        List<Student> examinees = getExaminees(exam);
+        assertEquals(1, examinees.size(), "Should only remain B in the exam.");
+        assertEquals(STUDENT_B_ID, examinees.get(0).getId(), "Should only remain B in the exam.");
     }
 
     @DisplayName("Given Student participates Exams A, B, C, D (only B, D are upcoming) " +
             "When get student's upcoming exams, Should respond B D")
     @Test
     void testFilterUpcomingStudentExams() throws Exception {
-        givenStudentParticipatingExams(STUDENT_ID,
+        givenStudentParticipatingExams(STUDENT_A_ID,
                 givenCurrentExams("A", "C"),
                 givenUpcomingExams("B", "D"));
 
-        List<ExamView> exams = getStudentExams(STUDENT_ID, ExamFilter.Status.upcoming);
+        List<ExamView> exams = getStudentExams(STUDENT_A_ID, ExamFilter.Status.upcoming);
         shouldRespondExams(exams, "B", "D");
     }
 
@@ -290,11 +276,11 @@ class ExamControllerTest extends AbstractSpringBootTest {
             "When get student's past exams with skip=1, size=2, Should respond F, G")
     @Test
     void testFilterPastStudentExamsWithPaging() throws Exception {
-        givenStudentParticipatingExams(STUDENT_ID,
+        givenStudentParticipatingExams(STUDENT_A_ID,
                 givenCurrentExams("A", "C", "D", "E"),
                 givenPastExams("B", "F", "G"));
 
-        List<ExamView> exams = getStudentExams(STUDENT_ID, ExamFilter.Status.past, 1, 2);
+        List<ExamView> exams = getStudentExams(STUDENT_A_ID, ExamFilter.Status.past, 1, 2);
         shouldRespondExams(exams, "F", "G");
     }
 
@@ -304,12 +290,12 @@ class ExamControllerTest extends AbstractSpringBootTest {
     @Test
     void testGetALlStudentsExams() throws Exception {
         givenStudentParticipatingExams(
-                STUDENT_ID,
+                STUDENT_A_ID,
                 givenCurrentExams("A", "B", "C"),
                 givenUpcomingExams("D", "E"),
                 givenPastExams("F", "G"));
 
-        List<ExamView> exams = getStudentExams(STUDENT_ID, ExamFilter.Status.all, 1, 5);
+        List<ExamView> exams = getStudentExams(STUDENT_A_ID, ExamFilter.Status.all, 1, 5);
         shouldRespondExams(exams, "B", "C", "D", "E", "F");
     }
 
@@ -318,11 +304,11 @@ class ExamControllerTest extends AbstractSpringBootTest {
             "When get student's current exams with skip=1, size=500000, Should respond B, C, D")
     @Test
     void testFilterCurrentStudentExamsWithPaging() throws Exception {
-        givenStudentParticipatingExams(STUDENT_ID,
+        givenStudentParticipatingExams(STUDENT_A_ID,
                 givenPastExams("E", "F", "G"),
                 givenCurrentExams("A", "B", "C", "D"));
 
-        List<ExamView> exams = getStudentExams(STUDENT_ID, ExamFilter.Status.current, 1, 50000);
+        List<ExamView> exams = getStudentExams(STUDENT_A_ID, ExamFilter.Status.current, 1, 50000);
         shouldRespondExams(exams, "B", "C", "D");
     }
 
@@ -452,21 +438,21 @@ class ExamControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    void GivenStudentDoesntParticipateACurrentExam_WhenAnswerExamQuestion_ShouldBeForbidden() throws Exception {
+    void GivenIAmNotAnExaminee_WhenAnswerExamQuestion_ShouldBeForbidden() throws Exception {
         ExamView currentExam = createExamAndGet(beforeCurrentTime(1, HOURS), afterCurrentTime(1, HOURS), "A");
         createQuestion(new CreateQuestionUseCase.Request(currentExam.getId(), PROBLEM_ID, NO_QUOTA, 100, 1));
 
-        answerQuestion(STUDENT_ID, currentExam)
+        answerQuestion(STUDENT_A_ID, currentExam)
                 .andExpect(status().isForbidden());
     }
 
     @Test
     void GivenStudentParticipatingAPastExamWithOneQuestion_WhenAnswerExamQuestion_ShouldFail() throws Exception {
         ExamView pastExam = createExamAndGet(beforeCurrentTime(2, HOURS), beforeCurrentTime(1, HOURS), "A");
-        givenStudentParticipatingExam(STUDENT_ID, pastExam);
+        givenStudentParticipatingExam(STUDENT_A_ID, pastExam);
         createQuestion(new CreateQuestionUseCase.Request(pastExam.getId(), PROBLEM_ID, NO_QUOTA, 100, 1));
 
-        answerQuestion(STUDENT_ID, pastExam)
+        answerQuestion(STUDENT_A_ID, pastExam)
                 .andExpect(status().is4xxClientError());
     }
 
@@ -474,9 +460,9 @@ class ExamControllerTest extends AbstractSpringBootTest {
     void GivenStudentParticipatingAnUpcomingExamWithOneQuestion_WhenAnswerExamQuestion_ShouldFail() throws Exception {
         ExamView upcomingExam = createExamAndGet(afterCurrentTime(1, HOURS), afterCurrentTime(2, HOURS), "A");
         createQuestion(new CreateQuestionUseCase.Request(upcomingExam.getId(), PROBLEM_ID, NO_QUOTA, 100, 1));
-        givenStudentParticipatingExam(STUDENT_ID, upcomingExam);
+        givenStudentParticipatingExam(STUDENT_A_ID, upcomingExam);
 
-        answerQuestion(STUDENT_ID, upcomingExam)
+        answerQuestion(STUDENT_A_ID, upcomingExam)
                 .andExpect(status().is4xxClientError());
     }
 
@@ -515,8 +501,8 @@ class ExamControllerTest extends AbstractSpringBootTest {
         ExamView exam = createExamAndGet(start, end, "sample-exam");
         QuestionView q1 = createQuestionAndGet(new CreateQuestionUseCase.Request(exam.getId(), PROBLEM_ID, QUOTA, 30, 1));
         QuestionView q2 = createQuestionAndGet(new CreateQuestionUseCase.Request(exam.getId(), ANOTHER_PROBLEM_ID, QUOTA, 70, 2));
-        givenStudentParticipatingExam(STUDENT_ID, exam);
-        answerQuestion(STUDENT_ID, exam).andExpect(status().isOk());
+        givenStudentParticipatingExam(STUDENT_A_ID, exam);
+        answerQuestion(STUDENT_A_ID, exam).andExpect(status().isOk());
         publishVerdict(PROBLEM_ID, problem.getTitle(), exam, submissionWith2ACs20Point);
 
         awaitVerdictIssuedEvent();
@@ -541,27 +527,6 @@ class ExamControllerTest extends AbstractSpringBootTest {
         assertEquals(secondQuestion.getProblemTitle(), anotherProblem.getTitle());
     }
 
-    private void publishVerdict(ExamView exam, Submission submission) {
-        publishVerdict(PROBLEM_ID, problem.getTitle(), exam, submission);
-    }
-
-    private void publishVerdict(int problemId, String problemTitle, ExamView exam, Submission submission) {
-        verdictPublisher.publish(new VerdictIssuedEvent(problemId, problemTitle, STUDENT_ID, SUBMISSION_ID,
-                submission.mayHaveVerdict().orElseThrow(),
-                submission.getSubmissionTime(),
-                new Bag(singletonMap(BAG_KEY_EXAM_ID, String.valueOf(exam.id)))));
-    }
-
-
-    private Record awaitVerdictIssuedEventAndGetBestRecord(int examId) {
-        awaitVerdictIssuedEvent();
-        return examRepository.findBestRecordOfQuestion(new Question.Id(examId, PROBLEM_ID), STUDENT_ID).orElseThrow();
-    }
-
-    private void awaitVerdictIssuedEvent() {
-        verdictIssuedEventHandler.onHandlingCompletion$.doWait(3000);
-    }
-
     @DisplayName("Give 8 students participating a current exam, one question in the exam with submission quota = 3, " +
             "When 8 students answer that question 4 times at the same time, all should succeed in the first 3 times and fail in the 4th time.")
     @Test
@@ -579,6 +544,34 @@ class ExamControllerTest extends AbstractSpringBootTest {
             }
             answerQuestion(studentId, exam).andExpect(status().is4xxClientError());
         });
+    }
+
+
+    private List<Student> getExaminees(ExamView exam) throws Exception {
+        return getBody(mockMvc.perform(get("/api/exams/{examId}/students", exam.id))
+                .andExpect(status().isOk()), new TypeReference<>() {
+        });
+    }
+
+    private void publishVerdict(ExamView exam, Submission submission) {
+        publishVerdict(PROBLEM_ID, problem.getTitle(), exam, submission);
+    }
+
+    private void publishVerdict(int problemId, String problemTitle, ExamView exam, Submission submission) {
+        verdictPublisher.publish(new VerdictIssuedEvent(problemId, problemTitle, STUDENT_A_ID, SUBMISSION_ID,
+                submission.mayHaveVerdict().orElseThrow(),
+                submission.getSubmissionTime(),
+                new Bag(singletonMap(BAG_KEY_EXAM_ID, String.valueOf(exam.id)))));
+    }
+
+
+    private Record awaitVerdictIssuedEventAndGetBestRecord(int examId) {
+        awaitVerdictIssuedEvent();
+        return examRepository.findBestRecordOfQuestion(new Question.Id(examId, PROBLEM_ID), STUDENT_A_ID).orElseThrow();
+    }
+
+    private void awaitVerdictIssuedEvent() {
+        verdictIssuedEventHandler.onHandlingCompletion$.doWait(3000);
     }
 
 
@@ -706,20 +699,20 @@ class ExamControllerTest extends AbstractSpringBootTest {
 
     private ExamHome getExamOverview(int examId) throws Exception {
         return getBody(mockMvc.perform(get("/api/exams/{examId}/students/{studentId}/overview",
-                examId, STUDENT_ID)).andExpect(status().isOk()), ExamHome.class);
+                examId, STUDENT_A_ID)).andExpect(status().isOk()), ExamHome.class);
     }
 
     private void createExaminee(int studentId, int examId) {
         examRepository.addExaminee(examId, studentId);
     }
 
-    private ResultActions createExaminees(int examId, List<String> emails) throws Exception {
+    private ResultActions createExaminees(int examId, String... emails) throws Exception {
         return mockMvc.perform(post("/api/exams/{examId}/students", examId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(emails)));
     }
 
-    private ResultActions deleteExaminees(int examId, List<String> emails) throws Exception {
+    private ResultActions deleteExaminees(int examId, String... emails) throws Exception {
         return mockMvc.perform(delete("/api/exams/{examId}/students", examId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(emails)));
