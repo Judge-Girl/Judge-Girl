@@ -23,6 +23,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import tw.waterball.judgegirl.commons.utils.functional.ErrRunnable;
 import tw.waterball.judgegirl.testkit.jupiter.ReplaceUnderscoresWithCamelCasesDisplayNameGenerators;
 
 import java.util.Collection;
@@ -80,8 +81,7 @@ public abstract class AbstractSpringBootTest {
         assertEquals(new HashSet<>(expected), new HashSet<>(actual));
     }
 
-    @SneakyThrows
-    protected void anotherTransaction(Runnable anotherTransaction) {
+    protected void anotherTransaction(ErrRunnable anotherTransaction) throws Exception {
         TestTransaction.flagForCommit();
         TestTransaction.end();
         TestTransaction.start();

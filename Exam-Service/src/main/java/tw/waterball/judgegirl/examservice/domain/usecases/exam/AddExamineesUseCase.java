@@ -7,7 +7,7 @@ import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.entities.Student;
 import tw.waterball.judgegirl.entities.exam.Exam;
 import tw.waterball.judgegirl.examservice.domain.repositories.ExamRepository;
-import tw.waterball.judgegirl.problemapi.clients.StudentServiceDriver;
+import tw.waterball.judgegirl.studentapi.clients.StudentServiceDriver;
 
 import javax.inject.Named;
 import java.util.List;

@@ -19,7 +19,7 @@ import tw.waterball.judgegirl.commons.token.TokenService;
 import tw.waterball.judgegirl.springboot.student.presenters.GetStudentsPresenter;
 import tw.waterball.judgegirl.springboot.student.presenters.SignInPresenter;
 import tw.waterball.judgegirl.springboot.student.presenters.SignUpPresenter;
-import tw.waterball.judgegirl.springboot.student.view.StudentView;
+import tw.waterball.judgegirl.studentapi.clients.view.StudentView;
 import tw.waterball.judgegirl.studentservice.domain.usecases.student.GetStudentsWithFilterUseCase;
 import tw.waterball.judgegirl.studentservice.domain.usecases.student.LoginUseCase;
 import tw.waterball.judgegirl.studentservice.domain.usecases.student.SignUpUseCase;

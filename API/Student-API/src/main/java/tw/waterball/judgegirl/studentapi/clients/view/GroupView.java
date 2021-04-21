@@ -1,4 +1,4 @@
-package tw.waterball.judgegirl.springboot.student.view;
+package tw.waterball.judgegirl.studentapi.clients.view;
 
 import lombok.*;
 import tw.waterball.judgegirl.entities.Group;

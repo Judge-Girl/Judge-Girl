@@ -11,24 +11,12 @@
  *   limitations under the License.
  */
 
-package tw.waterball.judgegirl.studentservice.domain.usecases.student;
-
-import tw.waterball.judgegirl.entities.Student;
-
-import java.util.List;
+package tw.waterball.judgegirl.commons.utils.functional;
 
 /**
- * @author chaoyulee chaoyu2330@gmail.com
+ * @author - johnny850807@gmail.com (Waterball)
  */
-public class DefaultGetStudentPresenter implements GetStudentUseCase.Presenter {
-    private List<Student> students;
-
-    @Override
-    public void showStudents(List<Student> students) {
-        this.students = students;
-    }
-
-    public List<Student> getStudents() {
-        return students;
-    }
+@FunctionalInterface
+public interface ErrRunnable {
+    void run() throws Exception;
 }

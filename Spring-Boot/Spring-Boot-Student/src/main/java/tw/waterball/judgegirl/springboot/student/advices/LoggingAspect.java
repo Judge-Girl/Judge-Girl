@@ -17,7 +17,7 @@ import tw.waterball.judgegirl.studentservice.domain.usecases.student.ChangePassw
 import tw.waterball.judgegirl.studentservice.domain.usecases.student.LoginUseCase;
 import tw.waterball.judgegirl.studentservice.domain.usecases.student.SignUpUseCase;
 
-import static tw.waterball.judgegirl.springboot.student.view.StudentView.toViewModel;
+import static tw.waterball.judgegirl.studentapi.clients.view.StudentView.toViewModel;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)

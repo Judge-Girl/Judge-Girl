@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static java.util.Arrays.asList;
+import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
 import static tw.waterball.judgegirl.springboot.student.repositories.jpa.StudentData.toData;
 
 /**
@@ -56,10 +58,7 @@ public class JpaStudentRepository implements StudentRepository {
 
     @Override
     public List<Student> findByEmailIn(String... emails) {
-        return jpaStudentDataPort.findByEmailIn(emails)
-                .stream()
-                .map(StudentData::toEntity)
-                .collect(Collectors.toList());
+        return mapToList(jpaStudentDataPort.findByEmailIn(asList(emails)), StudentData::toEntity);
     }
 
     @Override
@@ -67,6 +66,11 @@ public class JpaStudentRepository implements StudentRepository {
         return jpaStudentDataPort
                 .findStudentById(id)
                 .map(StudentData::toEntity);
+    }
+
+    @Override
+    public List<Student> findByIdIn(Integer... ids) {
+        return mapToList(jpaStudentDataPort.findByIdIn(asList(ids)), StudentData::toEntity);
     }
 
     @Override

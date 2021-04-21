@@ -29,7 +29,7 @@ import tw.waterball.judgegirl.entities.Student;
 import tw.waterball.judgegirl.springboot.profiles.Profiles;
 import tw.waterball.judgegirl.springboot.student.SpringBootStudentApplication;
 import tw.waterball.judgegirl.springboot.student.controllers.LoginResponse;
-import tw.waterball.judgegirl.springboot.student.view.StudentView;
+import tw.waterball.judgegirl.studentapi.clients.view.StudentView;
 import tw.waterball.judgegirl.studentservice.domain.exceptions.StudentIdNotFoundException;
 import tw.waterball.judgegirl.studentservice.domain.repositories.StudentRepository;
 import tw.waterball.judgegirl.studentservice.domain.usecases.student.ChangePasswordUseCase;
@@ -38,6 +38,8 @@ import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
 
 import java.util.List;
 
+import static java.util.Arrays.stream;
+import static java.util.stream.Collectors.joining;
 import static java.util.stream.IntStream.range;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -45,7 +47,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static tw.waterball.judgegirl.commons.token.TokenService.Identity.student;
 import static tw.waterball.judgegirl.commons.utils.HttpHeaderUtils.bearerWithToken;
-import static tw.waterball.judgegirl.springboot.student.view.StudentView.toViewModel;
+import static tw.waterball.judgegirl.studentapi.clients.view.StudentView.toViewModel;
 
 
 /**
@@ -167,6 +169,25 @@ public class StudentControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
+    void GivenThreeStudents_A_B_C_SignedUp_WhenGetStudents_B_C_D_ByIds_ShouldRespond_B_C() throws Exception {
+        Student A = signUpAndGet(new Student("nameA", "a@example.com", "12345678"));
+        Student B = signUpAndGet(new Student("nameB", "b@example.com", "12345678"));
+        Student C = signUpAndGet(new Student("nameC", "c@example.com", "12345678"));
+        final int STUDENT_D_ID = 9999; // non-existing
+
+        List<Student> students = getStudentByIds(B.getId(), C.getId(), STUDENT_D_ID);
+
+        studentsShouldHaveEmails(students, "b@example.com", "c@example.com");
+    }
+
+    private List<Student> getStudentByIds(Integer... ids) throws Exception {
+        String idsSplitByComma = stream(ids).map(String::valueOf).collect(joining(","));
+        return getBody(mockMvc.perform(get("/api/students").queryParam("ids", idsSplitByComma))
+                .andExpect(status().isOk()), new TypeReference<>() {
+        });
+    }
+
+    @Test
     void GivenThreeStudents_A_B_C_SignedUp_WhenGetStudents_B_C_D_ByEmails_ShouldRespond_B_C() throws Exception {
         Student A = new Student("nameA", "a@example.com", "12345678");
         Student B = new Student("nameB", "b@example.com", "12345678");
@@ -174,15 +195,15 @@ public class StudentControllerTest extends AbstractSpringBootTest {
         signUpStudents(A, B, C);
 
         String[] emails = {"b@example.com", "c@example.com", "d@example.com"};
-        List<StudentView> students = getStudentsByEmail(emails);
+        List<Student> students = getStudentsByEmail(emails);
 
         studentsShouldHaveEmails(students, "b@example.com", "c@example.com");
     }
 
-    private void studentsShouldHaveEmails(List<StudentView> students, String... emails) {
+    private void studentsShouldHaveEmails(List<Student> students, String... emails) {
         assertEquals(2, students.size());
-        assertEquals(emails[0], students.get(0).email);
-        assertEquals(emails[1], students.get(1).email);
+        assertEquals(emails[0], students.get(0).getEmail());
+        assertEquals(emails[1], students.get(1).getEmail());
     }
 
     @Test
@@ -288,6 +309,12 @@ public class StudentControllerTest extends AbstractSpringBootTest {
         return signUp(newStudent);
     }
 
+    private Student signUpAndGet(Student student) throws Exception {
+        return getBody(mockMvc.perform(post("/api/students")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(toJson(student))), Student.class);
+    }
+
     private ResultActions signUp(Student student) throws Exception {
         return mockMvc.perform(post("/api/students")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -329,7 +356,7 @@ public class StudentControllerTest extends AbstractSpringBootTest {
                 .header("Authorization", bearerWithToken(tokenString)));
     }
 
-    private List<StudentView> getStudentsByEmail(String[] emails) throws Exception {
+    private List<Student> getStudentsByEmail(String[] emails) throws Exception {
         return getBody(mockMvc.perform(post("/api/students/search")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(emails)))

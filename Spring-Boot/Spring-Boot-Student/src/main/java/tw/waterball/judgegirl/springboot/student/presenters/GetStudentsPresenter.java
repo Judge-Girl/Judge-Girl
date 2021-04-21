@@ -15,7 +15,7 @@ package tw.waterball.judgegirl.springboot.student.presenters;
 
 import org.springframework.stereotype.Component;
 import tw.waterball.judgegirl.entities.Student;
-import tw.waterball.judgegirl.springboot.student.view.StudentView;
+import tw.waterball.judgegirl.studentapi.clients.view.StudentView;
 import tw.waterball.judgegirl.studentservice.domain.usecases.student.GetStudentsWithFilterUseCase;
 
 import java.util.List;

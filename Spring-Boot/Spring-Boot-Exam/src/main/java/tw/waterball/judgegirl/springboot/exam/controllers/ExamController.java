@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
+import tw.waterball.judgegirl.entities.Student;
 import tw.waterball.judgegirl.entities.exam.Answer;
 import tw.waterball.judgegirl.entities.exam.Exam;
 import tw.waterball.judgegirl.entities.exam.Question;
@@ -19,10 +20,12 @@ import tw.waterball.judgegirl.springboot.exam.view.AnswerView;
 import tw.waterball.judgegirl.springboot.exam.view.ExamHome;
 import tw.waterball.judgegirl.springboot.exam.view.ExamView;
 import tw.waterball.judgegirl.springboot.exam.view.QuestionView;
+import tw.waterball.judgegirl.studentapi.clients.view.StudentView;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
 import static tw.waterball.judgegirl.springboot.utils.MultipartFileUtils.convertMultipartFilesToFileResources;
 import static tw.waterball.judgegirl.submissionapi.clients.SubmissionApiClient.SUBMIT_CODE_MULTIPART_KEY_NAME;
 
@@ -41,6 +44,7 @@ public class ExamController {
     private final UpdateExamUseCase updateExamUseCase;
     private final GetExamUseCase getExamUseCase;
     private final ExamPresenter examPresenter;
+    private final GetExamineesUseCase getExamineesUseCase;
     private final AddExamineesUseCase addExamineesUseCase;
     private final DeleteExamineesUseCase deleteExamineesUseCase;
 
@@ -123,6 +127,13 @@ public class ExamController {
         return presenter.present();
     }
 
+    @GetMapping("/exams/{examId}/students")
+    public List<StudentView> getExaminees(@PathVariable int examId) {
+        ExamineesPresenter presenter = new ExamineesPresenter();
+        getExamineesUseCase.execute(examId, presenter);
+        return presenter.present();
+    }
+
     @PostMapping("/exams/{examId}/students")
     public List<String> addExaminees(@PathVariable int examId, @RequestBody List<String> emails) {
         AddExamineesUseCase.Request request = new AddExamineesUseCase.Request();
@@ -188,6 +199,19 @@ class CreateQuestionPresenter implements CreateQuestionUseCase.Presenter {
 
     public QuestionView present() {
         return QuestionView.toViewModel(question);
+    }
+}
+
+class ExamineesPresenter implements GetExamineesUseCase.Presenter {
+    private List<Student> examinees;
+
+    @Override
+    public void showExaminees(List<Student> examinees) {
+        this.examinees = examinees;
+    }
+
+    public List<StudentView> present() {
+        return mapToList(examinees, StudentView::toViewModel);
     }
 }
 

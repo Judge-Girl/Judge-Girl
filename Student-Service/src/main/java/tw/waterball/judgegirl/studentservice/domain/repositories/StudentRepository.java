@@ -30,6 +30,8 @@ public interface StudentRepository {
 
     Optional<Student> findStudentById(Integer id);
 
+    List<Student> findByIdIn(Integer... ids);
+
     boolean existsByEmail(String email);
 
     Student save(Student student);
