@@ -74,7 +74,7 @@ public class GroupController {
     }
 
     @GetMapping("/groups/{groupId}/students")
-    public List<StudentView> getStudentsByGroupId(@PathVariable Integer groupId) {
+    public List<StudentView> addStudentsIntoGroupByMailListUseCase(@PathVariable Integer groupId) {
         GetStudentsInGroupPresenter presenter = new GetStudentsInGroupPresenter();
         getStudentsInGroupUseCase.execute(groupId, presenter);
         return presenter.present();
@@ -88,8 +88,8 @@ public class GroupController {
     }
 
     @PostMapping("/groups/{groupId}/students")
-    public Map<String, List<String>> getStudentsByGroupId(@PathVariable Integer groupId,
-                                                          @RequestBody String[] mailList) {
+    public Map<String, List<String>> addStudentsIntoGroupByMailListUseCase(@PathVariable Integer groupId,
+                                                                           @RequestBody String[] mailList) {
         AddStudentsIntoGroupByMailListUseCase.Request request = new AddStudentsIntoGroupByMailListUseCase.Request(groupId, mailList);
         AddStudentsIntoGroupByMailListPresenter presenter = new AddStudentsIntoGroupByMailListPresenter();
         addStudentsIntoGroupByMailListUseCase.execute(request, presenter);
