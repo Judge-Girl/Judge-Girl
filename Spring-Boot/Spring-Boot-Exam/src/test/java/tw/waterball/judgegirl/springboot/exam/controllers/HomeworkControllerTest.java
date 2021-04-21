@@ -118,7 +118,7 @@ public class HomeworkControllerTest extends AbstractSpringBootTest {
         HomeworkProgress homeworkProgress = getHomeworkProgress(STUDENT_ID, homework.id);
 
         assertEquals(homework, homeworkProgress.homework);
-        homeworkProgressShouldIncludeBestRecords(homework, homeworkProgress, bestRecord1, bestRecord2);
+        homeworkProgressShouldIncludeTwoBestRecords(homework, homeworkProgress, bestRecord1, bestRecord2);
     }
 
     private HomeworkView createHomeworkConsistsOfProblems(Integer... problemIds) throws Exception {
@@ -128,14 +128,14 @@ public class HomeworkControllerTest extends AbstractSpringBootTest {
 
     private SubmissionView achieveBestRecord(int problemId, Submission submission) {
         int studentId = submission.getStudentId();
-        when(submissionServiceDriver.findBestRecord(problemId, studentId))
-                .thenReturn(SubmissionView.toViewModel(submission));
-        return submissionServiceDriver.findBestRecord(problemId, studentId);
+        var bestRecord = SubmissionView.toViewModel(submission);
+        when(submissionServiceDriver.findBestRecord(problemId, studentId)).thenReturn(bestRecord);
+        return bestRecord;
     }
 
-    private void homeworkProgressShouldIncludeBestRecords(HomeworkView homework,
-                                                          HomeworkProgress homeworkProgress,
-                                                          SubmissionView... submissionViews) {
+    private void homeworkProgressShouldIncludeTwoBestRecords(HomeworkView homework,
+                                                             HomeworkProgress homeworkProgress,
+                                                             SubmissionView... submissionViews) {
         assertEquals(homework, homeworkProgress.homework);
         Map<Integer, BestRecord> progress = homeworkProgress.progress;
         assertEquals(submissionViews.length, progress.size());
