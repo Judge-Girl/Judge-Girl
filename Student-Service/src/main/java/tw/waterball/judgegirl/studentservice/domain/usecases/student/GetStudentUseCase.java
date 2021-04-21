@@ -19,6 +19,7 @@ import tw.waterball.judgegirl.studentservice.domain.repositories.StudentReposito
 import javax.inject.Named;
 import java.util.List;
 
+import static java.util.Arrays.asList;
 import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
 
 /**
@@ -39,11 +40,9 @@ public class GetStudentUseCase {
     }
 
     public void execute(int studentId, Presenter presenter) {
-        var students = studentRepository.findByIdIn(studentId);
-        if (students.isEmpty()) {
-            throw notFound("student").id(studentId);
-        }
-        presenter.showStudents(students);
+        var student = studentRepository.findStudentById(studentId)
+                .orElseThrow(() -> notFound("student").id(studentId));
+        presenter.showStudents(student);
     }
 
     public void execute(Request request, Presenter presenter) {
@@ -61,5 +60,9 @@ public class GetStudentUseCase {
 
     public interface Presenter {
         void showStudents(List<Student> students);
+
+        default void showStudents(Student... students) {
+            showStudents(asList(students));
+        }
     }
 }

@@ -24,8 +24,8 @@ public class GetExamineesUseCase {
 
     public void execute(int examId, Presenter presenter) throws IllegalStateException {
         Exam exam = findExam(examId);
-        List<Student> students = findExaminees(exam);
-        presenter.showExaminees(students);
+        List<Student> examinees = findExaminees(exam);
+        presenter.showExaminees(examinees);
     }
 
     private List<Student> findExaminees(Exam exam) {
