@@ -47,7 +47,7 @@ public class ProblemController {
     private final GetTestCasesUseCase getTestCasesUseCase;
     private final SaveProblemWithTitleUseCase saveProblemWithTitleUseCase;
     private final PatchProblemUseCase patchProblemUseCase;
-    private final DeleteProblemUseCase deleteProblemUseCase;
+    private final ArchiveOrDeleteProblemUseCase deleteProblemUseCase;
 
 
     @GetMapping("/tags")

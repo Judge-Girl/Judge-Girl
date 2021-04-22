@@ -5,9 +5,9 @@ import tw.waterball.judgegirl.problemservice.domain.repositories.ProblemReposito
 import javax.inject.Named;
 
 @Named
-public class DeleteProblemUseCase extends BaseProblemUseCase {
+public class ArchiveOrDeleteProblemUseCase extends BaseProblemUseCase {
 
-    public DeleteProblemUseCase(ProblemRepository problemRepository) {
+    public ArchiveOrDeleteProblemUseCase(ProblemRepository problemRepository) {
         super(problemRepository);
     }
 

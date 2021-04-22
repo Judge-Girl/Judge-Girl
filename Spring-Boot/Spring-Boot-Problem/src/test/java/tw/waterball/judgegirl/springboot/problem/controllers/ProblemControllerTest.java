@@ -368,7 +368,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    void GivenOneProblemCreated_WhenDeleteIt_ShouldArchiveItSuccessfully() throws Exception {
+    void GivenOneProblemCreated_WhenArchiveIt_ShouldArchiveItSuccessfully() throws Exception {
         int problemId = 1;
         saveProblems(problemId);
 
@@ -376,7 +376,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
                 .andExpect(status().isOk());
 
         ProblemView problemView = getProblem(problemId);
-        assertTrue(problemView.isDeleted());
+        assertTrue(problemView.isArchived());
     }
 
     private void problemsShouldHaveIds(List<Problem> actualProblems, Integer... problemIds) {
