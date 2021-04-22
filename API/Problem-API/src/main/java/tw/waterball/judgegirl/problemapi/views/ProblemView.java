@@ -45,7 +45,7 @@ public class ProblemView {
     public String testcaseIOsFileId;
     public List<Testcase> testcases;
     public boolean visible;
-    public boolean deleted;
+    public boolean archived;
 
     public static ProblemView toViewModel(Problem problem) {
         return new ProblemView(
@@ -59,7 +59,7 @@ public class ProblemView {
                 problem.getTestcaseIOsFileId(),
                 problem.getTestcases(),
                 problem.getVisible(),
-                problem.isDeleted()
+                problem.isArchived()
         );
     }
 
@@ -73,7 +73,7 @@ public class ProblemView {
                 .testcases(view.testcases)
                 .testcaseIOsFileId(view.testcaseIOsFileId)
                 .filterPluginTags(requireNonNullElse(view.judgeFilterPluginTags, emptyList()))
-                .deleted(view.deleted);
+                .archived(view.archived);
         for (LanguageEnv languageEnv : view.languageEnvs) {
             builder.languageEnv(languageEnv.getName(), languageEnv);
         }
