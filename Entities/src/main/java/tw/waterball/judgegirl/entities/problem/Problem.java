@@ -66,6 +66,8 @@ public class Problem {
 
     private String testcaseIOsFileId;
 
+    private boolean archived;
+
     public void validate() {
         JSR380Utils.validate(this);
     }
@@ -136,6 +138,14 @@ public class Problem {
 
     public void setOutputMatchPolicyPluginTag(JudgePluginTag outputMatchPolicyPluginTag) {
         this.outputMatchPolicyPluginTag = outputMatchPolicyPluginTag;
+    }
+
+    public boolean isArchived() {
+        return archived;
+    }
+
+    public void setArchived(boolean archived) {
+        this.archived = archived;
     }
 
     public void addLanguageEnv(LanguageEnv languageEnv) {

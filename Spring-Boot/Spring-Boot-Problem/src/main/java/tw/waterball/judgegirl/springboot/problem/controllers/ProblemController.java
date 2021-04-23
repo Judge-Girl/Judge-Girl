@@ -47,6 +47,7 @@ public class ProblemController {
     private final GetTestCasesUseCase getTestCasesUseCase;
     private final SaveProblemWithTitleUseCase saveProblemWithTitleUseCase;
     private final PatchProblemUseCase patchProblemUseCase;
+    private final ArchiveOrDeleteProblemUseCase deleteProblemUseCase;
 
 
     @GetMapping("/tags")
@@ -109,10 +110,15 @@ public class ProblemController {
         return saveProblemWithTitleUseCase.execute(title);
     }
 
-    @PatchMapping(value = "/{problemId}")
+    @PatchMapping("/{problemId}")
     public void patchProblem(@PathVariable int problemId,
                              @RequestBody PatchProblemUseCase.Request request) {
         patchProblemUseCase.execute(request);
+    }
+
+    @DeleteMapping("/{problemId}")
+    public void archiveOrDeleteProblem(@PathVariable int problemId) {
+        deleteProblemUseCase.execute(problemId);
     }
 }
 

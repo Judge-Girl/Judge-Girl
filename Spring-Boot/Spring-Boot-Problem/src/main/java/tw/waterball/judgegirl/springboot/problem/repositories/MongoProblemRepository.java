@@ -154,6 +154,14 @@ public class MongoProblemRepository implements ProblemRepository {
         return mongoTemplate.find(query(where("_id").in(ids)), Problem.class);
     }
 
+    @Override
+    public void archiveProblemById(int problemId) {
+        Update update = new Update();
+        Query query = new Query(where("_id").is(problemId));
+        update.set("archived", true);
+        mongoTemplate.updateFirst(query, update, Problem.class);
+    }
+
     @Document("tag")
     public static class AllTags {
         public List<String> all;

@@ -367,9 +367,26 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         problemsShouldHaveIds(actualProblems, 1);
     }
 
+    @Test
+    void GivenOneProblemCreated_WhenArchiveIt_ShouldArchiveItSuccessfully() throws Exception {
+        int problemId = 1;
+        saveProblems(problemId);
+
+        mockMvc.perform(delete("/api/problems/{problemId}", problemId))
+                .andExpect(status().isOk());
+
+        ProblemView problemView = getProblem(problemId);
+        assertTrue(problemView.isArchived());
+    }
+
     private void problemsShouldHaveIds(List<Problem> actualProblems, Integer... problemIds) {
         Set<Integer> idsSet = Set.of(problemIds);
         actualProblems.forEach(problem -> assertTrue(idsSet.contains(problem.getId())));
+    }
+
+    private ProblemView getProblem(int problemId) throws Exception {
+        return getBody(mockMvc.perform(get("/api/problems/{problemId}", problemId))
+                .andExpect(status().isOk()), ProblemView.class);
     }
 
     private List<Problem> getProblems(Integer... problemIds) throws Exception {
