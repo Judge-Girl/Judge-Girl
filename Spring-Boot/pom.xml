@@ -34,6 +34,7 @@
         <module>Spring-Boot-Submission</module>
         <module>Spring-Boot-Student</module>
         <module>Spring-Boot-Exam</module>
+        <module>Spring-Boot-AMQP</module>
         <module>Migration</module>
     </modules>
 

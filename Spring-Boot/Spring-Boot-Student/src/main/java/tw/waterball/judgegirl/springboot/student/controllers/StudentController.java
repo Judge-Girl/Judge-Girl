@@ -20,12 +20,16 @@ import tw.waterball.judgegirl.entities.Student;
 import tw.waterball.judgegirl.springboot.student.presenters.GetStudentsPresenter;
 import tw.waterball.judgegirl.springboot.student.presenters.SignInPresenter;
 import tw.waterball.judgegirl.springboot.student.presenters.SignUpPresenter;
-import tw.waterball.judgegirl.springboot.student.view.StudentView;
-import tw.waterball.judgegirl.studentservice.domain.usecases.*;
+import tw.waterball.judgegirl.studentapi.clients.view.StudentView;
+import tw.waterball.judgegirl.studentservice.domain.usecases.student.*;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
-import static tw.waterball.judgegirl.springboot.student.view.StudentView.toViewModel;
+import static tw.waterball.judgegirl.commons.token.TokenService.Identity.admin;
+import static tw.waterball.judgegirl.commons.token.TokenService.Identity.student;
+import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
 
 /**
  * @author chaoyulee chaoyu2330@gmail.com
@@ -35,9 +39,10 @@ import static tw.waterball.judgegirl.springboot.student.view.StudentView.toViewM
 @RestController
 @AllArgsConstructor
 public class StudentController {
-    private final SignInUseCase signInUseCase;
+    private final LoginUseCase loginUseCase;
     private final SignUpUseCase signUpUseCase;
     private final GetStudentUseCase getStudentUseCase;
+    private final GetStudentsByEmailListUseCase getStudentsByEmailListUseCase;
     private final GetStudentsWithFilterUseCase getStudentsWithFilterUseCase;
     private final AuthUseCase authUseCase;
     private final ChangePasswordUseCase changePasswordUseCase;
@@ -52,10 +57,11 @@ public class StudentController {
     }
 
     @PostMapping("/login")
-    public LoginResponse login(@RequestBody SignInUseCase.Request request) {
+    public LoginResponse login(@RequestBody LoginUseCase.Request request) {
         SignInPresenter presenter = new SignInPresenter();
-        signInUseCase.execute(request, presenter);
-        presenter.setToken(tokenService.createToken(new TokenService.Identity(presenter.getStudentId())));
+        loginUseCase.execute(request, presenter);
+        presenter.setToken(tokenService.createToken(
+                presenter.isAdmin() ? admin(presenter.getStudentId()) : student(presenter.getStudentId())));
         return presenter.present();
     }
 
@@ -63,10 +69,17 @@ public class StudentController {
     public StudentView getStudentById(@PathVariable Integer studentId, @RequestHeader("Authorization") String authorization) {
         return tokenService.returnIfTokenValid(studentId, authorization,
                 token -> {
-                    GetStudentByIdPresenter presenter = new GetStudentByIdPresenter();
+                    GetStudentByIdsPresenter presenter = new GetStudentByIdsPresenter();
                     getStudentUseCase.execute(studentId, presenter);
-                    return presenter.present();
+                    return presenter.present().get(0);
                 });
+    }
+
+    @PostMapping("/search")
+    public List<StudentView> getStudentsByEmailList(@RequestBody String[] emails) {
+        GetStudentsByEmailListPresenter presenter = new GetStudentsByEmailListPresenter();
+        getStudentsByEmailListUseCase.execute(emails, presenter);
+        return presenter.present();
     }
 
     @PostMapping("/auth")
@@ -76,7 +89,6 @@ public class StudentController {
         AuthPresenter presenter = new AuthPresenter();
         presenter.setToken(tokenService.renewToken(token.getToken()));
         authUseCase.execute(new AuthUseCase.Request(token.getStudentId()), presenter);
-
         return presenter.present();
     }
 
@@ -93,23 +105,29 @@ public class StudentController {
     @GetMapping
     public List<StudentView> getStudentsWithFilter(
             @RequestParam(defaultValue = "0", required = false) int skip,
-            @RequestParam(defaultValue = "25", required = false) int size) {
-        GetStudentsPresenter presenter = new GetStudentsPresenter();
-        getStudentsWithFilterUseCase.execute(new GetStudentsWithFilterUseCase.Request(false, skip, size), presenter);
+            @RequestParam(defaultValue = "25", required = false) int size,
+            @RequestParam(required = false) Integer[] ids) {
+        if (ids == null) {
+            GetStudentsPresenter presenter = new GetStudentsPresenter();
+            getStudentsWithFilterUseCase.execute(new GetStudentsWithFilterUseCase.Request(false, skip, size), presenter);
+            return presenter.present();
+        }
+        GetStudentByIdsPresenter presenter = new GetStudentByIdsPresenter();
+        getStudentUseCase.execute(new GetStudentUseCase.Request(ids), presenter);
         return presenter.present();
     }
 }
 
-class GetStudentByIdPresenter implements GetStudentUseCase.Presenter {
-    private Student student;
+class GetStudentByIdsPresenter implements GetStudentUseCase.Presenter {
+    private final List<Student> students = new ArrayList<>();
 
-    @Override
-    public void setStudent(Student student) {
-        this.student = student;
+    List<StudentView> present() {
+        return mapToList(students, StudentView::toViewModel);
     }
 
-    StudentView present() {
-        return toViewModel(student);
+    @Override
+    public void showStudents(List<Student> students) {
+        this.students.addAll(students);
     }
 }
 
@@ -130,6 +148,21 @@ class AuthPresenter implements AuthUseCase.Presenter {
     LoginResponse present() {
         return new LoginResponse(token.getStudentId(), student.getEmail(), token.toString(),
                 token.getExpiration().getTime(), student.isAdmin());
+    }
+}
+
+class GetStudentsByEmailListPresenter implements GetStudentsByEmailListUseCase.Presenter {
+    private List<Student> students;
+
+    @Override
+    public void showStudents(List<Student> students) {
+        this.students = students;
+    }
+
+    List<StudentView> present() {
+        return students.stream()
+                .map(StudentView::toViewModel)
+                .collect(Collectors.toList());
     }
 }
 

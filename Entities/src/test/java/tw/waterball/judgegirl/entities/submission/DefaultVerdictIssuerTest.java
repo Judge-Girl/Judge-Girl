@@ -15,6 +15,11 @@ package tw.waterball.judgegirl.entities.submission;
 
 import org.junit.jupiter.api.Test;
 import tw.waterball.judgegirl.entities.problem.JudgeStatus;
+import tw.waterball.judgegirl.entities.submission.report.Report;
+import tw.waterball.judgegirl.entities.submission.verdict.Judge;
+import tw.waterball.judgegirl.entities.submission.verdict.ProgramProfile;
+import tw.waterball.judgegirl.entities.submission.verdict.Verdict;
+import tw.waterball.judgegirl.entities.submission.verdict.VerdictIssuer;
 
 import java.util.Arrays;
 import java.util.List;

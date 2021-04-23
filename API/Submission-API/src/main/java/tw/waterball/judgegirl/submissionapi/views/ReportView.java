@@ -15,7 +15,7 @@ package tw.waterball.judgegirl.submissionapi.views;
 
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
-import tw.waterball.judgegirl.entities.submission.Report;
+import tw.waterball.judgegirl.entities.submission.report.Report;
 
 import java.util.Collections;
 import java.util.Map;
@@ -30,7 +30,7 @@ public class ReportView {
     private Map<String, ?> rawData;
 
 
-    public static ReportView fromEntity(Report report) {
+    public static ReportView toViewModel(Report report) {
         return new ReportView(report.getName(), report.getRawData());
     }
 
@@ -59,7 +59,7 @@ public class ReportView {
     }
 
     public Report toEntity() {
-        return Report.fromData(rawData);
+        return Report.fromData(name, rawData);
     }
 
 }

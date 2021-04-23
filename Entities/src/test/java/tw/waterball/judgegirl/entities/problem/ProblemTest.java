@@ -22,13 +22,13 @@ class ProblemTest {
 
     @Test
     void GivenValidProblem_WhenValidate_ShouldPass() {
-        Problem problem = ProblemStubs.template().build();
+        Problem problem = ProblemStubs.problemTemplate().build();
         problem.validate();
     }
 
     @Test
     void GivenProblemWithMatchPolicyPluginTagOfSourceCodeFilterType_WhenValidate_ShouldThrow() {
-        Problem problem = ProblemStubs.template()
+        Problem problem = ProblemStubs.problemTemplate()
                 .outputMatchPolicyPluginTag(new JudgePluginTag(
                         JudgePluginTag.Type.FILTER,
                         "group", "name", "1.0"
@@ -40,7 +40,7 @@ class ProblemTest {
 
     @Test
     void GivenProblemWithCodeInspectionOfOutputMatchType_WhenValidate_ShouldThrow() {
-        Problem problem = ProblemStubs.template()
+        Problem problem = ProblemStubs.problemTemplate()
                 .filterPluginTag(new JudgePluginTag(
                         JudgePluginTag.Type.OUTPUT_MATCH_POLICY,
                         "group", "name", "1.0"

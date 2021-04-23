@@ -19,7 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
-import tw.waterball.judgegirl.submissionservice.domain.usecases.exceptions.SubmissionThrottlingException;
+import tw.waterball.judgegirl.entities.submission.SubmissionThrottlingException;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)

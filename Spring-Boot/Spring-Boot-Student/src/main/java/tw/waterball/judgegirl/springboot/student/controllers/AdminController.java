@@ -19,12 +19,14 @@ import tw.waterball.judgegirl.commons.token.TokenService;
 import tw.waterball.judgegirl.springboot.student.presenters.GetStudentsPresenter;
 import tw.waterball.judgegirl.springboot.student.presenters.SignInPresenter;
 import tw.waterball.judgegirl.springboot.student.presenters.SignUpPresenter;
-import tw.waterball.judgegirl.springboot.student.view.StudentView;
-import tw.waterball.judgegirl.studentservice.domain.usecases.GetStudentsWithFilterUseCase;
-import tw.waterball.judgegirl.studentservice.domain.usecases.SignInUseCase;
-import tw.waterball.judgegirl.studentservice.domain.usecases.SignUpUseCase;
+import tw.waterball.judgegirl.studentapi.clients.view.StudentView;
+import tw.waterball.judgegirl.studentservice.domain.usecases.student.GetStudentsWithFilterUseCase;
+import tw.waterball.judgegirl.studentservice.domain.usecases.student.LoginUseCase;
+import tw.waterball.judgegirl.studentservice.domain.usecases.student.SignUpUseCase;
 
 import java.util.List;
+
+import static tw.waterball.judgegirl.commons.token.TokenService.Identity.admin;
 
 /**
  * @author chaoyulee chaoyu2330@gmail.com
@@ -36,7 +38,7 @@ import java.util.List;
 public class AdminController {
     private final GetStudentsWithFilterUseCase getStudentsWithFilterUseCase;
     private final SignUpUseCase signUpUseCase;
-    private final SignInUseCase signInUseCase;
+    private final LoginUseCase loginUseCase;
     private final TokenService tokenService;
 
     @PostMapping
@@ -48,10 +50,11 @@ public class AdminController {
     }
 
     @PostMapping("/login")
-    public LoginResponse login(@RequestBody SignInUseCase.Request request) {
+    public LoginResponse login(@RequestBody LoginUseCase.Request request) {
         SignInPresenter presenter = new SignInPresenter();
-        signInUseCase.execute(request, presenter);
-        presenter.setToken(tokenService.createToken(new TokenService.Identity(presenter.getStudentId())));
+        request.admin = true;
+        loginUseCase.execute(request, presenter);
+        presenter.setToken(tokenService.createToken(admin(presenter.getStudentId())));
         return presenter.present();
     }
 

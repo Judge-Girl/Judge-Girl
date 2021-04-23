@@ -26,7 +26,11 @@ public interface StudentRepository {
 
     Optional<Student> findByEmail(String email);
 
+    List<Student> findByEmailIn(String... emails);
+
     Optional<Student> findStudentById(Integer id);
+
+    List<Student> findByIdIn(Integer... ids);
 
     boolean existsByEmail(String email);
 

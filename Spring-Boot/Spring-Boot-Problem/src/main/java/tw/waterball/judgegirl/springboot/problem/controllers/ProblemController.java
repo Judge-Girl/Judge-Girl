@@ -29,12 +29,14 @@ import tw.waterball.judgegirl.springboot.utils.ResponseEntityUtils;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static java.util.Objects.nonNull;
+
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
 @CrossOrigin
 @RestController
-@RequestMapping(value = "/api/problems", method = {RequestMethod.GET, RequestMethod.POST})
+@RequestMapping(value = "/api/problems")
 @AllArgsConstructor
 public class ProblemController {
     private final GetProblemUseCase getProblemUseCase;
@@ -44,6 +46,8 @@ public class ProblemController {
     private final GetAllTagsUseCase getAllTagsUseCase;
     private final GetTestCasesUseCase getTestCasesUseCase;
     private final SaveProblemWithTitleUseCase saveProblemWithTitleUseCase;
+    private final PatchProblemUseCase patchProblemUseCase;
+
 
     @GetMapping("/tags")
     public List<String> getTags() {
@@ -51,11 +55,15 @@ public class ProblemController {
     }
 
     @GetMapping
-    public List<ProblemItem> getProblems(@RequestParam(value = "tags", required = false) String tagsSplitByCommas,
-                                         @RequestParam(value = "page", defaultValue = "0") int page) {
-        String[] tags = tagsSplitByCommas == null ? new String[0] : tagsSplitByCommas.split("\\s*,\\s*");
+    public List<ProblemItem> getProblems(@RequestParam(value = "tags", required = false) String[] tags,
+                                         @RequestParam(value = "page", defaultValue = "0") int page,
+                                         @RequestParam(required = false) int[] ids) {
         GetProblemListPresenter presenter = new GetProblemListPresenter();
-        getProblemListUseCase.execute(new ProblemQueryParams(tags, page), presenter);
+        if (nonNull(ids)) {
+            getProblemListUseCase.execute(ids, presenter);
+        } else {
+            getProblemListUseCase.execute(new ProblemQueryParams((tags == null ? new String[0] : tags), page), presenter);
+        }
         return presenter.present();
     }
 
@@ -101,6 +109,11 @@ public class ProblemController {
         return saveProblemWithTitleUseCase.execute(title);
     }
 
+    @PatchMapping(value = "/{problemId}")
+    public void patchProblem(@PathVariable int problemId,
+                             @RequestBody PatchProblemUseCase.Request request) {
+        patchProblemUseCase.execute(request);
+    }
 }
 
 class GetProblemPresenter implements GetProblemUseCase.Presenter {
@@ -112,7 +125,7 @@ class GetProblemPresenter implements GetProblemUseCase.Presenter {
     }
 
     ProblemView present() {
-        return ProblemView.fromEntity(problem);
+        return ProblemView.toViewModel(problem);
     }
 }
 
@@ -121,7 +134,7 @@ class GetProblemListPresenter implements GetProblemListUseCase.Presenter {
     private List<Problem> problems;
 
     @Override
-    public void setProblemList(List<Problem> problems) {
+    public void showProblems(List<Problem> problems) {
         this.problems = problems;
     }
 

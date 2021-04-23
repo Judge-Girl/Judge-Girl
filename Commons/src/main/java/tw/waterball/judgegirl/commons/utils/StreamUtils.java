@@ -13,25 +13,57 @@
 
 package tw.waterball.judgegirl.commons.utils;
 
+import tw.waterball.judgegirl.commons.utils.functional.ErrConsumer;
+import tw.waterball.judgegirl.commons.utils.functional.ErrFunction;
+
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import java.util.function.Predicate;
 import java.util.stream.IntStream;
+
+import static java.util.stream.Collectors.toList;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
 public abstract class StreamUtils {
-    public static <T, R> List<T> mapToList(Collection<R> collection, Function<R, T> mapping) {
-        return collection.stream().map(mapping).collect(Collectors.toList());
+    public static <T, R> List<T> mapToList(Collection<R> collection, ErrFunction<R, T> mapping) {
+        return collection.stream().map(in -> {
+            try {
+                return mapping.apply(in);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }).collect(toList());
     }
 
     public static <T, L, R> List<T> zipToList(List<L> left, List<R> right,
                                               BiFunction<L, R, T> zipAndMap) {
         return IntStream.range(0, left.size())
                 .mapToObj(i -> zipAndMap.apply(left.get(i), right.get(i)))
-                .collect(Collectors.toList());
+                .collect(toList());
+    }
+
+    public static <T> Optional<T> findFirst(Collection<T> collection, Predicate<T> predicate) {
+        return collection.stream().filter(predicate).findFirst();
+    }
+
+    public static <T> List<T> filterToList(Collection<T> collection, Predicate<T> predicate) {
+        return collection.stream().filter(predicate).collect(toList());
+    }
+
+    public static <T> void atTheSameTime(T[] array, ErrConsumer<T> consumer) {
+        Arrays.stream(array)
+                .parallel()
+                .forEach(t -> {
+                    try {
+                        consumer.accept(t);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                });
     }
 }

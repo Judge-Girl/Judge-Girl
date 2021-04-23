@@ -16,10 +16,14 @@ package tw.waterball.judgegirl.submissionapi.views;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.Nullable;
+import tw.waterball.judgegirl.entities.submission.Bag;
 import tw.waterball.judgegirl.entities.submission.Submission;
-import tw.waterball.judgegirl.entities.submission.Verdict;
+import tw.waterball.judgegirl.entities.submission.verdict.Verdict;
 
 import java.util.Date;
+import java.util.Map;
+
+import static java.util.Collections.emptyMap;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -32,34 +36,44 @@ public class SubmissionView {
     public int problemId;
     public String languageEnvName;
     public VerdictView verdict;
-    public boolean isJudged;
     public String submittedCodesFileId;
     public Date submissionTime;
+    public Map<String, String> bag;
+    public boolean judged;
 
     public SubmissionView(String id, int studentId, int problemId, String languageEnvName,
-                          VerdictView verdict, String submittedCodesFileId, Date submissionTime) {
+                          @Nullable VerdictView verdict, String submittedCodesFileId, Date submissionTime) {
+        this(id, studentId, problemId, languageEnvName, verdict, submittedCodesFileId, submissionTime,
+                emptyMap());
+    }
+
+    public SubmissionView(String id, int studentId, int problemId, String languageEnvName,
+                          @Nullable VerdictView verdict, String submittedCodesFileId, Date submissionTime,
+                          Map<String, String> bag) {
         this.id = id;
         this.studentId = studentId;
         this.problemId = problemId;
         this.languageEnvName = languageEnvName;
         this.verdict = verdict;
-        this.isJudged = verdict != null;
+        this.judged = verdict != null;
         this.submittedCodesFileId = submittedCodesFileId;
         this.submissionTime = submissionTime;
+        this.bag = bag;
     }
 
-    public static SubmissionView fromEntity(@Nullable Submission submission) {
+    public static SubmissionView toViewModel(@Nullable Submission submission) {
         if (submission == null) {
             return null;
         }
-        Verdict verdict = submission.getVerdict().orElse(null);
+        Verdict verdict = submission.mayHaveVerdict().orElse(null);
         return new SubmissionView(submission.getId(),
                 submission.getStudentId(),
                 submission.getProblemId(),
                 submission.getLanguageEnvName(),
-                VerdictView.fromEntity(verdict),
+                VerdictView.toViewModel(verdict),
                 submission.getSubmittedCodesFileId(),
-                submission.getSubmissionTime());
+                submission.getSubmissionTime(),
+                submission.getBag());
     }
 
     public static Submission toEntity(@Nullable SubmissionView submissionView) {
@@ -73,6 +87,7 @@ public class SubmissionView {
                 submissionView.getProblemId(),
                 submissionView.getLanguageEnvName(),
                 submissionView.getSubmittedCodesFileId());
+        submission.setBag(new Bag(submissionView.getBag()));
 
         Verdict verdict = VerdictView.toEntity(verdictView);
         submission.setVerdict(verdict);

@@ -1,9 +1,8 @@
 package tw.waterball.judgegirl.springboot.student.repositories;
 
 import lombok.AllArgsConstructor;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Component;
-import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
+import org.springframework.transaction.annotation.Transactional;
 import tw.waterball.judgegirl.entities.Group;
 import tw.waterball.judgegirl.springboot.student.repositories.jpa.GroupData;
 import tw.waterball.judgegirl.springboot.student.repositories.jpa.JpaGroupDataPort;
@@ -19,6 +18,7 @@ import static tw.waterball.judgegirl.springboot.student.repositories.jpa.GroupDa
  * @author - wally55077@gmail.com
  */
 @Component
+@Transactional
 @AllArgsConstructor
 public class JpaGroupRepository implements GroupRepository {
 
@@ -53,7 +53,7 @@ public class JpaGroupRepository implements GroupRepository {
     }
 
     @Override
-    public List<Group> findAllGroup() {
+    public List<Group> findAllGroups() {
         return jpaGroupDataPort.findAll().stream()
                 .map(GroupData::toEntity)
                 .collect(Collectors.toList());
@@ -61,10 +61,6 @@ public class JpaGroupRepository implements GroupRepository {
 
     @Override
     public void deleteGroupById(int groupId) {
-        try {
-            jpaGroupDataPort.deleteById(groupId);
-        } catch (EmptyResultDataAccessException e) {
-            throw new NotFoundException(e);
-        }
+        jpaGroupDataPort.deleteById(groupId);
     }
 }

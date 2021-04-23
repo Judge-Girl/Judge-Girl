@@ -25,7 +25,8 @@ import tw.waterball.judgegirl.entities.problem.Problem;
 import tw.waterball.judgegirl.entities.problem.SubmittedCodeSpec;
 import tw.waterball.judgegirl.entities.problem.Testcase;
 import tw.waterball.judgegirl.entities.submission.Submission;
-import tw.waterball.judgegirl.entities.submission.Verdict;
+import tw.waterball.judgegirl.entities.submission.verdict.Verdict;
+import tw.waterball.judgegirl.entities.submission.verdict.VerdictIssuedEvent;
 import tw.waterball.judgegirl.judger.infra.compile.CompileResult;
 import tw.waterball.judgegirl.judger.infra.compile.Compiler;
 import tw.waterball.judgegirl.judger.infra.compile.CompilerFactory;
@@ -38,9 +39,7 @@ import tw.waterball.judgegirl.problemapi.clients.ProblemServiceDriver;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.submissionapi.clients.SubmissionServiceDriver;
 import tw.waterball.judgegirl.submissionapi.clients.VerdictPublisher;
-import tw.waterball.judgegirl.submissionapi.views.ReportView;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
-import tw.waterball.judgegirl.submissionapi.views.VerdictIssuedEvent;
 
 import java.io.File;
 import java.io.IOException;
@@ -131,7 +130,7 @@ public class CCJudger extends PluginExtendedJudger {
         Path tempSubmittedCodesPath = submissionHome.getPath().resolve(TEMP_SUBMITTED_CODES_DIR_NAME);
         FileUtils.copyDirectory(getSourceRootPath().toFile(), tempSubmittedCodesPath.toFile());
 
-        logger.info("<After downloadSubmittedCodes> Files under src: {}.", stream(getSourceRootPath().toFile().listFiles()).map(f -> f.getName() + (f.isDirectory() ? "/" : "")).collect(Collectors.joining(",")));
+        logger.info("<After downloadSubmittedCodes> Files under src: {}.", stream(requireNonNull(getSourceRootPath().toFile().listFiles())).map(f -> f.getName() + (f.isDirectory() ? "/" : "")).collect(Collectors.joining(",")));
     }
 
     @Override
@@ -142,7 +141,7 @@ public class CCJudger extends PluginExtendedJudger {
             ZipUtils.unzipToDestination(zip.getInputStream(), getSourceRootPath());
         }
 
-        logger.info("<After downloadProvidedCodes> Files under src: {}.", stream(getSourceRootPath().toFile().listFiles()).map(f -> f.getName() + (f.isDirectory() ? "/" : "")).collect(Collectors.joining(",")));
+        logger.info("<After downloadProvidedCodes> Files under src: {}.", stream(requireNonNull(getSourceRootPath().toFile().listFiles())).map(f -> f.getName() + (f.isDirectory() ? "/" : "")).collect(Collectors.joining(",")));
     }
 
     @Override
@@ -158,7 +157,7 @@ public class CCJudger extends PluginExtendedJudger {
     protected CompileResult doCompile() {
         String script = getLanguageEnv().getCompilation().getScript();
         Files.write(getCompileScriptPath(), script.getBytes());
-        logger.info("<After compile> Files under src: {}.", stream(getSourceRootPath().toFile().listFiles()).map(f -> f.getName() + (f.isDirectory() ? "/" : "")).collect(Collectors.joining(",")));
+        logger.info("<After compile> Files under src: {}.", stream(requireNonNull(getSourceRootPath().toFile().listFiles())).map(f -> f.getName() + (f.isDirectory() ? "/" : "")).collect(Collectors.joining(",")));
         Compiler compiler = compilerFactory.create(getSourceRootPath());
         CompileResult result = compiler.compile(getLanguageEnv().getCompilation());
         if (result.isSuccessful()) {
@@ -311,13 +310,10 @@ public class CCJudger extends PluginExtendedJudger {
     protected void publishVerdict(Verdict verdict) {
         verdictPublisher.publish(
                 new VerdictIssuedEvent(getProblem().getId(),
-                        getProblem().getTitle(),
+                        getProblem().getTitle(), getStudent(),
                         getSubmission().getId(),
-                        verdict.getCompileErrorMessage(),
-                        verdict.getIssueTime(),
-                        ReportView.fromEntity(verdict.getReport()),
-                        verdict.getJudges()));
-
+                        verdict, getSubmission().getSubmissionTime(),
+                        getSubmission().getBag()));
     }
 
     @SneakyThrows

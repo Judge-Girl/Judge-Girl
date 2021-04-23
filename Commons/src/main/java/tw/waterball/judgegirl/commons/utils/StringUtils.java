@@ -26,4 +26,12 @@ public class StringUtils {
         chars[0] = Character.toUpperCase(chars[0]);
         return new String(chars);
     }
+
+    public static boolean isNullOrEmpty(String text) {
+        return text == null || text.isEmpty();
+    }
+
+    public static boolean isNullOrBlank(String text) {
+        return text == null || text.isBlank();
+    }
 }

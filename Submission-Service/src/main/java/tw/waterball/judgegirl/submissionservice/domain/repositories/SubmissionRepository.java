@@ -18,7 +18,7 @@ import tw.waterball.judgegirl.commons.models.files.StreamingResource;
 import tw.waterball.judgegirl.entities.problem.JudgeStatus;
 import tw.waterball.judgegirl.entities.submission.Submission;
 import tw.waterball.judgegirl.entities.submission.SubmissionThrottling;
-import tw.waterball.judgegirl.entities.submission.Verdict;
+import tw.waterball.judgegirl.entities.submission.verdict.Verdict;
 import tw.waterball.judgegirl.submissionservice.domain.usecases.dto.SubmissionQueryParams;
 
 import java.io.IOException;
@@ -31,6 +31,10 @@ import java.util.Optional;
 public interface SubmissionRepository {
     List<Submission> findByProblemIdAndJudgeStatus(int problemId, JudgeStatus judgeStatus);
 
+    List<Submission> query(SubmissionQueryParams params);
+
+    Optional<Submission> findById(String submissionId);
+
     Optional<Submission> findOne(int studentId, String submissionId);
 
     void issueVerdictOfSubmission(String submissionId, Verdict verdict);
@@ -39,11 +43,11 @@ public interface SubmissionRepository {
 
     Submission save(Submission submission);
 
+    Submission saveSubmissionWithCodes(Submission submission, List<FileResource> originalCodes) throws IOException;
+
     String saveZippedSubmittedCodesAndGetFileId(StreamingResource streamingResource) throws IOException;
 
     Optional<FileResource> downloadZippedSubmittedCodes(String submissionId);
-
-    List<Submission> find(SubmissionQueryParams params);
 
     Optional<SubmissionThrottling> findSubmissionThrottling(int problemId, int studentId);
 

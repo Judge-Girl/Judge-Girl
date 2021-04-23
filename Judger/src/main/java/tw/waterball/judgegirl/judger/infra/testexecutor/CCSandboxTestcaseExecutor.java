@@ -17,7 +17,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tw.waterball.judgegirl.commons.helpers.process.AbstractProcessRunner;
 import tw.waterball.judgegirl.entities.problem.Testcase;
-import tw.waterball.judgegirl.entities.submission.ProgramProfile;
+import tw.waterball.judgegirl.entities.submission.verdict.ProgramProfile;
 import tw.waterball.judgegirl.judger.layout.JudgerWorkspace;
 import tw.waterball.judgegirl.judger.layout.SandboxRoot;
 import tw.waterball.judgegirl.judger.layout.TestcaseHome;
@@ -36,16 +36,16 @@ public class CCSandboxTestcaseExecutor extends AbstractProcessRunner implements 
     private final static int uid = 65534;
     private final static int gid = 65534;
     private final static int memoryLimitCheckOnly = 0;
-    private static Logger logger = LogManager.getLogger(CCSandboxTestcaseExecutor.class);
-    private TestcaseHome testCaseHome;
-    private Path logPath;
-    private String submissionId;
-    private int cpuTimeLimit;
-    private int realTimeLimit;
-    private long memoryLimit;
-    private long stackLimit;
-    private long outputLimit;
-    private int processLimit;
+    private static final Logger logger = LogManager.getLogger(CCSandboxTestcaseExecutor.class);
+    private final TestcaseHome testCaseHome;
+    private final Path logPath;
+    private final String submissionId;
+    private final int cpuTimeLimit;
+    private final int realTimeLimit;
+    private final long memoryLimit;
+    private final long stackLimit;
+    private final long outputLimit;
+    private final int processLimit;
 
     public CCSandboxTestcaseExecutor(String submissionId,
                                      Testcase testcase,

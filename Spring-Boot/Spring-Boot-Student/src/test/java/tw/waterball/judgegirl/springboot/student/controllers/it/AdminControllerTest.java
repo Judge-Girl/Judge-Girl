@@ -27,17 +27,17 @@ import tw.waterball.judgegirl.entities.Student;
 import tw.waterball.judgegirl.springboot.profiles.Profiles;
 import tw.waterball.judgegirl.springboot.student.SpringBootStudentApplication;
 import tw.waterball.judgegirl.springboot.student.controllers.LoginResponse;
-import tw.waterball.judgegirl.springboot.student.view.StudentView;
+import tw.waterball.judgegirl.studentapi.clients.view.StudentView;
 import tw.waterball.judgegirl.studentservice.domain.repositories.StudentRepository;
-import tw.waterball.judgegirl.studentservice.domain.usecases.SignInUseCase;
+import tw.waterball.judgegirl.studentservice.domain.usecases.student.LoginUseCase;
 import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static tw.waterball.judgegirl.springboot.student.view.StudentView.toViewModel;
+import static tw.waterball.judgegirl.studentapi.clients.view.StudentView.toViewModel;
 
-@ActiveProfiles(Profiles.JWT)
+@ActiveProfiles(value = Profiles.JWT)
 @ContextConfiguration(classes = SpringBootStudentApplication.class)
 class AdminControllerTest extends AbstractSpringBootTest {
 
@@ -110,7 +110,7 @@ class AdminControllerTest extends AbstractSpringBootTest {
     void GivenOneAdminSignedUp_WhenLoginWithWrongPassword_ShouldRespondBadRequest() throws Exception {
         signUp(admin);
 
-        signIn(this.admin.getEmail(), "wrongPassword")
+        login(this.admin.getEmail(), "wrongPassword")
                 .andExpect(status().isBadRequest());
     }
 
@@ -118,7 +118,7 @@ class AdminControllerTest extends AbstractSpringBootTest {
     void GivenOneAdminSignedUp_WhenLoginWithWrongEmail_ShouldRespondNotFound() throws Exception {
         signUp(admin);
 
-        signIn("worngEmail@example.com", this.admin.getPassword())
+        login("worngEmail@example.com", this.admin.getPassword())
                 .andExpect(status().isNotFound());
     }
 
@@ -126,8 +126,16 @@ class AdminControllerTest extends AbstractSpringBootTest {
     void GivenOneAdminSignedUp_WhenLoginWithWrongEmailAndPassword_ShouldRespondNotFound() throws Exception {
         signUp(admin);
 
-        signIn("worngEmail@example.com", "wrongPassword")
+        login("worngEmail@example.com", "wrongPassword")
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void GivenOneStudentSignedUp_WhenLoginAsAdminWithStudentAccount_ShouldRespondForbidden() throws Exception {
+        Student student = new Student("Student", "student@example.com", "password");
+        signUpStudent(student);
+
+        login(student.getEmail(), student.getPassword()).andExpect(status().isForbidden());
     }
 
     private StudentView signUpAdminAndGetResponseBody(Student admin) throws Exception {
@@ -145,14 +153,20 @@ class AdminControllerTest extends AbstractSpringBootTest {
                 .content(toJson(admin)));
     }
 
-    private LoginResponse signInAndGetResponseBody(String email, String password) throws Exception {
-        return getBody(signIn(email, password).andExpect(status().isOk()), LoginResponse.class);
+    private ResultActions signUpStudent(Student student) throws Exception {
+        return mockMvc.perform(post("/api/students")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(toJson(student)));
     }
 
-    private ResultActions signIn(String email, String password) throws Exception {
+    private LoginResponse signInAndGetResponseBody(String email, String password) throws Exception {
+        return getBody(login(email, password).andExpect(status().isOk()), LoginResponse.class);
+    }
+
+    private ResultActions login(String email, String password) throws Exception {
         return mockMvc.perform(post("/api/admins/login")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(toJson(new SignInUseCase.Request(email, password))));
+                .content(toJson(new LoginUseCase.Request(email, password))));
     }
 
     private void verifyStudentLogin(StudentView view, LoginResponse body) {

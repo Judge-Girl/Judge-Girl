@@ -2,7 +2,7 @@ package tw.waterball.judgegirl.springboot.exam.repositories.jpa;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
-import tw.waterball.judgegirl.examservice.repositories.ExamFilter;
+import tw.waterball.judgegirl.examservice.domain.repositories.ExamFilter;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -23,7 +23,7 @@ public class FilterExamsPortImpl implements FilterExamsPort {
 
     @Override
     public List<ExamData> findStudentExams(int studentId, ExamFilter.Status status, Date now, Pageable pageable) {
-        String jql = "select e from ExamData e inner join e.examParticipations p";
+        String jql = "select e from ExamData e inner join e.examinees p";
         List<String> conditionStatements = getConditionStatements(status);
         conditionStatements.add("p.id.studentId = :studentId");
         jql = composeConditions(jql, conditionStatements);

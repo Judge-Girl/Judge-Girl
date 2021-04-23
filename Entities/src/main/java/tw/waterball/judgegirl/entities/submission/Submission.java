@@ -16,11 +16,14 @@ package tw.waterball.judgegirl.entities.submission;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import tw.waterball.judgegirl.entities.submission.verdict.Verdict;
 
 import java.util.Date;
 import java.util.Optional;
-import java.util.function.Consumer;
+import java.util.OptionalInt;
+import java.util.OptionalLong;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -28,7 +31,7 @@ import java.util.function.Consumer;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class Submission {
+public class Submission implements Comparable<Submission> {
     private String id;
     private int problemId;
     private int studentId;
@@ -40,9 +43,21 @@ public class Submission {
     private String submittedCodesFileId;
     private Date submissionTime = new Date();
 
+    // A submission client may want to transfer additional custom messages,
+    // the bag will be brought throughout the judge-flow.
+    private Bag bag = Bag.empty();
+
     public Submission(String id, int studentId, int problemId, String languageEnvName, String submittedCodesFileId, Date submissionTime) {
         this(id, studentId, problemId, languageEnvName, submittedCodesFileId);
         this.submissionTime = submissionTime;
+    }
+
+    public Submission(int studentId, int problemId, String languageEnvName) {
+        this(studentId, problemId, languageEnvName, null);
+    }
+
+    public Submission(int studentId, int problemId, String languageEnvName, String submittedCodesFileId) {
+        this(null, studentId, problemId, languageEnvName, submittedCodesFileId);
     }
 
     public Submission(String id, int studentId, int problemId, String languageEnvName, String submittedCodesFileId) {
@@ -53,21 +68,8 @@ public class Submission {
         this.submittedCodesFileId = submittedCodesFileId;
     }
 
-    public Submission(int studentId, int problemId, String languageEnvName, String submittedCodesFileId) {
-        this.studentId = studentId;
-        this.problemId = problemId;
-        this.languageEnvName = languageEnvName;
-        this.submittedCodesFileId = submittedCodesFileId;
-    }
-
-    public void ifHasBeenJudged(Consumer<Verdict> verdictConsumer) {
-        if (isJudged()) {
-            verdictConsumer.accept(verdict);
-        }
-    }
-
     public boolean isJudged() {
-        return verdict != null;
+        return mayHaveVerdict().isPresent();
     }
 
     public String getId() {
@@ -90,7 +92,7 @@ public class Submission {
         return problemId;
     }
 
-    public Optional<Verdict> getVerdict() {
+    public Optional<Verdict> mayHaveVerdict() {
         return Optional.ofNullable(verdict);
     }
 
@@ -106,6 +108,14 @@ public class Submission {
         this.submittedCodesFileId = submittedCodesFileId;
     }
 
+    public void setBag(Bag bag) {
+        this.bag = bag;
+    }
+
+    public Bag getBag() {
+        return bag;
+    }
+
     public Date getSubmissionTime() {
         return submissionTime;
     }
@@ -114,15 +124,39 @@ public class Submission {
         this.submissionTime = submissionTime;
     }
 
-    public Date getJudgeTime() {
-        return verdict == null ? null : verdict.getIssueTime();
-    }
-
     public String getLanguageEnvName() {
         return languageEnvName;
     }
 
     public void setProblemId(Integer problemId) {
         this.problemId = problemId;
+    }
+
+    @Override
+    public int compareTo(@NotNull Submission submission) {
+        if (!isJudged()) {
+            if (!submission.isJudged()) {
+                return 0;
+            }
+            return -1;
+        }
+        if (!submission.isJudged()) {
+            return 1;
+        }
+        return mayHaveVerdict().orElseThrow()
+                .compareTo(submission.mayHaveVerdict().orElseThrow());
+    }
+
+
+    public Optional<String> getBagMessageAsString(String key) {
+        return bag.getAsString(key);
+    }
+
+    public OptionalInt getBagMessageAsInteger(String key) {
+        return bag.getAsInteger(key);
+    }
+
+    public OptionalLong getBagMessageAsLong(String key) {
+        return bag.getAsLong(key);
     }
 }

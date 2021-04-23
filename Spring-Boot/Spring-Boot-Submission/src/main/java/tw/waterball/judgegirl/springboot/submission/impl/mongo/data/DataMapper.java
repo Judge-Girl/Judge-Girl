@@ -13,12 +13,15 @@
 
 package tw.waterball.judgegirl.springboot.submission.impl.mongo.data;
 
-import tw.waterball.judgegirl.entities.submission.Report;
+import tw.waterball.judgegirl.entities.submission.Bag;
 import tw.waterball.judgegirl.entities.submission.Submission;
-import tw.waterball.judgegirl.entities.submission.Verdict;
+import tw.waterball.judgegirl.entities.submission.report.Report;
+import tw.waterball.judgegirl.entities.submission.verdict.Verdict;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static tw.waterball.judgegirl.commons.utils.StringUtils.isNullOrEmpty;
 
 /**
  * A Data Mapper that maps Data Models to Entities and vice verse.
@@ -37,7 +40,7 @@ public class DataMapper {
         if (submission == null) {
             return null;
         }
-        Verdict verdict = submission.getVerdict().orElse(null);
+        Verdict verdict = submission.mayHaveVerdict().orElse(null);
         return new SubmissionData(
                 submission.getId(),
                 submission.getProblemId(),
@@ -45,7 +48,8 @@ public class DataMapper {
                 submission.getStudentId(),
                 toData(verdict),
                 submission.getSubmittedCodesFileId(),
-                submission.getSubmissionTime()
+                submission.getSubmissionTime(),
+                submission.getBag()
         );
     }
 
@@ -59,6 +63,7 @@ public class DataMapper {
                 verdict.getTotalGrade(),
                 verdict.getSummaryStatus(),
                 verdict.getCompileErrorMessage(),
+                verdict.getReport().getName(),
                 verdict.getReport().getRawData()
         );
     }
@@ -75,7 +80,7 @@ public class DataMapper {
                 data.getSubmittedCodesFileId(),
                 data.getSubmissionTime()
         );
-
+        submission.setBag(new Bag(data.getBag()));
         Verdict verdict = toEntity(data.getVerdict());
         submission.setVerdict(verdict);
         return submission;
@@ -86,10 +91,11 @@ public class DataMapper {
             return null;
         }
 
-        Verdict verdict = data.getCompileErrorMessage() == null ?
+        Verdict verdict = isNullOrEmpty(data.getCompileErrorMessage()) ?
                 new Verdict(data.getJudges(), data.getIssueTime()) :
                 Verdict.compileError(data.getCompileErrorMessage(), data.getIssueTime());
-        verdict.setReport(Report.fromData(data.getReportData()));
+
+        verdict.setReport(Report.fromData(data.getReportName(), data.getReportData()));
         return verdict;
     }
 }

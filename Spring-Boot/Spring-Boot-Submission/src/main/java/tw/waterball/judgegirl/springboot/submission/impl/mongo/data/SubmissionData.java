@@ -20,6 +20,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
+import java.util.Map;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -37,4 +38,18 @@ public class SubmissionData {
     private VerdictData verdict;
     private String submittedCodesFileId;
     private Date submissionTime;
+    private Map<String, String> bag;
+    private String submittedCodesHash;
+
+    public SubmissionData(String id, int problemId, String languageEnvName, int studentId, VerdictData verdict,
+                          String submittedCodesFileId, Date submissionTime, Map<String, String> bag) {
+        this.id = id;
+        this.problemId = problemId;
+        this.languageEnvName = languageEnvName;
+        this.studentId = studentId;
+        this.verdict = verdict;
+        this.submittedCodesFileId = submittedCodesFileId;
+        this.submissionTime = submissionTime;
+        this.bag = bag;
+    }
 }

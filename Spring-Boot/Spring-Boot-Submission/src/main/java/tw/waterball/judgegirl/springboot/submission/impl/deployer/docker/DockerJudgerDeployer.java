@@ -45,6 +45,7 @@ import static java.util.Collections.singletonList;
 public class DockerJudgerDeployer implements JudgerDeployer {
     private final static Logger logger = LogManager.getLogger(DockerJudgerDeployer.class);
     private final int dockerRemovalIntervalInMs;
+    private final String jwtSecret;
     private final DockerClient dockerClient;
     private final ScheduledExecutorService scheduler;
     private final ServiceProps.ProblemService problemServiceInstance;
@@ -52,13 +53,16 @@ public class DockerJudgerDeployer implements JudgerDeployer {
     private final JudgeGirlAmqpProps amqpProps;
     private final JudgeGirlJudgerProps judgerProps;
 
-    public DockerJudgerDeployer(int dockerRemovalIntervalInMs, DockerClient dockerClient,
+    public DockerJudgerDeployer(int dockerRemovalIntervalInMs,
+                                String jwtSecret,
+                                DockerClient dockerClient,
                                 ScheduledExecutorService scheduler,
                                 ServiceProps.ProblemService problemServiceInstance,
                                 ServiceProps.SubmissionService submissionServiceInstance,
                                 JudgeGirlAmqpProps amqpProps,
                                 JudgeGirlJudgerProps judgerProps) {
         this.dockerRemovalIntervalInMs = dockerRemovalIntervalInMs;
+        this.jwtSecret = jwtSecret;
         this.dockerClient = dockerClient;
         this.scheduler = scheduler;
         this.problemServiceInstance = problemServiceInstance;
@@ -75,7 +79,7 @@ public class DockerJudgerDeployer implements JudgerDeployer {
                         .studentId(studentId)
                         .problemId(problem.getId())
                         .submissionId(submission.getId())
-                        .jwtToken(judgerProps.getJwtToken())
+                        .jwtSecret(jwtSecret)
                         .problemServiceInstance(problemServiceInstance)
                         .submissionServiceInstance(submissionServiceInstance)
                         .amqpVirtualHost(amqpProps.getVirtualHost())
@@ -83,7 +87,7 @@ public class DockerJudgerDeployer implements JudgerDeployer {
                         .amqpPort(amqpProps.getPort())
                         .amqpUserName(amqpProps.getUsername())
                         .amqpPassword(amqpProps.getPassword())
-                        .submissionExchangeName(amqpProps.getSubmissionExchangeName())
+                        .verdictExchangeName(amqpProps.getVerdictExchangeName())
                         .verdictIssuedRoutingKeyFormat(
                                 format(amqpProps.getVerdictIssuedRoutingKeyFormat(), "*"))
                         .build());

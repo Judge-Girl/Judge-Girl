@@ -1,7 +1,7 @@
 package tw.waterball.judgegirl.springboot.exam.repositories.jpa;
 
 import lombok.*;
-import tw.waterball.judgegirl.entities.Exam;
+import tw.waterball.judgegirl.entities.exam.Exam;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -32,11 +32,11 @@ public class ExamData {
     private List<QuestionData> questions = new ArrayList<>();
 
     @OneToMany(mappedBy = "id.examId", cascade = {CascadeType.ALL})
-    private List<ExamParticipationData> examParticipations = new ArrayList<>();
+    private List<ExamineeData> examinees = new ArrayList<>();
 
     public Exam toEntity() {
         return new Exam(id, name, startTime, endTime, description,
-                mapToList(questions, QuestionData::toEntity));
+                mapToList(questions, QuestionData::toEntity), mapToList(examinees, ExamineeData::toEntity));
     }
 
     public static ExamData toData(Exam exam) {
@@ -47,8 +47,8 @@ public class ExamData {
                 .endTime(exam.getEndTime())
                 .description(exam.getDescription())
                 .questions(mapToList(exam.getQuestions(), QuestionData::toData))
+                .examinees(mapToList(exam.getExaminees(), ExamineeData::toData))
                 .build();
     }
-
 
 }

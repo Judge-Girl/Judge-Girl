@@ -44,4 +44,10 @@ public interface ProblemRepository {
     Problem save(Problem problem, Map<LanguageEnv, InputStream> providedCodesZipMap, InputStream testcaseIOsZip);
 
     int saveProblemWithTitleAndGetId(String title);
+
+    void patchProblem(int problemId, PatchProblemParams params);
+
+    boolean problemExists(int problemId);
+
+    List<Problem> findProblemsByIds(int... problemIds);
 }

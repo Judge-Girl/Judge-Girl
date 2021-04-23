@@ -27,14 +27,12 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MvcResult;
 import tw.waterball.judgegirl.commons.utils.ZipUtils;
-import tw.waterball.judgegirl.entities.problem.Language;
-import tw.waterball.judgegirl.entities.problem.LanguageEnv;
-import tw.waterball.judgegirl.entities.problem.Problem;
-import tw.waterball.judgegirl.entities.problem.Testcase;
+import tw.waterball.judgegirl.entities.problem.*;
 import tw.waterball.judgegirl.entities.stubs.ProblemStubs;
 import tw.waterball.judgegirl.problemapi.views.ProblemItem;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.problemservice.domain.repositories.ProblemRepository;
+import tw.waterball.judgegirl.problemservice.domain.usecases.PatchProblemUseCase;
 import tw.waterball.judgegirl.springboot.problem.SpringBootProblemApplication;
 import tw.waterball.judgegirl.springboot.problem.repositories.MongoProblemRepository;
 import tw.waterball.judgegirl.springboot.profiles.Profiles;
@@ -49,10 +47,8 @@ import static java.lang.Integer.parseInt;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static java.util.Objects.requireNonNull;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
@@ -76,7 +72,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     @BeforeEach
     void setup() {
         problem = ProblemStubs
-                .template()
+                .problemTemplate()
                 .build();
     }
 
@@ -115,7 +111,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         mockMvc.perform(get("/api/problems/{problemId}", problem.getId()))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().json(toJson(ProblemView.fromEntity(problem))));
+                .andExpect(content().json(toJson(ProblemView.toViewModel(problem))));
     }
 
     @Test
@@ -169,7 +165,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     }
 
     private Problem givenProblemWithTags(int id, String... tags) {
-        final Problem targetProblem = ProblemStubs.template().id(id)
+        final Problem targetProblem = ProblemStubs.problemTemplate().id(id)
                 .tags(asList(tags)).build();
         mongoTemplate.save(targetProblem);
         return targetProblem;
@@ -251,7 +247,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     private List<Problem> givenProblemsSaved(int count) {
         Random random = new Random();
         List<Problem> problems = IntStream.range(0, count).mapToObj((id) ->
-                ProblemStubs.template().id(id)
+                ProblemStubs.problemTemplate().id(id)
                         .title(String.valueOf(random.nextInt())).build())
                 .collect(Collectors.toList());
         problems.forEach(mongoTemplate::save);
@@ -268,5 +264,135 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
 
         assertEquals(randomTitle, requireNonNull(mongoTemplate.findById(id, Problem.class)).getTitle());
     }
+
+    @Test
+    void GivenOneProblemSavedAndPatchProblemWithNewTitle_WhenQueryTheSameProblem_ShouldHaveNewTitle() throws Exception {
+        Problem savedProblem = givenOneProblemSaved();
+        String newTitle = UUID.randomUUID().toString();
+
+        savedProblem.setTitle(newTitle);
+        patchProblem(savedProblem);
+
+        Problem actualProblem = mongoTemplate.findById(savedProblem.getId(), Problem.class);
+        assertNotNull(actualProblem);
+        assertEquals(newTitle, actualProblem.getTitle());
+    }
+
+    @Test
+    void GivenOneProblemSavedAndPatchProblemWithDescription_WhenQueryById_ShouldHaveNewDescription() throws Exception {
+        Problem savedProblem = givenOneProblemSaved();
+        String newDescription = UUID.randomUUID().toString();
+
+        savedProblem.setDescription(newDescription);
+        patchProblem(savedProblem);
+
+        Problem actualProblem = mongoTemplate.findById(savedProblem.getId(), Problem.class);
+        assertNotNull(actualProblem);
+        assertEquals(newDescription, actualProblem.getDescription());
+    }
+
+    @Test
+    void GivenOneProblemSavedAndPatchProblemWithPluginMatchTags_WhenQueryById_ShouldHaveNewTags() throws Exception {
+        Problem savedProblem = givenOneProblemSaved();
+        JudgePluginTag pluginMatchTag = new JudgePluginTag();
+        pluginMatchTag.setGroup("Judge Girl");
+        pluginMatchTag.setName("Test");
+        pluginMatchTag.setVersion("1.0");
+        pluginMatchTag.setType(JudgePluginTag.Type.OUTPUT_MATCH_POLICY);
+
+        savedProblem.setOutputMatchPolicyPluginTag(pluginMatchTag);
+        patchProblem(savedProblem);
+
+        Problem actualProblem = mongoTemplate.findById(savedProblem.getId(), Problem.class);
+        assertNotNull(actualProblem);
+        JudgePluginTag actualPluginMatchTag = actualProblem.getOutputMatchPolicyPluginTag();
+        assertEquals(pluginMatchTag, actualPluginMatchTag);
+    }
+
+    @Test
+    void GivenOneProblemSavedAndPatchProblemWithPluginFilterTags_WhenQueryById_ShouldHaveNewTags() throws Exception {
+        Problem savedProblem = givenOneProblemSaved();
+        Set<JudgePluginTag> filterPluginTags = new HashSet<>();
+        final int COUNT_FILTER = 10;
+        for (int i = 1; i <= COUNT_FILTER; ++i) {
+            JudgePluginTag filterPluginTag = new JudgePluginTag();
+            filterPluginTag.setGroup("Judge Girl");
+            filterPluginTag.setName(String.format("Test %d", i));
+            filterPluginTag.setVersion(String.format("%d.0", i));
+            filterPluginTag.setType(JudgePluginTag.Type.FILTER);
+            filterPluginTags.add(filterPluginTag);
+        }
+
+        savedProblem.setFilterPluginTags(filterPluginTags);
+        patchProblem(savedProblem);
+
+        Problem actualProblem = mongoTemplate.findById(savedProblem.getId(), Problem.class);
+        assertNotNull(actualProblem);
+        Set<JudgePluginTag> queryPluginFilterTags = new HashSet<>(actualProblem.getFilterPluginTags());
+        assertEquals(queryPluginFilterTags, filterPluginTags);
+    }
+
+    private void patchProblem(Problem problem) throws Exception {
+        mockMvc.perform(patch("/api/problems/{problemId}", problem.getId())
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .content(objectMapper.writeValueAsString(
+                        new PatchProblemUseCase.Request(
+                                problem.getId(),
+                                problem.getTitle(),
+                                problem.getDescription(),
+                                problem.getOutputMatchPolicyPluginTag(),
+                                new HashSet<>(problem.getFilterPluginTags())))))
+                .andExpect(status().isOk());
+    }
+
+    private Problem givenOneProblemSaved() {
+        return givenProblemsSaved(1).get(0);
+    }
+
+    @Test
+    void GivenProblems_1_2_3_Saved_WhenGetProblemsByIds_1_2_3_ShouldRespondThat1_2_3() throws Exception {
+        saveProblems(1, 2, 3);
+
+        List<Problem> actualProblems = getProblems(1, 2, 3);
+
+        problemsShouldHaveIds(actualProblems, 1, 2, 3);
+    }
+
+    @Test
+    void Given_1_ProblemsSaved_WhenGetProblemsByIds_1_2_ShouldRespondThat_1() throws Exception {
+        saveProblems(1);
+
+        List<Problem> actualProblems = getProblems(1, 2);
+
+        problemsShouldHaveIds(actualProblems, 1);
+    }
+
+    private void problemsShouldHaveIds(List<Problem> actualProblems, Integer... problemIds) {
+        Set<Integer> idsSet = Set.of(problemIds);
+        actualProblems.forEach(problem -> assertTrue(idsSet.contains(problem.getId())));
+    }
+
+    private List<Problem> getProblems(Integer... problemIds) throws Exception {
+        return getBody(mockMvc.perform(get("/api/problems").queryParam("ids", Arrays.stream(problemIds).map(String::valueOf).collect(Collectors.joining(","))))
+                .andExpect(status().isOk()), new TypeReference<>() {
+        });
+    }
+
+    private void saveProblems(int... problemIds) {
+        Arrays.stream(problemIds).forEach(problemId -> {
+            Problem problem = ProblemStubs
+                    .problemTemplate()
+                    .build();
+            problem.setId(problemId);
+            byte[] providedCodesZip = ZipUtils.zipFilesFromResources("/stubs/file1.c", "/stubs/file2.c");
+
+            byte[] testcaseIOsZip = ZipUtils.zipFilesFromResources("/stubs/in/", "/stubs/out/");
+
+            problemRepository.save(problem,
+                    singletonMap(problem.getLanguageEnv(Language.C), new ByteArrayInputStream(providedCodesZip))
+                    , new ByteArrayInputStream(testcaseIOsZip));
+        });
+    }
+
 }
 

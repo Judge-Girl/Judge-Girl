@@ -29,22 +29,25 @@ import tw.waterball.judgegirl.entities.Student;
 import tw.waterball.judgegirl.springboot.profiles.Profiles;
 import tw.waterball.judgegirl.springboot.student.SpringBootStudentApplication;
 import tw.waterball.judgegirl.springboot.student.controllers.LoginResponse;
-import tw.waterball.judgegirl.springboot.student.view.StudentView;
+import tw.waterball.judgegirl.studentapi.clients.view.StudentView;
 import tw.waterball.judgegirl.studentservice.domain.exceptions.StudentIdNotFoundException;
 import tw.waterball.judgegirl.studentservice.domain.repositories.StudentRepository;
-import tw.waterball.judgegirl.studentservice.domain.usecases.ChangePasswordUseCase;
-import tw.waterball.judgegirl.studentservice.domain.usecases.SignInUseCase;
+import tw.waterball.judgegirl.studentservice.domain.usecases.student.ChangePasswordUseCase;
+import tw.waterball.judgegirl.studentservice.domain.usecases.student.LoginUseCase;
 import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
 
 import java.util.List;
 
+import static java.util.Arrays.stream;
+import static java.util.stream.Collectors.joining;
 import static java.util.stream.IntStream.range;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static tw.waterball.judgegirl.commons.token.TokenService.Identity.student;
 import static tw.waterball.judgegirl.commons.utils.HttpHeaderUtils.bearerWithToken;
-import static tw.waterball.judgegirl.springboot.student.view.StudentView.toViewModel;
+import static tw.waterball.judgegirl.studentapi.clients.view.StudentView.toViewModel;
 
 
 /**
@@ -113,7 +116,7 @@ public class StudentControllerTest extends AbstractSpringBootTest {
     @Test
     void GivenOneStudentSignedUp_WhenStudentLoginCorrectly_ShouldRespondLoginResponseWithCorrectToken() throws Exception {
         StudentView studentView = signUpAndGetResponseBody(student);
-        LoginResponse body = signInAndGetResponseBody(this.student.getEmail(), this.student.getPassword());
+        LoginResponse body = loginAndGetResponseBody(this.student.getEmail(), this.student.getPassword());
 
         verifyStudentLogin(studentView, body);
     }
@@ -123,7 +126,7 @@ public class StudentControllerTest extends AbstractSpringBootTest {
     void GivenOneStudentSignedUp_WhenLoginWithWrongPassword_ShouldRespondBadRequest() throws Exception {
         signUp(student);
 
-        signIn(this.student.getEmail(), "wrongPassword")
+        login(this.student.getEmail(), "wrongPassword")
                 .andExpect(status().isBadRequest());
     }
 
@@ -131,7 +134,7 @@ public class StudentControllerTest extends AbstractSpringBootTest {
     void GivenOneStudentSignedUp_WhenLoginWithWrongEmail_ShouldRespondNotFound() throws Exception {
         signUp(student);
 
-        signIn("worngEmail@example.com", this.student.getPassword())
+        login("worngEmail@example.com", this.student.getPassword())
                 .andExpect(status().isNotFound());
     }
 
@@ -139,7 +142,7 @@ public class StudentControllerTest extends AbstractSpringBootTest {
     void GivenOneStudentSignedUp_WhenLoginWithWrongEmailAndPassword_ShouldRespondNotFound() throws Exception {
         signUp(student);
 
-        signIn("worngEmail@example.com", "wrongPassword")
+        login("worngEmail@example.com", "wrongPassword")
                 .andExpect(status().isNotFound());
     }
 
@@ -147,7 +150,7 @@ public class StudentControllerTest extends AbstractSpringBootTest {
     @Test
     void GivenOneStudentSignedUp_WhenGetStudentById_ShouldRespondStudentView() throws Exception {
         StudentView student = signUpAndGetResponseBody(this.student);
-        LoginResponse loginResponse = signInAndGetResponseBody(this.student.getEmail(), this.student.getPassword());
+        LoginResponse loginResponse = loginAndGetResponseBody(this.student.getEmail(), this.student.getPassword());
 
         StudentView body = getBody(getStudentById(student.id, loginResponse.token)
                 .andExpect(status().isOk()), StudentView.class);
@@ -159,16 +162,54 @@ public class StudentControllerTest extends AbstractSpringBootTest {
     @Test
     void WhenGetStudentByNonExistingStudentId_ShouldRespondNotFound() throws Exception {
         int nonExistingStudentId = 123123;
-        TokenService.Token token = tokenService.createToken(new TokenService.Identity(nonExistingStudentId));
+        TokenService.Token token = tokenService.createToken(student(nonExistingStudentId));
 
         getStudentById(nonExistingStudentId, token.getToken())
                 .andExpect(status().isNotFound());
     }
 
     @Test
+    void GivenThreeStudents_A_B_C_SignedUp_WhenGetStudents_B_C_D_ByIds_ShouldRespond_B_C() throws Exception {
+        Student A = signUpAndGet(new Student("nameA", "a@example.com", "12345678"));
+        Student B = signUpAndGet(new Student("nameB", "b@example.com", "12345678"));
+        Student C = signUpAndGet(new Student("nameC", "c@example.com", "12345678"));
+        final int STUDENT_D_ID = 9999; // non-existing
+
+        List<Student> students = getStudentByIds(B.getId(), C.getId(), STUDENT_D_ID);
+
+        studentsShouldHaveEmails(students, "b@example.com", "c@example.com");
+    }
+
+    private List<Student> getStudentByIds(Integer... ids) throws Exception {
+        String idsSplitByComma = stream(ids).map(String::valueOf).collect(joining(","));
+        return getBody(mockMvc.perform(get("/api/students").queryParam("ids", idsSplitByComma))
+                .andExpect(status().isOk()), new TypeReference<>() {
+        });
+    }
+
+    @Test
+    void GivenThreeStudents_A_B_C_SignedUp_WhenGetStudents_B_C_D_ByEmails_ShouldRespond_B_C() throws Exception {
+        Student A = new Student("nameA", "a@example.com", "12345678");
+        Student B = new Student("nameB", "b@example.com", "12345678");
+        Student C = new Student("nameC", "c@example.com", "12345678");
+        signUpStudents(A, B, C);
+
+        String[] emails = {"b@example.com", "c@example.com", "d@example.com"};
+        List<Student> students = getStudentsByEmail(emails);
+
+        studentsShouldHaveEmails(students, "b@example.com", "c@example.com");
+    }
+
+    private void studentsShouldHaveEmails(List<Student> students, String... emails) {
+        assertEquals(2, students.size());
+        assertEquals(emails[0], students.get(0).getEmail());
+        assertEquals(emails[1], students.get(1).getEmail());
+    }
+
+    @Test
     void GivenOneStudentSignedUp_WhenAuth_ShouldRespondLoginResponseWithNewToken() throws Exception {
         signUp(student);
-        LoginResponse loginResponse = signInAndGetResponseBody(student.getEmail(), student.getPassword());
+        LoginResponse loginResponse = loginAndGetResponseBody(student.getEmail(), student.getPassword());
 
         // we must delay certain seconds so that our token's expiry date
         // will increase enough to make differences in its produced token
@@ -185,7 +226,7 @@ public class StudentControllerTest extends AbstractSpringBootTest {
     @Test
     void WhenAuthWithNonExistingStudentToken_ShouldRespondUnauthorized() throws Exception {
         int nonExistingStudentId = 123123;
-        TokenService.Token token = tokenService.createToken(new TokenService.Identity(nonExistingStudentId));
+        TokenService.Token token = tokenService.createToken(student(nonExistingStudentId));
         auth(token.getToken()).andExpect(status().isUnauthorized());
     }
 
@@ -198,7 +239,7 @@ public class StudentControllerTest extends AbstractSpringBootTest {
     @Test
     void GivenOneStudentSignedUp_WhenChangePasswordWithCorrectCurrentPassword_ShouldSucceed() throws Exception {
         signUp(student);
-        LoginResponse body = signInAndGetResponseBody(student.getEmail(), student.getPassword());
+        LoginResponse body = loginAndGetResponseBody(student.getEmail(), student.getPassword());
 
         String newPassword = "newPassword";
         changePassword(student.getPassword(), newPassword, body.id, body.token).andExpect(status().isOk());
@@ -211,7 +252,7 @@ public class StudentControllerTest extends AbstractSpringBootTest {
     @Test
     void GivenOneStudentSignedUp_WhenChangePasswordWithWrongCurrentPassword_ShouldRejectWithBadRequest() throws Exception {
         signUp(student);
-        LoginResponse body = signInAndGetResponseBody(student.getEmail(), student.getPassword());
+        LoginResponse body = loginAndGetResponseBody(student.getEmail(), student.getPassword());
 
         String wrongPassword = "wrongPassword";
         String newPassword = "newPassword";
@@ -256,10 +297,22 @@ public class StudentControllerTest extends AbstractSpringBootTest {
         return getBody(signUp(student).andExpect(status().isOk()), StudentView.class);
     }
 
+    private void signUpStudents(Student... students) throws Exception {
+        for (Student value : students) {
+            signUp(value);
+        }
+    }
+
     @SneakyThrows
     private ResultActions signUp(String name, String email, String password) {
         Student newStudent = new Student(name, email, password);
         return signUp(newStudent);
+    }
+
+    private Student signUpAndGet(Student student) throws Exception {
+        return getBody(mockMvc.perform(post("/api/students")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(toJson(student))), Student.class);
     }
 
     private ResultActions signUp(Student student) throws Exception {
@@ -280,14 +333,14 @@ public class StudentControllerTest extends AbstractSpringBootTest {
                 .content(toJson(admin)));
     }
 
-    private LoginResponse signInAndGetResponseBody(String email, String password) throws Exception {
-        return getBody(signIn(email, password).andExpect(status().isOk()), LoginResponse.class);
+    private LoginResponse loginAndGetResponseBody(String email, String password) throws Exception {
+        return getBody(login(email, password).andExpect(status().isOk()), LoginResponse.class);
     }
 
-    private ResultActions signIn(String email, String password) throws Exception {
+    private ResultActions login(String email, String password) throws Exception {
         return mockMvc.perform(post("/api/students/login")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(toJson(new SignInUseCase.Request(email, password))));
+                .content(toJson(new LoginUseCase.Request(email, password))));
     }
 
     private void verifyStudentLogin(StudentView view, LoginResponse body) {
@@ -301,6 +354,14 @@ public class StudentControllerTest extends AbstractSpringBootTest {
     private ResultActions getStudentById(Integer id, String tokenString) throws Exception {
         return mockMvc.perform(get("/api/students/{id}", id)
                 .header("Authorization", bearerWithToken(tokenString)));
+    }
+
+    private List<Student> getStudentsByEmail(String[] emails) throws Exception {
+        return getBody(mockMvc.perform(post("/api/students/search")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(toJson(emails)))
+                .andExpect(status().isOk()), new TypeReference<>() {
+        });
     }
 
     private LoginResponse authAndGetResponseBody(String tokenString) throws Exception {

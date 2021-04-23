@@ -32,7 +32,7 @@
 //import tw.waterball.judgegirl.submissionapi.clients.SubmissionServiceDriver;
 //import tw.waterball.judgegirl.submissionapi.clients.VerdictPublisher;
 //import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
-//import tw.waterball.judgegirl.submissionapi.views.VerdictIssuedEvent;
+//import tw.waterball.judgegirl.entities.submission.verdict.VerdictIssuedEvent;
 //
 //import java.io.ByteArrayInputStream;
 //import java.io.IOException;

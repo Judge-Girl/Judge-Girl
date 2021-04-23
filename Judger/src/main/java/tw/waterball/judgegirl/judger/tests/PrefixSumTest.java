@@ -19,9 +19,11 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
 import tw.waterball.judgegirl.entities.problem.*;
-import tw.waterball.judgegirl.entities.submission.Judge;
-import tw.waterball.judgegirl.entities.submission.ProgramProfile;
+import tw.waterball.judgegirl.entities.submission.Bag;
 import tw.waterball.judgegirl.entities.submission.Submission;
+import tw.waterball.judgegirl.entities.submission.verdict.Judge;
+import tw.waterball.judgegirl.entities.submission.verdict.ProgramProfile;
+import tw.waterball.judgegirl.entities.submission.verdict.VerdictIssuedEvent;
 import tw.waterball.judgegirl.judger.CCJudger;
 import tw.waterball.judgegirl.judger.DefaultCCJudgerFactory;
 import tw.waterball.judgegirl.plugins.impl.match.AllMatchPolicyPlugin;
@@ -30,13 +32,14 @@ import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.submissionapi.clients.SubmissionServiceDriver;
 import tw.waterball.judgegirl.submissionapi.clients.VerdictPublisher;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
-import tw.waterball.judgegirl.submissionapi.views.VerdictIssuedEvent;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
+import static java.util.Collections.singletonMap;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -47,22 +50,22 @@ public class PrefixSumTest {
     private final static String zippedTestcaseIOsFileName = "/judgeCases/prefixsum/io.zip";
     private final static String zippedSubmittedCodesFileNameFormat = "/judgeCases/prefixsum/%s/submitted.zip";
     private final static int MEMORY_LIMIT = 128 << 20;
-    private static int problemId = 1;
+    private static final int problemId = 1;
     public static final String COMPILATION_SCRIPT = "gcc -std=c99 -O2 -pthread prefixsum-seq.c secret.c";
-    private static List<Testcase> testcases = Arrays.asList(
+    private static final List<Testcase> testcases = Arrays.asList(
             new Testcase("1", problemId, 1000,
                     MEMORY_LIMIT, MEMORY_LIMIT, -1, 30),
             new Testcase("2", problemId, 1000,
                     MEMORY_LIMIT, MEMORY_LIMIT, -1, 30),
             new Testcase("3", problemId, 2500,
                     MEMORY_LIMIT, MEMORY_LIMIT, -1, 40));
-    private static LanguageEnv languageEnv = LanguageEnv.builder()
+    private static final LanguageEnv languageEnv = LanguageEnv.builder()
             .language(Language.C)
             .resourceSpec(new ResourceSpec(2f, 0))
             .submittedCodeSpec(new SubmittedCodeSpec(Language.C, "prefixsum-seq.c"))
             .providedCodesFileId("providedCodesFileId")
             .compilation(new Compilation(COMPILATION_SCRIPT)).build();
-    private static Problem problem = Problem.builder()
+    private static final Problem problem = Problem.builder()
             .id(problemId).title("Prefix Sum")
             .description("Ignored")
             .languageEnv(languageEnv.getName(), languageEnv)
@@ -72,8 +75,11 @@ public class PrefixSumTest {
             .testcases(testcases)
             .build();
 
-    private static int studentId = 1;
-    private static Submission submission = new Submission(studentId, problem.getId(), languageEnv.getName(), "fileId");
+    private static final int studentId = 1;
+    private static final Map<String, String> submissionBag = singletonMap("bag-key", "bag-key");
+    private static final Submission submission = new Submission(studentId, problem.getId(), languageEnv.getName(), "fileId") {{
+        setBag(new Bag(submissionBag));
+    }};
     private ProblemServiceDriver problemServiceDriver;
     private SubmissionServiceDriver submissionServiceDriver;
     private VerdictPublisher verdictPublisher;
@@ -102,7 +108,7 @@ public class PrefixSumTest {
     private void verifyACPublished() {
         VerdictIssuedEvent event = captureVerdictIssuedEvent();
         for (int i = 0; i < testcases.size(); i++) {
-            Judge judge = event.getJudges().get(i);
+            Judge judge = event.getVerdict().getJudges().get(i);
             Testcase testCase = testcases.get(i);
             assertEquals(JudgeStatus.AC, judge.getStatus(), event.toString());
             assertEquals(testCase.getGrade(), judge.getGrade());
@@ -115,7 +121,8 @@ public class PrefixSumTest {
         assertEquals(problemId, event.getProblemId());
         assertEquals(problem.getTitle(), event.getProblemTitle());
         assertEquals(submission.getId(), event.getSubmissionId());
-        assertNull(event.getCompileErrorMessage(), "Compile error message should be null if the compile succeeded.");
+        assertNull(event.getVerdict().getCompileErrorMessage(), "Compile error message should be null if the compile succeeded.");
+        assertEquals(submissionBag, event.getSubmissionBag(), "The bag should also be published");
     }
 
 
@@ -132,19 +139,14 @@ public class PrefixSumTest {
     private void verifyCEPublished() {
         VerdictIssuedEvent event = captureVerdictIssuedEvent();
         for (int i = 0; i < testcases.size(); i++) {
-            Judge judge = event.getJudges().get(i);
-            Testcase testCase = testcases.get(i);
-            assertEquals(JudgeStatus.CE, judge.getStatus(), event.toString());
-            assertEquals(0, judge.getGrade());
-            assertEquals(testCase.getName(), judge.getTestcaseName());
-            ProgramProfile profile = judge.getProgramProfile();
-            assertEquals(0, profile.getRuntime());
-            assertEquals(0, profile.getMemoryUsage());
+            assertTrue(event.getVerdict().getJudges().isEmpty());
+            assertNotNull(event.getVerdict().getCompileErrorMessage());
+            assertEquals(JudgeStatus.CE, event.getVerdict().getSummaryStatus());
         }
         assertEquals(problemId, event.getProblemId());
         assertEquals(problem.getTitle(), event.getProblemTitle());
         assertEquals(submission.getId(), event.getSubmissionId());
-        assertNotNull(event.getCompileErrorMessage(), "Compile error message should not be null if the compile failed.");
+        assertNotNull(event.getVerdict().getCompileErrorMessage(), "Compile error message should not be null if the compile failed.");
     }
 
 
@@ -161,7 +163,7 @@ public class PrefixSumTest {
     private void verifyTLEPublished() {
         VerdictIssuedEvent event = captureVerdictIssuedEvent();
         for (int i = 0; i < testcases.size(); i++) {
-            Judge judge = event.getJudges().get(i);
+            Judge judge = event.getVerdict().getJudges().get(i);
             Testcase testCase = testcases.get(i);
             assertEquals(JudgeStatus.TLE, judge.getStatus(), event.toString());
             assertEquals(0, judge.getGrade());
@@ -172,7 +174,7 @@ public class PrefixSumTest {
         assertEquals(problemId, event.getProblemId());
         assertEquals(problem.getTitle(), event.getProblemTitle());
         assertEquals(submission.getId(), event.getSubmissionId());
-        assertNull(event.getCompileErrorMessage(), "Compile error message should be null if the compile succeeded.");
+        assertNull(event.getVerdict().getCompileErrorMessage(), "Compile error message should be null if the compile succeeded.");
     }
 
 
@@ -189,7 +191,7 @@ public class PrefixSumTest {
     private void verifyWAPublished() {
         VerdictIssuedEvent event = captureVerdictIssuedEvent();
         for (int i = 0; i < testcases.size(); i++) {
-            Judge judge = event.getJudges().get(i);
+            Judge judge = event.getVerdict().getJudges().get(i);
             Testcase testCase = testcases.get(i);
             assertEquals(JudgeStatus.WA, judge.getStatus(), event.toString());
             assertEquals(0, judge.getGrade());
@@ -198,13 +200,13 @@ public class PrefixSumTest {
         assertEquals(problemId, event.getProblemId());
         assertEquals(problem.getTitle(), event.getProblemTitle());
         assertEquals(submission.getId(), event.getSubmissionId());
-        assertNull(event.getCompileErrorMessage(), "Compile error message should be null if the compile succeeded.");
+        assertNull(event.getVerdict().getCompileErrorMessage(), "Compile error message should be null if the compile succeeded.");
     }
 
     private void mockServiceDrivers(JudgeStatus judgeStatus) throws IOException {
         when(submissionServiceDriver.getSubmission(
-                problemId, studentId, submission.getId())).thenReturn(SubmissionView.fromEntity(submission));
-        when(problemServiceDriver.getProblem(problem.getId())).thenReturn(ProblemView.fromEntity(problem));
+                problemId, studentId, submission.getId())).thenReturn(SubmissionView.toViewModel(submission));
+        when(problemServiceDriver.getProblem(problem.getId())).thenReturn(ProblemView.toViewModel(problem));
 
         mockDownloadRequests(judgeStatus);
     }

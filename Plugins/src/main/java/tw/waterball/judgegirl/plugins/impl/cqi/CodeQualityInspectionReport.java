@@ -13,7 +13,7 @@
 
 package tw.waterball.judgegirl.plugins.impl.cqi;
 
-import tw.waterball.judgegirl.entities.submission.CompositeReport;
+import tw.waterball.judgegirl.entities.submission.report.CompositeReport;
 
 import static java.util.Arrays.asList;
 
@@ -24,8 +24,8 @@ import static java.util.Arrays.asList;
  */
 public class CodeQualityInspectionReport extends CompositeReport {
     public static final String NAME = "CodeQualityInspectionReport";
-    private CyclomaticComplexityReport ccReport;
-    private CodingStyleAnalyzeReport csaReport;
+    private final CyclomaticComplexityReport ccReport;
+    private final CodingStyleAnalyzeReport csaReport;
 
     public CodeQualityInspectionReport(CyclomaticComplexityReport ccReport
             , CodingStyleAnalyzeReport csaReport) {

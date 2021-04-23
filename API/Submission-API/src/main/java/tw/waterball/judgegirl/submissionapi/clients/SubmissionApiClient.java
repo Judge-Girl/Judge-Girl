@@ -19,6 +19,7 @@ import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import okio.BufferedSink;
 import okio.Okio;
+import org.jetbrains.annotations.NotNull;
 import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.http.*;
@@ -27,48 +28,70 @@ import tw.waterball.judgegirl.api.retrofit.RetrofitFactory;
 import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
 import tw.waterball.judgegirl.entities.problem.Language;
+import tw.waterball.judgegirl.entities.submission.SubmissionThrottlingException;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
-import tw.waterball.judgegirl.submissionservice.domain.usecases.SubmitCodeRequest;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
 
+import static java.util.Arrays.asList;
+import static tw.waterball.judgegirl.api.retrofit.BaseRetrofitAPI.ExceptionDeclaration.declare;
 import static tw.waterball.judgegirl.commons.utils.HttpHeaderUtils.bearerWithToken;
+import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
 public class SubmissionApiClient extends BaseRetrofitAPI implements SubmissionServiceDriver {
+    public static final String HEADER_BAG_KEY_PREFIX = "bag_key_";
     public static final String CURRENTLY_ONLY_SUPPORT_C = Language.C.toString();
+    public static final String SUBMIT_CODE_MULTIPART_KEY_NAME = "submittedCodes";
     private final API api;
     private final String token;
+    private final BagInterceptor[] bagInterceptors;
 
     public SubmissionApiClient(RetrofitFactory retrofitFactory,
-                               String scheme,
-                               String host, int port,
-                               String token) {
+                               String scheme, String host, int port, String token,
+                               BagInterceptor... bagInterceptors) {
         this.token = token;
-        this.api = retrofitFactory.create(scheme, host, port).create(API.class);
+        this.bagInterceptors = bagInterceptors;
+        this.api = retrofitFactory.create(scheme, host, port
+                /*TODO: add an interceptor that add Authorization header on every request*/)
+                .create(API.class);
     }
 
     @Override
-    public SubmissionView submit(SubmitCodeRequest submitCodeRequest) throws IOException {
-        return api.submit(bearerWithToken(token),
-                submitCodeRequest.problemId, CURRENTLY_ONLY_SUPPORT_C, submitCodeRequest.studentId,
-                submitCodeRequest.fileResources.stream()
-                        .map(r -> MultipartBody.Part.createFormData("submittedCodes", r.getFileName(),
-                                new RequestBody() {
-                                    @Override
-                                    public MediaType contentType() {
-                                        return MediaType.parse("application/zip");
-                                    }
+    public SubmissionView submit(SubmitCodeRequest request) throws SubmissionThrottlingException {
+        return errorHandlingGetBody(() -> api.submit(withSubmissionBagAsHeaders(request),
+                request.problemId, CURRENTLY_ONLY_SUPPORT_C, request.studentId,
+                mapToList(request.fileResources, this::submittedCodesMultipartBody)).execute(),
+                declare(400).toThrow(SubmissionThrottlingException::new));
+    }
 
-                                    @Override
-                                    public void writeTo(BufferedSink bufferedSink) throws IOException {
-                                        bufferedSink.writeAll(Okio.source(r.getInputStream()));
-                                    }
-                                })).collect(Collectors.toList())).execute().body();
+    private Map<String, String> withSubmissionBagAsHeaders(SubmitCodeRequest request) {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Authorization", bearerWithToken(token));
+        asList(bagInterceptors).forEach(interceptor -> interceptor.intercept(request.submissionBag));
+        request.submissionBag.forEach((key, val) -> headers.put(HEADER_BAG_KEY_PREFIX + key, val));
+        return headers;
+    }
+
+    @NotNull
+    private MultipartBody.Part submittedCodesMultipartBody(FileResource r) {
+        return MultipartBody.Part.createFormData(SUBMIT_CODE_MULTIPART_KEY_NAME, r.getFileName(),
+                new RequestBody() {
+                    @Override
+                    public MediaType contentType() {
+                        return MediaType.parse("application/zip");
+                    }
+
+                    @Override
+                    public void writeTo(@NotNull BufferedSink bufferedSink) throws IOException {
+                        bufferedSink.writeAll(Okio.source(r.getInputStream()));
+                    }
+                });
     }
 
     @Override
@@ -89,16 +112,26 @@ public class SubmissionApiClient extends BaseRetrofitAPI implements SubmissionSe
     }
 
     @Override
-    public List<SubmissionView> getSubmissions(int problemId, int studentId) {
+    public List<SubmissionView> getSubmissions(int problemId, int studentId, Map<String, String> bagQueryParameters) {
         return errorHandlingGetBody(() -> api.getSubmissions(
+                bearerWithToken(token), problemId,
+                CURRENTLY_ONLY_SUPPORT_C, studentId, bagQueryParameters).execute());
+    }
+
+    @Override
+    public SubmissionView findBestRecord(List<String> submissionIds) {
+        if (submissionIds.isEmpty()) {
+            throw new IllegalArgumentException("The `submissionIds` should not be empty.");
+        }
+        return errorHandlingGetBody(() -> api.findBestRecord(
                 bearerWithToken(token),
-                problemId, CURRENTLY_ONLY_SUPPORT_C, studentId).execute());
+                String.join(",", submissionIds)).execute());
     }
 
     private interface API {
         @Multipart
         @POST("/api/problems/{problemId}/{langEnvName}/students/{studentId}/submissions")
-        Call<SubmissionView> submit(@Header("Authorization") String bearerToken,
+        Call<SubmissionView> submit(@HeaderMap Map<String, String> headers,
                                     @Path("problemId") int problemId,
                                     @Path("langEnvName") String langEnvName,
                                     @Path("studentId") int studentId,
@@ -111,12 +144,17 @@ public class SubmissionApiClient extends BaseRetrofitAPI implements SubmissionSe
                                            @Path("studentId") int studentId,
                                            @Path("submissionId") String submissionId);
 
+        @GET("/api/submissions/best")
+        Call<SubmissionView> findBestRecord(@Header("Authorization") String bearerToken,
+                                            @Body String submissionIdSplitByCommas);
+
 
         @GET("/api/problems/{problemId}/{langEnvName}/students/{studentId}/submissions")
         Call<List<SubmissionView>> getSubmissions(@Header("Authorization") String bearerToken,
                                                   @Path("problemId") int problemId,
                                                   @Path("langEnvName") String langEnvName,
-                                                  @Path("studentId") int studentId);
+                                                  @Path("studentId") int studentId,
+                                                  @QueryMap Map<String, String> bagQueryParameters);
 
         @GET("/api/problems/{problemId}/{langEnvName}/students/{studentId}/submissions/{submissionId}/submittedCodes/{submittedCodesFileId}")
         Call<ResponseBody> getSubmittedCodes(@Header("Authorization") String bearerToken,

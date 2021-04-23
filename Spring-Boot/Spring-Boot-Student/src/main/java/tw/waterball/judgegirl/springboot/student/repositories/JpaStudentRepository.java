@@ -15,6 +15,7 @@ package tw.waterball.judgegirl.springboot.student.repositories;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import tw.waterball.judgegirl.entities.Student;
 import tw.waterball.judgegirl.springboot.helpers.SkipAndSizePageable;
 import tw.waterball.judgegirl.springboot.student.repositories.jpa.JpaStudentDataPort;
@@ -25,12 +26,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static java.util.Arrays.asList;
+import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
 import static tw.waterball.judgegirl.springboot.student.repositories.jpa.StudentData.toData;
 
 /**
  * @author chaoyulee chaoyu2330@gmail.com
  */
 @Component
+@Transactional
 public class JpaStudentRepository implements StudentRepository {
     private final JpaStudentDataPort jpaStudentDataPort;
 
@@ -53,10 +57,20 @@ public class JpaStudentRepository implements StudentRepository {
     }
 
     @Override
+    public List<Student> findByEmailIn(String... emails) {
+        return mapToList(jpaStudentDataPort.findByEmailIn(asList(emails)), StudentData::toEntity);
+    }
+
+    @Override
     public Optional<Student> findStudentById(Integer id) {
         return jpaStudentDataPort
                 .findStudentById(id)
                 .map(StudentData::toEntity);
+    }
+
+    @Override
+    public List<Student> findByIdIn(Integer... ids) {
+        return mapToList(jpaStudentDataPort.findByIdIn(asList(ids)), StudentData::toEntity);
     }
 
     @Override

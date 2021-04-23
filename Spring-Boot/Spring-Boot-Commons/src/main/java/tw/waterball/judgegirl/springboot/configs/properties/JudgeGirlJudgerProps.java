@@ -26,7 +26,6 @@ import org.springframework.boot.context.properties.NestedConfigurationProperty;
 @ConfigurationProperties("judge-girl.judger")
 public class JudgeGirlJudgerProps {
     private String strategy;
-    private String jwtToken;
     @NestedConfigurationProperty
     private Job job;
     @NestedConfigurationProperty

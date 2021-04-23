@@ -2,14 +2,12 @@ package tw.waterball.judgegirl.springboot.exam.repositories;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
-import tw.waterball.judgegirl.entities.Exam;
-import tw.waterball.judgegirl.entities.Question;
-import tw.waterball.judgegirl.examservice.repositories.ExamFilter;
-import tw.waterball.judgegirl.examservice.repositories.ExamRepository;
+import tw.waterball.judgegirl.entities.exam.*;
+import tw.waterball.judgegirl.examservice.domain.repositories.ExamFilter;
+import tw.waterball.judgegirl.examservice.domain.repositories.ExamRepository;
 import tw.waterball.judgegirl.springboot.exam.repositories.jpa.*;
 import tw.waterball.judgegirl.springboot.helpers.SkipAndSizePageable;
 
@@ -29,17 +27,22 @@ import static tw.waterball.judgegirl.springboot.exam.repositories.jpa.QuestionDa
 @Slf4j
 @AllArgsConstructor
 public class JpaExamRepository implements ExamRepository {
-
     private final JpaExamDataPort jpaExamDataPort;
-
     private final JpaQuestionDataPort jpaQuestionDataPort;
-
-    private final JpaExamParticipationDataPort jpaExamParticipationDataPort;
+    private final JpaExamineeDataPort jpaExamineeDataPort;
+    private final JpaAnswerDataPort jpaAnswerDataPort;
+    private final JpaBestRecordDataPort jpaBestRecordDataPort;
 
     @Override
     public Optional<Exam> findById(int examId) {
         return jpaExamDataPort.findById(examId)
                 .map(ExamData::toEntity);
+    }
+
+    @Override
+    public Optional<Question> findQuestion(Question.Id id) {
+        return jpaQuestionDataPort.findById(new QuestionData.Id(id))
+                .map(QuestionData::toEntity);
     }
 
     @Override
@@ -71,20 +74,45 @@ public class JpaExamRepository implements ExamRepository {
     }
 
     @Override
+    public void saveBestRecordOfQuestion(Record record) {
+        jpaBestRecordDataPort.saveAndFlush(BestRecordData.toData(record));
+    }
+
+    @Override
+    public Optional<Record> findBestRecordOfQuestion(Question.Id questionId, int studentId) {
+        return jpaBestRecordDataPort.findById(new BestRecordData.Id(new QuestionData.Id(questionId), studentId))
+                .map(BestRecordData::toEntity);
+    }
+
+    @Override
     public void addQuestion(Question question) {
         try {
-            jpaQuestionDataPort.save(toData(question));
-        } catch (DataIntegrityViolationException err) {
+            jpaQuestionDataPort.saveAndFlush(toData(question));
+        } catch (Exception err) {
             // exam doesn't exist
             throw notFound("exam").id(question.getExamId());
         }
     }
 
     @Override
-    public void addParticipation(int examId, int studentId) {
-        ExamParticipationData data = jpaExamParticipationDataPort.save(
-                new ExamParticipationData(examId, studentId));
-        jpaExamParticipationDataPort.save(data);
+    public void addExaminee(int examId, int studentId) {
+        jpaExamineeDataPort.saveAndFlush(new ExamineeData(examId, studentId));
+    }
+
+    @Override
+    public void deleteExaminee(Examinee.Id id) {
+        jpaExamineeDataPort.deleteById(new ExamineeData.Id(id));
+    }
+
+    @Override
+    public void addExaminees(int examId, List<Integer> studentIds) {
+        jpaExamineeDataPort.saveAll(mapToList(studentIds, studentId -> new ExamineeData(examId, studentId)));
+
+    }
+
+    @Override
+    public void deleteExaminees(int examId, List<Integer> studentIds) {
+        jpaExamineeDataPort.deleteInBatch(mapToList(studentIds, studentId -> new ExamineeData(examId, studentId)));
     }
 
     @Override
@@ -98,7 +126,7 @@ public class JpaExamRepository implements ExamRepository {
 
     @Override
     public Exam save(Exam exam) {
-        ExamData data = jpaExamDataPort.save(toData(exam));
+        ExamData data = jpaExamDataPort.saveAndFlush(toData(exam));
         exam = data.toEntity();
         return exam;
     }
@@ -107,4 +135,31 @@ public class JpaExamRepository implements ExamRepository {
     public void deleteAll() {
         jpaExamDataPort.deleteAll();
     }
+
+    @Override
+    @Transactional
+    public Answer saveAnswer(Answer answer) {
+        // TODO: find out if there is an auto-incremental way to generate the answer's number
+        int count = jpaAnswerDataPort.countAllByExamIdAndProblemIdAndStudentId(answer.getExamId(), answer.getProblemId(), answer.getStudentId());
+        answer.getId().setNumber(count + 1);
+        AnswerData data = jpaAnswerDataPort.saveAndFlush(AnswerData.toData(answer));
+        return data.toEntity();
+    }
+
+    @Override
+    public Optional<Answer> findAnswer(Answer.Id id) {
+        return jpaAnswerDataPort.findById(new AnswerData.Id(id))
+                .map(AnswerData::toEntity);
+    }
+
+    @Override
+    public int countAnswersInQuestion(Question.Id id, int studentId) {
+        return jpaAnswerDataPort.countAllByExamIdAndProblemIdAndStudentId(id.getExamId(), id.getProblemId(), studentId);
+    }
+
+    @Override
+    public boolean hasStudentParticipatedExam(int studentId, int examId) {
+        return jpaExamineeDataPort.existsById_StudentIdAndId_ExamId(studentId, examId);
+    }
+
 }

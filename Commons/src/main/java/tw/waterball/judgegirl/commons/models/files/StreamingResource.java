@@ -35,8 +35,12 @@ public class StreamingResource implements Closeable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         StreamingResource that = (StreamingResource) o;
         try {
             //TODO: `contentEquals` will consume and exhaust the stream,

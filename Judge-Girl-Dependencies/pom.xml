@@ -96,6 +96,11 @@
             </dependency>
             <dependency>
                 <groupId>tw.waterball.judge-girl</groupId>
+                <artifactId>student-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>tw.waterball.judge-girl</groupId>
                 <artifactId>submission-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -112,6 +117,11 @@
             <dependency>
                 <groupId>tw.waterball.judge-girl</groupId>
                 <artifactId>spring-boot-commons</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>tw.waterball.judge-girl</groupId>
+                <artifactId>spring-boot-amqp</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

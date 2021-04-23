@@ -36,11 +36,19 @@
         </dependency>
         <dependency>
             <groupId>tw.waterball.judge-girl</groupId>
+            <artifactId>student-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>tw.waterball.judge-girl</groupId>
             <artifactId>submission-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
         </dependency>
     </dependencies>
 </project>

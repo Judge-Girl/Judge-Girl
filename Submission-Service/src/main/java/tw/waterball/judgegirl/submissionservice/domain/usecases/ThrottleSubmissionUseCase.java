@@ -14,10 +14,11 @@
 package tw.waterball.judgegirl.submissionservice.domain.usecases;
 
 import tw.waterball.judgegirl.entities.submission.SubmissionThrottling;
+import tw.waterball.judgegirl.entities.submission.SubmissionThrottlingException;
 import tw.waterball.judgegirl.submissionservice.domain.repositories.SubmissionRepository;
-import tw.waterball.judgegirl.submissionservice.domain.usecases.exceptions.SubmissionThrottlingException;
 
 import javax.inject.Named;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -32,16 +33,15 @@ public class ThrottleSubmissionUseCase {
         this.submissionRepository = submissionRepository;
     }
 
-    public void execute(SubmitCodeRequest request) {
-        SubmissionThrottling throttling = submissionRepository.findSubmissionThrottling(
-                request.getProblemId(), request.getStudentId())
-                .orElse(new SubmissionThrottling(request.problemId, request.studentId, 0L));
-        long intervalSeconds = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - throttling.getLastSubmitTime());
-        long minSubmissionIntervalSeconds = TimeUnit.MILLISECONDS.toSeconds(minSubmissionInterval);
-        if (intervalSeconds < minSubmissionIntervalSeconds) {
-            throw new SubmissionThrottlingException((minSubmissionIntervalSeconds - intervalSeconds));
-        }
-        throttling.setLastSubmitTime(System.currentTimeMillis());
+    public void execute(SubmitCodeRequest request) throws SubmissionThrottlingException {
+        SubmissionThrottling throttling = findSubmissionThrottlingForStudent(request)
+                .orElseGet(() -> new SubmissionThrottling(request.problemId, request.studentId, 0L));
+        throttling.throttle(minSubmissionInterval);
         submissionRepository.saveSubmissionThrottling(throttling);
+    }
+
+    private Optional<SubmissionThrottling> findSubmissionThrottlingForStudent(SubmitCodeRequest request) {
+        return submissionRepository.findSubmissionThrottling(
+                request.getProblemId(), request.getStudentId());
     }
 }

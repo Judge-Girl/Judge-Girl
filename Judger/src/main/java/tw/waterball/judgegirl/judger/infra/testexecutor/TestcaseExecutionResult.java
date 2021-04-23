@@ -16,7 +16,7 @@ package tw.waterball.judgegirl.judger.infra.testexecutor;
 import lombok.AllArgsConstructor;
 import lombok.Value;
 import tw.waterball.judgegirl.entities.problem.JudgeStatus;
-import tw.waterball.judgegirl.entities.submission.ProgramProfile;
+import tw.waterball.judgegirl.entities.submission.verdict.ProgramProfile;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
