@@ -359,7 +359,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    void Given_1_ProblemsSaved_WhenGetProblemsByIds_1_2_ShouldRespondThat_1() throws Exception {
+    void Given_1_ProblemSaved_WhenGetProblemsByIds_1_2_ShouldRespondThat_1() throws Exception {
         saveProblems(1);
 
         List<Problem> actualProblems = getProblems(1, 2);
@@ -368,15 +368,22 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    void GivenOneProblemCreated_WhenArchiveIt_ShouldArchiveItSuccessfully() throws Exception {
+    void GivenOneProblemSaved_WhenArchiveIt_ItShouldSucceed_AndThenDeleteIt_ThenItShouldBeDeletedAndCantBeFound() throws Exception {
         int problemId = 1;
         saveProblems(problemId);
 
+        archiveOrDeleteProblem(problemId);
+
+        assertTrue(problemRepository.findProblemById(problemId).orElseThrow().isArchived());
+
+        archiveOrDeleteProblem(problemId);
+
+        assertTrue(problemRepository.findProblemById(problemId).isEmpty());
+    }
+
+    private void archiveOrDeleteProblem(int problemId) throws Exception {
         mockMvc.perform(delete("/api/problems/{problemId}", problemId))
                 .andExpect(status().isOk());
-
-        ProblemView problemView = getProblem(problemId);
-        assertTrue(problemView.isArchived());
     }
 
     private void problemsShouldHaveIds(List<Problem> actualProblems, Integer... problemIds) {

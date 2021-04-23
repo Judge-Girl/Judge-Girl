@@ -162,6 +162,12 @@ public class MongoProblemRepository implements ProblemRepository {
         mongoTemplate.updateFirst(query, update, Problem.class);
     }
 
+    @Override
+    public void deleteProblemById(int problemId) {
+        Query query = new Query(where("_id").is(problemId));
+        mongoTemplate.remove(query, Problem.class);
+    }
+
     @Document("tag")
     public static class AllTags {
         public List<String> all;
