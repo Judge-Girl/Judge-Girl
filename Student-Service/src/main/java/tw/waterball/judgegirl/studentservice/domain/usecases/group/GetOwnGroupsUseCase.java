@@ -15,7 +15,7 @@ import java.util.List;
  */
 @Named
 @AllArgsConstructor
-public class GetGroupsOwnedByGroupMemberUseCase {
+public class GetOwnGroupsUseCase {
 
     private final StudentRepository studentRepository;
 

@@ -32,7 +32,7 @@ public class GroupController {
     private final AddGroupMemberUseCase addGroupMemberUseCase;
     private final DeleteGroupMembersUseCase deleteGroupMembersUseCase;
     private final GetGroupMembersUseCase getGroupMembersUseCase;
-    private final GetGroupsOwnedByGroupMemberUseCase getGroupsOwnedByGroupMemberUseCase;
+    private final GetOwnGroupsUseCase getOwnGroupsUseCase;
     private final AddGroupMembersByMailListUseCase addGroupMembersByMailListUseCase;
 
     @PostMapping("/groups")
@@ -81,9 +81,9 @@ public class GroupController {
     }
 
     @GetMapping("/students/{studentId}/groups")
-    public List<GroupView> getGroupsByGroupMemberId(@PathVariable Integer studentId) {
-        GetGroupsOwnedByGroupMemberPresenter presenter = new GetGroupsOwnedByGroupMemberPresenter();
-        getGroupsOwnedByGroupMemberUseCase.execute(studentId, presenter);
+    public List<GroupView> getOwnGroups(@PathVariable Integer studentId) {
+        GetOwnGroupsPresenter presenter = new GetOwnGroupsPresenter();
+        getOwnGroupsUseCase.execute(studentId, presenter);
         return presenter.present();
     }
 
@@ -169,7 +169,7 @@ class GetGroupMembersPresenter implements GetGroupMembersUseCase.Presenter {
     }
 }
 
-class GetGroupsOwnedByGroupMemberPresenter implements GetGroupsOwnedByGroupMemberUseCase.Presenter {
+class GetOwnGroupsPresenter implements GetOwnGroupsUseCase.Presenter {
 
     private List<Group> groups;
 
