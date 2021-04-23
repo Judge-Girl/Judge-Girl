@@ -15,7 +15,7 @@ import java.util.List;
  */
 @Named
 @AllArgsConstructor
-public class DeleteStudentsFromGroupUseCase {
+public class DeleteGroupMembersUseCase {
 
     private final GroupRepository groupRepository;
 

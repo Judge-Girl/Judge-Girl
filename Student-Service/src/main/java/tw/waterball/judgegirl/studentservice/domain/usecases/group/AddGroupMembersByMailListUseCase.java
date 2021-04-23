@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
  */
 @Named
 @AllArgsConstructor
-public class AddStudentsIntoGroupByMailListUseCase {
+public class AddGroupMembersByMailListUseCase {
 
     private final StudentRepository studentRepository;
 

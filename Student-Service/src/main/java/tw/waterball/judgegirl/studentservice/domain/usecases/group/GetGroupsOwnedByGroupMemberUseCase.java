@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.entities.Group;
 import tw.waterball.judgegirl.entities.Student;
-import tw.waterball.judgegirl.studentservice.domain.repositories.GroupRepository;
+import tw.waterball.judgegirl.studentservice.domain.repositories.StudentRepository;
 
 import javax.inject.Named;
 import java.util.ArrayList;
@@ -15,20 +15,22 @@ import java.util.List;
  */
 @Named
 @AllArgsConstructor
-public class GetStudentsInGroupUseCase {
+public class GetGroupsOwnedByGroupMemberUseCase {
 
-    private final GroupRepository groupRepository;
+    private final StudentRepository studentRepository;
 
-    public void execute(int groupId, Presenter presenter)
+    public void execute(int studentId, Presenter presenter)
             throws NotFoundException {
-        Group group = groupRepository.findGroupById(groupId)
+        Student student = studentRepository.findStudentById(studentId)
                 .orElseThrow(NotFoundException::new);
-        presenter.setStudents(new ArrayList<>(group.getStudents()));
+        presenter.setGroups(new ArrayList<>(student.getGroups()));
     }
 
     public interface Presenter {
 
-        void setStudents(List<Student> students);
+        void setGroups(List<Group> groups);
 
     }
+
+
 }

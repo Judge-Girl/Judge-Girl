@@ -21,19 +21,19 @@ import java.util.stream.Collectors;
  */
 @CrossOrigin
 @RestController
-@RequestMapping("/api")
 @AllArgsConstructor
+@RequestMapping("/api")
 public class GroupController {
 
     private final CreateGroupUseCase createGroupUseCase;
     private final GetGroupUseCase getGroupUseCase;
     private final GetAllGroupsUseCase getAllGroupsUseCase;
     private final DeleteGroupUseCase deleteGroupUseCase;
-    private final AddStudentIntoGroupUseCase addStudentIntoGroupUseCase;
-    private final DeleteStudentsFromGroupUseCase deleteStudentsFromGroupUseCase;
-    private final GetStudentsInGroupUseCase getStudentsInGroupUseCase;
-    private final GetGroupsOwnedByStudentUseCase getGroupsOwnedByStudentUseCase;
-    private final AddStudentsIntoGroupByMailListUseCase addStudentsIntoGroupByMailListUseCase;
+    private final AddGroupMemberUseCase addGroupMemberUseCase;
+    private final DeleteGroupMembersUseCase deleteGroupMembersUseCase;
+    private final GetGroupMembersUseCase getGroupMembersUseCase;
+    private final GetGroupsOwnedByGroupMemberUseCase getGroupsOwnedByGroupMemberUseCase;
+    private final AddGroupMembersByMailListUseCase addGroupMembersByMailListUseCase;
 
     @PostMapping("/groups")
     public GroupView createGroup(@RequestBody CreateGroupUseCase.Request request) {
@@ -62,44 +62,44 @@ public class GroupController {
     }
 
     @PostMapping("/groups/{groupId}/students/{studentId}")
-    public void addStudentIntoGroup(@PathVariable Integer groupId,
-                                    @PathVariable Integer studentId) {
-        addStudentIntoGroupUseCase.execute(new AddStudentIntoGroupUseCase.Request(groupId, studentId));
+    public void addGroupMember(@PathVariable Integer groupId,
+                               @PathVariable Integer studentId) {
+        addGroupMemberUseCase.execute(new AddGroupMemberUseCase.Request(groupId, studentId));
     }
 
     @DeleteMapping("/groups/{groupId}/students/{studentId}")
-    public void deleteStudentFromGroup(@PathVariable Integer groupId,
-                                       @PathVariable Integer studentId) {
-        deleteStudentsFromGroupUseCase.execute(new DeleteStudentsFromGroupUseCase.Request(groupId, Collections.singletonList(studentId)));
+    public void deleteGroupMember(@PathVariable Integer groupId,
+                                  @PathVariable Integer studentId) {
+        deleteGroupMembersUseCase.execute(new DeleteGroupMembersUseCase.Request(groupId, Collections.singletonList(studentId)));
     }
 
     @GetMapping("/groups/{groupId}/students")
-    public List<StudentView> addStudentsIntoGroupByMailListUseCase(@PathVariable Integer groupId) {
-        GetStudentsInGroupPresenter presenter = new GetStudentsInGroupPresenter();
-        getStudentsInGroupUseCase.execute(groupId, presenter);
+    public List<StudentView> getGroupMembers(@PathVariable Integer groupId) {
+        GetGroupMembersPresenter presenter = new GetGroupMembersPresenter();
+        getGroupMembersUseCase.execute(groupId, presenter);
         return presenter.present();
     }
 
     @GetMapping("/students/{studentId}/groups")
-    public List<GroupView> getGroupsByStudentId(@PathVariable Integer studentId) {
-        GetGroupsOwnedByStudentPresenter presenter = new GetGroupsOwnedByStudentPresenter();
-        getGroupsOwnedByStudentUseCase.execute(studentId, presenter);
+    public List<GroupView> getGroupsByGroupMemberId(@PathVariable Integer studentId) {
+        GetGroupsOwnedByGroupMemberPresenter presenter = new GetGroupsOwnedByGroupMemberPresenter();
+        getGroupsOwnedByGroupMemberUseCase.execute(studentId, presenter);
         return presenter.present();
     }
 
     @PostMapping("/groups/{groupId}/students")
-    public Map<String, List<String>> addStudentsIntoGroupByMailListUseCase(@PathVariable Integer groupId,
-                                                                           @RequestBody String[] mailList) {
-        AddStudentsIntoGroupByMailListUseCase.Request request = new AddStudentsIntoGroupByMailListUseCase.Request(groupId, mailList);
-        AddStudentsIntoGroupByMailListPresenter presenter = new AddStudentsIntoGroupByMailListPresenter();
-        addStudentsIntoGroupByMailListUseCase.execute(request, presenter);
+    public Map<String, List<String>> getGroupMembers(@PathVariable Integer groupId,
+                                                     @RequestBody String[] mailList) {
+        AddGroupMembersByMailListUseCase.Request request = new AddGroupMembersByMailListUseCase.Request(groupId, mailList);
+        AddGroupMembersIntoGroupByMailListPresenter presenter = new AddGroupMembersIntoGroupByMailListPresenter();
+        addGroupMembersByMailListUseCase.execute(request, presenter);
         return presenter.present();
     }
 
     @DeleteMapping("/groups/{groupId}/students")
-    public void deleteStudentsFromGroupByIds(@PathVariable Integer groupId,
-                                             @RequestParam Integer[] ids) {
-        deleteStudentsFromGroupUseCase.execute(new DeleteStudentsFromGroupUseCase.Request(groupId, Arrays.asList(ids)));
+    public void deleteGroupMembersByIds(@PathVariable Integer groupId,
+                                        @RequestParam Integer[] ids) {
+        deleteGroupMembersUseCase.execute(new DeleteGroupMembersUseCase.Request(groupId, Arrays.asList(ids)));
     }
 
     @ExceptionHandler({DuplicateGroupNameException.class})
@@ -155,7 +155,7 @@ class GetAllGroupsPresenter implements GetAllGroupsUseCase.Presenter {
 
 }
 
-class GetStudentsInGroupPresenter implements GetStudentsInGroupUseCase.Presenter {
+class GetGroupMembersPresenter implements GetGroupMembersUseCase.Presenter {
 
     private List<Student> students;
 
@@ -169,7 +169,7 @@ class GetStudentsInGroupPresenter implements GetStudentsInGroupUseCase.Presenter
     }
 }
 
-class GetGroupsOwnedByStudentPresenter implements GetGroupsOwnedByStudentUseCase.Presenter {
+class GetGroupsOwnedByGroupMemberPresenter implements GetGroupsOwnedByGroupMemberUseCase.Presenter {
 
     private List<Group> groups;
 
@@ -183,7 +183,7 @@ class GetGroupsOwnedByStudentPresenter implements GetGroupsOwnedByStudentUseCase
     }
 }
 
-class AddStudentsIntoGroupByMailListPresenter implements AddStudentsIntoGroupByMailListUseCase.Presenter {
+class AddGroupMembersIntoGroupByMailListPresenter implements AddGroupMembersByMailListUseCase.Presenter {
 
     private String[] errorList;
 
