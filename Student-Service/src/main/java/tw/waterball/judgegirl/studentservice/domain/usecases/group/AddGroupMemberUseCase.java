@@ -15,7 +15,7 @@ import javax.inject.Named;
  */
 @Named
 @AllArgsConstructor
-public class AddStudentIntoGroupUseCase {
+public class AddGroupMemberUseCase {
 
     private final StudentRepository studentRepository;
 

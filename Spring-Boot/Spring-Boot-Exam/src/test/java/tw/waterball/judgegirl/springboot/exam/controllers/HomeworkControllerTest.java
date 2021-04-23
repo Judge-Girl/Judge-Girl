@@ -9,32 +9,47 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.ResultActions;
+import tw.waterball.judgegirl.entities.problem.JudgeStatus;
 import tw.waterball.judgegirl.entities.problem.Problem;
 import tw.waterball.judgegirl.entities.stubs.ProblemStubs;
+import tw.waterball.judgegirl.entities.submission.Submission;
 import tw.waterball.judgegirl.examservice.domain.repositories.HomeworkRepository;
 import tw.waterball.judgegirl.examservice.domain.usecases.homework.CreateHomeworkUseCase;
 import tw.waterball.judgegirl.problemapi.clients.FakeProblemServiceDriver;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.springboot.exam.SpringBootExamApplication;
+import tw.waterball.judgegirl.springboot.exam.view.HomeworkProgress;
+import tw.waterball.judgegirl.springboot.exam.view.HomeworkProgress.BestRecord;
 import tw.waterball.judgegirl.springboot.exam.view.HomeworkView;
 import tw.waterball.judgegirl.springboot.profiles.Profiles;
 import tw.waterball.judgegirl.submissionapi.clients.SubmissionServiceDriver;
+import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static tw.waterball.judgegirl.entities.stubs.SubmissionStubBuilder.submission;
+import static tw.waterball.judgegirl.springboot.exam.controllers.ExamControllerTest.LANG_ENV;
 
 @ActiveProfiles(Profiles.JWT)
 @ContextConfiguration(classes = SpringBootExamApplication.class)
 public class HomeworkControllerTest extends AbstractSpringBootTest {
 
+    public static final int PROBLEM1_ID = 1;
+    public static final int PROBLEM2_ID = 2;
     private static final String HOMEWORK_NAME = "homeworkName";
+    public static final int STUDENT_ID = 11;
     private static final String HOMEWORK_PATH = "/api/homework";
+    private static final String HOMEWORK_PROGRESS_PATH = "/api/students/{studentId}/homework/{homeworkId}/progress";
+    private static final String SUBMISSION1_ID = "1";
+    private static final String SUBMISSION2_ID = "2";
 
     @Autowired
     private FakeProblemServiceDriver problemServiceDriver;
@@ -84,6 +99,54 @@ public class HomeworkControllerTest extends AbstractSpringBootTest {
         assertEquals(homework, actualHomework);
     }
 
+    @Test
+    public void WhenGetHomeworkByNonExistingHomeworkId_ShouldRespondNotFound() throws Exception {
+        int nonExistingHomeworkId = 123123;
+        getHomework(nonExistingHomeworkId)
+                .andExpect(status().isNotFound());
+    }
+
+    @DisplayName("Given a homework consists of two problems [1, 2] and the student achieved AC in 1 and CE in 2," +
+            "When get the student's homework progress, " +
+            "Should respond the two best records [AC, CE] within the homework progress")
+    @Test
+    public void testGetHomeworkProgress() throws Exception {
+        var homework = createHomeworkConsistsOfProblems(PROBLEM1_ID, PROBLEM2_ID);
+        var bestRecord1 = achieveBestRecord(PROBLEM1_ID, submission("AC").AC(1, 1, 100).build(STUDENT_ID, PROBLEM1_ID, LANG_ENV));
+        var bestRecord2 = achieveBestRecord(PROBLEM2_ID, submission("CE").CE().build(STUDENT_ID, PROBLEM2_ID, LANG_ENV));
+
+        HomeworkProgress homeworkProgress = getHomeworkProgress(STUDENT_ID, homework.id);
+
+        assertEquals(homework, homeworkProgress.homework);
+        homeworkProgressShouldIncludeTwoBestRecords(homework, homeworkProgress, bestRecord1, bestRecord2);
+    }
+
+    private HomeworkView createHomeworkConsistsOfProblems(Integer... problemIds) throws Exception {
+        createProblems(problemIds);
+        return createHomeworkAndGet(HOMEWORK_NAME, problemIds);
+    }
+
+    private SubmissionView achieveBestRecord(int problemId, Submission submission) {
+        int studentId = submission.getStudentId();
+        var bestRecord = SubmissionView.toViewModel(submission);
+        when(submissionServiceDriver.findBestRecord(problemId, studentId)).thenReturn(bestRecord);
+        return bestRecord;
+    }
+
+    private void homeworkProgressShouldIncludeTwoBestRecords(HomeworkView homework,
+                                                             HomeworkProgress homeworkProgress,
+                                                             SubmissionView... submissionViews) {
+        assertEquals(homework, homeworkProgress.homework);
+        Map<Integer, BestRecord> progress = homeworkProgress.progress;
+        assertEquals(submissionViews.length, progress.size());
+        for (SubmissionView submissionView : submissionViews) {
+            JudgeStatus summaryStatus = submissionView.verdict.getSummaryStatus();
+            JudgeStatus actualSummaryStatus = progress.get(submissionView.problemId)
+                    .getBestRecord().getSummaryStatus();
+            assertEquals(summaryStatus, actualSummaryStatus);
+        }
+    }
+
     private HomeworkView createHomeworkAndGet(String homeworkName, Integer... problemIds) throws Exception {
         return getBody(createHomework(homeworkName, problemIds), HomeworkView.class);
     }
@@ -94,13 +157,6 @@ public class HomeworkControllerTest extends AbstractSpringBootTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(request)))
                 .andExpect(status().isOk());
-    }
-
-    @Test
-    public void WhenGetHomeworkByNonExistingHomeworkId_ShouldRespondNotFound() throws Exception {
-        int nonExistingHomeworkId = 123123;
-        getHomework(nonExistingHomeworkId)
-                .andExpect(status().isNotFound());
     }
 
     private ResultActions getHomework(int homeworkId) throws Exception {
@@ -128,4 +184,10 @@ public class HomeworkControllerTest extends AbstractSpringBootTest {
             assertEquals(problemIds[index], homeworkProblemIds.get(index));
         }
     }
+
+    private HomeworkProgress getHomeworkProgress(int studentId, int homeworkId) throws Exception {
+        return getBody(mockMvc.perform(get(HOMEWORK_PROGRESS_PATH, studentId, homeworkId))
+                .andExpect(status().isOk()), HomeworkProgress.class);
+    }
+
 }

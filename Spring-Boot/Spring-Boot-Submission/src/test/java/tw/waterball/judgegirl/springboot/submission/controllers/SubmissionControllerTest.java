@@ -236,6 +236,5 @@ public class SubmissionControllerTest extends AbstractSubmissionControllerTest {
         return getBody(mockMvc.perform(get(API_PREFIX + "/best", problem.getId(), studentId))
                 .andExpect(status().isOk()), SubmissionView.class);
     }
-
-
+    
 }
