@@ -52,4 +52,6 @@ public interface ProblemRepository {
     List<Problem> findProblemsByIds(int... problemIds);
 
     void archiveProblemById(int problemId);
+
+    void deleteProblemById(int problemId);
 }
