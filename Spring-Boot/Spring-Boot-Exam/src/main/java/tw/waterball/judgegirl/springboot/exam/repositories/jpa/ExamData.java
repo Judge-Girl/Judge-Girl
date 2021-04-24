@@ -28,7 +28,7 @@ public class ExamData {
     private Date endTime;
     private String description;
 
-    @OneToMany(mappedBy = "id.examId", cascade = {CascadeType.ALL})
+    @OneToMany(mappedBy = "id.examId", fetch = FetchType.EAGER, cascade = {CascadeType.ALL})
     private List<QuestionData> questions = new ArrayList<>();
 
     @OneToMany(mappedBy = "id.examId", cascade = {CascadeType.ALL})

@@ -201,9 +201,10 @@ public class StudentControllerTest extends AbstractSpringBootTest {
     }
 
     private void studentsShouldHaveEmails(List<Student> students, String... emails) {
-        assertEquals(2, students.size());
-        assertEquals(emails[0], students.get(0).getEmail());
-        assertEquals(emails[1], students.get(1).getEmail());
+        assertEquals(emails.length, students.size());
+        for (int i = 0; i < students.size(); i++) {
+            assertEquals(emails[i], students.get(i).getEmail());
+        }
     }
 
     @Test

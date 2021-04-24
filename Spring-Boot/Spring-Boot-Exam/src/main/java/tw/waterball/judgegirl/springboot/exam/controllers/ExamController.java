@@ -38,6 +38,7 @@ public class ExamController {
     private final CreateExamUseCase createExamUseCase;
     private final GetExamsUseCase getExamsUseCase;
     private final CreateQuestionUseCase createQuestionUseCase;
+    private final UpdateQuestionUseCase updateQuestionUseCase;
     private final DeleteQuestionUseCase deleteQuestionUseCase;
     private final GetExamProgressOverviewUseCase getExamProgressOverviewUseCase;
     private final AnswerQuestionUseCase answerQuestionUseCase;
@@ -105,6 +106,14 @@ public class ExamController {
         CreateQuestionPresenter presenter = new CreateQuestionPresenter();
         createQuestionUseCase.execute(request, presenter);
         return presenter.present();
+    }
+
+    @PutMapping("/exams/{examId}/problems/{problemId}")
+    public void updateQuestion(@PathVariable int examId, @PathVariable int problemId,
+                               @RequestBody UpdateQuestionUseCase.Request request) {
+        request.setExamId(examId);
+        request.setProblemId(problemId);
+        updateQuestionUseCase.execute(request);
     }
 
     @DeleteMapping("/exams/{examId}/problems/{problemId}")
