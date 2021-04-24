@@ -1,0 +1,113 @@
+{
+  "id" : 128,
+  "title" : "City Roads",
+  "languageEnvs" : {
+    "C" : {
+      "language" : "C",
+      "compilation" : {
+        "script" : "gcc -std=c99 -O2 intersection.c main.c -lm"
+      },
+      "submittedCodeSpecs" : [ {
+        "format" : "C",
+        "fileName" : "intersection.c",
+        "fileExtension" : "c"
+      }, {
+        "format" : "C",
+        "fileName" : "intersection.h",
+        "fileExtension" : "h"
+      } ],
+      "name" : "C",
+      "compiledLanguage" : true
+    }
+  },
+  "tags" : [ "array", "loop", "function" ],
+  "testcases" : [ {
+    "name" : "0",
+    "problemId" : 128,
+    "timeLimit" : 1,
+    "memoryLimit" : 67108864,
+    "outputLimit" : 65536,
+    "threadNumberLimit" : -1,
+    "grade" : 0
+  }, {
+    "name" : "1",
+    "problemId" : 128,
+    "timeLimit" : 1,
+    "memoryLimit" : 67108864,
+    "outputLimit" : 65536,
+    "threadNumberLimit" : -1,
+    "grade" : 10
+  }, {
+    "name" : "2",
+    "problemId" : 128,
+    "timeLimit" : 1,
+    "memoryLimit" : 67108864,
+    "outputLimit" : 65536,
+    "threadNumberLimit" : -1,
+    "grade" : 10
+  }, {
+    "name" : "3",
+    "problemId" : 128,
+    "timeLimit" : 1,
+    "memoryLimit" : 67108864,
+    "outputLimit" : 65536,
+    "threadNumberLimit" : -1,
+    "grade" : 10
+  }, {
+    "name" : "4",
+    "problemId" : 128,
+    "timeLimit" : 1,
+    "memoryLimit" : 67108864,
+    "outputLimit" : 65536,
+    "threadNumberLimit" : -1,
+    "grade" : 10
+  }, {
+    "name" : "5",
+    "problemId" : 128,
+    "timeLimit" : 1,
+    "memoryLimit" : 67108864,
+    "outputLimit" : 65536,
+    "threadNumberLimit" : -1,
+    "grade" : 10
+  }, {
+    "name" : "6",
+    "problemId" : 128,
+    "timeLimit" : 1,
+    "memoryLimit" : 67108864,
+    "outputLimit" : 65536,
+    "threadNumberLimit" : -1,
+    "grade" : 10
+  }, {
+    "name" : "7",
+    "problemId" : 128,
+    "timeLimit" : 1,
+    "memoryLimit" : 67108864,
+    "outputLimit" : 65536,
+    "threadNumberLimit" : -1,
+    "grade" : 10
+  }, {
+    "name" : "8",
+    "problemId" : 128,
+    "timeLimit" : 1,
+    "memoryLimit" : 67108864,
+    "outputLimit" : 65536,
+    "threadNumberLimit" : -1,
+    "grade" : 10
+  }, {
+    "name" : "9",
+    "problemId" : 128,
+    "timeLimit" : 1,
+    "memoryLimit" : 67108864,
+    "outputLimit" : 65536,
+    "threadNumberLimit" : -1,
+    "grade" : 10
+  }, {
+    "name" : "10",
+    "problemId" : 128,
+    "timeLimit" : 1,
+    "memoryLimit" : 67108864,
+    "outputLimit" : 65536,
+    "threadNumberLimit" : -1,
+    "grade" : 10
+  } ]
+}

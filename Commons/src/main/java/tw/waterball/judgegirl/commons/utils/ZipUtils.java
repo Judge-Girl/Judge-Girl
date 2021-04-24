@@ -28,7 +28,9 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
+import static java.util.Arrays.stream;
 import static java.util.Objects.requireNonNull;
+import static tw.waterball.judgegirl.commons.utils.ArrayUtils.contains;
 
 /**
  * TODO: make it cleaner
@@ -41,11 +43,10 @@ public class ZipUtils {
     }
 
     public static byte[] zipFilesFromResources(String... resourcePaths) {
-        return zip(
-                Arrays.stream(resourcePaths)
-                        .map(path -> new StreamingResource(PathUtils.getFileName(path),
-                                ResourceUtils.getResourceAsStream(path)))
-                        .collect(Collectors.toList()));
+        return zip(stream(resourcePaths)
+                .map(path -> new StreamingResource(PathUtils.getFileName(path),
+                        ResourceUtils.getResourceAsStream(path)))
+                .collect(Collectors.toList()));
     }
 
     public static <T extends StreamingResource> byte[] zip(List<T> streamingResources) {
@@ -92,7 +93,6 @@ public class ZipUtils {
         return new ByteArrayInputStream(zip(fileName, str));
     }
 
-    @SuppressWarnings("RedundantIfStatement")
     public static void unzipToDestination(InputStream in,
                                           Path destinationPath) throws IOException {
         try (ZipInputStream zin = new ZipInputStream(in)) {
@@ -134,8 +134,15 @@ public class ZipUtils {
         }
     }
 
-    public static void zipToFile(File file, OutputStream out, String... ignoredFileNames) {
-        zipToFile(new File[]{file}, out, ignoredFileNames);
+    public static void zipDirectoryContents(File directory, OutputStream out, String... ignoredFileNames) {
+        if (!directory.isDirectory()) {
+            throw new IllegalArgumentException("The file " + directory.getAbsolutePath() + " is not a directory.");
+        }
+        zipFromFile(requireNonNull(directory.listFiles()), out, ignoredFileNames);
+    }
+
+    public static void zipFromFile(File file, OutputStream out, String... ignoredFileNames) {
+        zipFromFile(new File[]{file}, out, ignoredFileNames);
     }
 
     /**
@@ -143,10 +150,10 @@ public class ZipUtils {
      * through the given FileOutputStream, except those whose file names are contained in
      * ignoredFileNames.
      */
-    public static void zipToFile(File[] files, OutputStream out, String... ignoredFileNames) {
+    public static void zipFromFile(File[] files, OutputStream out, String... ignoredFileNames) {
         try (ZipOutputStream zos = new ZipOutputStream(out)) {
             for (File file : files) {
-                if (!ArrayUtils.contains(ignoredFileNames, file.getName())) {
+                if (!contains(ignoredFileNames, file.getName())) {
                     writeZipEntry(file, zos, ignoredFileNames);
                 }
             }
@@ -155,7 +162,6 @@ public class ZipUtils {
         }
     }
 
-
     private static void writeZipEntry(File file, ZipOutputStream zipos,
                                       String... ignoredFileNames) throws IOException {
         writeZipEntry("", file, zipos, ignoredFileNames);
@@ -163,7 +169,7 @@ public class ZipUtils {
 
     private static void writeZipEntry(String path, File file,
                                       ZipOutputStream zipos, String... ignoredFileNames) throws IOException {
-        if (!ArrayUtils.contains(ignoredFileNames, file.getName())) {
+        if (!contains(ignoredFileNames, file.getName())) {
             if (file.isDirectory()) {
                 for (String fileName : requireNonNull(file.list())) {
                     writeZipEntry(path + file.getName() + "/",
@@ -186,4 +192,10 @@ public class ZipUtils {
         zipos.closeEntry();
     }
 
+    private static String removeTrailingSeparator(String path) {
+        if (path.charAt(path.length() - 1) == File.separatorChar) {
+            path = path.substring(0, path.length() - 1);
+        }
+        return path;
+    }
 }

@@ -29,8 +29,8 @@ import static java.util.Objects.requireNonNull;
  * @author - johnny850807@gmail.com (Waterball)
  */
 public class YAMLJudgerWorkspace implements JudgerWorkspace {
-    private FileLayout fileLayout;
-    private Directory root;
+    private final FileLayout fileLayout;
+    private final Directory root;
 
     public YAMLJudgerWorkspace(String yamlResourcePath) throws IOException {
         fileLayout = new YAMLFileLayoutBuilder(yamlResourcePath).build();
@@ -62,7 +62,7 @@ public class YAMLJudgerWorkspace implements JudgerWorkspace {
     }
 
     static class YAMLSubmissionHome implements SubmissionHome {
-        private Directory submissionHome;
+        private final Directory submissionHome;
 
         public YAMLSubmissionHome(Directory submissionHome) {
             this.submissionHome = submissionHome;
@@ -87,7 +87,7 @@ public class YAMLJudgerWorkspace implements JudgerWorkspace {
     }
 
     private static class YAMLCompileHome implements CompileHome {
-        private Directory compileHome;
+        private final Directory compileHome;
 
         public YAMLCompileHome(Directory compileHome) {
             this.compileHome = compileHome;
@@ -116,7 +116,7 @@ public class YAMLJudgerWorkspace implements JudgerWorkspace {
     }
 
     private static class YAMLSourceRoot implements SourceRoot {
-        private Directory sourceRoot;
+        private final Directory sourceRoot;
 
         YAMLSourceRoot(Directory sourceRoot) {
             this.sourceRoot = sourceRoot;
@@ -129,7 +129,7 @@ public class YAMLJudgerWorkspace implements JudgerWorkspace {
     }
 
     private static class YAMLTestcaseHome implements TestcaseHome {
-        private Directory testcaseHome;
+        private final Directory testcaseHome;
 
         public YAMLTestcaseHome(Directory testcaseHome) {
             this.testcaseHome = testcaseHome;
@@ -155,7 +155,7 @@ public class YAMLJudgerWorkspace implements JudgerWorkspace {
     }
 
     private static class YAMLSandboxRoot implements SandboxRoot {
-        private Directory sandboxRoot;
+        private final Directory sandboxRoot;
 
         public YAMLSandboxRoot(Directory sandboxRoot) {
             this.sandboxRoot = sandboxRoot;
@@ -188,7 +188,7 @@ public class YAMLJudgerWorkspace implements JudgerWorkspace {
     }
 
     private static class YAMLTestcaseOutputHome implements TestCaseOutputHome {
-        private Directory testcaseOutputHome;
+        private final Directory testcaseOutputHome;
 
         public YAMLTestcaseOutputHome(Directory testcaseOutputHome) {
             this.testcaseOutputHome = testcaseOutputHome;

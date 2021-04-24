@@ -30,10 +30,10 @@ import java.util.Map;
 public class YAMLFileLayoutBuilder implements FileLayoutBuilder {
     private static final ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
     private static final String FIELD_PATH = "path";
-    private String yamlResourcePath;
+    private final String yamlResourcePath;
 
 
-    public YAMLFileLayoutBuilder(String yamlResourcePath) throws IOException {
+    public YAMLFileLayoutBuilder(String yamlResourcePath) {
         this.yamlResourcePath = yamlResourcePath;
     }
 
@@ -47,10 +47,7 @@ public class YAMLFileLayoutBuilder implements FileLayoutBuilder {
         }
         JsonNode rootTree = tree.get("root");
         Path rootPath = Paths.get(rootTree.get(FIELD_PATH).asText());
-        if (!rootPath.isAbsolute()) {
-            throw new IllegalStateException("The root.path must be absolute.");
-        }
-        Directory rootDir = new Directory("root", rootPath.getFileName().toString());
+        Directory rootDir = new Directory("root", rootPath.toAbsolutePath().toString());
         parseTree(rootDir, rootTree);
         return new FileLayout(rootDir);
     }

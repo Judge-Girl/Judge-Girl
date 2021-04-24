@@ -24,7 +24,7 @@ COPY target/judger-0.0.1-SNAPSHOT-jar-with-dependencies.jar /judger.jar
 COPY CC-Profiler-Sandbox/ /CC-Profiler-Sandbox/
 WORKDIR /CC-Profiler-Sandbox
 RUN gcc -std=c99 -o profiler main.c sandbox.c profiler.c logger.c killer.c rules/general.c rules/c_cpp.c rules/c_cpp_file_io.c -lpthread -lseccomp
-RUN mkdir -p /judger/run && cp profiler /judger/run/profiler
+RUN mkdir -p /judger-home/run && cp profiler /judger-home/run/profiler
 
 WORKDIR /
 
