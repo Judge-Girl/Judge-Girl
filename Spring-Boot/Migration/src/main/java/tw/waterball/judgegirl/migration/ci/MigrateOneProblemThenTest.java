@@ -13,6 +13,8 @@ import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
 import tw.waterball.judgegirl.entities.problem.JudgeStatus;
 import tw.waterball.judgegirl.entities.problem.Language;
+import tw.waterball.judgegirl.entities.submission.SubmissionThrottlingException;
+import tw.waterball.judgegirl.entities.submission.verdict.VerdictIssuedEvent;
 import tw.waterball.judgegirl.judger.DefaultCCJudgerFactory;
 import tw.waterball.judgegirl.judger.Judger;
 import tw.waterball.judgegirl.migration.problem.ConvertLegacyLayout;
@@ -27,13 +29,11 @@ import tw.waterball.judgegirl.problemservice.domain.repositories.TestCaseReposit
 import tw.waterball.judgegirl.springboot.profiles.JudgeGirlApplication;
 import tw.waterball.judgegirl.submissionapi.clients.SubmissionServiceDriver;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
-import tw.waterball.judgegirl.submissionapi.views.VerdictIssuedEvent;
 import tw.waterball.judgegirl.submissionservice.domain.repositories.SubmissionRepository;
-import tw.waterball.judgegirl.submissionservice.domain.usecases.SubmitCodeRequest;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -91,33 +91,47 @@ public class MigrateOneProblemThenTest {
 
         judger.judge(0, problemId, submissionId);
 
-        if (result.getJudges().stream().anyMatch(j -> j.getStatus() != JudgeStatus.AC)) {
-            String resultString = result.getCompileErrorMessage() == null ?
-                    objectMapper.writeValueAsString(result.getJudges()) : "Compile error: " + result.getCompileErrorMessage();
-            throw new IllegalStateException("Test failed, the result judges:\n" +resultString);
+        if (result.getVerdict().getJudges().stream().anyMatch(j -> j.getStatus() != JudgeStatus.AC)) {
+            String resultString = result.getVerdict().getCompileErrorMessage() == null ?
+                    objectMapper.writeValueAsString(result.getVerdict().getJudges()) : "Compile error: " + result.getVerdict().getCompileErrorMessage();
+            throw new IllegalStateException("Test failed, the result judges:\n" + resultString);
         }
     }
 
     @NotNull
     private SubmissionServiceDriver submissionServiceDriver() {
         return new SubmissionServiceDriver() {
+
             @Override
-            public SubmissionView submit(SubmitCodeRequest submitCodeRequest) throws IOException {
-                throw new IllegalStateException("Unsupported");
+            public SubmissionView submit(tw.waterball.judgegirl.submissionapi.clients.SubmitCodeRequest submitCodeRequest) throws SubmissionThrottlingException {
+                return null;
             }
+
             @Override
             public SubmissionView getSubmission(int problemId, int studentId, String submissionId) throws NotFoundException {
                 return submissionRepository.findOne(studentId, submissionId)
-                        .map(SubmissionView::fromEntity).orElseThrow(NotFoundException::new);
+                        .map(SubmissionView::toViewModel).orElseThrow(NotFoundException::new);
             }
+
             @Override
             public FileResource downloadSubmittedCodes(int problemId, int studentId, String submissionId, String submittedCodesFileId) throws NotFoundException {
                 return submissionRepository.downloadZippedSubmittedCodes(submissionId)
                         .orElseThrow(NotFoundException::new);
             }
+
             @Override
             public List<SubmissionView> getSubmissions(int problemId, int studentId) {
                 throw new IllegalStateException("Unsupported");
+            }
+
+            @Override
+            public List<SubmissionView> getSubmissions(int problemId, int studentId, Map<String, String> bagQueryParameters) {
+                return null;
+            }
+
+            @Override
+            public SubmissionView findBestRecord(List<String> submissionIds) {
+                return null;
             }
         };
     }
@@ -127,13 +141,15 @@ public class MigrateOneProblemThenTest {
             @Override
             public ProblemView getProblem(int problemId) throws NotFoundException {
                 return problemRepository.findProblemById(problemId)
-                        .map(ProblemView::fromEntity).orElseThrow();
+                        .map(ProblemView::toViewModel).orElseThrow();
             }
+
             @Override
             public FileResource downloadProvidedCodes(int problemId, String languageEnvName, String providedCodesFileId) throws NotFoundException {
                 return problemRepository.downloadProvidedCodes(problemId, languageEnvName)
                         .orElseThrow(NotFoundException::new);
             }
+
             @Override
             public FileResource downloadTestCaseIOs(int problemId, String testcaseIOsFileId) throws NotFoundException {
                 return testcaseRepository.downloadTestCaseIOs(problemId, testcaseIOsFileId)

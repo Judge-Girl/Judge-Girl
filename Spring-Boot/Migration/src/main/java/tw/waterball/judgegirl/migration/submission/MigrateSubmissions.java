@@ -11,10 +11,10 @@ import org.springframework.stereotype.Component;
 import tw.waterball.judgegirl.commons.models.files.StreamingResource;
 import tw.waterball.judgegirl.entities.problem.JudgeStatus;
 import tw.waterball.judgegirl.entities.problem.Language;
-import tw.waterball.judgegirl.entities.submission.Judge;
-import tw.waterball.judgegirl.entities.submission.ProgramProfile;
 import tw.waterball.judgegirl.entities.submission.Submission;
-import tw.waterball.judgegirl.entities.submission.Verdict;
+import tw.waterball.judgegirl.entities.submission.verdict.Judge;
+import tw.waterball.judgegirl.entities.submission.verdict.ProgramProfile;
+import tw.waterball.judgegirl.entities.submission.verdict.Verdict;
 import tw.waterball.judgegirl.migration.legacy.JudgeResultCodes;
 import tw.waterball.judgegirl.springboot.profiles.JudgeGirlApplication;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
@@ -64,7 +64,6 @@ public class MigrateSubmissions {
             err.printStackTrace();
             SpringApplication.exit(context, () -> -1);
         }
-        ;
     }
 
     @SneakyThrows
@@ -96,7 +95,7 @@ public class MigrateSubmissions {
 
     private void saveSubmission(Submission submission) {
         Submission saved = submissionRepository.save(submission);
-        System.out.println(SubmissionView.fromEntity(saved));
+        System.out.println(SubmissionView.toViewModel(saved));
     }
 
     private Submission convertSubmission(OldSubmission oldSubmission) throws IOException {

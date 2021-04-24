@@ -20,12 +20,12 @@ public class FixedInputConfiguration {
     @Bean
     @Primary
     public MigrateOneProblemStandardInput migrateOneProblemStandardInput() {
-        int problemId = 3;
+        int problemId = 50179;
         return MigrateOneProblemStandardInput.builder()
                 .problemId(problemId)
-                .compilationScript("gcc -std=c99 -O2 a.c -lm")
-                .tags(new String[]{"arithmetic operation, basic I/O"})
-                .legacyPackageRootPath(Paths.get("/Volumes/Legacy-Judge-Girl-2021/package"))
+                .compilationScript("gcc -O2 -std=c99 a.c")
+                .tags(new String[]{"FILE I/O"})
+                .legacyPackageRootPath(Paths.get("/Users/johnny850807/Documents/Judge-Girl-Migration/50179/50179"))
                 .outputDirectoryPath(Paths.get("temp/migration/" + problemId))
                 .resourceSpec(new ResourceSpec(1, 0))
                 .matchPolicyPlugin(new AllMatchPolicyPlugin())
