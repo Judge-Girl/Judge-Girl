@@ -137,7 +137,7 @@ public class CCJudger extends PluginExtendedJudger {
     protected void downloadProvidedCodes() throws IOException {
         LanguageEnv languageEnv = getLanguageEnv();
         try (FileResource zip = problemServiceDriver.downloadProvidedCodes(
-                getProblem().getId(), languageEnv.getName(), languageEnv.getProvidedCodesFileId())) {
+                getProblem().getId(), languageEnv)) {
             ZipUtils.unzipToDestination(zip.getInputStream(), getSourceRootPath());
         }
 

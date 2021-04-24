@@ -54,7 +54,7 @@ class ZipUtilsTest {
         File zip = File.createTempFile("judge-girl-test", ".zip");
         zip.deleteOnExit();
 
-        ZipUtils.zipToFile(file, new FileOutputStream(zip));
+        ZipUtils.zipFromFile(file, new FileOutputStream(zip));
 
         Path destinationPath = Files.createTempDirectory("judge-girl-test");
         ZipUtils.unzipToDestination(new FileInputStream(zip), destinationPath);
