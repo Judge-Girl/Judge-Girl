@@ -41,7 +41,7 @@ services:
       RABBIT_HOST: "${RABBIT_HOST}"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.exam-service.rule=PathPrefix(`/api/exams`) || PathPrefix(`/api/students/{studentId:[0-9]+}/exams`)"
+      - "traefik.http.routers.exam-service.rule=PathPrefix(`/api/exams`) || PathPrefix(`/api/students/{studentId:[0-9]+}/exams`) || PathPrefix(`/api/homework`)"
       - "traefik.http.routers.exam-service.entrypoints=web"
       - "traefik.http.routers.exam-service.service=exam-service"
       - "traefik.http.services.exam-service.loadbalancer.server.port=80"
@@ -71,7 +71,7 @@ services:
     command: "/bin/sh -c 'until nc -z -v -w30 ${RABBIT_HOST} 5672; do echo Waiting for RabbitMQ...; sleep 1; done && java -jar /app.jar'"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.submission-service.rule=PathPrefix(`/api/submissions`) || PathPrefix(`/api/problems/{problemId:[0-9]+}/{langEnv:\\w+}/students/{studentId:[0-9]+}/submissions`) || PathPrefix(`/api/homework`)"
+      - "traefik.http.routers.submission-service.rule=PathPrefix(`/api/submissions`) || PathPrefix(`/api/problems/{problemId:[0-9]+}/{langEnv:\\w+}/students/{studentId:[0-9]+}/submissions`)"
       - "traefik.http.routers.submission-service.entrypoints=web"
       - "traefik.http.routers.submission-service.service=submission-service"
       - "traefik.http.services.submission-service.loadbalancer.server.port=80"
