@@ -24,14 +24,21 @@ import java.util.Optional;
 public class ProblemQueryParams {
     public final static ProblemQueryParams NO_PARAMS = new ProblemQueryParams(null, null);
 
-    private String[] tags;
+    private final String[] tags;
 
     @Nullable
-    private Integer page;
+    private final Integer page;
+
+    private final boolean excludeArchive;
 
     public ProblemQueryParams(String[] tags, @Nullable Integer page) {
+        this(tags, page, true);
+    }
+
+    public ProblemQueryParams(String[] tags, @Nullable Integer page, boolean excludeArchive) {
         this.tags = tags;
         this.page = page;
+        this.excludeArchive = excludeArchive;
     }
 
     public String[] getTags() {
@@ -41,4 +48,9 @@ public class ProblemQueryParams {
     public Optional<Integer> getPage() {
         return Optional.ofNullable(page);
     }
+
+    public boolean isExcludeArchive() {
+        return excludeArchive;
+    }
+
 }

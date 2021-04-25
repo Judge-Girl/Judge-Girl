@@ -14,6 +14,7 @@ package tw.waterball.judgegirl.springboot.problem.controllers;
 
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import lombok.SneakyThrows;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,6 +41,7 @@ import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
 
 import java.io.ByteArrayInputStream;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -48,6 +50,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static java.util.Objects.requireNonNull;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -379,6 +382,16 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         archiveOrDeleteProblem(problemId);
 
         assertTrue(problemRepository.findProblemById(problemId).isEmpty());
+    }
+
+    @Test
+    void GivenProblemsSaved_WhenArchiveProblemById_1_AndThenGetAllProblems_ShouldCantRespond_1() throws Exception {
+        givenProblemsSaved(10);
+
+        archiveOrDeleteProblem(1);
+        var problems = requestGetProblems();
+
+        problems.forEach(problem -> assertNotEquals(1, problem.id));
     }
 
     private void archiveOrDeleteProblem(int problemId) throws Exception {

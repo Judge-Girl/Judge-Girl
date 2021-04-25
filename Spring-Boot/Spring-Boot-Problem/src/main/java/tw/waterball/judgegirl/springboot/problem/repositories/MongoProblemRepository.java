@@ -75,9 +75,12 @@ public class MongoProblemRepository implements ProblemRepository {
     public List<Problem> find(ProblemQueryParams params) {
         Query query = new Query();
 
-        if (params.getTags().length > 0) {
+        if (params.getTags().length > 0 ) {
             query.addCriteria(new Criteria("tags")
                     .all((Object[]) params.getTags()));
+        }
+        if(params.isExcludeArchive()){
+            query.addCriteria(Criteria.where("archived").is(false));
         }
         params.getPage().ifPresent(page -> query.skip(page * PAGE_SIZE).limit(PAGE_SIZE));
 
