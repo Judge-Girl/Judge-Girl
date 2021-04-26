@@ -381,6 +381,16 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         assertTrue(problemRepository.findProblemById(problemId).isEmpty());
     }
 
+    @Test
+    void GivenProblemsSaved_WhenArchiveProblemById_1_AndThenGetAllProblems_ShouldNotRespondProblem_1() throws Exception {
+        givenProblemsSaved(10);
+
+        archiveOrDeleteProblem(1);
+        var problems = requestGetProblems();
+
+        assertTrue(problems.stream().allMatch(problem -> problem.id != 1));
+    }
+
     private void archiveOrDeleteProblem(int problemId) throws Exception {
         mockMvc.perform(delete("/api/problems/{problemId}", problemId))
                 .andExpect(status().isOk());
