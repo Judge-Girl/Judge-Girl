@@ -171,6 +171,15 @@ public class MongoProblemRepository implements ProblemRepository {
         mongoTemplate.remove(query, Problem.class);
     }
 
+    @Override
+    public void replaceProblemLanguageEnvByIdAndLangEnv(int problemId, String langEnv, LanguageEnv languageEnv) {
+        Query query = new Query();
+        query.addCriteria(Criteria.where("_id").is(problemId));
+        Update update = new Update();
+        update.set("languageEnvs." + langEnv, languageEnv);
+        mongoTemplate.upsert(query, update, Problem.class);
+    }
+
     @Document("tag")
     public static class AllTags {
         public List<String> all;

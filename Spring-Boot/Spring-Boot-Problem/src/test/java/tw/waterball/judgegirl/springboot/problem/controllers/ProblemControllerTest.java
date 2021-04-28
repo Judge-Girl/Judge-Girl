@@ -47,9 +47,11 @@ import static java.lang.Integer.parseInt;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static tw.waterball.judgegirl.entities.problem.Language.JAVA;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -187,7 +189,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         // verify all problems will be found and projected into problem-items
         assertEquals(problems.stream()
                 .map(ProblemItem::fromEntity)
-                .collect(Collectors.toList()), requestGetProblems());
+                .collect(toList()), requestGetProblems());
     }
 
     @Test
@@ -249,7 +251,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         List<Problem> problems = IntStream.range(0, count).mapToObj((id) ->
                 ProblemStubs.problemTemplate().id(id)
                         .title(String.valueOf(random.nextInt())).build())
-                .collect(Collectors.toList());
+                .collect(toList());
         problems.forEach(mongoTemplate::save);
         return problems;
     }
@@ -427,6 +429,67 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
                     , new ByteArrayInputStream(testcaseIOsZip));
         });
     }
+
+    @Test
+    void GivenOneProblemSavedAndTheLanguageEnvsHas_c_WhenProblemLanguageEnvsReplace_JAVA_with_c_ShouldLanguageEnvReplaced_JAVA() throws Exception {
+        int problemId = 1;
+        saveProblemAndTheLanguageEnvHas_C(problemId);
+
+        LanguageEnv languageEnv = createLanguageEnv(JAVA);
+        replaceProblemLanguageEnv(problemId, Language.C, languageEnv);
+
+        Problem actualProblem = mongoTemplate.findById(problemId, Problem.class);
+        ShouldProblemHasLanguageEnvs(actualProblem, JAVA);
+
+    }
+
+    @Test
+    void GivenOneProblemSavedAndLangEnvHas_C_WhenProblemReplace_JAVA_with_JAVA_AndGetThatProblem_ShouldProblemLangEnvHas_C_And_JAVA() throws Exception {
+        int problemId = 1;
+        saveProblemAndTheLanguageEnvHas_C(problemId);
+
+        LanguageEnv languageEnv = createLanguageEnv(JAVA);
+        replaceProblemLanguageEnv(problemId, Language.JAVA, languageEnv);
+
+        Problem actualProblem = mongoTemplate.findById(problemId, Problem.class);
+        ShouldProblemHasLanguageEnvs(actualProblem, Language.C, JAVA);
+
+    }
+
+
+    private void ShouldProblemHasLanguageEnvs(Problem actualProblem, Language... languages) {
+        if (actualProblem != null) {
+            List<String> LanguageEnvs = Arrays.stream(languages).map(Enum::toString).collect(toList());
+            Set<String> problemLanguageEnvs = actualProblem.getLanguageEnvs().values().stream().map(languageEnv -> languageEnv.getLanguage().toString()).collect(Collectors.toSet());
+            LanguageEnvs.forEach(language -> {
+                assertTrue(problemLanguageEnvs.contains(language.toString()));
+            });
+        } else {
+            fail();
+        }
+    }
+
+    private void saveProblemAndTheLanguageEnvHas_C(Integer problemId) throws Exception {
+        saveProblems(problemId);
+    }
+
+    private LanguageEnv createLanguageEnv(Language language) {
+        return LanguageEnv.builder()
+                .language(language)
+                .compilation(new Compilation("Compilation Script"))
+                .resourceSpec(new ResourceSpec(0.5f, 0))
+                .submittedCodeSpec(new SubmittedCodeSpec(language, "main.java"))
+                .providedCodesFileId("providedCodesFileId")
+                .build();
+    }
+
+    private void replaceProblemLanguageEnv(Integer problemId, Language language, LanguageEnv languageEnv) throws Exception {
+        mockMvc.perform(put("/api/problems/{problemId}/env/{langEnv}", problemId, language.toString())
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .content(objectMapper.writeValueAsString(languageEnv)))
+                .andExpect(status().isOk());
+    }
+
 
 }
 
