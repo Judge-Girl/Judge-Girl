@@ -91,8 +91,7 @@ public class ExamController {
                                           @RequestParam(defaultValue = "50", required = false) int size,
                                           @RequestParam(defaultValue = "all", required = false) ExamFilter.Status status) {
         GetExamsPresenter presenter = new GetExamsPresenter();
-        getExamsUseCase.execute(
-                ExamFilter.studentId(studentId)
+        getExamsUseCase.execute(ExamFilter.studentId(studentId)
                         .skip(skip).size(size)
                         .status(status).build(), presenter);
         return presenter.present();

@@ -35,6 +35,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import static java.util.Arrays.asList;
 import static tw.waterball.judgegirl.api.retrofit.BaseRetrofitAPI.ExceptionDeclaration.declare;
@@ -49,13 +50,14 @@ public class SubmissionApiClient extends BaseRetrofitAPI implements SubmissionSe
     public static final String CURRENTLY_ONLY_SUPPORT_C = Language.C.toString();
     public static final String SUBMIT_CODE_MULTIPART_KEY_NAME = "submittedCodes";
     private final API api;
-    private final String token;
+    private final Supplier<String> tokenSupplier;
     private final BagInterceptor[] bagInterceptors;
 
     public SubmissionApiClient(RetrofitFactory retrofitFactory,
-                               String scheme, String host, int port, String token,
+                               String scheme, String host, int port,
+                               Supplier<String> tokenSupplier,
                                BagInterceptor... bagInterceptors) {
-        this.token = token;
+        this.tokenSupplier = tokenSupplier;
         this.bagInterceptors = bagInterceptors;
         this.api = retrofitFactory.create(scheme, host, port
                 /*TODO: add an interceptor that add Authorization header on every request*/)
@@ -72,7 +74,7 @@ public class SubmissionApiClient extends BaseRetrofitAPI implements SubmissionSe
 
     private Map<String, String> withSubmissionBagAsHeaders(SubmitCodeRequest request) {
         Map<String, String> headers = new HashMap<>();
-        headers.put("Authorization", bearerWithToken(token));
+        headers.put("Authorization", bearerWithToken(tokenSupplier.get()));
         asList(bagInterceptors).forEach(interceptor -> interceptor.intercept(request.submissionBag));
         request.submissionBag.forEach((key, val) -> headers.put(HEADER_BAG_KEY_PREFIX + key, val));
         return headers;
@@ -97,7 +99,7 @@ public class SubmissionApiClient extends BaseRetrofitAPI implements SubmissionSe
     @Override
     public SubmissionView getSubmission(int problemId, int studentId, String submissionId) throws NotFoundException {
         return errorHandlingGetBody(() -> api.getSubmission(
-                bearerWithToken(token),
+                bearerWithToken(tokenSupplier.get()),
                 problemId, CURRENTLY_ONLY_SUPPORT_C, studentId, submissionId).execute());
     }
 
@@ -106,7 +108,7 @@ public class SubmissionApiClient extends BaseRetrofitAPI implements SubmissionSe
                                                String submissionId, String submittedCodesFileId) throws NotFoundException {
         Response<ResponseBody> resp = errorHandlingGetResponse(() ->
                 api.getSubmittedCodes(
-                        bearerWithToken(token),
+                        bearerWithToken(tokenSupplier.get()),
                         problemId, CURRENTLY_ONLY_SUPPORT_C, studentId, submissionId, submittedCodesFileId));
         return parseDownloadedFileResource(resp);
     }
@@ -114,7 +116,7 @@ public class SubmissionApiClient extends BaseRetrofitAPI implements SubmissionSe
     @Override
     public List<SubmissionView> getSubmissions(int problemId, int studentId, Map<String, String> bagQueryParameters) {
         return errorHandlingGetBody(() -> api.getSubmissions(
-                bearerWithToken(token), problemId,
+                bearerWithToken(tokenSupplier.get()), problemId,
                 CURRENTLY_ONLY_SUPPORT_C, studentId, bagQueryParameters).execute());
     }
 
@@ -124,7 +126,7 @@ public class SubmissionApiClient extends BaseRetrofitAPI implements SubmissionSe
             throw new IllegalArgumentException("The `submissionIds` should not be empty.");
         }
         return errorHandlingGetBody(() -> api.findBestRecord(
-                bearerWithToken(token),
+                bearerWithToken(tokenSupplier.get()),
                 String.join(",", submissionIds)).execute());
     }
 
