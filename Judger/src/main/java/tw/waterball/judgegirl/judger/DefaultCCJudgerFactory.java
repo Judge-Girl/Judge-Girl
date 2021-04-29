@@ -103,7 +103,7 @@ public class DefaultCCJudgerFactory {
                 values.getProblemServiceInstance().getScheme(),
                 values.getProblemServiceInstance().getHost(),
                 values.getProblemServiceInstance().getPort(),
-                token);
+                () -> token);
     }
 
     private static SubmissionApiClient submissionApiClient(JudgerEnvVariables.Values values, String token) {
@@ -111,7 +111,7 @@ public class DefaultCCJudgerFactory {
                 values.getSubmissionServiceInstance().getScheme(),
                 values.getSubmissionServiceInstance().getHost(),
                 values.getSubmissionServiceInstance().getPort(),
-                token);
+                () -> token);
     }
 
     private static RetrofitFactory retrofitFactory() {
