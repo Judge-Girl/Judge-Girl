@@ -79,6 +79,9 @@ public class MongoProblemRepository implements ProblemRepository {
             query.addCriteria(new Criteria("tags")
                     .all((Object[]) params.getTags()));
         }
+        if (params.isExcludeArchive()) {
+            query.addCriteria(Criteria.where("archived").is(false));
+        }
         params.getPage().ifPresent(page -> query.skip(page * PAGE_SIZE).limit(PAGE_SIZE));
 
         return mongoTemplate.find(query, Problem.class);
