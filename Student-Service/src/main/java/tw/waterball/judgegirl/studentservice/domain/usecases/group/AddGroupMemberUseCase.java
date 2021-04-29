@@ -10,6 +10,8 @@ import tw.waterball.judgegirl.studentservice.domain.repositories.StudentReposito
 
 import javax.inject.Named;
 
+import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
+
 /**
  * @author - wally55077@gmail.com
  */
@@ -27,10 +29,10 @@ public class AddGroupMemberUseCase {
         int groupId = request.groupId;
         int studentId = request.studentId;
         Group group = groupRepository.findGroupById(groupId)
-                .orElseThrow(NotFoundException::new);
+                .orElseThrow(() -> notFound(Group.class).id(groupId));
         if (!hasStudentAddedIntoGroup(group, studentId)) {
             Student student = studentRepository.findStudentById(studentId)
-                    .orElseThrow(NotFoundException::new);
+                    .orElseThrow(() -> notFound(Student.class).id(request.studentId));
             group.addStudent(student);
             groupRepository.save(group);
         }

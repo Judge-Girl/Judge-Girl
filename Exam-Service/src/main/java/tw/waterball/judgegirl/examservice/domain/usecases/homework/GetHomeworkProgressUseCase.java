@@ -11,6 +11,8 @@ import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 import javax.inject.Named;
 import java.util.Optional;
 
+import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
+
 /**
  * @author - wally55077@gmail.com
  */
@@ -31,7 +33,7 @@ public class GetHomeworkProgressUseCase {
 
     private Homework findHomework(Request request) {
         return homeworkRepository.findHomeworkById(request.homeworkId)
-                .orElseThrow(NotFoundException::new);
+                .orElseThrow(() -> notFound(Homework.class).id(request.homeworkId));
     }
 
     private void showBestRecords(Request request, Homework homework, Presenter presenter) {

@@ -7,6 +7,8 @@ import tw.waterball.judgegirl.examservice.domain.repositories.HomeworkRepository
 
 import javax.inject.Named;
 
+import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
+
 /**
  * @author - wally55077@gmail.com
  */
@@ -19,7 +21,7 @@ public class GetHomeworkUseCase {
     public void execute(int homeworkId, Presenter presenter)
             throws NotFoundException {
         Homework homework = homeworkRepository.findHomeworkById(homeworkId)
-                .orElseThrow(NotFoundException::new);
+                .orElseThrow(() -> notFound(Homework.class).id(homeworkId));
         presenter.showHomework(homework);
     }
 

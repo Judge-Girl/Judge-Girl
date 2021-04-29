@@ -10,6 +10,8 @@ import tw.waterball.judgegirl.examservice.domain.repositories.ExamRepository;
 import javax.inject.Named;
 import java.util.Date;
 
+import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
+
 @Named
 public class UpdateExamUseCase {
     private final ExamRepository examRepository;
@@ -19,9 +21,14 @@ public class UpdateExamUseCase {
     }
 
     public void execute(Request request, ExamPresenter presenter) throws NotFoundException, IllegalStateException {
-        Exam exam = examRepository.findById(request.examId).orElseThrow(NotFoundException::new);
+        Exam exam = findExam(request);
         updateExam(exam, request);
         presenter.showExam(examRepository.save(exam));
+    }
+
+    private Exam findExam(Request request) {
+        return examRepository.findById(request.examId)
+                .orElseThrow(() -> notFound(Exam.class).id(request.examId));
     }
 
     private void updateExam(Exam exam, Request request) throws IllegalStateException {

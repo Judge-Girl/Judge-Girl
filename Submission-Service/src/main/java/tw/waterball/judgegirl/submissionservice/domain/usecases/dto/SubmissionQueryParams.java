@@ -14,6 +14,7 @@
 package tw.waterball.judgegirl.submissionservice.domain.usecases.dto;
 
 
+import lombok.Data;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
@@ -22,6 +23,7 @@ import java.util.Optional;
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
+@Data
 public class SubmissionQueryParams {
     @Nullable
     private final Integer page;

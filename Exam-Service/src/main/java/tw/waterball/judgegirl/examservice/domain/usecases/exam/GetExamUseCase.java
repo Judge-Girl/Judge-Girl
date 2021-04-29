@@ -1,11 +1,12 @@
 package tw.waterball.judgegirl.examservice.domain.usecases.exam;
 
 import lombok.AllArgsConstructor;
-import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.entities.exam.Exam;
 import tw.waterball.judgegirl.examservice.domain.repositories.ExamRepository;
 
 import javax.inject.Named;
+
+import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -21,7 +22,8 @@ public class GetExamUseCase {
     }
 
     private Exam findExam(int examId) {
-        return examRepository.findById(examId).orElseThrow(NotFoundException::new);
+        return examRepository.findById(examId)
+                .orElseThrow(() -> notFound(Exam.class).id(examId));
     }
 
 }

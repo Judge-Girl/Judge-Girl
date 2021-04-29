@@ -36,7 +36,7 @@ public class DownloadSubmittedCodesUseCase extends BaseSubmissionUseCase {
         validateRequest(request, submission);
         return submissionRepository.downloadZippedSubmittedCodes(request.submissionId)
                 .orElseThrow(() -> NotFoundException
-                        .notFound("submission").id(request.submissionId));
+                        .notFound(Submission.class).id(request.submissionId));
     }
 
     private void validateRequest(Request request, Submission submission) {

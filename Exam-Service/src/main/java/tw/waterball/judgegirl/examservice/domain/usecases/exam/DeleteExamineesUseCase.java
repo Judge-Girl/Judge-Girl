@@ -12,6 +12,7 @@ import tw.waterball.judgegirl.studentapi.clients.StudentServiceDriver;
 import javax.inject.Named;
 import java.util.List;
 
+import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
 
 @Named
@@ -28,7 +29,8 @@ public class DeleteExamineesUseCase {
 
 
     private Exam findExam(Request request) throws NotFoundException {
-        return examRepository.findById(request.examId).orElseThrow(NotFoundException::new);
+        return examRepository.findById(request.examId)
+                .orElseThrow(() -> notFound(Exam.class).id(request.examId));
     }
 
     private List<Student> findStudents(Request request) {

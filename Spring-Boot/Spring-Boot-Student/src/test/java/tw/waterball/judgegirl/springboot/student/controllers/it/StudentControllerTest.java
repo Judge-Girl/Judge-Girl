@@ -30,7 +30,6 @@ import tw.waterball.judgegirl.springboot.profiles.Profiles;
 import tw.waterball.judgegirl.springboot.student.SpringBootStudentApplication;
 import tw.waterball.judgegirl.springboot.student.controllers.LoginResponse;
 import tw.waterball.judgegirl.studentapi.clients.view.StudentView;
-import tw.waterball.judgegirl.studentservice.domain.exceptions.StudentIdNotFoundException;
 import tw.waterball.judgegirl.studentservice.domain.repositories.StudentRepository;
 import tw.waterball.judgegirl.studentservice.domain.usecases.student.ChangePasswordUseCase;
 import tw.waterball.judgegirl.studentservice.domain.usecases.student.LoginUseCase;
@@ -240,13 +239,12 @@ public class StudentControllerTest extends AbstractSpringBootTest {
     @Test
     void GivenOneStudentSignedUp_WhenChangePasswordWithCorrectCurrentPassword_ShouldSucceed() throws Exception {
         signUp(student);
-        LoginResponse body = loginAndGetResponseBody(student.getEmail(), student.getPassword());
+        LoginResponse response = loginAndGetResponseBody(student.getEmail(), student.getPassword());
 
         String newPassword = "newPassword";
-        changePassword(student.getPassword(), newPassword, body.id, body.token).andExpect(status().isOk());
+        changePassword(student.getPassword(), newPassword, response.id, response.token).andExpect(status().isOk());
 
-        Student student = studentRepository.findStudentById(body.id)
-                .orElseThrow(StudentIdNotFoundException::new);
+        Student student = studentRepository.findStudentById(response.id).orElseThrow();
         assertNotEquals(newPassword, student.getPassword());
     }
 
@@ -259,8 +257,7 @@ public class StudentControllerTest extends AbstractSpringBootTest {
         String newPassword = "newPassword";
         changePassword(wrongPassword, newPassword, body.id, body.token).andExpect(status().isBadRequest());
 
-        Student student = studentRepository.findStudentById(body.id)
-                .orElseThrow(StudentIdNotFoundException::new);
+        Student student = studentRepository.findStudentById(body.id).orElseThrow();
         assertEquals(student.getPassword(), student.getPassword());
     }
 

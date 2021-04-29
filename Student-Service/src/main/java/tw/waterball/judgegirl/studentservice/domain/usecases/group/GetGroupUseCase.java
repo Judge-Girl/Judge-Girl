@@ -7,6 +7,8 @@ import tw.waterball.judgegirl.studentservice.domain.repositories.GroupRepository
 
 import javax.inject.Named;
 
+import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
+
 /**
  * @author - wally55077@gmail.com
  */
@@ -18,7 +20,7 @@ public class GetGroupUseCase {
 
     public void execute(int groupId, Presenter presenter) throws NotFoundException {
         presenter.setGroup(groupRepository.findGroupById(groupId)
-                .orElseThrow(NotFoundException::new));
+                .orElseThrow(() -> notFound(Group.class).id(groupId)));
     }
 
     public interface Presenter {

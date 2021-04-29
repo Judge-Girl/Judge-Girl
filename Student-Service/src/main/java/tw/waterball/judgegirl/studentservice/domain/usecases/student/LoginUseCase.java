@@ -16,15 +16,17 @@ package tw.waterball.judgegirl.studentservice.domain.usecases.student;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.commons.token.TokenService;
 import tw.waterball.judgegirl.entities.Student;
 import tw.waterball.judgegirl.studentservice.domain.exceptions.ForbiddenLoginException;
-import tw.waterball.judgegirl.studentservice.domain.exceptions.StudentEmailNotFoundException;
 import tw.waterball.judgegirl.studentservice.domain.exceptions.StudentPasswordIncorrectException;
 import tw.waterball.judgegirl.studentservice.domain.repositories.StudentRepository;
 import tw.waterball.judgegirl.studentservice.ports.PasswordEncoder;
 
 import javax.inject.Named;
+
+import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
 
 /**
  * @author chaoyulee chaoyu2330@gmail.com
@@ -36,16 +38,20 @@ public class LoginUseCase {
     private final PasswordEncoder passwordEncoder;
 
     public void execute(Request request, Presenter presenter)
-            throws StudentEmailNotFoundException, StudentPasswordIncorrectException {
+            throws NotFoundException, StudentPasswordIncorrectException {
 
-        Student student = studentRepository
-                .findByEmail(request.email)
-                .orElseThrow(StudentEmailNotFoundException::new);
+        Student student = findStudentByEmail(request);
         validatePassword(request.password, student.getPassword());
         if (request.admin && !student.isAdmin()) {
             throw new ForbiddenLoginException("Student account can not login as admin");
         }
         presenter.loginSuccessfully(student);
+    }
+
+    private Student findStudentByEmail(Request request) {
+        return studentRepository
+                .findByEmail(request.email)
+                .orElseThrow(() -> notFound(Student.class).identifiedBy("email", request.email));
     }
 
     private void validatePassword(String rawPassword, String encodedPassword) throws StudentPasswordIncorrectException {

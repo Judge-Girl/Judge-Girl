@@ -13,6 +13,8 @@ import javax.inject.Named;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
+
 @Named
 @AllArgsConstructor
 public class AddExamineesUseCase {
@@ -27,7 +29,8 @@ public class AddExamineesUseCase {
     }
 
     private Exam findExam(Request request) throws NotFoundException {
-        return examRepository.findById(request.examId).orElseThrow(NotFoundException::new);
+        return examRepository.findById(request.examId)
+                .orElseThrow(() -> notFound(Exam.class).id(request.examId));
     }
 
     private List<Student> findStudents(Request request) {

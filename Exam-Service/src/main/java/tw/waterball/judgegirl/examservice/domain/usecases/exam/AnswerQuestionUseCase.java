@@ -70,13 +70,13 @@ public class AnswerQuestionUseCase implements VerdictIssuedEventListener {
 
     private Exam findExam(Request request) {
         return examRepository.findById(request.examId)
-                .orElseThrow(() -> notFound("exam").id(request.examId));
+                .orElseThrow(() -> notFound(Exam.class).id(request.examId));
     }
 
     private Question findQuestion(Request request, Exam exam) {
         Question.Id id = new Question.Id(request.examId, request.problemId);
         return exam.getQuestionByProblemId(request.problemId)
-                .orElseThrow(() -> notFound("question").id(id));
+                .orElseThrow(() -> notFound(Question.class).id(id));
     }
 
     private SubmitCodeRequest submitCodeRequest(Request request) {

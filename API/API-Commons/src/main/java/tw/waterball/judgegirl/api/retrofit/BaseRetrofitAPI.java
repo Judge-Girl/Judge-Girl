@@ -31,6 +31,7 @@ import java.util.function.Supplier;
 
 import static java.util.Arrays.stream;
 import static java.util.Objects.requireNonNull;
+import static tw.waterball.judgegirl.api.retrofit.BaseRetrofitAPI.ExceptionDeclaration.mapStatusCode;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -53,9 +54,9 @@ public class BaseRetrofitAPI {
     private <T> Supplier<ExceptionDeclaration> defaultExceptionDeclarations(Response<T> response, int code) {
         return () -> {
             if (code == 404) {
-                return ExceptionDeclaration.declare(404).toThrow(NotFoundException::new);
+                return mapStatusCode(404).toThrow(() -> new NotFoundException(response.message()));
             } else {
-                return ExceptionDeclaration.declare(code).toThrow(() -> ApiRequestFailedException.failed(response.code(), response.message()));
+                return mapStatusCode(code).toThrow(() -> ApiRequestFailedException.failed(response.code(), response.message()));
             }
         };
     }
@@ -76,7 +77,6 @@ public class BaseRetrofitAPI {
         }
     }
 
-    @SafeVarargs
     protected final <T> Response<T> errorHandlingGetResponse(IoErrSupplier<Call<T>> responseErrSupplier, ExceptionDeclaration... exceptionDeclarations) {
         try {
             return validateResponse(responseErrSupplier.get().execute(), exceptionDeclarations);
@@ -91,7 +91,7 @@ public class BaseRetrofitAPI {
         public final int errorCode;
         public Supplier<RuntimeException> exceptionSupplier = RuntimeException::new;
 
-        public static ExceptionDeclaration declare(int errorCode) {
+        public static ExceptionDeclaration mapStatusCode(int errorCode) {
             return new ExceptionDeclaration(errorCode);
         }
 
