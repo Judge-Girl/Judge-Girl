@@ -34,9 +34,7 @@ public class GetBestSubmissionUseCase {
     }
 
     public interface Presenter {
-
         void showBestSubmission(Submission bestSubmission);
-
     }
 
     @Value

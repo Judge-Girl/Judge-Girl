@@ -16,6 +16,8 @@ package tw.waterball.judgegirl.plugins.api;
 
 import tw.waterball.judgegirl.entities.problem.JudgePluginTag;
 
+import java.util.Collection;
+
 /**
  * Locates a JudgeGirlPlugin by its Tag.
  *
@@ -27,4 +29,6 @@ public interface JudgeGirlPluginLocator {
     default JudgeGirlPlugin locate(JudgePluginTag.Type type, String group, String name, String version) {
         return locate(new JudgePluginTag(type, group, name, version));
     }
+
+    Collection<JudgePluginTag> getAll();
 }

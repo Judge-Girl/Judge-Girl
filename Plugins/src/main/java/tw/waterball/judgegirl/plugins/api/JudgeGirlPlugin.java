@@ -43,4 +43,8 @@ public interface JudgeGirlPlugin {
     String getDescription();
 
     JudgePluginTag getTag();
+
+    default JudgePluginTag.Type getType() {
+        return getTag().getType();
+    }
 }
