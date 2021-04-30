@@ -22,7 +22,7 @@ public class UpgradeSubmissionToSampleUseCase {
 
     public void execute(String submissionId) throws NotFoundException {
         int problemId = findSubmission(submissionId).getProblemId();
-        sampleRepository.upgradeSubmissionsToSample(problemId, submissionId);
+        sampleRepository.upgradeSubmissionsToSamples(problemId, submissionId);
     }
 
     private Submission findSubmission(String submissionId) {
