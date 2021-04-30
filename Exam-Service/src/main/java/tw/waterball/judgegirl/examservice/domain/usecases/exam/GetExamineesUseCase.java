@@ -33,7 +33,7 @@ public class GetExamineesUseCase {
     }
 
     private Exam findExam(int examId) {
-        return examRepository.findById(examId).orElseThrow(() -> notFound("exam").id(examId));
+        return examRepository.findById(examId).orElseThrow(() -> notFound(Exam.class).id(examId));
     }
 
     public interface Presenter {

@@ -10,6 +10,8 @@ import javax.inject.Named;
 import java.util.ArrayList;
 import java.util.List;
 
+import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
+
 /**
  * @author - wally55077@gmail.com
  */
@@ -25,7 +27,7 @@ public class DeleteGroupMembersUseCase {
         int groupId = request.groupId;
         List<Integer> ids = request.ids;
         Group group = groupRepository.findGroupById(groupId)
-                .orElseThrow(NotFoundException::new);
+                .orElseThrow(() -> notFound(Group.class).id(groupId));
         group.deleteStudentByIds(ids);
         groupRepository.save(group);
     }

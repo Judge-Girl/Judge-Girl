@@ -90,7 +90,7 @@ public class JpaExamRepository implements ExamRepository {
             jpaQuestionDataPort.saveAndFlush(toData(question));
         } catch (Exception err) {
             // exam doesn't exist
-            throw notFound("exam").id(question.getExamId());
+            throw notFound(Exam.class).id(question.getExamId());
         }
     }
 
@@ -120,7 +120,7 @@ public class JpaExamRepository implements ExamRepository {
         try {
             jpaQuestionDataPort.deleteById(new QuestionData.Id(id.getExamId(), id.getProblemId()));
         } catch (EmptyResultDataAccessException err) {
-            throw notFound("question").id(id);
+            throw notFound(Question.class).id(id);
         }
     }
 

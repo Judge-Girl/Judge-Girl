@@ -10,7 +10,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
-import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.entities.Group;
 import tw.waterball.judgegirl.entities.Student;
 import tw.waterball.judgegirl.springboot.profiles.Profiles;
@@ -148,11 +147,11 @@ public class GroupControllerTest extends AbstractSpringBootTest {
         addGroupMember(groupId, studentViewA.id);
         addGroupMember(groupId, studentViewB.id);
 
-        Group group = groupRepository.findGroupById(groupId).orElseThrow(NotFoundException::new);
+        Group group = groupRepository.findGroupById(groupId).orElseThrow();
         assertEquals(2, group.getStudents().size());
-        Student studentA = studentRepository.findStudentById(studentViewA.id).orElseThrow(NotFoundException::new);
+        Student studentA = studentRepository.findStudentById(studentViewA.id).orElseThrow();
         assertEquals(1, studentA.getGroups().size());
-        Student studentB = studentRepository.findStudentById(studentViewB.id).orElseThrow(NotFoundException::new);
+        Student studentB = studentRepository.findStudentById(studentViewB.id).orElseThrow();
         assertEquals(1, studentB.getGroups().size());
     }
 
@@ -177,10 +176,10 @@ public class GroupControllerTest extends AbstractSpringBootTest {
 
         deleteGroupMember(groupId, studentA.id);
 
-        Group group = groupRepository.findGroupById(groupId).orElseThrow(NotFoundException::new);
+        Group group = groupRepository.findGroupById(groupId).orElseThrow();
         Set<Student> students = group.getStudents();
         assertEquals(1, students.size());
-        assertEquals(studentB.id, students.stream().findFirst().orElseThrow(NotFoundException::new).getId());
+        assertEquals(studentB.id, students.stream().findFirst().orElseThrow().getId());
     }
 
     @Test
@@ -195,7 +194,7 @@ public class GroupControllerTest extends AbstractSpringBootTest {
         deleteGroupById(groupId);
 
         anotherTransaction(() -> {
-            Student student = studentRepository.findStudentById(studentA.id).orElseThrow(NotFoundException::new);
+            Student student = studentRepository.findStudentById(studentA.id).orElseThrow();
             assertEquals(0, student.getGroups().size());
         });
     }
@@ -272,7 +271,7 @@ public class GroupControllerTest extends AbstractSpringBootTest {
                 .andExpect(status().isOk()), Map.class).get("errorList");
 
         assertTrue(errorList.isEmpty());
-        Group group = groupRepository.findGroupById(groupId).orElseThrow(NotFoundException::new);
+        Group group = groupRepository.findGroupById(groupId).orElseThrow();
         assertEquals(2, group.getStudents().size());
     }
 
@@ -290,7 +289,7 @@ public class GroupControllerTest extends AbstractSpringBootTest {
                 .andExpect(status().isOk()), Map.class).get("errorList");
 
         assertTrue(errorList.isEmpty());
-        Group group = groupRepository.findGroupById(groupId).orElseThrow(NotFoundException::new);
+        Group group = groupRepository.findGroupById(groupId).orElseThrow();
         assertEquals(2, group.getStudents().size());
     }
 
@@ -309,7 +308,7 @@ public class GroupControllerTest extends AbstractSpringBootTest {
                 .andExpect(status().isOk()), Map.class).get("errorList");
 
         assertEquals(nonExistingStudentEmail, errorList.get(0));
-        Group group = groupRepository.findGroupById(groupId).orElseThrow(NotFoundException::new);
+        Group group = groupRepository.findGroupById(groupId).orElseThrow();
         assertEquals(1, group.getStudents().size());
     }
 
@@ -332,7 +331,7 @@ public class GroupControllerTest extends AbstractSpringBootTest {
         deleteGroupMembersByIds(groupId, studentAId, studentBId)
                 .andExpect(status().isOk());
 
-        Group group = groupRepository.findGroupById(groupId).orElseThrow(NotFoundException::new);
+        Group group = groupRepository.findGroupById(groupId).orElseThrow();
         Set<Student> students = group.getStudents();
         assertEquals(1, students.size());
         assertEquals(studentCId, students.iterator().next().getId());

@@ -10,6 +10,8 @@ import javax.inject.Named;
 import java.util.ArrayList;
 import java.util.List;
 
+import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
+
 /**
  * @author - wally55077@gmail.com
  */
@@ -22,7 +24,7 @@ public class GetOwnGroupsUseCase {
     public void execute(int studentId, Presenter presenter)
             throws NotFoundException {
         Student student = studentRepository.findStudentById(studentId)
-                .orElseThrow(NotFoundException::new);
+                .orElseThrow(() -> notFound(Student.class).id(studentId));
         presenter.setGroups(new ArrayList<>(student.getGroups()));
     }
 

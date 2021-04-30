@@ -41,7 +41,7 @@ public class GetStudentUseCase {
 
     public void execute(int studentId, Presenter presenter) {
         var student = studentRepository.findStudentById(studentId)
-                .orElseThrow(() -> notFound("student").id(studentId));
+                .orElseThrow(() -> notFound(Student.class).id(studentId));
         presenter.showStudents(student);
     }
 

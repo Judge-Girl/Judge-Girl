@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.entities.problem.JudgePluginTag;
+import tw.waterball.judgegirl.entities.problem.Problem;
 import tw.waterball.judgegirl.problemservice.domain.repositories.PatchProblemParams;
 import tw.waterball.judgegirl.problemservice.domain.repositories.ProblemRepository;
 
@@ -29,7 +30,7 @@ public class PatchProblemUseCase extends BaseProblemUseCase {
                             .matchPolicyPluginTag(request.judgePluginTag)
                             .filterPluginTags(request.filterPluginTags).build());
         } else {
-            throw notFound("problem").id(request.problemId);
+            throw notFound(Problem.class).id(request.problemId);
         }
     }
 

@@ -24,7 +24,8 @@ public class UpdateQuestionUseCase {
     }
 
     private Exam findExam(Request request) {
-        return examRepository.findById(request.examId).orElseThrow(() -> notFound("exam").id(request.examId));
+        return examRepository.findById(request.examId)
+                .orElseThrow(() -> notFound(Exam.class).id(request.examId));
     }
 
     @Data

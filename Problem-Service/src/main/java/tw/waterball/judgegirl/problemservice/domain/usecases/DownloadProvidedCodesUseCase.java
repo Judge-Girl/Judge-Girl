@@ -22,6 +22,8 @@ import tw.waterball.judgegirl.problemservice.domain.repositories.ProblemReposito
 
 import javax.inject.Named;
 
+import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
+
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
@@ -37,7 +39,7 @@ public class DownloadProvidedCodesUseCase extends BaseProblemUseCase {
         LanguageEnv languageEnv = problem.getLanguageEnv(request.langEnvName);
         if (languageEnv.getProvidedCodesFileId().equals(request.providedCodesFileId)) {
             return problemRepository.downloadProvidedCodes(request.problemId, request.langEnvName)
-                    .orElseThrow(() -> new NotFoundException(request.problemId, "problem"));
+                    .orElseThrow(() -> notFound(Problem.class).id(request.problemId));
         }
         throw new IllegalArgumentException(
                 String.format("Invalid provided codes' file id: %s.", request.providedCodesFileId));

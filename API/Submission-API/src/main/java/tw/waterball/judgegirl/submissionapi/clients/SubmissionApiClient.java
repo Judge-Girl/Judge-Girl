@@ -38,7 +38,7 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 import static java.util.Arrays.asList;
-import static tw.waterball.judgegirl.api.retrofit.BaseRetrofitAPI.ExceptionDeclaration.declare;
+import static tw.waterball.judgegirl.api.retrofit.BaseRetrofitAPI.ExceptionDeclaration.mapStatusCode;
 import static tw.waterball.judgegirl.commons.utils.HttpHeaderUtils.bearerWithToken;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
 
@@ -69,7 +69,7 @@ public class SubmissionApiClient extends BaseRetrofitAPI implements SubmissionSe
         return errorHandlingGetBody(() -> api.submit(withSubmissionBagAsHeaders(request),
                 request.problemId, CURRENTLY_ONLY_SUPPORT_C, request.studentId,
                 mapToList(request.fileResources, this::submittedCodesMultipartBody)).execute(),
-                declare(400).toThrow(SubmissionThrottlingException::new));
+                mapStatusCode(400).toThrow(SubmissionThrottlingException::new));
     }
 
     private Map<String, String> withSubmissionBagAsHeaders(SubmitCodeRequest request) {

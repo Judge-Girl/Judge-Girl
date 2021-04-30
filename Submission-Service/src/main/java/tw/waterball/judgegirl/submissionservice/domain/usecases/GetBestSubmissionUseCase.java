@@ -10,6 +10,8 @@ import tw.waterball.judgegirl.submissionservice.domain.usecases.dto.SubmissionQu
 import javax.inject.Named;
 import java.util.Collections;
 
+import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
+
 /**
  * @author - wally55077@gmail.com
  */
@@ -27,7 +29,7 @@ public class GetBestSubmissionUseCase {
                 .stream()
                 .sorted()
                 .reduce((first, second) -> second) // find the last
-                .orElseThrow(NotFoundException::new);
+                .orElseThrow(() -> notFound("Best Submission").message(params));
         presenter.showBestSubmission(bestSubmission);
     }
 

@@ -10,6 +10,8 @@ import javax.inject.Named;
 import java.util.ArrayList;
 import java.util.List;
 
+import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
+
 /**
  * @author - wally55077@gmail.com
  */
@@ -21,9 +23,13 @@ public class GetGroupMembersUseCase {
 
     public void execute(int groupId, Presenter presenter)
             throws NotFoundException {
-        Group group = groupRepository.findGroupById(groupId)
-                .orElseThrow(NotFoundException::new);
+        Group group = findGroup(groupId);
         presenter.setStudents(new ArrayList<>(group.getStudents()));
+    }
+
+    private Group findGroup(int groupId) {
+        return groupRepository.findGroupById(groupId)
+                .orElseThrow(() -> notFound(Group.class).id(groupId));
     }
 
     public interface Presenter {

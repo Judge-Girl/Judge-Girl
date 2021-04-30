@@ -78,7 +78,7 @@ public class Exam {
             throw new IllegalArgumentException("Exam's id inconsistent.");
         }
         Question updatedQuestion = getQuestionByProblemId(question.getProblemId())
-                .orElseThrow(() -> notFound("question").id(question.getId()));
+                .orElseThrow(() -> notFound(Question.class).id(question.getId()));
 
         updatedQuestion.setQuestionOrder(question.getQuestionOrder());
         updatedQuestion.setQuota(question.getQuota());

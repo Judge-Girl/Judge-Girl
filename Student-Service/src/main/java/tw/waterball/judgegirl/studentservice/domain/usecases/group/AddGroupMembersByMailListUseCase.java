@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
+
 /**
  * @author - wally55077@gmail.com
  */
@@ -29,7 +31,7 @@ public class AddGroupMembersByMailListUseCase {
             throws NotFoundException {
         int groupId = request.groupId;
         String[] mailList = request.mailList;
-        Group group = groupRepository.findGroupById(groupId).orElseThrow(NotFoundException::new);
+        Group group = findGroup(groupId);
         List<Student> students = studentRepository.findByEmailIn(mailList);
         List<Student> newStudents = filterStudentsThatHaveNotBeenAdded(group, students);
         if (!newStudents.isEmpty()) {
@@ -37,6 +39,11 @@ public class AddGroupMembersByMailListUseCase {
             groupRepository.save(group);
         }
         presenter.notFound(getNotFoundMailList(mailList, students));
+    }
+
+    private Group findGroup(int groupId) {
+        return groupRepository.findGroupById(groupId)
+                .orElseThrow(() -> notFound(Group.class).id(groupId));
     }
 
     private List<Student> filterStudentsThatHaveNotBeenAdded(Group group, List<Student> students) {
