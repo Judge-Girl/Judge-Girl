@@ -31,7 +31,7 @@
         <apache.httpclient.version>4.5.6</apache.httpclient.version>
         <docker-java.version>3.1.5</docker-java.version>
         <docker-java-transport-httpclient5.version>3.2.3</docker-java-transport-httpclient5.version>
-        <kubernetes.client-java.version>5.0.0</kubernetes.client-java.version>
+        <kubernetes.client-java.version>9.0.2</kubernetes.client-java.version>
         <log4j.version>2.11.2</log4j.version>
         <jackson-yaml.version>2.11.1</jackson-yaml.version>
         <commons-io.version>2.6</commons-io.version>
