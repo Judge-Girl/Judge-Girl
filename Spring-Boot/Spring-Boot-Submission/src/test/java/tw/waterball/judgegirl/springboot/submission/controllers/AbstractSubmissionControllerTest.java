@@ -23,7 +23,6 @@ import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.annotation.Bean;
@@ -94,7 +93,6 @@ import static tw.waterball.judgegirl.testkit.resultmatchers.ZipResultMatcher.zip
  * @author - johnny850807@gmail.com (Waterball)
  */
 @ActiveProfiles({Profiles.JWT, Profiles.EMBEDDED_MONGO, Profiles.AMQP, Profiles.K8S})
-@AutoConfigureMockMvc
 @ContextConfiguration(classes = {SpringBootSubmissionApplication.class, AbstractSubmissionControllerTest.TestConfig.class})
 public class AbstractSubmissionControllerTest extends AbstractSpringBootTest {
     public static final int ADMIN_ID = 12345;

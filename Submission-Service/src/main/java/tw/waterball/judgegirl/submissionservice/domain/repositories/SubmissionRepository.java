@@ -52,4 +52,6 @@ public interface SubmissionRepository {
     Optional<SubmissionThrottling> findSubmissionThrottling(int problemId, int studentId);
 
     void saveSubmissionThrottling(SubmissionThrottling submissionThrottling);
+
+    boolean submissionExists(String submissionId);
 }
