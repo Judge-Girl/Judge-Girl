@@ -147,4 +147,9 @@ public class MongoSubmissionRepository implements SubmissionRepository {
         mongoTemplate.save(submissionThrottling);
     }
 
+    @Override
+    public boolean submissionExists(String submissionId) {
+        return mongoTemplate.exists(Query.query(where("id").is(submissionId)), Submission.class);
+    }
+
 }

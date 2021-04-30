@@ -1,0 +1,30 @@
+package tw.waterball.judgegirl.submissionservice.domain.usecases.sample;
+
+import lombok.AllArgsConstructor;
+import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
+import tw.waterball.judgegirl.entities.submission.Submission;
+import tw.waterball.judgegirl.submissionservice.domain.repositories.SampleRepository;
+import tw.waterball.judgegirl.submissionservice.domain.repositories.SubmissionRepository;
+
+import javax.inject.Named;
+
+/**
+ * @author - wally55077@gmail.com
+ */
+@Named
+@AllArgsConstructor
+public class DowngradeSampleBackToSubmissionUseCase {
+
+    private final SubmissionRepository submissionRepository;
+    private final SampleRepository sampleRepository;
+
+    public void execute(String submissionId) throws NotFoundException {
+        submissionRepository.findById(submissionId)
+                .ifPresent(this::downgradeSampleBackToSubmission);
+    }
+
+    private void downgradeSampleBackToSubmission(Submission submission) {
+        sampleRepository.downgradeSampleBackToSubmission(submission.getProblemId(), submission.getId());
+    }
+
+}
