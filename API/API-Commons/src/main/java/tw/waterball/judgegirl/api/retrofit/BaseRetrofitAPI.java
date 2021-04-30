@@ -84,8 +84,7 @@ public class BaseRetrofitAPI {
             throw ApiRequestFailedException.connectionError(e);
         }
     }
-
-
+    
     @RequiredArgsConstructor
     public static class ExceptionDeclaration {
         public final int errorCode;

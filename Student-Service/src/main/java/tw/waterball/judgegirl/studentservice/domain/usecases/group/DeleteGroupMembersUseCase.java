@@ -27,7 +27,7 @@ public class DeleteGroupMembersUseCase {
         int groupId = request.groupId;
         List<Integer> ids = request.ids;
         Group group = groupRepository.findGroupById(groupId)
-                .orElseThrow(() -> notFound(Group.class).id(request.groupId));
+                .orElseThrow(() -> notFound(Group.class).id(groupId));
         group.deleteStudentByIds(ids);
         groupRepository.save(group);
     }

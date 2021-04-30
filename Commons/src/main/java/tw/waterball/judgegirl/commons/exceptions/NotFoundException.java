@@ -49,7 +49,7 @@ public class NotFoundException extends RuntimeException {
     }
 
     public static NotFoundExceptionBuilder notFound(Class<?> resourceType) {
-        return new NotFoundExceptionBuilder(resourceType.getSimpleName());
+        return notFound(resourceType.getSimpleName());
     }
 
     public static NotFoundExceptionBuilder notFound(String resourceName) {
@@ -71,6 +71,10 @@ public class NotFoundException extends RuntimeException {
             return new NotFoundException(id, resourceName);
         }
 
+        public NotFoundException message(Object messageObj) {
+            return message(messageObj.toString());
+        }
+        
         public NotFoundException message(String message) {
             return new NotFoundException(String.format("Resource (%s) not found: %s.",
                     resourceName, message));

@@ -32,7 +32,7 @@ public class AddGroupMemberUseCase {
                 .orElseThrow(() -> notFound(Group.class).id(groupId));
         if (!hasStudentAddedIntoGroup(group, studentId)) {
             Student student = studentRepository.findStudentById(studentId)
-                    .orElseThrow(() -> notFound(Student.class).id(request.studentId));
+                    .orElseThrow(() -> notFound(Student.class).id(studentId));
             group.addStudent(student);
             groupRepository.save(group);
         }
