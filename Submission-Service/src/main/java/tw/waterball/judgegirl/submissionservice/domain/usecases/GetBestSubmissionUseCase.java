@@ -29,7 +29,7 @@ public class GetBestSubmissionUseCase {
                 .stream()
                 .sorted()
                 .reduce((first, second) -> second) // find the last
-                .orElseThrow(() -> notFound("Best Submission").message(params.toString()));
+                .orElseThrow(() -> notFound("Best Submission").message(params));
         presenter.showBestSubmission(bestSubmission);
     }
 
