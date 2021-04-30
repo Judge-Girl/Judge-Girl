@@ -24,7 +24,7 @@ public class DowngradeSampleBackToSubmissionUseCase {
     }
 
     private void downgradeSampleBackToSubmission(Submission submission) {
-        sampleRepository.downgradeSampleBackToSubmission(submission.getProblemId(), submission.getId());
+        sampleRepository.downgradeSamplesBackToSubmissions(submission.getProblemId(), submission.getId());
     }
 
 }

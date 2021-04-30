@@ -9,10 +9,10 @@ public interface SampleRepository {
 
     String COLLECTION_NAME = "sample";
 
-    void upgradeSubmissionToSample(int problemId, String... submissionIds);
+    void upgradeSubmissionsToSample(int problemId, String... submissionIds);
 
     List<String> findSampleSubmissionIds(int problemId);
 
-    void downgradeSampleBackToSubmission(int problemId, String... submissionIds);
+    void downgradeSamplesBackToSubmissions(int problemId, String... submissionIds);
 
 }

@@ -30,22 +30,20 @@ public class SampleSubmissionControllerTest extends AbstractSubmissionController
     @Autowired
     private MongoTemplate mongoTemplate;
 
-    @Override
     @AfterEach
-    void clean() {
-        super.clean();
+    void dropSampleSubmissions() {
         mongoTemplate.dropCollection(SampleSubmissionData.class);
     }
 
     @Test
-    public void GivenOneProblemCreatedAndTwoSubmissions_WhenUpgradeTwoSubmissionsToSample_ThenSampleShouldHaveTwoSubmissions() throws Exception {
+    public void GivenOneProblemAndTwoSubmissions_WhenUpgradeTwoSubmissionsToSamples_ThenSamplesQueryShouldRespondTwoSubmissions() throws Exception {
         int problemId = problem.getId();
         String submissionId1 = submitCodeAndGet(STUDENT1_ID, STUDENT1_TOKEN).getId();
         String submissionId2 = submitCodeAndGet(STUDENT2_ID, STUDENT2_TOKEN).getId();
 
-        upgradeSubmissionsToSample(submissionId1, submissionId2);
+        upgradeSubmissionsToSamples(submissionId1, submissionId2);
 
-        samplesShouldHaveSubmissions(problemId, submissionId1, submissionId2);
+        samplesQueryShouldRespondSubmissions(problemId, submissionId1, submissionId2);
     }
 
     @Test
@@ -53,26 +51,26 @@ public class SampleSubmissionControllerTest extends AbstractSubmissionController
         int problemId = problem.getId();
         SubmissionView submission1 = submitCodeAndGet(STUDENT1_ID, STUDENT1_TOKEN);
         SubmissionView submission2 = submitCodeAndGet(STUDENT2_ID, STUDENT2_TOKEN);
-        upgradeSubmissionsToSample(submission1.getId(), submission2.getId());
+        upgradeSubmissionsToSamples(submission1.getId(), submission2.getId());
 
         var samples = getSamples(problemId);
 
-        samplesShouldHaveSubmissions(samples, submission1, submission2);
+        samplesQueryShouldRespondSubmissions(samples, submission1, submission2);
     }
 
     @Test
-    public void GivenTwoSampleSubmissionsUpgraded_WhenDowngradeOneSampleBackToSubmission_ThenSampleShouldHaveOneSubmission() throws Exception {
+    public void GivenTwoSampleSubmissionsUpgraded_WhenDowngradeOneSampleBackToSubmission_ThenSamplesQueryShouldRespondOneSubmission() throws Exception {
         int problemId = problem.getId();
         String submissionId1 = submitCodeAndGet(STUDENT1_ID, STUDENT1_TOKEN).getId();
         String submissionId2 = submitCodeAndGet(STUDENT2_ID, STUDENT2_TOKEN).getId();
-        upgradeSubmissionsToSample(submissionId1, submissionId2);
+        upgradeSubmissionsToSamples(submissionId1, submissionId2);
 
         downgradeSampleBackToSubmission(submissionId1);
 
-        samplesShouldHaveSubmissions(problemId, submissionId2);
+        samplesQueryShouldRespondSubmissions(problemId, submissionId2);
     }
 
-    private void upgradeSubmissionsToSample(String... submissionIds) throws Exception {
+    private void upgradeSubmissionsToSamples(String... submissionIds) throws Exception {
         for (String submissionId : submissionIds) {
             upgradeSubmissionToSample(submissionId);
         }
@@ -94,14 +92,14 @@ public class SampleSubmissionControllerTest extends AbstractSubmissionController
                 .andExpect(status().isOk());
     }
 
-    private void samplesShouldHaveSubmissions(int problemId, String... submissionIds) {
+    private void samplesQueryShouldRespondSubmissions(int problemId, String... submissionIds) {
         var sampleSubmissionIds = sampleRepository.findSampleSubmissionIds(problemId);
         assertEquals(submissionIds.length, sampleSubmissionIds.size());
         IntStream.range(0, submissionIds.length)
                 .forEach(index -> assertEquals(submissionIds[index], sampleSubmissionIds.get(index)));
     }
 
-    private void samplesShouldHaveSubmissions(List<SubmissionView> samples, SubmissionView... submissions) {
+    private void samplesQueryShouldRespondSubmissions(List<SubmissionView> samples, SubmissionView... submissions) {
         assertEquals(submissions.length, samples.size());
         for (int index = 0; index < submissions.length; index++) {
             assertEquals(submissions[index], samples.get(index));

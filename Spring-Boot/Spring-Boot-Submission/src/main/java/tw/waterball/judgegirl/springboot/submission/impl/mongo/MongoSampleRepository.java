@@ -27,7 +27,7 @@ public class MongoSampleRepository implements SampleRepository {
     private final MongoTemplate mongoTemplate;
 
     @Override
-    public void upgradeSubmissionToSample(int problemId, String... submissionIds) {
+    public void upgradeSubmissionsToSample(int problemId, String... submissionIds) {
         Query query = Query.query(where("id").is(problemId));
         Object[] sampleSubmissionIds = Arrays.stream(submissionIds).toArray();
         Update update = new Update().push("samples").each(sampleSubmissionIds);
@@ -43,7 +43,7 @@ public class MongoSampleRepository implements SampleRepository {
     }
 
     @Override
-    public void downgradeSampleBackToSubmission(int problemId, String... submissionIds) {
+    public void downgradeSamplesBackToSubmissions(int problemId, String... submissionIds) {
         Query query = Query.query(where("id").is(problemId));
         Object[] sampleSubmissionIds = Arrays.stream(submissionIds).toArray();
         Update update = new Update().pullAll("samples", sampleSubmissionIds);
