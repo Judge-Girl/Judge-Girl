@@ -51,7 +51,6 @@ public class ProblemController {
     private final SaveProblemWithTitleUseCase saveProblemWithTitleUseCase;
     private final PatchProblemUseCase patchProblemUseCase;
     private final ArchiveOrDeleteProblemUseCase deleteProblemUseCase;
-    private final PutLanguageEnvUseCase putLanguageEnvUseCase;
 
 
     @GetMapping("/tags")
@@ -126,11 +125,11 @@ public class ProblemController {
     }
 
 
-    @PutMapping("/{problemId}/env/{langEnv}")
+    @PutMapping("/{problemId}/langEnv/{langEnv}")
     public void updateLanguageEnv(@PathVariable int problemId,
                                   @PathVariable String langEnv,
                                   @RequestBody LanguageEnv languageEnv) {
-        putLanguageEnvUseCase.execute(problemId, langEnv, languageEnv);
+        patchProblemUseCase.execute(problemId, langEnv, languageEnv);
     }
 
 

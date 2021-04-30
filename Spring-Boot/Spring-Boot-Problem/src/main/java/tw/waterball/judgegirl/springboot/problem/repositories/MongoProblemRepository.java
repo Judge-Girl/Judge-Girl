@@ -172,11 +172,9 @@ public class MongoProblemRepository implements ProblemRepository {
     }
 
     @Override
-    public void replaceProblemLanguageEnvByIdAndLangEnv(int problemId, String langEnv, LanguageEnv languageEnv) {
-        Query query = new Query();
-        query.addCriteria(Criteria.where("_id").is(problemId));
-        Update update = new Update();
-        update.set("languageEnvs." + langEnv, languageEnv);
+    public void replaceProblemLanguageEnv(int problemId, LanguageEnv languageEnv) {
+        Query query = Query.query(where("_id").is(problemId));
+        Update update = new Update().set("languageEnvs." + languageEnv.toString(), languageEnv);
         mongoTemplate.upsert(query, update, Problem.class);
     }
 

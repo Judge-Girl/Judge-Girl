@@ -51,6 +51,7 @@ import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static tw.waterball.judgegirl.entities.problem.Language.C;
 import static tw.waterball.judgegirl.entities.problem.Language.JAVA;
 
 /**
@@ -89,7 +90,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         testcaseIOsZip = ZipUtils.zipFilesFromResources("/stubs/in/", "/stubs/out/");
 
         this.problem = problemRepository.save(problem,
-                singletonMap(problem.getLanguageEnv(Language.C), new ByteArrayInputStream(providedCodesZip))
+                singletonMap(problem.getLanguageEnv(C), new ByteArrayInputStream(providedCodesZip))
                 , new ByteArrayInputStream(testcaseIOsZip));
     }
 
@@ -97,7 +98,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     void GivenProblemSaved_DownloadZippedProvidedCodesShouldSucceed() throws Exception {
         givenProblemSavedWithProvidedCodesAndTestcaseIOs();
 
-        LanguageEnv languageEnv = problem.getLanguageEnv(Language.C);
+        LanguageEnv languageEnv = problem.getLanguageEnv(C);
         mockMvc.perform(get("/api/problems/{problemId}/{languageEnv}/providedCodes/{providedCodesFileId}",
                 problem.getId(), languageEnv.getName(), languageEnv.getProvidedCodesFileId()))
                 .andExpect(status().isOk())
@@ -425,71 +426,91 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
             byte[] testcaseIOsZip = ZipUtils.zipFilesFromResources("/stubs/in/", "/stubs/out/");
 
             problemRepository.save(problem,
-                    singletonMap(problem.getLanguageEnv(Language.C), new ByteArrayInputStream(providedCodesZip))
+                    singletonMap(problem.getLanguageEnv(C), new ByteArrayInputStream(providedCodesZip))
                     , new ByteArrayInputStream(testcaseIOsZip));
         });
     }
 
     @Test
-    void GivenOneProblemSavedAndTheLanguageEnvsHas_c_WhenProblemLanguageEnvsReplace_JAVA_with_c_ShouldLanguageEnvReplaced_JAVA() throws Exception {
+    void GivenOneProblemWithLangEnv_C_WhenPatchProblemWithNewC_ThenCShouldBeUpdated() throws Exception {
         int problemId = 1;
-        saveProblemAndTheLanguageEnvHas_C(problemId);
+        saveProblems(problemId);
 
-        LanguageEnv languageEnv = createLanguageEnv(JAVA);
-        replaceProblemLanguageEnv(problemId, Language.C, languageEnv);
+        LanguageEnv languageEnv = getNewLanguageEnv(C, new ResourceSpec(0.8f, 1), "A Compilation Script", "providedCodesFileAId");
+        patchProblemWithNewC(problemId, languageEnv);
 
-        Problem actualProblem = mongoTemplate.findById(problemId, Problem.class);
-        ShouldProblemHasLanguageEnvs(actualProblem, JAVA);
-
+        ProblemView problemView = getProblem(problemId);
+        LanguageEnv actualLanguageEnv = problemView.getLanguageEnvs().get(0);
+        problemShouldHaveLanguageEnv(languageEnv, actualLanguageEnv);
     }
 
     @Test
-    void GivenOneProblemSavedAndLangEnvHas_C_WhenProblemReplace_JAVA_with_JAVA_AndGetThatProblem_ShouldProblemLangEnvHas_C_And_JAVA() throws Exception {
+    void GivenOneProblemWithLangEnv_C_WhenPatchProblemWithJAVA_ThenProblemShouldHaveJAVA() throws Exception {
         int problemId = 1;
-        saveProblemAndTheLanguageEnvHas_C(problemId);
+        saveProblems(problemId);
 
-        LanguageEnv languageEnv = createLanguageEnv(JAVA);
-        replaceProblemLanguageEnv(problemId, Language.JAVA, languageEnv);
+        LanguageEnv languageEnv = getNewLanguageEnv(JAVA, new ResourceSpec(0.8f, 1), "A Compilation Script", "providedCodesFileAId");
+        patchProblemWithNewC(problemId, languageEnv);
 
-        Problem actualProblem = mongoTemplate.findById(problemId, Problem.class);
-        ShouldProblemHasLanguageEnvs(actualProblem, Language.C, JAVA);
-
+        ProblemView problemView = getProblem(problemId);
+        List<LanguageEnv> languageEnvs = problemView.getLanguageEnvs();
+        assertEquals(2, languageEnvs.size());
+        LanguageEnv actualLanguageEnv = languageEnvs.get(1);
+        problemShouldHaveLanguageEnv(languageEnv, actualLanguageEnv);
     }
 
 
-    private void ShouldProblemHasLanguageEnvs(Problem actualProblem, Language... languages) {
-        if (actualProblem != null) {
-            List<String> LanguageEnvs = Arrays.stream(languages).map(Enum::toString).collect(toList());
-            Set<String> problemLanguageEnvs = actualProblem.getLanguageEnvs().values().stream().map(languageEnv -> languageEnv.getLanguage().toString()).collect(Collectors.toSet());
-            LanguageEnvs.forEach(language -> {
-                assertTrue(problemLanguageEnvs.contains(language.toString()));
-            });
-        } else {
-            fail();
+    private void problemShouldHaveLanguageEnv(LanguageEnv expectedLangEnv, LanguageEnv actualLanguageEnv) {
+        assertLanguageEquals(expectedLangEnv, actualLanguageEnv);
+        assertCompilationEquals(expectedLangEnv, actualLanguageEnv);
+        assertResourceSpecEquals(expectedLangEnv, actualLanguageEnv);
+        assertProvidedCodesFileIdEquals(expectedLangEnv, actualLanguageEnv);
+        assertSubmittedCodeSpecsEquals(expectedLangEnv, actualLanguageEnv);
+    }
+
+    private void assertLanguageEquals(LanguageEnv expectedLangEnv, LanguageEnv actualLanguageEnv) {
+        assertEquals(expectedLangEnv.getLanguage(), actualLanguageEnv.getLanguage());
+    }
+
+    private void assertCompilationEquals(LanguageEnv expectedLangEnv, LanguageEnv actualLanguageEnv) {
+        assertEquals(expectedLangEnv.getCompilation(), actualLanguageEnv.getCompilation());
+    }
+
+    private void assertResourceSpecEquals(LanguageEnv expectedLangEnv, LanguageEnv actualLanguageEnv) {
+        assertEquals(expectedLangEnv.getResourceSpec(), actualLanguageEnv.getResourceSpec());
+    }
+
+    private void assertProvidedCodesFileIdEquals(LanguageEnv expectedLangEnv, LanguageEnv actualLanguageEnv) {
+        assertEquals(expectedLangEnv.getProvidedCodesFileId(), actualLanguageEnv.getProvidedCodesFileId());
+    }
+
+    private void assertSubmittedCodeSpecsEquals(LanguageEnv expectedLangEnv, LanguageEnv actualLanguageEnv) {
+        List<SubmittedCodeSpec> actualSubmittedCodeSpecs = actualLanguageEnv.getSubmittedCodeSpecs();
+        List<SubmittedCodeSpec> expectedSubmittedCodeSpecs = expectedLangEnv.getSubmittedCodeSpecs();
+        assertEquals(expectedSubmittedCodeSpecs.size(), actualSubmittedCodeSpecs.size());
+        for (int i = 0; i < expectedSubmittedCodeSpecs.size(); i++) {
+            SubmittedCodeSpec expectedSubmittedCodeSpec = expectedSubmittedCodeSpecs.get(i);
+            SubmittedCodeSpec actualSubmittedCodeSpec = actualSubmittedCodeSpecs.get(i);
+            assertEquals(expectedSubmittedCodeSpec, actualSubmittedCodeSpec);
         }
     }
 
-    private void saveProblemAndTheLanguageEnvHas_C(Integer problemId) throws Exception {
-        saveProblems(problemId);
-    }
 
-    private LanguageEnv createLanguageEnv(Language language) {
+    private LanguageEnv getNewLanguageEnv(Language language, ResourceSpec resourceSpec, String script, String providedCodesFileId) {
         return LanguageEnv.builder()
                 .language(language)
-                .compilation(new Compilation("Compilation Script"))
-                .resourceSpec(new ResourceSpec(0.5f, 0))
-                .submittedCodeSpec(new SubmittedCodeSpec(language, "main.java"))
-                .providedCodesFileId("providedCodesFileId")
+                .compilation(new Compilation(script))
+                .resourceSpec(resourceSpec)
+                .submittedCodeSpec(new SubmittedCodeSpec(language, "main." + language.getFileExtension()))
+                .providedCodesFileId(providedCodesFileId)
                 .build();
     }
 
-    private void replaceProblemLanguageEnv(Integer problemId, Language language, LanguageEnv languageEnv) throws Exception {
-        mockMvc.perform(put("/api/problems/{problemId}/env/{langEnv}", problemId, language.toString())
+    private void patchProblemWithNewC(Integer problemId, LanguageEnv languageEnv) throws Exception {
+        mockMvc.perform(put("/api/problems/{problemId}/langEnv/{langEnv}", problemId, languageEnv.getLanguage().toString())
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(objectMapper.writeValueAsString(languageEnv)))
                 .andExpect(status().isOk());
     }
-
-
 }
 

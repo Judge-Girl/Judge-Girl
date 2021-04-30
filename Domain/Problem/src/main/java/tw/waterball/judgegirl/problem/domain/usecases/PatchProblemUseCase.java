@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.primitives.problem.JudgePluginTag;
+import tw.waterball.judgegirl.primitives.problem.LanguageEnv;
 import tw.waterball.judgegirl.primitives.problem.Problem;
 import tw.waterball.judgegirl.problem.domain.repositories.PatchProblemParams;
 import tw.waterball.judgegirl.problem.domain.repositories.ProblemRepository;
@@ -31,6 +32,15 @@ public class PatchProblemUseCase extends BaseProblemUseCase {
                             .filterPluginTags(request.filterPluginTags).build());
         } else {
             throw notFound(Problem.class).id(request.problemId);
+        }
+    }
+
+    public void execute(int problemId, String langEnv, LanguageEnv languageEnv) throws NotFoundException {
+        if (problemRepository.problemExists(problemId)) {
+            problemRepository.replaceProblemLanguageEnv(problemId, languageEnv);
+
+        } else {
+            throw notFound(Problem.class).id(problemId);
         }
     }
 
