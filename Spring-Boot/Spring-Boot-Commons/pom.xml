@@ -36,6 +36,10 @@
         </dependency>
         <dependency>
             <groupId>tw.waterball.judge-girl</groupId>
+            <artifactId>plugins</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>tw.waterball.judge-girl</groupId>
             <artifactId>student-api</artifactId>
         </dependency>
         <dependency>

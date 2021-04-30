@@ -16,7 +16,6 @@ package tw.waterball.judgegirl.commons.utils;
 import tw.waterball.judgegirl.commons.utils.functional.ErrConsumer;
 import tw.waterball.judgegirl.commons.utils.functional.ErrFunction;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -24,12 +23,18 @@ import java.util.function.BiFunction;
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
 
+import static java.util.Arrays.asList;
+import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.toList;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
 public abstract class StreamUtils {
+    public static <T, R> List<T> mapToList(R[] array, ErrFunction<R, T> mapping) {
+        return mapToList(asList(array), mapping);
+    }
+
     public static <T, R> List<T> mapToList(Collection<R> collection, ErrFunction<R, T> mapping) {
         return collection.stream().map(in -> {
             try {
@@ -56,7 +61,7 @@ public abstract class StreamUtils {
     }
 
     public static <T> void atTheSameTime(T[] array, ErrConsumer<T> consumer) {
-        Arrays.stream(array)
+        stream(array)
                 .parallel()
                 .forEach(t -> {
                     try {
