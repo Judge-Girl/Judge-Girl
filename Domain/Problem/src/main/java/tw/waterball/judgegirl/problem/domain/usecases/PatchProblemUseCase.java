@@ -29,18 +29,11 @@ public class PatchProblemUseCase extends BaseProblemUseCase {
                             .title(request.title)
                             .description(request.description)
                             .matchPolicyPluginTag(request.judgePluginTag)
-                            .filterPluginTags(request.filterPluginTags).build());
+                            .filterPluginTags(request.filterPluginTags)
+                            .languageEnv(request.languageEnv)
+                            .build());
         } else {
             throw notFound(Problem.class).id(request.problemId);
-        }
-    }
-
-    public void execute(int problemId, String langEnv, LanguageEnv languageEnv) throws NotFoundException {
-        if (problemRepository.problemExists(problemId)) {
-            problemRepository.replaceProblemLanguageEnv(problemId, languageEnv);
-
-        } else {
-            throw notFound(Problem.class).id(problemId);
         }
     }
 
@@ -54,5 +47,6 @@ public class PatchProblemUseCase extends BaseProblemUseCase {
         public String description;
         public JudgePluginTag judgePluginTag;
         public Collection<JudgePluginTag> filterPluginTags;
+        public LanguageEnv languageEnv;
     }
 }

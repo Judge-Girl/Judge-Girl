@@ -142,7 +142,17 @@ public class MongoProblemRepository implements ProblemRepository {
         params.getDescription().ifPresent(des -> update.set("description", des));
         params.getMatchPolicyPluginTag().ifPresent(tag -> update.set("outputMatchPolicyPluginTag", tag));
         params.getFilterPluginTags().ifPresent(tags -> update.set("filterPluginTags", tags));
-        mongoTemplate.updateFirst(query, update, Problem.class);
+
+        if (!update.getUpdateObject().isEmpty()) {
+            mongoTemplate.updateFirst(query, update, Problem.class);
+        }
+
+        params.getLanguageEnv().ifPresent(languageEnv -> {
+            Update languageEnvUpdate = new Update();
+            languageEnvUpdate.set("languageEnvs." + languageEnv.getLanguage().toString(), languageEnv);
+            mongoTemplate.upsert(query, languageEnvUpdate, Problem.class);
+        });
+
     }
 
     @Override
@@ -169,13 +179,6 @@ public class MongoProblemRepository implements ProblemRepository {
     public void deleteProblemById(int problemId) {
         Query query = new Query(where("_id").is(problemId));
         mongoTemplate.remove(query, Problem.class);
-    }
-
-    @Override
-    public void replaceProblemLanguageEnv(int problemId, LanguageEnv languageEnv) {
-        Query query = Query.query(where("_id").is(problemId));
-        Update update = new Update().set("languageEnvs." + languageEnv.toString(), languageEnv);
-        mongoTemplate.upsert(query, update, Problem.class);
     }
 
     @Document("tag")

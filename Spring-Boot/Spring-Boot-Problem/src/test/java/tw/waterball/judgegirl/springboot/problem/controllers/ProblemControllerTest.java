@@ -51,8 +51,8 @@ import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import static tw.waterball.judgegirl.entities.problem.Language.C;
-import static tw.waterball.judgegirl.entities.problem.Language.JAVA;
+import static tw.waterball.judgegirl.primitives.problem.Language.C;
+import static tw.waterball.judgegirl.primitives.problem.Language.JAVA;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -344,7 +344,8 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
                                 problem.getTitle(),
                                 problem.getDescription(),
                                 problem.getOutputMatchPolicyPluginTag(),
-                                new HashSet<>(problem.getFilterPluginTags())))))
+                                new HashSet<>(problem.getFilterPluginTags()),
+                                problem.getLanguageEnv(C)))))
                 .andExpect(status().isOk());
     }
 
@@ -432,16 +433,17 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    void GivenOneProblemWithLangEnv_C_WhenPatchProblemWithNewC_ThenCShouldBeUpdated() throws Exception {
+    void GivenOneProblemWithLangEnvC_WhenUpdateTheLangEnvC_ThenCShouldBeUpdated() throws Exception {
         int problemId = 1;
-        saveProblems(problemId);
+        LanguageEnv languageEnv = saveProblemAndGet(problemId).getLanguageEnv(C);
+        ResourceSpec expectResourceSpec = new ResourceSpec(9999, 9999);
+        languageEnv.setResourceSpec(expectResourceSpec);
 
-        LanguageEnv languageEnv = getNewLanguageEnv(C, new ResourceSpec(0.8f, 1), "A Compilation Script", "providedCodesFileAId");
-        patchProblemWithNewC(problemId, languageEnv);
+        updateLanguageEnv(problemId, languageEnv);
 
-        ProblemView problemView = getProblem(problemId);
-        LanguageEnv actualLanguageEnv = problemView.getLanguageEnvs().get(0);
-        problemShouldHaveLanguageEnv(languageEnv, actualLanguageEnv);
+        var problem = getProblem(problemId);
+        ResourceSpec actualResourceSpec = problem.getLanguageEnvs().get(0).getResourceSpec();
+        assertEquals(expectResourceSpec, actualResourceSpec);
     }
 
     @Test
@@ -449,68 +451,37 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         int problemId = 1;
         saveProblems(problemId);
 
-        LanguageEnv languageEnv = getNewLanguageEnv(JAVA, new ResourceSpec(0.8f, 1), "A Compilation Script", "providedCodesFileAId");
-        patchProblemWithNewC(problemId, languageEnv);
+        LanguageEnv languageEnv = createLanguageEnv(JAVA);
+        ResourceSpec expectResourceSpec = new ResourceSpec(9999, 9999);
+        languageEnv.setResourceSpec(expectResourceSpec);
+        updateLanguageEnv(problemId, languageEnv);
 
-        ProblemView problemView = getProblem(problemId);
-        List<LanguageEnv> languageEnvs = problemView.getLanguageEnvs();
+        var problem = getProblem(problemId);
+        List<LanguageEnv> languageEnvs = problem.getLanguageEnvs();
         assertEquals(2, languageEnvs.size());
         LanguageEnv actualLanguageEnv = languageEnvs.get(1);
-        problemShouldHaveLanguageEnv(languageEnv, actualLanguageEnv);
+        assertEquals(expectResourceSpec, actualLanguageEnv.getResourceSpec());
     }
 
-
-    private void problemShouldHaveLanguageEnv(LanguageEnv expectedLangEnv, LanguageEnv actualLanguageEnv) {
-        assertLanguageEquals(expectedLangEnv, actualLanguageEnv);
-        assertCompilationEquals(expectedLangEnv, actualLanguageEnv);
-        assertResourceSpecEquals(expectedLangEnv, actualLanguageEnv);
-        assertProvidedCodesFileIdEquals(expectedLangEnv, actualLanguageEnv);
-        assertSubmittedCodeSpecsEquals(expectedLangEnv, actualLanguageEnv);
-    }
-
-    private void assertLanguageEquals(LanguageEnv expectedLangEnv, LanguageEnv actualLanguageEnv) {
-        assertEquals(expectedLangEnv.getLanguage(), actualLanguageEnv.getLanguage());
-    }
-
-    private void assertCompilationEquals(LanguageEnv expectedLangEnv, LanguageEnv actualLanguageEnv) {
-        assertEquals(expectedLangEnv.getCompilation(), actualLanguageEnv.getCompilation());
-    }
-
-    private void assertResourceSpecEquals(LanguageEnv expectedLangEnv, LanguageEnv actualLanguageEnv) {
-        assertEquals(expectedLangEnv.getResourceSpec(), actualLanguageEnv.getResourceSpec());
-    }
-
-    private void assertProvidedCodesFileIdEquals(LanguageEnv expectedLangEnv, LanguageEnv actualLanguageEnv) {
-        assertEquals(expectedLangEnv.getProvidedCodesFileId(), actualLanguageEnv.getProvidedCodesFileId());
-    }
-
-    private void assertSubmittedCodeSpecsEquals(LanguageEnv expectedLangEnv, LanguageEnv actualLanguageEnv) {
-        List<SubmittedCodeSpec> actualSubmittedCodeSpecs = actualLanguageEnv.getSubmittedCodeSpecs();
-        List<SubmittedCodeSpec> expectedSubmittedCodeSpecs = expectedLangEnv.getSubmittedCodeSpecs();
-        assertEquals(expectedSubmittedCodeSpecs.size(), actualSubmittedCodeSpecs.size());
-        for (int i = 0; i < expectedSubmittedCodeSpecs.size(); i++) {
-            SubmittedCodeSpec expectedSubmittedCodeSpec = expectedSubmittedCodeSpecs.get(i);
-            SubmittedCodeSpec actualSubmittedCodeSpec = actualSubmittedCodeSpecs.get(i);
-            assertEquals(expectedSubmittedCodeSpec, actualSubmittedCodeSpec);
-        }
-    }
-
-
-    private LanguageEnv getNewLanguageEnv(Language language, ResourceSpec resourceSpec, String script, String providedCodesFileId) {
+    private LanguageEnv createLanguageEnv(Language language) {
         return LanguageEnv.builder()
                 .language(language)
-                .compilation(new Compilation(script))
-                .resourceSpec(resourceSpec)
+                .compilation(new Compilation("script"))
+                .resourceSpec(new ResourceSpec(0.5f, 0))
                 .submittedCodeSpec(new SubmittedCodeSpec(language, "main." + language.getFileExtension()))
-                .providedCodesFileId(providedCodesFileId)
+                .providedCodesFileId("providedCodesFileId")
                 .build();
     }
 
-    private void patchProblemWithNewC(Integer problemId, LanguageEnv languageEnv) throws Exception {
+    private void updateLanguageEnv(Integer problemId, LanguageEnv languageEnv) throws Exception {
         mockMvc.perform(put("/api/problems/{problemId}/langEnv/{langEnv}", problemId, languageEnv.getLanguage().toString())
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .content(objectMapper.writeValueAsString(languageEnv)))
+                .content(toJson(languageEnv)))
                 .andExpect(status().isOk());
+    }
+    private Problem saveProblemAndGet(int problemId) {
+        saveProblems(problemId);
+        return problemRepository.findProblemById(problemId).orElseThrow();
     }
 }
 

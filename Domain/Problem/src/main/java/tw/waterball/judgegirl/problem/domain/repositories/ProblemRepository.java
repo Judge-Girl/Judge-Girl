@@ -55,5 +55,4 @@ public interface ProblemRepository {
 
     void deleteProblemById(int problemId);
 
-    void replaceProblemLanguageEnv(int problemId, LanguageEnv languageEnv);
 }
