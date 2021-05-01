@@ -41,7 +41,7 @@ services:
       RABBIT_HOST: "${RABBIT_HOST}"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.exam-service.rule=PathPrefix(`/api/exams`) || PathPrefix(`/api/students/{studentId:[0-9]+}/exams`) || PathPrefix(`/api/homework`)"
+      - "traefik.http.routers.exam-service.rule=PathPrefix(`/api/exams`) || PathPrefix(`/api/students/{studentId:[0-9]+}/exams`) || PathPrefix(`/api/homework`) || PathPrefix(`/api/students/{studentId:[0-9]+}/homework`)"
       - "traefik.http.routers.exam-service.entrypoints=web"
       - "traefik.http.routers.exam-service.service=exam-service"
       - "traefik.http.services.exam-service.loadbalancer.server.port=80"
@@ -54,7 +54,7 @@ services:
       MONGO_HOST: "${MONGO_HOST}"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.problem-service.rule=PathPrefix(`/api/problems`)"
+      - "traefik.http.routers.problem-service.rule=PathPrefix(`/api/problems`) || PathPrefix(`/api/plugins`)"
       - "traefik.http.routers.problem-service.entrypoints=web"
       - "traefik.http.routers.problem-service.service=problem-service"
       - "traefik.http.services.problem-service.loadbalancer.server.port=80"
