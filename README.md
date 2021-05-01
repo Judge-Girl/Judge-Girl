@@ -1,7 +1,7 @@
 # Judge Girl
 
-Judge Girl is under incubating, the document may be obsolete.
-Feel free to contact `johnny850807@gmail.com` or leave issues if you are interested.
+Judge Girl is under incubating, the document may be obsolete. Feel free to contact `johnny850807@gmail.com` or leave
+issues if you are interested.
 
 ## Setup & Build (Obsolete)
 
@@ -30,41 +30,44 @@ Thanks to all the people who already contributed!
 
 ### Software Design (Clean Architecture/DDD)
 
-Judge Girl follows clean-architecture and DDD. 
-The package structure is based on **four subdomains (Student, Problem, Submission, Exam)** and **four design forces (Domain Logic, Tech Stack, View Model, Judger)**.
+Judge Girl follows clean-architecture and DDD. The package structure is based on **four subdomains (Student, Problem,
+Submission, Exam)** and **four design forces (Domain Logic, Tech Stack, View Model, Judger)**.
 
 The following represents the ideas of our package structure.  <br>
-(You may find this is not the current representation of the project. However, this is an improvement that will be done in the next sprint)
+(You may find this is not the current representation of the project. However, this is an improvement that will be done
+in the next sprint)
+
 ```
-├── API (Force: View Model)
-│   ├── API-Commons
-│   ├── Judger-API
-│   ├── Problem-API
-│   └── Submission-API
-├── Domain (Force: Domain Logic)
-|   ├── Entities (Domain Primitives)
-│   ├── Student
-│   ├── Problem
-│   ├── Submission
-│   └── Exam
+├── API (Force: Client / View Model)
+│   ├── API-Commons
+│   ├── Judger-API
+│   ├── Student-API
+│   ├── Problem-API
+│   └── Submission-API
+├── Domain (Force: Domain)
+|   ├── Primitives 
+│   ├── Student-Domain
+│   ├── Problem-Domain
+│   ├── Submission-Domain
+│   └── Exam-Domain
+├── Plugins
 ├── Judge-Girl-Dependencies (Maven dependencies)
 ├── Judger (Force: Online Judge System)
-|   ├── Plugins
-│   ├── CC-Profiler-Sandbox
-│   └── Code-Quality-Inspection (Submodule)
-├── Spring-Boot (Force: Tech Stack)
-│   ├── Spring-Boot-Commons
-│   ├── Spring-Boot-Exam
-│   ├── Spring-Boot-Problem
-│   ├── Spring-Boot-Student
-│   └──  Spring-Boot-Submission
+│   ├── CC-Profiler-Sandbox
+│   └── Code-Quality-Inspection (Submodule)
+└── Spring-Boot (Force: Tech Stack)
+    ├── Spring-Boot-Commons
+    ├── Spring-Boot-Exam
+    ├── Spring-Boot-Problem
+    ├── Spring-Boot-Student
+    └── Spring-Boot-Submission
 ```
 
 #### Domain
 
-In every domain package, there will be application **use cases** (request + presenters), **domain services** and **repositories**.
-With every repository manages an aggregate (e.g., Student/Problem/Submission) and every use case represents a feature.
-
+In every domain package, there will be application **use cases** (request + presenters), **domain services** and **
+repositories**. With every repository manages an aggregate (e.g., Student/Problem/Submission) and every use case
+represents a feature.
 
 #### Tech Stack & System Architecture
 
@@ -80,9 +83,8 @@ Never write logs in domain layer
 We would log in technical layer (Controller, technical implementations, JPA, ...), **but never in our domain layer.**
 We use **Aspect-Oriented Programming** to inject logs into our domain layer.
 
-
-
 ### Software Testing
 
-Judge Girl is developed under E2E (API --> Database) test cases covering application usecases and Unit Test covering domain logic and utils.
-Where in our test, RabbitMQ, MongoDB and MySQL are **embedded** (TestContainers is not required).
+Judge Girl is developed under E2E (API --> Database) test cases covering application usecases and Unit Test covering
+domain logic and utils. Where in our test, RabbitMQ, MongoDB and MySQL are **embedded** (TestContainers is not required)
+.
