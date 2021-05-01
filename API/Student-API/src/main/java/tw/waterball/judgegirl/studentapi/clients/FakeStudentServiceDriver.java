@@ -24,6 +24,7 @@ public class FakeStudentServiceDriver implements StudentServiceDriver {
 
     public void addStudent(Student student) {
         students.put(student.getEmail(), student);
+        student.setId(students.size());
     }
 
     public void clear() {

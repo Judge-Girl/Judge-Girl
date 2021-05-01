@@ -67,7 +67,19 @@ create table homework
 );
 
 
+create table study_groups
+(
+    id   int auto_increment primary key,
+    name varchar(255) null unique
+);
+
+create unique index groups_name_index on study_groups (name);
 
 
-
-
+create table membership
+(
+    group_id  int not null,
+    member_id int not null,
+    primary key (group_id, member_id),
+    foreign key (group_id) references study_groups (id) on delete cascade
+);

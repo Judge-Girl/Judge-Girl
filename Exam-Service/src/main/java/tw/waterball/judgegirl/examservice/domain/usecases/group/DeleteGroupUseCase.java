@@ -1,13 +1,14 @@
-package tw.waterball.judgegirl.studentservice.domain.usecases.group;
+package tw.waterball.judgegirl.examservice.domain.usecases.group;
 
 import lombok.AllArgsConstructor;
 import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
-import tw.waterball.judgegirl.studentservice.domain.repositories.GroupRepository;
+import tw.waterball.judgegirl.examservice.domain.repositories.GroupRepository;
 
 import javax.inject.Named;
 
 /**
  * @author - wally55077@gmail.com
+ * @author - johnny850807@gmail.com (Waterball)
  */
 @Named
 @AllArgsConstructor

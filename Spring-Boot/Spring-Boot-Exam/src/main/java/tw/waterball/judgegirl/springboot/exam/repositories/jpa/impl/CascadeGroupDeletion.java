@@ -1,4 +1,4 @@
-package tw.waterball.judgegirl.springboot.student.repositories.jpa;
+package tw.waterball.judgegirl.springboot.exam.repositories.jpa.impl;
 
 /**
  * @author - wally55077@gmail.com
@@ -6,5 +6,7 @@ package tw.waterball.judgegirl.springboot.student.repositories.jpa;
 public interface CascadeGroupDeletion {
 
     void deleteById(int groupId);
+
+    void deleteAll();
 
 }

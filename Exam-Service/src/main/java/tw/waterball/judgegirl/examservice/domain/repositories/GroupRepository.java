@@ -1,15 +1,18 @@
-package tw.waterball.judgegirl.studentservice.domain.repositories;
+package tw.waterball.judgegirl.examservice.domain.repositories;
 
-import tw.waterball.judgegirl.entities.Group;
+import tw.waterball.judgegirl.entities.exam.Group;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public interface GroupRepository {
 
     boolean existsByName(String name);
 
     Group save(Group group);
+
+    Set<Group> getOwnGroups(int memberId);
 
     void deleteAll();
 

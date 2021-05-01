@@ -18,8 +18,6 @@ import tw.waterball.judgegirl.commons.utils.JSR380Utils;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -39,8 +37,6 @@ public class Student {
     protected String password;
 
     protected boolean admin = false;
-
-    private final Set<Group> groups = new HashSet<>();
 
     public Student(String name, String email, String password) {
         this.name = name;
@@ -73,15 +69,5 @@ public class Student {
 
     public void validate() {
         JSR380Utils.validate(this);
-    }
-
-    public void addGroup(Group group) {
-        groups.add(group);
-        group.getStudents().add(this);
-    }
-
-    public void deleteGroup(Group group) {
-        groups.remove(group);
-        group.getStudents().remove(this);
     }
 }

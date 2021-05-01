@@ -11,7 +11,7 @@
  *   limitations under the License.
  */
 
-package tw.waterball.judgegirl.springboot.student.controllers.it;
+package tw.waterball.judgegirl.springboot.student.controllers;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,7 +26,6 @@ import tw.waterball.judgegirl.entities.Admin;
 import tw.waterball.judgegirl.entities.Student;
 import tw.waterball.judgegirl.springboot.profiles.Profiles;
 import tw.waterball.judgegirl.springboot.student.SpringBootStudentApplication;
-import tw.waterball.judgegirl.springboot.student.controllers.LoginResponse;
 import tw.waterball.judgegirl.studentapi.clients.view.StudentView;
 import tw.waterball.judgegirl.studentservice.domain.repositories.StudentRepository;
 import tw.waterball.judgegirl.studentservice.domain.usecases.student.LoginUseCase;
