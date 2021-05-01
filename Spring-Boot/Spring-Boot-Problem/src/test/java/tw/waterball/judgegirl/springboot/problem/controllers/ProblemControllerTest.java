@@ -90,7 +90,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         testcaseIOsZip = ZipUtils.zipFilesFromResources("/stubs/in/", "/stubs/out/");
 
         this.problem = problemRepository.save(problem,
-                singletonMap(problem.getLanguageEnv(C), new ByteArrayInputStream(providedCodesZip))
+                singletonMap(problem.getLanguageEnv(Language.C), new ByteArrayInputStream(providedCodesZip))
                 , new ByteArrayInputStream(testcaseIOsZip));
     }
 
@@ -98,7 +98,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     void GivenProblemSaved_DownloadZippedProvidedCodesShouldSucceed() throws Exception {
         givenProblemSavedWithProvidedCodesAndTestcaseIOs();
 
-        LanguageEnv languageEnv = problem.getLanguageEnv(C);
+        LanguageEnv languageEnv = problem.getLanguageEnv(Language.C);
         mockMvc.perform(get("/api/problems/{problemId}/{languageEnv}/providedCodes/{providedCodesFileId}",
                 problem.getId(), languageEnv.getName(), languageEnv.getProvidedCodesFileId()))
                 .andExpect(status().isOk())
@@ -345,7 +345,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
                                 problem.getDescription(),
                                 problem.getOutputMatchPolicyPluginTag(),
                                 new HashSet<>(problem.getFilterPluginTags()),
-                                problem.getLanguageEnv(C)))))
+                                problem.getLanguageEnv(Language.C)))))
                 .andExpect(status().isOk());
     }
 
@@ -427,7 +427,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
             byte[] testcaseIOsZip = ZipUtils.zipFilesFromResources("/stubs/in/", "/stubs/out/");
 
             problemRepository.save(problem,
-                    singletonMap(problem.getLanguageEnv(C), new ByteArrayInputStream(providedCodesZip))
+                    singletonMap(problem.getLanguageEnv(Language.C), new ByteArrayInputStream(providedCodesZip))
                     , new ByteArrayInputStream(testcaseIOsZip));
         });
     }
@@ -435,7 +435,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     @Test
     void GivenOneProblemWithLangEnvC_WhenUpdateTheLangEnvC_ThenCShouldBeUpdated() throws Exception {
         int problemId = 1;
-        LanguageEnv languageEnv = saveProblemAndGet(problemId).getLanguageEnv(C);
+        LanguageEnv languageEnv = saveProblemAndGet(problemId).getLanguageEnv(Language.C);
         ResourceSpec expectResourceSpec = new ResourceSpec(9999, 9999);
         languageEnv.setResourceSpec(expectResourceSpec);
 
@@ -451,7 +451,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         int problemId = 1;
         saveProblems(problemId);
 
-        LanguageEnv languageEnv = createLanguageEnv(JAVA);
+        LanguageEnv languageEnv = createLanguageEnv(Language.JAVA);
         ResourceSpec expectResourceSpec = new ResourceSpec(9999, 9999);
         languageEnv.setResourceSpec(expectResourceSpec);
         updateLanguageEnv(problemId, languageEnv);
