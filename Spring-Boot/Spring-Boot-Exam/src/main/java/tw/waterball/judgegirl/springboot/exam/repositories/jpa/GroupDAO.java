@@ -2,7 +2,6 @@ package tw.waterball.judgegirl.springboot.exam.repositories.jpa;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import tw.waterball.judgegirl.springboot.exam.repositories.jpa.impl.CascadeGroupDeletion;
 import tw.waterball.judgegirl.springboot.exam.repositories.jpa.impl.GetGroupsOwnByMember;
 
 /**
@@ -10,8 +9,7 @@ import tw.waterball.judgegirl.springboot.exam.repositories.jpa.impl.GetGroupsOwn
  * @author - johnny850807@gmail.com (Waterball)
  */
 @Repository
-public interface GroupDAO extends JpaRepository<GroupData, Integer>,
-        CascadeGroupDeletion, GetGroupsOwnByMember {
+public interface GroupDAO extends JpaRepository<GroupData, Integer>, GetGroupsOwnByMember {
 
     boolean existsByName(String name);
 }
