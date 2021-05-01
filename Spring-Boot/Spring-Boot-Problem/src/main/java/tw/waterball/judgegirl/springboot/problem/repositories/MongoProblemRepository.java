@@ -146,12 +146,7 @@ public class MongoProblemRepository implements ProblemRepository {
         if (!update.getUpdateObject().isEmpty()) {
             mongoTemplate.updateFirst(query, update, Problem.class);
         }
-
-        params.getLanguageEnv().ifPresent(languageEnv -> {
-            Update languageEnvUpdate = new Update();
-            languageEnvUpdate.set("languageEnvs." + languageEnv.getLanguage().toString(), languageEnv);
-            mongoTemplate.upsert(query, languageEnvUpdate, Problem.class);
-        });
+        params.getLanguageEnv().ifPresent(languageEnv -> mongoTemplate.upsert(query, new Update().set("languageEnvs." + languageEnv.getLanguage(), languageEnv), Problem.class));
 
     }
 

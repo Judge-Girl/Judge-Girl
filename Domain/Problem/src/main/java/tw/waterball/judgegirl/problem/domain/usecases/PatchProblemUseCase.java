@@ -1,6 +1,7 @@
 package tw.waterball.judgegirl.problem.domain.usecases;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
@@ -40,6 +41,7 @@ public class PatchProblemUseCase extends BaseProblemUseCase {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
+    @Builder
     public static class Request {
         public static final int NOT_PRESENT = -1;
         public int problemId = NOT_PRESENT;
@@ -48,5 +50,6 @@ public class PatchProblemUseCase extends BaseProblemUseCase {
         public JudgePluginTag judgePluginTag;
         public Collection<JudgePluginTag> filterPluginTags;
         public LanguageEnv languageEnv;
+
     }
 }

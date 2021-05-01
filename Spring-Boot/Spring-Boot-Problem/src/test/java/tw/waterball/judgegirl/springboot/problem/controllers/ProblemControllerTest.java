@@ -474,7 +474,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     }
 
     private void updateLanguageEnv(Integer problemId, LanguageEnv languageEnv) throws Exception {
-        mockMvc.perform(put("/api/problems/{problemId}/langEnv/{langEnv}", problemId, languageEnv.getLanguage().toString())
+        mockMvc.perform(put("/api/problems/{problemId}/langEnv/{langEnv}", problemId, languageEnv.getLanguage())
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(toJson(languageEnv)))
                 .andExpect(status().isOk());

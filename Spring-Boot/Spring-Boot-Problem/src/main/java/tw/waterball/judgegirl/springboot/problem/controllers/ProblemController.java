@@ -128,13 +128,8 @@ public class ProblemController {
     @PutMapping("/{problemId}/langEnv/{langEnv}")
     public void updateLanguageEnv(@PathVariable int problemId,
                                   @RequestBody LanguageEnv languageEnv) {
-        PatchProblemUseCase.Request request = new PatchProblemUseCase.Request(
-                problemId,
-                null,
-                null,
-                null,
-                null,
-                languageEnv);
+        PatchProblemUseCase.Request request = PatchProblemUseCase.Request.builder().problemId(problemId)
+                .languageEnv(languageEnv).build();
         patchProblemUseCase.execute(request);
     }
 
