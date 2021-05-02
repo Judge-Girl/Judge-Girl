@@ -15,26 +15,6 @@ create table students
 
 create unique index students_email_index on students (email);
 
-create table student_groups
-(
-    id   int auto_increment primary key,
-    name varchar(255) null unique
-);
-
-create unique index groups_name_index on student_groups (name);
-
-
-create table membership
-(
-    group_id   int not null,
-    student_id int not null,
-    primary key (group_id, student_id),
-    foreign key (group_id) references student_groups (id),
-    foreign key (student_id) references students (id)
-);
-
-
-
 
 
 
