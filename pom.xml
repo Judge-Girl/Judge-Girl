@@ -33,8 +33,8 @@
         <module>Student-Service</module>
         <module>Plugins</module>
         <module>Spring-Boot</module>
-        <module>Entities</module>
         <module>API</module>
+        <module>Domain</module>
         <module>Judger</module>
         <module>Judger/Code-Quality-Inspection</module>
     </modules>

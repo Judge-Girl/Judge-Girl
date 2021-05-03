@@ -28,7 +28,7 @@
     <dependencies>
         <dependency>
             <groupId>tw.waterball.judge-girl</groupId>
-            <artifactId>entities</artifactId>
+            <artifactId>judgegirl-primitives</artifactId>
         </dependency>
         <dependency>
             <groupId>tw.waterball.judge-girl</groupId>
