@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface JpaExamDataPort extends JpaRepository<ExamData, Integer>, FilterExamsPort {
+public interface JpaExamDAO extends JpaRepository<ExamData, Integer>, FilterExams {
 
     Optional<ExamData> findById(int examId);
 

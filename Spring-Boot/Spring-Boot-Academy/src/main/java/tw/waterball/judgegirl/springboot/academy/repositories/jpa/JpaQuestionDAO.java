@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface JpaQuestionDataPort extends JpaRepository<QuestionData, QuestionData.Id> {
+public interface JpaQuestionDAO extends JpaRepository<QuestionData, QuestionData.Id> {
     List<QuestionData> findById_ExamId(int examId);
 }

@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
-public interface FilterExamsPort {
+public interface FilterExams {
     List<ExamData> findStudentExams(int studentId, ExamFilter.Status status, Date now, Pageable pageable);
 
     List<ExamData> findExams(ExamFilter.Status status, Date now, Pageable pageable);

@@ -37,7 +37,6 @@ import static tw.waterball.judgegirl.commons.token.TokenService.Identity.admin;
 @ServiceDriver
 @Configuration
 public class ServiceDriverConfiguration {
-    public final static String BEAN_NAME_SUBMISSION_BAG = "bean-name-submission-bag";
 
     @Bean
     public RetrofitFactory retrofitFactory(ObjectMapper objectMapper) {

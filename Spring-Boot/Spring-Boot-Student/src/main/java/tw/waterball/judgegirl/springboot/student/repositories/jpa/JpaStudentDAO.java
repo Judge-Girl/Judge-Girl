@@ -25,7 +25,7 @@ import java.util.Optional;
  * @author chaoyulee chaoyu2330@gmail.com
  */
 @Repository
-public interface JpaStudentDataPort extends JpaRepository<StudentData, Integer> {
+public interface JpaStudentDAO extends JpaRepository<StudentData, Integer> {
     Optional<StudentData> findByEmailAndPassword(String email, String pwd);
 
     Optional<StudentData> findByEmail(String email);

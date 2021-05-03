@@ -17,7 +17,7 @@ import static java.lang.String.format;
  * @author - johnny850807@gmail.com (Waterball)
  */
 @Repository
-public class FilterExamsPortImpl implements FilterExamsPort {
+public class FilterExamsImpl implements FilterExams {
     @PersistenceContext
     private EntityManager em;
 

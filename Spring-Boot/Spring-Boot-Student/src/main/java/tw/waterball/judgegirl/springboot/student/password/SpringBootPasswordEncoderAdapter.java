@@ -1,4 +1,4 @@
-package tw.waterball.judgegirl.springboot.student.impl;
+package tw.waterball.judgegirl.springboot.student.password;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
