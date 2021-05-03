@@ -15,7 +15,7 @@ package tw.waterball.judgegirl.judger.tests;
 
 import lombok.SneakyThrows;
 import org.apache.commons.io.IOUtils;
-import tw.waterball.judgegirl.entities.problem.Problem;
+import tw.waterball.judgegirl.primitives.problem.Problem;
 
 import java.io.FileInputStream;
 import java.nio.charset.StandardCharsets;

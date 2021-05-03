@@ -16,9 +16,9 @@ package tw.waterball.judgegirl.springboot.student.repositories;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import tw.waterball.judgegirl.entities.Student;
+import tw.waterball.judgegirl.primitives.Student;
 import tw.waterball.judgegirl.springboot.helpers.SkipAndSizePageable;
-import tw.waterball.judgegirl.springboot.student.repositories.jpa.JpaStudentDataPort;
+import tw.waterball.judgegirl.springboot.student.repositories.jpa.JpaStudentDAO;
 import tw.waterball.judgegirl.springboot.student.repositories.jpa.StudentData;
 import tw.waterball.judgegirl.studentservice.domain.repositories.StudentRepository;
 
@@ -36,51 +36,51 @@ import static tw.waterball.judgegirl.springboot.student.repositories.jpa.Student
 @Component
 @Transactional
 public class JpaStudentRepository implements StudentRepository {
-    private final JpaStudentDataPort jpaStudentDataPort;
+    private final JpaStudentDAO jpaStudentDAO;
 
-    public JpaStudentRepository(JpaStudentDataPort jpaStudentDataPort) {
-        this.jpaStudentDataPort = jpaStudentDataPort;
+    public JpaStudentRepository(JpaStudentDAO jpaStudentDAO) {
+        this.jpaStudentDAO = jpaStudentDAO;
     }
 
     @Override
     public Optional<Student> findByEmailAndPassword(String email, String pwd) {
-        return jpaStudentDataPort
+        return jpaStudentDAO
                 .findByEmailAndPassword(email, pwd)
                 .map(StudentData::toEntity);
     }
 
     @Override
     public Optional<Student> findByEmail(String email) {
-        return jpaStudentDataPort
+        return jpaStudentDAO
                 .findByEmail(email)
                 .map(StudentData::toEntity);
     }
 
     @Override
     public List<Student> findByEmailIn(String... emails) {
-        return mapToList(jpaStudentDataPort.findByEmailIn(asList(emails)), StudentData::toEntity);
+        return mapToList(jpaStudentDAO.findByEmailIn(asList(emails)), StudentData::toEntity);
     }
 
     @Override
     public Optional<Student> findStudentById(Integer id) {
-        return jpaStudentDataPort
+        return jpaStudentDAO
                 .findStudentById(id)
                 .map(StudentData::toEntity);
     }
 
     @Override
     public List<Student> findByIdIn(Integer... ids) {
-        return mapToList(jpaStudentDataPort.findByIdIn(asList(ids)), StudentData::toEntity);
+        return mapToList(jpaStudentDAO.findByIdIn(asList(ids)), StudentData::toEntity);
     }
 
     @Override
     public boolean existsByEmail(String email) {
-        return jpaStudentDataPort.existsByEmail(email);
+        return jpaStudentDAO.existsByEmail(email);
     }
 
     @Override
     public Student save(Student student) {
-        StudentData data = jpaStudentDataPort.save(toData(student));
+        StudentData data = jpaStudentDAO.save(toData(student));
         student.setId(data.getId());
         return student;
     }
@@ -91,9 +91,9 @@ public class JpaStudentRepository implements StudentRepository {
         Pageable pageable = new SkipAndSizePageable(skip, size);
         List<StudentData> result;
         if (admin) {
-            result = jpaStudentDataPort.findByAdmin(admin, pageable).getContent();
+            result = jpaStudentDAO.findByAdmin(admin, pageable).getContent();
         } else {
-            result = jpaStudentDataPort.findAll(pageable).getContent();
+            result = jpaStudentDAO.findAll(pageable).getContent();
         }
         return result.stream()
                 .map(StudentData::toEntity)
@@ -102,6 +102,6 @@ public class JpaStudentRepository implements StudentRepository {
 
     @Override
     public void deleteAll() {
-        jpaStudentDataPort.deleteAll();
+        jpaStudentDAO.deleteAll();
     }
 }

@@ -1,6 +1,6 @@
 package tw.waterball.judgegirl.submissionapi.clients;
 
-import tw.waterball.judgegirl.entities.submission.Bag;
+import tw.waterball.judgegirl.primitives.submission.Bag;
 
 /**
  * Intercept a submit-code request that being issued to put more message into the bag.

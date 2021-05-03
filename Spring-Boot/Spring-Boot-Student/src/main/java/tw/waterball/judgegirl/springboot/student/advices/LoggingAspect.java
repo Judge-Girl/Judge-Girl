@@ -10,7 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import tw.waterball.judgegirl.commons.token.TokenService;
-import tw.waterball.judgegirl.entities.Student;
+import tw.waterball.judgegirl.primitives.Student;
 import tw.waterball.judgegirl.studentservice.domain.exceptions.ForbiddenLoginException;
 import tw.waterball.judgegirl.studentservice.domain.exceptions.StudentPasswordIncorrectException;
 import tw.waterball.judgegirl.studentservice.domain.usecases.student.ChangePasswordUseCase;

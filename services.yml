@@ -34,18 +34,18 @@ services:
       - "traefik.http.routers.student-service.priority=1"
 
   exam-service:
-    build: Spring-Boot/Spring-Boot-Exam
+    build: Spring-Boot/Spring-Boot-Academy
     environment:
       spring.profiles.active: prod,amqp,mysql
       MYSQL_HOST: "${MYSQL_HOST}"
       RABBIT_HOST: "${RABBIT_HOST}"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.exam-service.rule=PathPrefix(`/api/exams`) || PathPrefix(`/api/students/{studentId:[0-9]+}/exams`) || PathPrefix(`/api/homework`) || PathPrefix(`/api/members`) || PathPrefix(`/api/groups`)"
-      - "traefik.http.routers.exam-service.entrypoints=web"
-      - "traefik.http.routers.exam-service.service=exam-service"
-      - "traefik.http.services.exam-service.loadbalancer.server.port=80"
-      - "traefik.http.routers.exam-service.priority=3"
+      - "traefik.http.routers.academy-service.rule=PathPrefix(`/api/exams`) || PathPrefix(`/api/students/{studentId:[0-9]+}/exams`) || PathPrefix(`/api/homework`) || PathPrefix(`/api/members`) || PathPrefix(`/api/groups`)"
+      - "traefik.http.routers.academy-service.entrypoints=web"
+      - "traefik.http.routers.academy-service.service=academy-service"
+      - "traefik.http.services.academy-service.loadbalancer.server.port=80"
+      - "traefik.http.routers.academy-service.priority=3"
 
   problem-service:
     build: Spring-Boot/Spring-Boot-Problem

@@ -21,11 +21,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import tw.waterball.judgegirl.commons.token.TokenService;
-import tw.waterball.judgegirl.entities.submission.Bag;
-import tw.waterball.judgegirl.entities.submission.Submission;
+import tw.waterball.judgegirl.primitives.submission.Bag;
+import tw.waterball.judgegirl.primitives.submission.Submission;
+import tw.waterball.judgegirl.submission.domain.usecases.*;
+import tw.waterball.judgegirl.submission.domain.usecases.dto.SubmissionQueryParams;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
-import tw.waterball.judgegirl.submissionservice.domain.usecases.*;
-import tw.waterball.judgegirl.submissionservice.domain.usecases.dto.SubmissionQueryParams;
 
 import java.util.HashMap;
 import java.util.List;
@@ -157,7 +157,7 @@ public class SubmissionController {
 
 }
 
-class SubmissionPresenter implements tw.waterball.judgegirl.submissionservice.domain.usecases.SubmissionPresenter {
+class SubmissionPresenter implements tw.waterball.judgegirl.submission.domain.usecases.SubmissionPresenter {
     private SubmissionView submissionView;
 
     @Override

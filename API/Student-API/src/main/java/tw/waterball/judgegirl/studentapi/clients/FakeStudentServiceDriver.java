@@ -1,6 +1,6 @@
 package tw.waterball.judgegirl.studentapi.clients;
 
-import tw.waterball.judgegirl.entities.Student;
+import tw.waterball.judgegirl.primitives.Student;
 
 import java.util.HashMap;
 import java.util.List;

@@ -19,13 +19,13 @@ import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.HostConfig;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import tw.waterball.judgegirl.entities.problem.Problem;
-import tw.waterball.judgegirl.entities.submission.Submission;
 import tw.waterball.judgegirl.judgerapi.env.JudgerEnvVariables;
+import tw.waterball.judgegirl.primitives.problem.Problem;
+import tw.waterball.judgegirl.primitives.submission.Submission;
 import tw.waterball.judgegirl.springboot.configs.properties.JudgeGirlAmqpProps;
 import tw.waterball.judgegirl.springboot.configs.properties.JudgeGirlJudgerProps;
 import tw.waterball.judgegirl.springboot.configs.properties.ServiceProps;
-import tw.waterball.judgegirl.submissionservice.deployer.JudgerDeployer;
+import tw.waterball.judgegirl.submission.deployer.JudgerDeployer;
 
 import javax.annotation.PostConstruct;
 import java.util.Arrays;

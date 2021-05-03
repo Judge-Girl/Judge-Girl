@@ -13,8 +13,8 @@
 
 package tw.waterball.judgegirl.plugins.api;
 
-import tw.waterball.judgegirl.entities.problem.JudgePluginTag;
-import tw.waterball.judgegirl.entities.submission.verdict.VerdictIssuer;
+import tw.waterball.judgegirl.primitives.problem.JudgePluginTag;
+import tw.waterball.judgegirl.primitives.submission.verdict.VerdictIssuer;
 
 /**
  * The filter that add new runtime behaviors and modify some parts of the verdict.

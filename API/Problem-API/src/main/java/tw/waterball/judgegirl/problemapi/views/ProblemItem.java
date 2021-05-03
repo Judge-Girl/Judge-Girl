@@ -16,7 +16,7 @@ package tw.waterball.judgegirl.problemapi.views;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import tw.waterball.judgegirl.entities.problem.Problem;
+import tw.waterball.judgegirl.primitives.problem.Problem;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)

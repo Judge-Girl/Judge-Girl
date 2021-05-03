@@ -19,7 +19,7 @@ import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.core.TopicExchange;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import tw.waterball.judgegirl.entities.submission.verdict.VerdictIssuedEvent;
+import tw.waterball.judgegirl.primitives.submission.verdict.VerdictIssuedEvent;
 import tw.waterball.judgegirl.springboot.profiles.productions.Amqp;
 import tw.waterball.judgegirl.submissionapi.clients.VerdictPublisher;
 

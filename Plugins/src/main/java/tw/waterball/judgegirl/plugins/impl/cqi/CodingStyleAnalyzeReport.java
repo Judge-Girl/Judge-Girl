@@ -13,7 +13,7 @@
 
 package tw.waterball.judgegirl.plugins.impl.cqi;
 
-import tw.waterball.judgegirl.entities.submission.report.Report;
+import tw.waterball.judgegirl.primitives.submission.report.Report;
 
 import java.util.HashMap;
 import java.util.List;

@@ -13,7 +13,7 @@
 
 package tw.waterball.judgegirl.judger.tests;
 
-import tw.waterball.judgegirl.entities.problem.*;
+import tw.waterball.judgegirl.primitives.problem.*;
 import tw.waterball.judgegirl.plugins.impl.match.AllMatchPolicyPlugin;
 
 import java.util.List;

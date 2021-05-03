@@ -15,7 +15,7 @@ package tw.waterball.judgegirl.springboot.student.presenters;
 
 import org.springframework.stereotype.Component;
 import tw.waterball.judgegirl.commons.token.TokenService;
-import tw.waterball.judgegirl.entities.Student;
+import tw.waterball.judgegirl.primitives.Student;
 import tw.waterball.judgegirl.springboot.student.controllers.LoginResponse;
 import tw.waterball.judgegirl.studentservice.domain.usecases.student.LoginUseCase;
 

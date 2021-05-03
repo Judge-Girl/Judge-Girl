@@ -2,11 +2,11 @@ package tw.waterball.judgegirl.springboot.submission.controllers;
 
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import tw.waterball.judgegirl.entities.submission.Submission;
+import tw.waterball.judgegirl.primitives.submission.Submission;
+import tw.waterball.judgegirl.submission.domain.usecases.sample.DowngradeSampleBackToSubmissionUseCase;
+import tw.waterball.judgegirl.submission.domain.usecases.sample.GetSamplesUseCase;
+import tw.waterball.judgegirl.submission.domain.usecases.sample.UpgradeSubmissionToSampleUseCase;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
-import tw.waterball.judgegirl.submissionservice.domain.usecases.sample.DowngradeSampleBackToSubmissionUseCase;
-import tw.waterball.judgegirl.submissionservice.domain.usecases.sample.GetSamplesUseCase;
-import tw.waterball.judgegirl.submissionservice.domain.usecases.sample.UpgradeSubmissionToSampleUseCase;
 
 import java.util.LinkedList;
 import java.util.List;

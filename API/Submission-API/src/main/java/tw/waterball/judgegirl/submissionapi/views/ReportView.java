@@ -15,7 +15,7 @@ package tw.waterball.judgegirl.submissionapi.views;
 
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
-import tw.waterball.judgegirl.entities.submission.report.Report;
+import tw.waterball.judgegirl.primitives.submission.report.Report;
 
 import java.util.Collections;
 import java.util.Map;

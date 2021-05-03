@@ -13,7 +13,7 @@
 
 package tw.waterball.judgegirl.judger.infra.testexecutor;
 
-import tw.waterball.judgegirl.entities.problem.Testcase;
+import tw.waterball.judgegirl.primitives.problem.Testcase;
 import tw.waterball.judgegirl.judger.layout.JudgerWorkspace;
 
 /**

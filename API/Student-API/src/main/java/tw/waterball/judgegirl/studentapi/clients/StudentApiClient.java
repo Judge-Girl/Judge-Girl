@@ -7,7 +7,7 @@ import retrofit2.http.POST;
 import retrofit2.http.Query;
 import tw.waterball.judgegirl.api.retrofit.BaseRetrofitAPI;
 import tw.waterball.judgegirl.api.retrofit.RetrofitFactory;
-import tw.waterball.judgegirl.entities.Student;
+import tw.waterball.judgegirl.primitives.Student;
 
 import java.util.List;
 import java.util.function.Supplier;

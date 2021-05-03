@@ -13,10 +13,10 @@
 
 package tw.waterball.judgegirl.springboot.submission.impl.mongo.data;
 
-import tw.waterball.judgegirl.entities.submission.Bag;
-import tw.waterball.judgegirl.entities.submission.Submission;
-import tw.waterball.judgegirl.entities.submission.report.Report;
-import tw.waterball.judgegirl.entities.submission.verdict.Verdict;
+import tw.waterball.judgegirl.primitives.submission.Bag;
+import tw.waterball.judgegirl.primitives.submission.Submission;
+import tw.waterball.judgegirl.primitives.submission.report.Report;
+import tw.waterball.judgegirl.primitives.submission.verdict.Verdict;
 
 import java.util.List;
 import java.util.stream.Collectors;
