@@ -29,7 +29,7 @@ import tw.waterball.judgegirl.springboot.configs.properties.JudgeGirlAmqpProps;
 import tw.waterball.judgegirl.springboot.configs.properties.JudgeGirlJudgerProps;
 import tw.waterball.judgegirl.springboot.configs.properties.ServiceProps;
 import tw.waterball.judgegirl.springboot.submission.impl.deployer.docker.DockerJudgerDeployer;
-import tw.waterball.judgegirl.submissionservice.deployer.JudgerDeployer;
+import tw.waterball.judgegirl.submission.deployer.JudgerDeployer;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;

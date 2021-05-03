@@ -39,7 +39,7 @@
         </dependency>
         <dependency>
             <groupId>tw.waterball.judge-girl</groupId>
-            <artifactId>student-service</artifactId>
+            <artifactId>judgegirl-student</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

@@ -15,11 +15,11 @@ package tw.waterball.judgegirl.judger;
 
 import lombok.AllArgsConstructor;
 import lombok.Value;
-import tw.waterball.judgegirl.entities.problem.*;
-import tw.waterball.judgegirl.entities.submission.Submission;
-import tw.waterball.judgegirl.entities.submission.verdict.Judge;
-import tw.waterball.judgegirl.entities.submission.verdict.Verdict;
-import tw.waterball.judgegirl.entities.submission.verdict.VerdictIssuer;
+import tw.waterball.judgegirl.primitives.problem.*;
+import tw.waterball.judgegirl.primitives.submission.Submission;
+import tw.waterball.judgegirl.primitives.submission.verdict.Judge;
+import tw.waterball.judgegirl.primitives.submission.verdict.Verdict;
+import tw.waterball.judgegirl.primitives.submission.verdict.VerdictIssuer;
 import tw.waterball.judgegirl.judger.infra.compile.CompileResult;
 import tw.waterball.judgegirl.judger.infra.testexecutor.TestcaseExecutionResult;
 

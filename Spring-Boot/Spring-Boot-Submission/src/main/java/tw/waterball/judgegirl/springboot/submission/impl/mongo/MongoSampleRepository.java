@@ -7,7 +7,7 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Component;
 import tw.waterball.judgegirl.springboot.profiles.productions.Mongo;
 import tw.waterball.judgegirl.springboot.submission.impl.mongo.data.SampleSubmissionData;
-import tw.waterball.judgegirl.submissionservice.domain.repositories.SampleRepository;
+import tw.waterball.judgegirl.submission.domain.repositories.SampleRepository;
 
 import java.util.ArrayList;
 import java.util.Arrays;

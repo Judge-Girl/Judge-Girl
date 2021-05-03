@@ -13,7 +13,7 @@
 
 package tw.waterball.judgegirl.plugins.api;
 
-import tw.waterball.judgegirl.entities.problem.Testcase;
+import tw.waterball.judgegirl.primitives.problem.Testcase;
 
 import java.util.List;
 

@@ -1,7 +1,7 @@
 package tw.waterball.judgegirl.springboot.submission.impl.mongo.strategy;
 
 import tw.waterball.judgegirl.commons.models.files.FileResource;
-import tw.waterball.judgegirl.entities.submission.Submission;
+import tw.waterball.judgegirl.primitives.submission.Submission;
 
 import java.util.List;
 

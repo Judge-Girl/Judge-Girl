@@ -6,8 +6,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import tw.waterball.judgegirl.springboot.submission.impl.mongo.data.SampleSubmissionData;
+import tw.waterball.judgegirl.submission.domain.repositories.SampleRepository;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
-import tw.waterball.judgegirl.submissionservice.domain.repositories.SampleRepository;
 
 import java.util.List;
 import java.util.stream.IntStream;

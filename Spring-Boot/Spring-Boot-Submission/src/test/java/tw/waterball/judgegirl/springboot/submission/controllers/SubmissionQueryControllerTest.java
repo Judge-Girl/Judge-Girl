@@ -8,7 +8,7 @@ import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static tw.waterball.judgegirl.entities.stubs.SubmissionStubBuilder.submission;
+import static tw.waterball.judgegirl.primitives.stubs.SubmissionStubBuilder.submission;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)

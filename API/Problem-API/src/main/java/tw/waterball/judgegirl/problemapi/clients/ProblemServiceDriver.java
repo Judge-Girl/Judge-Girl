@@ -15,7 +15,7 @@ package tw.waterball.judgegirl.problemapi.clients;
 
 import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
-import tw.waterball.judgegirl.entities.problem.LanguageEnv;
+import tw.waterball.judgegirl.primitives.problem.LanguageEnv;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
 
 /**

@@ -9,7 +9,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.util.LinkedList;
 import java.util.List;
 
-import static tw.waterball.judgegirl.submissionservice.domain.repositories.SampleRepository.COLLECTION_NAME;
+import static tw.waterball.judgegirl.submission.domain.repositories.SampleRepository.COLLECTION_NAME;
 
 /**
  * @author - wally55077@gmail.com

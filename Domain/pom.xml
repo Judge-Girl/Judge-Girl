@@ -15,7 +15,10 @@
 
     <modules>
         <module>Primitives</module>
-        <module>Online-Judge</module>
+        <module>Student</module>
+        <module>Problem</module>
+        <module>Submission</module>
+        <module>Academy</module>
     </modules>
 
 </project>

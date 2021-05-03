@@ -1,7 +1,7 @@
 package tw.waterball.judgegirl.studentapi.clients.view;
 
 import lombok.*;
-import tw.waterball.judgegirl.entities.exam.Group;
+import tw.waterball.judgegirl.primitives.exam.Group;
 
 /**
  * @author - wally55077@gmail.com

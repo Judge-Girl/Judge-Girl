@@ -6,8 +6,8 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 import tw.waterball.judgegirl.commons.utils.NotifyWaitLock;
-import tw.waterball.judgegirl.entities.submission.Bag;
-import tw.waterball.judgegirl.entities.submission.verdict.VerdictIssuedEvent;
+import tw.waterball.judgegirl.primitives.submission.Bag;
+import tw.waterball.judgegirl.primitives.submission.verdict.VerdictIssuedEvent;
 import tw.waterball.judgegirl.springboot.profiles.productions.Amqp;
 
 import java.util.ArrayList;

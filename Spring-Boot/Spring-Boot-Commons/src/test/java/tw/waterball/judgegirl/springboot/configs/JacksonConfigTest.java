@@ -18,12 +18,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import tw.waterball.judgegirl.entities.problem.JudgeStatus;
-import tw.waterball.judgegirl.entities.submission.report.CompositeReport;
-import tw.waterball.judgegirl.entities.submission.report.Report;
-import tw.waterball.judgegirl.entities.submission.verdict.Judge;
-import tw.waterball.judgegirl.entities.submission.verdict.ProgramProfile;
-import tw.waterball.judgegirl.entities.submission.verdict.Verdict;
+import tw.waterball.judgegirl.primitives.problem.JudgeStatus;
+import tw.waterball.judgegirl.primitives.submission.report.CompositeReport;
+import tw.waterball.judgegirl.primitives.submission.report.Report;
+import tw.waterball.judgegirl.primitives.submission.verdict.Judge;
+import tw.waterball.judgegirl.primitives.submission.verdict.ProgramProfile;
+import tw.waterball.judgegirl.primitives.submission.verdict.Verdict;
 import tw.waterball.judgegirl.springboot.ScanRoot;
 import tw.waterball.judgegirl.submissionapi.views.ReportView;
 

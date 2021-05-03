@@ -32,7 +32,7 @@
         </dependency>
         <dependency>
             <groupId>tw.waterball.judge-girl</groupId>
-            <artifactId>problem-service</artifactId>
+            <artifactId>judgegirl-problem</artifactId>
         </dependency>
         <dependency>
             <groupId>tw.waterball.judge-girl</groupId>

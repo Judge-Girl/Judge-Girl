@@ -20,11 +20,11 @@ import io.kubernetes.client.models.V1EnvVar;
 import io.kubernetes.client.models.V1Job;
 import io.kubernetes.client.models.V1JobBuilder;
 import io.kubernetes.client.models.V1LocalObjectReference;
-import tw.waterball.judgegirl.entities.problem.LanguageEnv;
-import tw.waterball.judgegirl.entities.problem.Problem;
-import tw.waterball.judgegirl.entities.problem.ResourceSpec;
-import tw.waterball.judgegirl.entities.submission.Submission;
-import tw.waterball.judgegirl.submissionservice.deployer.JudgerDeployer;
+import tw.waterball.judgegirl.primitives.problem.LanguageEnv;
+import tw.waterball.judgegirl.primitives.problem.Problem;
+import tw.waterball.judgegirl.primitives.problem.ResourceSpec;
+import tw.waterball.judgegirl.primitives.submission.Submission;
+import tw.waterball.judgegirl.submission.deployer.JudgerDeployer;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -34,7 +34,7 @@ public class K8SJudgerDeployer implements JudgerDeployer {
     private final String judgerImageName;
     private final String judgerContainerNameFormat;
     private final String judgerImagePullSecret;
-    private BatchV1Api api;
+    private final BatchV1Api api;
 
     public K8SJudgerDeployer(BatchV1Api api,
                              String judgerJobNameFormat,

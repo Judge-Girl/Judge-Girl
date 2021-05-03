@@ -16,8 +16,8 @@ package tw.waterball.judgegirl.springboot.submission.impl.mongo.data;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import tw.waterball.judgegirl.entities.problem.JudgeStatus;
-import tw.waterball.judgegirl.entities.submission.verdict.Judge;
+import tw.waterball.judgegirl.primitives.problem.JudgeStatus;
+import tw.waterball.judgegirl.primitives.submission.verdict.Judge;
 
 import java.util.ArrayList;
 import java.util.Date;

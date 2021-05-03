@@ -14,8 +14,8 @@
 package tw.waterball.judgegirl.springboot.student.repositories.jpa;
 
 import lombok.*;
-import tw.waterball.judgegirl.entities.Admin;
-import tw.waterball.judgegirl.entities.Student;
+import tw.waterball.judgegirl.primitives.Admin;
+import tw.waterball.judgegirl.primitives.Student;
 
 import javax.persistence.*;
 

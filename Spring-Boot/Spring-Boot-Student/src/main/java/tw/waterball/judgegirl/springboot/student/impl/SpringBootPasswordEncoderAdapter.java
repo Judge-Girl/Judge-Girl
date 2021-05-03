@@ -2,7 +2,7 @@ package tw.waterball.judgegirl.springboot.student.impl;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
-import tw.waterball.judgegirl.studentservice.ports.PasswordEncoder;
+import tw.waterball.judgegirl.studentservice.password.PasswordEncoder;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
