@@ -29,10 +29,10 @@ import org.springframework.test.web.servlet.MvcResult;
 import tw.waterball.judgegirl.commons.utils.ZipUtils;
 import tw.waterball.judgegirl.primitives.problem.*;
 import tw.waterball.judgegirl.primitives.stubs.ProblemStubs;
-import tw.waterball.judgegirl.problemapi.views.ProblemItem;
-import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.problem.domain.repositories.ProblemRepository;
 import tw.waterball.judgegirl.problem.domain.usecases.PatchProblemUseCase;
+import tw.waterball.judgegirl.problemapi.views.ProblemItem;
+import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.springboot.problem.SpringBootProblemApplication;
 import tw.waterball.judgegirl.springboot.problem.repositories.MongoProblemRepository;
 import tw.waterball.judgegirl.springboot.profiles.Profiles;
@@ -51,8 +51,6 @@ import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import static tw.waterball.judgegirl.primitives.problem.Language.C;
-import static tw.waterball.judgegirl.primitives.problem.Language.JAVA;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
