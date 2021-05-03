@@ -29,7 +29,7 @@ public class PatchProblemUseCase extends BaseProblemUseCase {
                     PatchProblemParams.builder()
                             .title(request.title)
                             .description(request.description)
-                            .matchPolicyPluginTag(request.judgePluginTag)
+                            .matchPolicyPluginTag(request.matchPolicyPluginTag)
                             .filterPluginTags(request.filterPluginTags)
                             .languageEnv(request.languageEnv)
                             .build());
@@ -47,7 +47,7 @@ public class PatchProblemUseCase extends BaseProblemUseCase {
         public int problemId = NOT_PRESENT;
         public String title;
         public String description;
-        public JudgePluginTag judgePluginTag;
+        public JudgePluginTag matchPolicyPluginTag;
         public Collection<JudgePluginTag> filterPluginTags;
         public LanguageEnv languageEnv;
 
