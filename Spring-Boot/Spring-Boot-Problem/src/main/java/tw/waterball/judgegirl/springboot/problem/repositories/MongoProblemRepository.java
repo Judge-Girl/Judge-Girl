@@ -142,7 +142,12 @@ public class MongoProblemRepository implements ProblemRepository {
         params.getDescription().ifPresent(des -> update.set("description", des));
         params.getMatchPolicyPluginTag().ifPresent(tag -> update.set("outputMatchPolicyPluginTag", tag));
         params.getFilterPluginTags().ifPresent(tags -> update.set("filterPluginTags", tags));
-        mongoTemplate.updateFirst(query, update, Problem.class);
+        params.getLanguageEnv().ifPresent(languageEnv -> update.set("languageEnvs." + languageEnv.getLanguage(), languageEnv));
+
+        if (!update.getUpdateObject().isEmpty()) {
+            mongoTemplate.upsert(query, update, Problem.class);
+        }
+
     }
 
     @Override

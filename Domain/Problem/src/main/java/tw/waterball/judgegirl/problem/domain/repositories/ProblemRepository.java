@@ -54,4 +54,5 @@ public interface ProblemRepository {
     void archiveProblemById(int problemId);
 
     void deleteProblemById(int problemId);
+
 }

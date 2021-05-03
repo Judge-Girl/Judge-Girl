@@ -29,10 +29,10 @@ import org.springframework.test.web.servlet.MvcResult;
 import tw.waterball.judgegirl.commons.utils.ZipUtils;
 import tw.waterball.judgegirl.primitives.problem.*;
 import tw.waterball.judgegirl.primitives.stubs.ProblemStubs;
-import tw.waterball.judgegirl.problemapi.views.ProblemItem;
-import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.problem.domain.repositories.ProblemRepository;
 import tw.waterball.judgegirl.problem.domain.usecases.PatchProblemUseCase;
+import tw.waterball.judgegirl.problemapi.views.ProblemItem;
+import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.springboot.problem.SpringBootProblemApplication;
 import tw.waterball.judgegirl.springboot.problem.repositories.MongoProblemRepository;
 import tw.waterball.judgegirl.springboot.profiles.Profiles;
@@ -47,6 +47,7 @@ import static java.lang.Integer.parseInt;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -187,7 +188,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         // verify all problems will be found and projected into problem-items
         assertEquals(problems.stream()
                 .map(ProblemItem::fromEntity)
-                .collect(Collectors.toList()), requestGetProblems());
+                .collect(toList()), requestGetProblems());
     }
 
     @Test
@@ -249,7 +250,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         List<Problem> problems = IntStream.range(0, count).mapToObj((id) ->
                 ProblemStubs.problemTemplate().id(id)
                         .title(String.valueOf(random.nextInt())).build())
-                .collect(Collectors.toList());
+                .collect(toList());
         problems.forEach(mongoTemplate::save);
         return problems;
     }
@@ -341,7 +342,8 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
                                 problem.getTitle(),
                                 problem.getDescription(),
                                 problem.getOutputMatchPolicyPluginTag(),
-                                new HashSet<>(problem.getFilterPluginTags())))))
+                                new HashSet<>(problem.getFilterPluginTags()),
+                                problem.getLanguageEnv(Language.C)))))
                 .andExpect(status().isOk());
     }
 
@@ -428,5 +430,56 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         });
     }
 
+    @Test
+    void GivenOneProblemWithLangEnvC_WhenUpdateTheLangEnvC_ThenCShouldBeUpdated() throws Exception {
+        int problemId = 1;
+        LanguageEnv languageEnv = saveProblemAndGet(problemId).getLanguageEnv(Language.C);
+        ResourceSpec expectResourceSpec = new ResourceSpec(9999, 9999);
+        languageEnv.setResourceSpec(expectResourceSpec);
+
+        updateLanguageEnv(problemId, languageEnv);
+
+        var problem = getProblem(problemId);
+        ResourceSpec actualResourceSpec = problem.getLanguageEnvs().get(0).getResourceSpec();
+        assertEquals(expectResourceSpec, actualResourceSpec);
+    }
+
+    @Test
+    void GivenOneProblemWithLangEnv_C_WhenPatchProblemWithJAVA_ThenProblemShouldHaveJAVA() throws Exception {
+        int problemId = 1;
+        saveProblems(problemId);
+
+        LanguageEnv languageEnv = createLanguageEnv(Language.JAVA);
+        ResourceSpec expectResourceSpec = new ResourceSpec(9999, 9999);
+        languageEnv.setResourceSpec(expectResourceSpec);
+        updateLanguageEnv(problemId, languageEnv);
+
+        var problem = getProblem(problemId);
+        List<LanguageEnv> languageEnvs = problem.getLanguageEnvs();
+        assertEquals(2, languageEnvs.size());
+        LanguageEnv actualLanguageEnv = languageEnvs.get(1);
+        assertEquals(expectResourceSpec, actualLanguageEnv.getResourceSpec());
+    }
+
+    private LanguageEnv createLanguageEnv(Language language) {
+        return LanguageEnv.builder()
+                .language(language)
+                .compilation(new Compilation("script"))
+                .resourceSpec(new ResourceSpec(0.5f, 0))
+                .submittedCodeSpec(new SubmittedCodeSpec(language, "main." + language.getFileExtension()))
+                .providedCodesFileId("providedCodesFileId")
+                .build();
+    }
+
+    private void updateLanguageEnv(Integer problemId, LanguageEnv languageEnv) throws Exception {
+        mockMvc.perform(put("/api/problems/{problemId}/langEnv/{langEnv}", problemId, languageEnv.getLanguage())
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .content(toJson(languageEnv)))
+                .andExpect(status().isOk());
+    }
+    private Problem saveProblemAndGet(int problemId) {
+        saveProblems(problemId);
+        return problemRepository.findProblemById(problemId).orElseThrow();
+    }
 }
 

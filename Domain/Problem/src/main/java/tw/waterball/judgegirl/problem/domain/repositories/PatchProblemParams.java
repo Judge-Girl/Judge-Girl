@@ -3,6 +3,7 @@ package tw.waterball.judgegirl.problem.domain.repositories;
 import lombok.Builder;
 import org.jetbrains.annotations.Nullable;
 import tw.waterball.judgegirl.primitives.problem.JudgePluginTag;
+import tw.waterball.judgegirl.primitives.problem.LanguageEnv;
 
 import java.util.Collection;
 import java.util.Optional;
@@ -17,6 +18,8 @@ public class PatchProblemParams {
     private final JudgePluginTag matchPolicyPluginTag;
     @Nullable
     private final Collection<JudgePluginTag> filterPluginTags;
+    @Nullable
+    private final LanguageEnv languageEnv;
 
     public Optional<String> getTitle() {
         return Optional.ofNullable(title);
@@ -33,4 +36,6 @@ public class PatchProblemParams {
     public Optional<Collection<JudgePluginTag>> getFilterPluginTags() {
         return Optional.ofNullable(filterPluginTags);
     }
+
+    public Optional<LanguageEnv> getLanguageEnv() { return Optional.ofNullable(languageEnv); }
 }
