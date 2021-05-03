@@ -17,12 +17,12 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>tw.waterball.judge-girl</groupId>
-        <artifactId>judge-girl</artifactId>
+        <artifactId>domain</artifactId>
         <version>${revision}</version>
     </parent>
 
-    <name>Submission Service</name>
-    <artifactId>submission-service</artifactId>
+    <name>Online-Judge</name>
+    <artifactId>judgegirl-online-judge</artifactId>
 
     <dependencies>
         <dependency>

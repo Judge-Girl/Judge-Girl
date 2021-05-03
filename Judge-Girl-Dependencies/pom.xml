@@ -56,7 +56,7 @@
             </dependency>
             <dependency>
                 <groupId>tw.waterball.judge-girl</groupId>
-                <artifactId>submission-service</artifactId>
+                <artifactId>judgegirl-online-judge</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
