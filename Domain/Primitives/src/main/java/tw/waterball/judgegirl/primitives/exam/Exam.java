@@ -10,10 +10,7 @@ import tw.waterball.judgegirl.primitives.Student;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.findFirst;
@@ -87,11 +84,11 @@ public class Exam {
         updatedQuestion.setScore(question.getScore());
     }
 
-    public void addStudentsAsExaminees(List<Student> students) {
+    public void addStudentsAsExaminees(Collection<Student> students) {
         addExaminees(mapToList(students, student -> new Examinee(id, student.getId())));
     }
 
-    public void addExaminees(List<Examinee> examinees) {
+    public void addExaminees(Collection<Examinee> examinees) {
         this.examinees.addAll(examinees);
     }
 }

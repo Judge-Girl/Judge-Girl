@@ -125,7 +125,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
         studentA.setId(STUDENT_A_ID);
         Student studentB = new Student("studentB", STUDENT_B_EMAIL, "passwordB");
         studentB.setId(STUDENT_B_ID);
-        Student studentC = new Student("studentC", STUDENT_C_EMAIL, "passwordB");
+        Student studentC = new Student("studentC", STUDENT_C_EMAIL, "passwordC");
         studentC.setId(STUDENT_C_ID);
         studentServiceDriver.addStudent(studentA);
         studentServiceDriver.addStudent(studentB);
