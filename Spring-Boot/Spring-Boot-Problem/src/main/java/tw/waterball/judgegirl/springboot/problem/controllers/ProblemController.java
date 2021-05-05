@@ -132,7 +132,7 @@ public class ProblemController {
     }
 
     @PutMapping("/{problemId}/testcases/{testcaseName}")
-    public void patchTestCase(@PathVariable int problemId,
+    public void updateOrAddTestcase(@PathVariable int problemId,
                               @PathVariable String testcaseName,
                               @RequestBody Testcase testcase) {
         testcase.setName(testcaseName);

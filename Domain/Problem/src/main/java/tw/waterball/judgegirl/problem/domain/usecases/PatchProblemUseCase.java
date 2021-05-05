@@ -14,7 +14,7 @@ import tw.waterball.judgegirl.problem.domain.repositories.ProblemRepository;
 
 import javax.inject.Named;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.UUID;
 
 import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
 
@@ -26,6 +26,10 @@ public class PatchProblemUseCase extends BaseProblemUseCase {
 
     public void execute(Request request) throws NotFoundException {
         if (problemRepository.problemExists(request.problemId)) {
+            Testcase testcase = request.testcase;
+            if (testcase.getId() == null) {
+                testcase.setId(UUID.randomUUID().toString());
+            }
             problemRepository.patchProblem(
                     request.problemId,
                     PatchProblemParams.builder()
@@ -34,7 +38,7 @@ public class PatchProblemUseCase extends BaseProblemUseCase {
                             .matchPolicyPluginTag(request.matchPolicyPluginTag)
                             .filterPluginTags(request.filterPluginTags)
                             .languageEnv(request.languageEnv)
-                            .testcase(request.testcase)
+                            .testcase(testcase)
                             .build());
         } else {
             throw notFound(Problem.class).id(request.problemId);
@@ -55,8 +59,5 @@ public class PatchProblemUseCase extends BaseProblemUseCase {
         public LanguageEnv languageEnv;
         public Testcase testcase;
 
-        public <E> Request(Integer id, String title, String description, JudgePluginTag outputMatchPolicyPluginTag,
-                           HashSet<E> es, LanguageEnv languageEnv) {
-        }
     }
 }

@@ -123,6 +123,11 @@ public class MongoProblemRepository implements ProblemRepository {
     }
 
     @Override
+    public Problem save(Problem problem) {
+        return mongoTemplate.save(toData(problem)).toEntity();
+    }
+
+    @Override
     public int saveProblemWithTitleAndGetId(String title) {
         long problemsCount = mongoTemplate.count(
                 query(where("title").exists(true)), ProblemData.class);
@@ -180,6 +185,16 @@ public class MongoProblemRepository implements ProblemRepository {
     public void deleteProblemById(int problemId) {
         Query query = new Query(where("_id").is(problemId));
         mongoTemplate.remove(query, ProblemData.class);
+    }
+
+    @Override
+    public void deleteAll() {
+        mongoTemplate.dropCollection(ProblemData.class);
+    }
+
+    @Override
+    public void saveTags(List<String> tagList) {
+        mongoTemplate.save(new MongoProblemRepository.AllTags(tagList));
     }
 
     @Document("tag")

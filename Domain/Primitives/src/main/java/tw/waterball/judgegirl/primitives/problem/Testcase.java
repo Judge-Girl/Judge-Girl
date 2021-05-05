@@ -19,7 +19,6 @@ import tw.waterball.judgegirl.primitives.problem.validators.PositiveOrNegativeOn
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.PositiveOrZero;
-import java.util.UUID;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -47,10 +46,15 @@ public class Testcase {
     @PositiveOrZero
     private int grade;
 
-    public Testcase(String name, int problemId,
-                    int timeLimit, long memoryLimit, long outputLimit, int threadNumberLimit, int grade) {
-        this(UUID.randomUUID().toString(), name, problemId, timeLimit, memoryLimit, outputLimit,
-                threadNumberLimit, grade);
+    public Testcase(String name, int problemId, int timeLimit, long memoryLimit,
+            long outputLimit, int threadNumberLimit, int grade) {
+        this.name = name;
+        this.problemId = problemId;
+        this.timeLimit = timeLimit;
+        this.memoryLimit = memoryLimit;
+        this.outputLimit = outputLimit;
+        this.threadNumberLimit = threadNumberLimit;
+        this.grade = grade;
     }
 
     public void validate() {
