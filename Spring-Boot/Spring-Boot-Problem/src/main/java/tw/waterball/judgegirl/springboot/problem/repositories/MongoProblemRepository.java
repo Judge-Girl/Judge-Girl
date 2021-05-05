@@ -27,6 +27,7 @@ import tw.waterball.judgegirl.primitives.problem.Problem;
 import tw.waterball.judgegirl.problem.domain.repositories.PatchProblemParams;
 import tw.waterball.judgegirl.problem.domain.repositories.ProblemQueryParams;
 import tw.waterball.judgegirl.problem.domain.repositories.ProblemRepository;
+import tw.waterball.judgegirl.springboot.problem.repositories.data.ProblemData;
 import tw.waterball.judgegirl.springboot.profiles.productions.Mongo;
 import tw.waterball.judgegirl.springboot.utils.MongoUtils;
 
@@ -36,6 +37,8 @@ import java.util.*;
 import static java.lang.String.format;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
+import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
+import static tw.waterball.judgegirl.springboot.problem.repositories.data.ProblemData.toData;
 import static tw.waterball.judgegirl.springboot.utils.MongoUtils.downloadFileResourceByFileId;
 
 /**
@@ -57,13 +60,14 @@ public class MongoProblemRepository implements ProblemRepository {
 
     @Override
     public Optional<Problem> findProblemById(int problemId) {
-        return Optional.ofNullable(mongoTemplate.findById(problemId, Problem.class));
+        return Optional.ofNullable(mongoTemplate.findById(problemId, ProblemData.class))
+                .map(ProblemData::toEntity);
     }
 
     @Override
     public Optional<FileResource> downloadProvidedCodes(int problemId, String languageEnvName) {
         return MongoUtils.query(mongoTemplate)
-                .fromDocument(Problem.class)
+                .fromDocument(ProblemData.class)
                 .selectOneField(format("languageEnvs.%s.providedCodesFileId", languageEnvName))
                 .byId(problemId)
                 .execute()
@@ -84,7 +88,7 @@ public class MongoProblemRepository implements ProblemRepository {
         }
         params.getPage().ifPresent(page -> query.skip(page * PAGE_SIZE).limit(PAGE_SIZE));
 
-        return mongoTemplate.find(query, Problem.class);
+        return mapToList(mongoTemplate.find(query, ProblemData.class), ProblemData::toEntity);
     }
 
     @Override
@@ -94,7 +98,7 @@ public class MongoProblemRepository implements ProblemRepository {
 
     @Override
     public List<Problem> findAll() {
-        return mongoTemplate.findAll(Problem.class);
+        return mapToList(mongoTemplate.findAll(ProblemData.class), ProblemData::toEntity);
     }
 
     @Override
@@ -115,20 +119,25 @@ public class MongoProblemRepository implements ProblemRepository {
         String testcaseIOsName = format("%d-testcases.zip", problem.getId());
         problem.setTestcaseIOsFileId(
                 gridFsTemplate.store(testcaseIOsZip, testcaseIOsName).toString());
-        return mongoTemplate.save(problem);
+        return mongoTemplate.save(toData(problem)).toEntity();
+    }
+
+    @Override
+    public Problem save(Problem problem) {
+        return mongoTemplate.save(toData(problem)).toEntity();
     }
 
     @Override
     public int saveProblemWithTitleAndGetId(String title) {
         long problemsCount = mongoTemplate.count(
-                query(where("title").exists(true)), Problem.class);
+                query(where("title").exists(true)), ProblemData.class);
         int id = (int) (OFFSET_NEW_PROBLEM_ID + problemsCount + 1);
         Problem problem = Problem.builder()
                 .id(id)
                 .title(title)
                 .visible(false)
                 .build();
-        Problem saved = mongoTemplate.save(problem);
+        Problem saved = mongoTemplate.save(toData(problem)).toEntity();
         log.info("New problem with title {} has been saved with id={}.",
                 saved.getTitle(), saved.getId());
         return id;
@@ -144,22 +153,24 @@ public class MongoProblemRepository implements ProblemRepository {
         params.getFilterPluginTags().ifPresent(tags -> update.set("filterPluginTags", tags));
         params.getLanguageEnv().ifPresent(languageEnv -> update.set("languageEnvs." + languageEnv.getLanguage(), languageEnv));
 
+        params.getTestcase().ifPresent(tc -> update.set("testcases." + tc.getId(), tc));
+
         if (!update.getUpdateObject().isEmpty()) {
-            mongoTemplate.upsert(query, update, Problem.class);
+            mongoTemplate.upsert(query, update, ProblemData.class);
         }
 
     }
 
     @Override
     public boolean problemExists(int problemId) {
-        return mongoTemplate.exists(query(where("_id").is(problemId)), Problem.class);
+        return mongoTemplate.exists(query(where("_id").is(problemId)), ProblemData.class);
 
     }
 
     @Override
     public List<Problem> findProblemsByIds(int[] problemIds) {
         Integer[] ids = Arrays.stream(problemIds).boxed().toArray(Integer[]::new);
-        return mongoTemplate.find(query(where("_id").in(ids)), Problem.class);
+        return mapToList(mongoTemplate.find(query(where("_id").in(ids)), ProblemData.class), ProblemData::toEntity);
     }
 
     @Override
@@ -167,13 +178,23 @@ public class MongoProblemRepository implements ProblemRepository {
         Update update = new Update();
         Query query = new Query(where("_id").is(problemId));
         update.set("archived", true);
-        mongoTemplate.updateFirst(query, update, Problem.class);
+        mongoTemplate.updateFirst(query, update, ProblemData.class);
     }
 
     @Override
     public void deleteProblemById(int problemId) {
         Query query = new Query(where("_id").is(problemId));
-        mongoTemplate.remove(query, Problem.class);
+        mongoTemplate.remove(query, ProblemData.class);
+    }
+
+    @Override
+    public void deleteAll() {
+        mongoTemplate.dropCollection(ProblemData.class);
+    }
+
+    @Override
+    public void saveTags(List<String> tagList) {
+        mongoTemplate.save(new MongoProblemRepository.AllTags(tagList));
     }
 
     @Document("tag")

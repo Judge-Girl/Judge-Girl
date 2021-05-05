@@ -18,6 +18,8 @@ import tw.waterball.judgegirl.primitives.problem.Problem.ProblemBuilder;
 import tw.waterball.judgegirl.primitives.submission.report.CompositeReport;
 import tw.waterball.judgegirl.primitives.submission.report.Report;
 
+import java.util.UUID;
+
 import static java.util.Collections.singletonMap;
 import static tw.waterball.judgegirl.primitives.problem.JudgePluginTag.Type.OUTPUT_MATCH_POLICY;
 import static tw.waterball.judgegirl.primitives.problem.Language.C;
@@ -46,9 +48,9 @@ public class ProblemStubs {
                                 .submittedCodeSpec(new SubmittedCodeSpec(C, "main.c"))
                                 .providedCodesFileId("providedCodesFileId")
                                 .build())
-                .testcase(new Testcase("1", ID, 5, 5, 5000, 1, 20))
-                .testcase(new Testcase("2", ID, 5, 5, 5000, 1, 30))
-                .testcase(new Testcase("3", ID, 3, 4, 5000, 1, 50));
+                .testcase(new Testcase(UUID.randomUUID().toString(),"1", ID, 5, 5, 5000, 1, 20))
+                .testcase(new Testcase(UUID.randomUUID().toString(),"2", ID, 5, 5, 5000, 1, 30))
+                .testcase(new Testcase(UUID.randomUUID().toString(),"3", ID, 3, 4, 5000, 1, 50));
     }
 
     public static CompositeReport compositeReport() {

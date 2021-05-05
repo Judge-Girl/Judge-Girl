@@ -29,6 +29,8 @@ import javax.validation.constraints.PositiveOrZero;
 @Setter
 @ToString
 public class Testcase {
+
+    private String id;
     @NotBlank
     private String name;
     @PositiveOrZero
@@ -44,7 +46,9 @@ public class Testcase {
     @PositiveOrZero
     private int grade;
 
-    public Testcase(int problemId, int timeLimit, long memoryLimit, long outputLimit, int threadNumberLimit, int grade) {
+    public Testcase(String name, int problemId, int timeLimit, long memoryLimit,
+            long outputLimit, int threadNumberLimit, int grade) {
+        this.name = name;
         this.problemId = problemId;
         this.timeLimit = timeLimit;
         this.memoryLimit = memoryLimit;
