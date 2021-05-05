@@ -401,11 +401,13 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
 
         Testcase expectedTestcase = problem.getTestcases().get(0);
         String testCaseName = expectedTestcase.getName();
-        expectedTestcase.setGrade(100);
+        int expectedTestcaseGrade = 100;
+        expectedTestcase.setGrade(expectedTestcaseGrade);
         updateOrAddTestCase(problemId, testCaseName, expectedTestcase);
 
         var actualProblem = getProblem(problemId);
         List<Testcase> testcases = actualProblem.getTestcases();
+        assertEquals(problem.getTestcases().size(), testcases.size());
         Testcase actualTestCase = findFirst(testcases, tc -> 100 == tc.getGrade()).orElseThrow();
         assertTestCaseEquals(expectedTestcase, actualTestCase);
     }
@@ -413,14 +415,15 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     @Test
     void GivenProblemSaved_WhenAddNewTestcase_ThenShouldAddSuccessfully() throws Exception {
         int problemId = 1;
-        saveProblemAndGet(problemId);
+        Problem problem = saveProblemAndGet(problemId);
 
-        Testcase expectedTestcase = new Testcase("123456", problemId, 100, 300, 300, -100, 500);
-        updateOrAddTestCase(problemId, "123456", expectedTestcase);
+        var expectedTestcaseName = "123456";
+        Testcase expectedTestcase = new Testcase(expectedTestcaseName, problemId, 100, 300, 300, -100, 500);
+        updateOrAddTestCase(problemId, expectedTestcaseName, expectedTestcase);
 
         List<Testcase> testcases = getProblem(problemId).getTestcases();
-        assertEquals(4, testcases.size());
-        Testcase actualTestcase = findFirst(testcases, testcase -> "123456".equals(testcase.getName())).orElseThrow();
+        assertEquals(problem.getTestcases().size() + 1, testcases.size());
+        Testcase actualTestcase = findFirst(testcases, testcase -> expectedTestcaseName.equals(testcase.getName())).orElseThrow();
         assertNotNull(actualTestcase.getId());
         assertTestCaseEquals(expectedTestcase, actualTestcase);
     }
