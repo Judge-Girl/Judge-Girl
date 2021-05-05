@@ -415,7 +415,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         int problemId = 1;
         saveProblemAndGet(problemId);
 
-        Testcase expectedTestcase = new Testcase("123456", 100, 100, 300, 300, -100, 500);
+        Testcase expectedTestcase = new Testcase("123456", problemId, 100, 300, 300, -100, 500);
         updateOrAddTestCase(problemId, "123456", expectedTestcase);
 
         List<Testcase> testcases = getProblem(problemId).getTestcases();
