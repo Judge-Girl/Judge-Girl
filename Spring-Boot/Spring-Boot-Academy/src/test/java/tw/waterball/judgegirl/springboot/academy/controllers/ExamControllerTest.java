@@ -215,16 +215,16 @@ class ExamControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    void WhenAddExaminees_A_B_C_ShouldSucceedAndRespondErrorEmailList_C() throws Exception {
+    void WhenAddExaminees_A_B_Z_ShouldSucceedAndRespondErrorEmailList_Z() throws Exception {
         var exam = createExamAndGet(new Date(), new Date(), "Exam");
 
         List<String> errorEmails = getBody(
-                addExaminees(exam.id, STUDENT_A_EMAIL, STUDENT_B_EMAIL, "studentC@example.com")
+                addExaminees(exam.id, STUDENT_A_EMAIL, STUDENT_B_EMAIL, "studentZ@example.com")
                         .andExpect(status().isOk()), new TypeReference<>() {
                 });
 
         assertEquals(1, errorEmails.size());
-        assertEquals("studentC@example.com", errorEmails.get(0));
+        assertEquals("studentZ@example.com", errorEmails.get(0));
 
         List<Student> examinees = getExaminees(exam);
         assertEquals(2, examinees.size());
