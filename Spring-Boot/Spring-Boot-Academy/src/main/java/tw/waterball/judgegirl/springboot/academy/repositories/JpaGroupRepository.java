@@ -13,6 +13,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import static java.util.stream.Collectors.toList;
+import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToSet;
 import static tw.waterball.judgegirl.springboot.academy.repositories.jpa.GroupData.toData;
 
@@ -33,6 +34,9 @@ public class JpaGroupRepository implements GroupRepository {
 
     @Override
     public Group save(Group group) {
+        if (group.getId() == null && !group.getMemberIds().isEmpty()) {
+            throw new IllegalStateException("You can't save the group with its memberships at the same time.");
+        }
         GroupData groupData = groupDAO.saveAndFlush(toData(group));
         group.setId(groupData.getId());
         return group;
@@ -73,5 +77,10 @@ public class JpaGroupRepository implements GroupRepository {
             groupDAO.deleteById(groupId);
         } catch (EmptyResultDataAccessException ignored) {
         }
+    }
+
+    @Override
+    public List<Group> findGroupsByNames(Iterable<String> names) {
+        return mapToList(groupDAO.findAllByNameIn(names), GroupData::toEntity);
     }
 }

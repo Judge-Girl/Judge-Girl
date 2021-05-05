@@ -39,6 +39,11 @@ public class Group {
         this.id = id;
     }
 
+    public Group(String name, Set<MemberId> memberIds) {
+        this.name = name;
+        this.memberIds = memberIds;
+    }
+
     public void validate() {
         JSR380Utils.validate(this);
     }

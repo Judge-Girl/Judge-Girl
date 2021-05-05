@@ -22,6 +22,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
@@ -31,6 +32,17 @@ import static java.util.stream.Collectors.*;
  * @author - johnny850807@gmail.com (Waterball)
  */
 public abstract class StreamUtils {
+    public static <T, R> List<T> flatMapToList(Collection<R> collection, ErrFunction<? super R, ? extends Stream<? extends T>> flatMapping) {
+        return collection.stream()
+                .flatMap(r -> {
+                    try {
+                        return flatMapping.apply(r);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                }).collect(toList());
+    }
+
     public static <T, R> List<T> mapToList(R[] array, ErrFunction<R, T> mapping) {
         return mapToList(asList(array), mapping);
     }
@@ -43,6 +55,16 @@ public abstract class StreamUtils {
                 throw new RuntimeException(e);
             }
         }).collect(toList());
+    }
+
+    public static <T, R> Set<T> mapToSet(R[] array, ErrFunction<R, T> mapping) {
+        return stream(array).map(in -> {
+            try {
+                return mapping.apply(in);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }).collect(toSet());
     }
 
     public static <T, R> Set<T> mapToSet(Collection<R> collection, ErrFunction<R, T> mapping) {

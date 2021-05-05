@@ -47,6 +47,7 @@ public class ExamController {
     private final ExamPresenter examPresenter;
     private final GetExamineesUseCase getExamineesUseCase;
     private final AddExamineesUseCase addExamineesUseCase;
+    private final AddGroupOfExamineesUseCase addGroupOfExamineesUseCase;
     private final DeleteExamineesUseCase deleteExamineesUseCase;
 
     @PostMapping("/exams")
@@ -150,6 +151,13 @@ public class ExamController {
         AddExamineesPresenter presenter = new AddExamineesPresenter();
         addExamineesUseCase.execute(request, presenter);
         return presenter.present();
+    }
+
+    @PostMapping("/exams/{examId}/groups")
+    public void addGroupsOfExaminees(@PathVariable int examId,
+                                     @RequestBody AddGroupOfExamineesUseCase.Request request) {
+        request.examId = examId;
+        addGroupOfExamineesUseCase.execute(request);
     }
 
     @DeleteMapping("/exams/{examId}/students")

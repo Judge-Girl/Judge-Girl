@@ -3,10 +3,10 @@ package tw.waterball.judgegirl.academy.domain.usecases.exam;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import tw.waterball.judgegirl.academy.domain.repositories.ExamRepository;
 import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.primitives.Student;
 import tw.waterball.judgegirl.primitives.exam.Exam;
-import tw.waterball.judgegirl.academy.domain.repositories.ExamRepository;
 import tw.waterball.judgegirl.studentapi.clients.StudentServiceDriver;
 
 import javax.inject.Named;
@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
+import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
 
 @Named
 @AllArgsConstructor
@@ -38,7 +39,7 @@ public class AddExamineesUseCase {
     }
 
     private void addExaminees(Exam exam, List<Student> students) {
-        examRepository.addExaminees(exam.getId(), students.stream().map(Student::getId).collect(Collectors.toList()));
+        examRepository.addExaminees(exam.getId(), mapToList(students, Student::getId));
     }
 
     private void showNotFoundStudents(Request request, List<Student> students, Presenter presenter) {
