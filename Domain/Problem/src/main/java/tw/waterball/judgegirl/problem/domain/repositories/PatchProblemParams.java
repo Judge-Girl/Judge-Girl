@@ -4,6 +4,7 @@ import lombok.Builder;
 import org.jetbrains.annotations.Nullable;
 import tw.waterball.judgegirl.primitives.problem.JudgePluginTag;
 import tw.waterball.judgegirl.primitives.problem.LanguageEnv;
+import tw.waterball.judgegirl.primitives.problem.Testcase;
 
 import java.util.Collection;
 import java.util.Optional;
@@ -20,6 +21,8 @@ public class PatchProblemParams {
     private final Collection<JudgePluginTag> filterPluginTags;
     @Nullable
     private final LanguageEnv languageEnv;
+
+    private final Testcase testcase;
 
     public Optional<String> getTitle() {
         return Optional.ofNullable(title);
@@ -38,4 +41,7 @@ public class PatchProblemParams {
     }
 
     public Optional<LanguageEnv> getLanguageEnv() { return Optional.ofNullable(languageEnv); }
+
+    public Optional<Testcase> getTestcase() { return Optional.ofNullable(testcase); }
+
 }

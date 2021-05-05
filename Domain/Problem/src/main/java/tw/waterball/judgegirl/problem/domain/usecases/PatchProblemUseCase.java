@@ -8,11 +8,13 @@ import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.primitives.problem.JudgePluginTag;
 import tw.waterball.judgegirl.primitives.problem.LanguageEnv;
 import tw.waterball.judgegirl.primitives.problem.Problem;
+import tw.waterball.judgegirl.primitives.problem.Testcase;
 import tw.waterball.judgegirl.problem.domain.repositories.PatchProblemParams;
 import tw.waterball.judgegirl.problem.domain.repositories.ProblemRepository;
 
 import javax.inject.Named;
 import java.util.Collection;
+import java.util.HashSet;
 
 import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
 
@@ -32,6 +34,7 @@ public class PatchProblemUseCase extends BaseProblemUseCase {
                             .matchPolicyPluginTag(request.matchPolicyPluginTag)
                             .filterPluginTags(request.filterPluginTags)
                             .languageEnv(request.languageEnv)
+                            .testcase(request.testcase)
                             .build());
         } else {
             throw notFound(Problem.class).id(request.problemId);
@@ -50,6 +53,10 @@ public class PatchProblemUseCase extends BaseProblemUseCase {
         public JudgePluginTag matchPolicyPluginTag;
         public Collection<JudgePluginTag> filterPluginTags;
         public LanguageEnv languageEnv;
+        public Testcase testcase;
 
+        public <E> Request(Integer id, String title, String description, JudgePluginTag outputMatchPolicyPluginTag,
+                           HashSet<E> es, LanguageEnv languageEnv) {
+        }
     }
 }

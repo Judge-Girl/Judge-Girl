@@ -16,18 +16,16 @@ package tw.waterball.judgegirl.commons.utils;
 import tw.waterball.judgegirl.commons.utils.functional.ErrConsumer;
 import tw.waterball.judgegirl.commons.utils.functional.ErrFunction;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toSet;
+import static java.util.stream.Collectors.*;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -55,6 +53,11 @@ public abstract class StreamUtils {
                 throw new RuntimeException(e);
             }
         }).collect(toSet());
+    }
+
+    public static <T,K,U> Map<K,U> toMap(Collection<T> collection, Function<? super T, ? extends K> keyMapper,
+                                 Function<? super T, ? extends U> valueMapper) {
+        return collection.stream().collect(Collectors.toMap(keyMapper, valueMapper));
     }
 
     public static <T, L, R> List<T> zipToList(List<L> left, List<R> right,

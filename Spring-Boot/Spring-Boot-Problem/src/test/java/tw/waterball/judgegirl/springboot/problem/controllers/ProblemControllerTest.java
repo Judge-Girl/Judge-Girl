@@ -28,7 +28,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MvcResult;
 import tw.waterball.judgegirl.commons.utils.ZipUtils;
 import tw.waterball.judgegirl.primitives.problem.*;
-import tw.waterball.judgegirl.primitives.stubs.ProblemStubs;
 import tw.waterball.judgegirl.problem.domain.repositories.ProblemRepository;
 import tw.waterball.judgegirl.problem.domain.usecases.PatchProblemUseCase;
 import tw.waterball.judgegirl.problemapi.views.ProblemItem;
@@ -51,6 +50,8 @@ import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static tw.waterball.judgegirl.commons.utils.StreamUtils.findFirst;
+import static tw.waterball.judgegirl.primitives.stubs.ProblemStubs.problemTemplate;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -72,8 +73,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
 
     @BeforeEach
     void setup() {
-        problem = ProblemStubs
-                .problemTemplate()
+        problem = problemTemplate()
                 .build();
     }
 
@@ -166,7 +166,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     }
 
     private Problem givenProblemWithTags(int id, String... tags) {
-        final Problem targetProblem = ProblemStubs.problemTemplate().id(id)
+        final Problem targetProblem = problemTemplate().id(id)
                 .tags(asList(tags)).build();
         mongoTemplate.save(targetProblem);
         return targetProblem;
@@ -248,7 +248,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     private List<Problem> givenProblemsSaved(int count) {
         Random random = new Random();
         List<Problem> problems = IntStream.range(0, count).mapToObj((id) ->
-                ProblemStubs.problemTemplate().id(id)
+                problemTemplate().id(id)
                         .title(String.valueOf(random.nextInt())).build())
                 .collect(toList());
         problems.forEach(mongoTemplate::save);
@@ -398,6 +398,56 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
                 .andExpect(status().isOk());
     }
 
+    @Test
+    void GivenPatchTestcase_WhenTestcaseExist_ShouldUpdateIt() throws Exception {
+        int problemId = 1;
+        Problem problem = saveProblemAndGet(problemId);
+
+        Testcase expectedTestcase = problem.getTestcases().get(0);
+        String testCaseName = expectedTestcase.getName();
+        expectedTestcase.setGrade(100);
+
+        patchTestCase(problemId, testCaseName, expectedTestcase);
+
+        var actualProblem = getProblem(problemId);
+        List<Testcase> testcases = actualProblem.getTestcases();
+
+        Testcase actualTestCase = findFirst(testcases, tc -> 100 == tc.getGrade()).orElseThrow();
+        assertTestCaseSame(expectedTestcase, actualTestCase);
+    }
+
+    @Test
+    void GivenPatchTestcase_WhenTestcaseNotExist_ShouldAddIt() throws Exception {
+        int problemId = 1;
+        saveProblemAndGet(problemId);
+
+        var actualProblem = getProblem(problemId);
+        assertEquals(3, actualProblem.getTestcases().size());
+
+        Testcase expectedAddTestcase = new Testcase("123456", 100, 100, 300, 300, -100, 500);
+        patchTestCase(problemId, "123456", expectedAddTestcase);
+
+        actualProblem = getProblem(problemId);
+        assertEquals(4, actualProblem.getTestcases().size());
+    }
+
+    private void assertTestCaseSame(Testcase expectedTestcase, Testcase actualTestCase){
+        assertEquals(expectedTestcase.getName(), actualTestCase.getName());
+        assertEquals(expectedTestcase.getProblemId(), actualTestCase.getProblemId());
+        assertEquals(expectedTestcase.getTimeLimit(), actualTestCase.getTimeLimit());
+        assertEquals(expectedTestcase.getMemoryLimit(), actualTestCase.getMemoryLimit());
+        assertEquals(expectedTestcase.getOutputLimit(), actualTestCase.getOutputLimit());
+        assertEquals(expectedTestcase.getThreadNumberLimit(), actualTestCase.getThreadNumberLimit());
+        assertEquals(expectedTestcase.getGrade(), actualTestCase.getGrade());
+    }
+
+    private void patchTestCase(int problemId, String testCaseName, Testcase testcase) throws Exception {
+        mockMvc.perform(put("/api/problems/{problemId}/testcases/{testcaseName}", problemId, testCaseName)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(toJson(testcase)))
+                .andExpect(status().isOk());
+    }
+
     private void problemsShouldHaveIds(List<Problem> actualProblems, Integer... problemIds) {
         Set<Integer> idsSet = Set.of(problemIds);
         actualProblems.forEach(problem -> assertTrue(idsSet.contains(problem.getId())));
@@ -416,8 +466,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
 
     private void saveProblems(int... problemIds) {
         Arrays.stream(problemIds).forEach(problemId -> {
-            Problem problem = ProblemStubs
-                    .problemTemplate()
+            Problem problem = problemTemplate()
                     .build();
             problem.setId(problemId);
             byte[] providedCodesZip = ZipUtils.zipFilesFromResources("/stubs/file1.c", "/stubs/file2.c");
