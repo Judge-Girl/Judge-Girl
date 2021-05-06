@@ -2,14 +2,14 @@ package tw.waterball.judgegirl.academy.domain.usecases.exam;
 
 import lombok.AllArgsConstructor;
 import lombok.Value;
+import tw.waterball.judgegirl.academy.domain.repositories.ExamRepository;
+import tw.waterball.judgegirl.academy.domain.usecases.VerdictIssuedEventListener;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
 import tw.waterball.judgegirl.primitives.exam.*;
 import tw.waterball.judgegirl.primitives.submission.Bag;
 import tw.waterball.judgegirl.primitives.submission.SubmissionThrottlingException;
 import tw.waterball.judgegirl.primitives.submission.verdict.Verdict;
 import tw.waterball.judgegirl.primitives.submission.verdict.VerdictIssuedEvent;
-import tw.waterball.judgegirl.academy.domain.repositories.ExamRepository;
-import tw.waterball.judgegirl.academy.domain.usecases.VerdictIssuedEventListener;
 import tw.waterball.judgegirl.submissionapi.clients.SubmissionServiceDriver;
 import tw.waterball.judgegirl.submissionapi.clients.SubmitCodeRequest;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
@@ -105,17 +105,15 @@ public class AnswerQuestionUseCase implements VerdictIssuedEventListener {
     @Override
     public void onVerdictIssued(VerdictIssuedEvent event) {
         getExamIdFromBag(event.getSubmissionBag())
-                .ifPresent(examId -> updateBestRecordFromVerdict(event, examId));
+                .ifPresent(examId -> updateBestRecordOfQuestion(event, examId));
     }
 
-    public Record updateBestRecordFromVerdict(VerdictIssuedEvent event, int examId) {
+    private void updateBestRecordOfQuestion(VerdictIssuedEvent event, int examId) {
         Record record = record(event, examId);
         Record bestRecord = examRepository.findBestRecordOfQuestion(record.getQuestionId(), event.getStudentId())
                 .map(currentBest -> betterAndNewer(currentBest, record))
                 .orElse(record);
-
         examRepository.saveBestRecordOfQuestion(bestRecord);
-        return bestRecord;
     }
 
     private OptionalInt getExamIdFromBag(Bag submissionBag) {

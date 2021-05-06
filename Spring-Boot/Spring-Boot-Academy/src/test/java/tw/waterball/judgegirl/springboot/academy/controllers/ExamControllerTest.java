@@ -501,14 +501,16 @@ class ExamControllerTest extends AbstractSpringBootTest {
         assertEquals(25, bestRecord.getMaximumMemoryUsage());
     }
 
+    // TODO: drunk, improve the code
     @Test
     void testGetStudentExamProgressOverview() throws Exception {
         final int QUOTA = 5;
-        final int SCORE = submissionWith2ACs20Point.mayHaveVerdict().orElseThrow().getTotalGrade();
+        final int PROBLEM_TOTAL_GRADE = problem.totalGrade;
+        final int SUBMISSION_TOTAL_GRADE = submissionWith2ACs20Point.mayHaveVerdict().orElseThrow().getTotalGrade();
         Date start = beforeCurrentTime(1, HOURS), end = afterCurrentTime(1, HOURS);
         ExamView exam = createExamAndGet(start, end, "sample-exam");
-        QuestionView q1 = createQuestionAndGet(new CreateQuestionUseCase.Request(exam.getId(), PROBLEM_ID, QUOTA, 30, 1));
-        QuestionView q2 = createQuestionAndGet(new CreateQuestionUseCase.Request(exam.getId(), ANOTHER_PROBLEM_ID, QUOTA, 70, 2));
+        QuestionView q1 = createQuestionAndGet(new CreateQuestionUseCase.Request(exam.getId(), PROBLEM_ID, QUOTA, 50, 1));
+        QuestionView q2 = createQuestionAndGet(new CreateQuestionUseCase.Request(exam.getId(), ANOTHER_PROBLEM_ID, QUOTA, 50, 2));
         givenStudentParticipatingExam(STUDENT_A_ID, exam);
         answerQuestion(STUDENT_A_ID, exam).andExpect(status().isOk());
         publishVerdict(PROBLEM_ID, problem.getTitle(), exam, submissionWith2ACs20Point);
@@ -518,18 +520,19 @@ class ExamControllerTest extends AbstractSpringBootTest {
         ExamHome.QuestionItem firstQuestion = examHome.getQuestionById(new Question.Id(q1.examId, q1.problemId)).orElseThrow();
         ExamHome.QuestionItem secondQuestion = examHome.getQuestionById(new Question.Id(q2.examId, q2.problemId)).orElseThrow();
 
+        int expectedQ1Score = SUBMISSION_TOTAL_GRADE * q1.score / PROBLEM_TOTAL_GRADE;
         assertEquals(exam.getId(), examHome.getId());
         assertEquals("sample-exam", examHome.getName());
         assertEquals(start, examHome.getStartTime());
         assertEquals(end, examHome.getEndTime());
         assertEquals("problem statement", examHome.getDescription());
         assertEquals(2, examHome.getQuestions().size());
-        assertEquals(SCORE, examHome.getTotalScore());
+        assertEquals(expectedQ1Score, examHome.getTotalScore());
 
         assertEquals(QUOTA - 1, firstQuestion.getRemainingQuota());
-        assertEquals(SCORE, firstQuestion.getBestRecord().getScore());
+        assertEquals(SUBMISSION_TOTAL_GRADE, firstQuestion.getBestRecord().getScore());
         assertEquals(QUOTA, secondQuestion.getRemainingQuota());
-        assertEquals(SCORE, firstQuestion.getYourScore());
+        assertEquals(expectedQ1Score, firstQuestion.getYourScore());
         assertEquals(0, secondQuestion.getYourScore());
         assertEquals(firstQuestion.getProblemTitle(), problem.getTitle());
         assertEquals(secondQuestion.getProblemTitle(), anotherProblem.getTitle());

@@ -11,6 +11,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.*;
+import java.util.function.Consumer;
 
 import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.findFirst;
@@ -90,5 +91,9 @@ public class Exam {
 
     public void addExaminees(Collection<Examinee> examinees) {
         this.examinees.addAll(examinees);
+    }
+
+    public void foreachQuestion(Consumer<Question> questionConsumer) {
+        questions.forEach(questionConsumer);
     }
 }
