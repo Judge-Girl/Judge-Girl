@@ -45,4 +45,6 @@ public interface ExamRepository {
     int countAnswersInQuestion(Question.Id id, int studentId);
 
     boolean hasStudentParticipatedExam(int studentId, int examId);
+
+    void deleteExamById(int examId);
 }

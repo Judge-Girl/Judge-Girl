@@ -46,8 +46,7 @@ import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static java.util.concurrent.TimeUnit.HOURS;
 import static java.util.stream.Collectors.toList;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -557,6 +556,17 @@ class ExamControllerTest extends AbstractSpringBootTest {
         });
     }
 
+    @Test
+    void GivenExamSavedAndGetExam_WhenDeleteExamById_ShouldExamBeNotEmpty() throws Exception {
+        var exam = createExamAndGet(new Date(), new Date(), "exam");
+
+        deleteExam(exam.id);
+
+        Optional<Exam> optionalExam = examRepository.findById( exam.id);
+        assertTrue(optionalExam.isEmpty());
+    }
+
+
     private void addGroupsOfExaminees(ExamView exam, Group... groups) throws Exception {
         mockMvc.perform(post("/api/exams/{examId}/groups", exam.getId())
                 .contentType(MediaType.APPLICATION_JSON)
@@ -761,5 +771,9 @@ class ExamControllerTest extends AbstractSpringBootTest {
         return mockMvc.perform(delete("/api/exams/{examId}/problems/{problemId}", examId, problemId));
     }
 
+    private void deleteExam(int examId) throws Exception {
+        mockMvc.perform(delete("/api/exams/{examId}", examId))
+                .andExpect(status().isOk());
+    }
 
 }

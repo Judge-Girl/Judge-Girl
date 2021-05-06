@@ -162,4 +162,9 @@ public class JpaExamRepository implements ExamRepository {
         return jpaExamineeDAO.existsById_StudentIdAndId_ExamId(studentId, examId);
     }
 
+    @Override
+    public void deleteExamById(int examId) {
+        jpaExamDAO.deleteById(examId);
+    }
+
 }
