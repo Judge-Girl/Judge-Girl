@@ -24,7 +24,7 @@ public class GetExamProgressOverviewUseCase {
     public void execute(Request request, Presenter presenter) {
         int studentId = request.studentId;
         Exam exam = findExam(request);
-        showExam(presenter, exam);
+        presenter.showExam(exam);
 
         exam.foreachQuestion(question -> {
             Problem problem = findProblem(question);
@@ -43,11 +43,7 @@ public class GetExamProgressOverviewUseCase {
         return examRepository.findById(request.examId)
                 .orElseThrow(() -> notFound(Exam.class).id(request.examId));
     }
-
-    private void showExam(Presenter presenter, Exam exam) {
-        presenter.showExam(exam);
-    }
-
+    
     private Problem findProblem(Question question) {
         return toEntity(problemService.getProblem(question.getId().getProblemId()));
     }

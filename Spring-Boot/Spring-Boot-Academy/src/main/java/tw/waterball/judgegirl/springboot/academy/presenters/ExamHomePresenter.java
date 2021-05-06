@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 import static java.util.function.Function.identity;
-import static java.util.stream.Collectors.toMap;
+import static tw.waterball.judgegirl.commons.utils.StreamUtils.toMap;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.zipToList;
 
 /**
@@ -66,7 +66,7 @@ public class ExamHomePresenter implements GetExamProgressOverviewUseCase.Present
     }
 
     private List<QuestionItem> aggregateQuestionOverviews() {
-        var bestRecordsMap = bestRecords.stream().collect(toMap(Record::getQuestionId, identity()));
+        var bestRecordsMap = toMap(bestRecords, Record::getQuestionId, identity());
         return zipToList(exam.getQuestions(), problems,
                 (q, p) -> QuestionItem.toViewModel(q, p,
                         remainingQuotaMap.get(q.getId()), yourScoreMap.get(q.getId()), bestRecordsMap.get(q.getId())));
