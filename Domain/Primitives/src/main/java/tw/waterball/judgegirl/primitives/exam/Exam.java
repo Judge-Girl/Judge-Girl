@@ -5,17 +5,16 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import tw.waterball.judgegirl.commons.utils.JSR380Utils;
+import tw.waterball.judgegirl.primitives.Student;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.findFirst;
+import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
 import static tw.waterball.judgegirl.primitives.date.DateProvider.now;
 
 @AllArgsConstructor
@@ -83,5 +82,13 @@ public class Exam {
         updatedQuestion.setQuestionOrder(question.getQuestionOrder());
         updatedQuestion.setQuota(question.getQuota());
         updatedQuestion.setScore(question.getScore());
+    }
+
+    public void addStudentsAsExaminees(Collection<Student> students) {
+        addExaminees(mapToList(students, student -> new Examinee(id, student.getId())));
+    }
+
+    public void addExaminees(Collection<Examinee> examinees) {
+        this.examinees.addAll(examinees);
     }
 }

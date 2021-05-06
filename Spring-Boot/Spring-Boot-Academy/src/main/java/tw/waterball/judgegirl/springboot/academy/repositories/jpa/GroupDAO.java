@@ -4,6 +4,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import tw.waterball.judgegirl.springboot.academy.repositories.jpa.impl.GetGroupsOwnByMember;
 
+import java.util.List;
+
 /**
  * @author - wally55077@gmail.com
  * @author - johnny850807@gmail.com (Waterball)
@@ -12,4 +14,6 @@ import tw.waterball.judgegirl.springboot.academy.repositories.jpa.impl.GetGroups
 public interface GroupDAO extends JpaRepository<GroupData, Integer>, GetGroupsOwnByMember {
 
     boolean existsByName(String name);
+
+    List<GroupData> findAllByNameIn(Iterable<String> names);
 }

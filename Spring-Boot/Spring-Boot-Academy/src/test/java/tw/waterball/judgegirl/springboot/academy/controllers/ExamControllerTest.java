@@ -13,15 +13,10 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.ResultActions;
 import tw.waterball.judgegirl.academy.domain.repositories.ExamFilter;
 import tw.waterball.judgegirl.academy.domain.repositories.ExamRepository;
-import tw.waterball.judgegirl.academy.domain.usecases.exam.CreateExamUseCase;
-import tw.waterball.judgegirl.academy.domain.usecases.exam.CreateQuestionUseCase;
-import tw.waterball.judgegirl.academy.domain.usecases.exam.UpdateExamUseCase;
-import tw.waterball.judgegirl.academy.domain.usecases.exam.UpdateQuestionUseCase;
+import tw.waterball.judgegirl.academy.domain.repositories.GroupRepository;
+import tw.waterball.judgegirl.academy.domain.usecases.exam.*;
 import tw.waterball.judgegirl.primitives.Student;
-import tw.waterball.judgegirl.primitives.exam.Answer;
-import tw.waterball.judgegirl.primitives.exam.Exam;
-import tw.waterball.judgegirl.primitives.exam.Question;
-import tw.waterball.judgegirl.primitives.exam.Record;
+import tw.waterball.judgegirl.primitives.exam.*;
 import tw.waterball.judgegirl.primitives.problem.Language;
 import tw.waterball.judgegirl.primitives.problem.Problem;
 import tw.waterball.judgegirl.primitives.submission.Bag;
@@ -43,11 +38,9 @@ import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
 
 import javax.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
+import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
@@ -63,7 +56,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static tw.waterball.judgegirl.academy.domain.usecases.exam.AnswerQuestionUseCase.BAG_KEY_EXAM_ID;
 import static tw.waterball.judgegirl.commons.utils.DateUtils.afterCurrentTime;
 import static tw.waterball.judgegirl.commons.utils.DateUtils.beforeCurrentTime;
-import static tw.waterball.judgegirl.commons.utils.StreamUtils.atTheSameTime;
+import static tw.waterball.judgegirl.commons.utils.StreamUtils.*;
 import static tw.waterball.judgegirl.primitives.exam.Question.NO_QUOTA;
 import static tw.waterball.judgegirl.primitives.stubs.ProblemStubs.problemTemplate;
 import static tw.waterball.judgegirl.primitives.stubs.SubmissionStubBuilder.randomJudgedSubmissionFromProblem;
@@ -81,12 +74,13 @@ class ExamControllerTest extends AbstractSpringBootTest {
     public static final int NONEXISTING_EXAM_ID = 9999;
     public static final int NONEXISTING_PROBLEM_ID = 9999;
     public static final int STUDENT_A_ID = 1;
-    public static final int STUDENT_B_ID = 2;
+    public static final int STUDENT_B_ID = 1234;
+    public static final int STUDENT_C_ID = 200;
     public static final String LANG_ENV = Language.C.toString();
     public static final String SUBMISSION_ID = "SubmissionId";
     public static final String STUDENT_A_EMAIL = "studentA@example.com";
     public static final String STUDENT_B_EMAIL = "studentB@example.com";
-
+    public static final String STUDENT_C_EMAIL = "studentC@example.com";
 
     @Autowired
     ExamRepository examRepository;
@@ -98,6 +92,8 @@ class ExamControllerTest extends AbstractSpringBootTest {
     VerdictPublisher verdictPublisher;
     @Autowired
     VerdictIssuedEventHandler verdictIssuedEventHandler;
+    @Autowired
+    GroupRepository groupRepository;
 
     @Autowired
     SubmissionServiceDriver submissionServiceDriver;
@@ -106,7 +102,6 @@ class ExamControllerTest extends AbstractSpringBootTest {
     private ProblemView anotherProblem;
 
     private final MockMultipartFile[] mockFiles = codes(SUBMIT_CODE_MULTIPART_KEY_NAME, 2);
-
 
     @BeforeEach
     void setup() {
@@ -126,12 +121,15 @@ class ExamControllerTest extends AbstractSpringBootTest {
     }
 
     private void fakeStudentServiceDriver() {
-        Student student1 = new Student("studentA", STUDENT_A_EMAIL, "passwordA");
-        student1.setId(STUDENT_A_ID);
-        Student student2 = new Student("studentB", STUDENT_B_EMAIL, "passwordB");
-        student2.setId(STUDENT_B_ID);
-        studentServiceDriver.addStudent(student1);
-        studentServiceDriver.addStudent(student2);
+        Student studentA = new Student("studentA", STUDENT_A_EMAIL, "passwordA");
+        studentA.setId(STUDENT_A_ID);
+        Student studentB = new Student("studentB", STUDENT_B_EMAIL, "passwordB");
+        studentB.setId(STUDENT_B_ID);
+        Student studentC = new Student("studentC", STUDENT_C_EMAIL, "passwordC");
+        studentC.setId(STUDENT_C_ID);
+        studentServiceDriver.addStudent(studentA);
+        studentServiceDriver.addStudent(studentB);
+        studentServiceDriver.addStudent(studentC);
     }
 
     private void mockSubmissionServiceDriver() {
@@ -198,17 +196,35 @@ class ExamControllerTest extends AbstractSpringBootTest {
                 .andExpect(status().isNotFound());
     }
 
+    @DisplayName("Given two groups G1(student: A) and G2(student: B, C), and an exam," +
+            "When add the two groups as examinees, Then the examinees of the exam should be (A,B,C).")
     @Test
-    void WhenAddExaminees_A_B_C_ShouldSucceedAndRespondErrorEmailList_C() throws Exception {
-        var exam = createExamAndGet(new Date(), new Date(), "sample exam");
+    void testAddTwoGroupsOfExamineesFrom() throws Exception {
+        var exam = createExamAndGet(new Date(), new Date(), "Exam");
+        Group G1 = givenGroupWithMembers("G1", STUDENT_A_ID);
+        Group G2 = givenGroupWithMembers("G2", STUDENT_B_ID, STUDENT_C_ID);
+
+        addGroupsOfExaminees(exam, G1, G2);
+
+        var examinees = getExaminees(exam);
+        shouldHaveExaminees(examinees, STUDENT_A_EMAIL, STUDENT_B_EMAIL, STUDENT_C_EMAIL);
+    }
+
+    private void shouldHaveExaminees(List<Student> actualExaminees, String... expectedExamineeEmails) {
+        assertEquals(new HashSet<>(asList(expectedExamineeEmails)), mapToSet(actualExaminees, Student::getEmail));
+    }
+
+    @Test
+    void WhenAddExaminees_A_B_Z_ShouldSucceedAndRespondErrorEmailList_Z() throws Exception {
+        var exam = createExamAndGet(new Date(), new Date(), "Exam");
 
         List<String> errorEmails = getBody(
-                createExaminees(exam.id, STUDENT_A_EMAIL, STUDENT_B_EMAIL, "studentC@example.com")
+                addExaminees(exam.id, STUDENT_A_EMAIL, STUDENT_B_EMAIL, "studentZ@example.com")
                         .andExpect(status().isOk()), new TypeReference<>() {
                 });
 
         assertEquals(1, errorEmails.size());
-        assertEquals("studentC@example.com", errorEmails.get(0));
+        assertEquals("studentZ@example.com", errorEmails.get(0));
 
         List<Student> examinees = getExaminees(exam);
         assertEquals(2, examinees.size());
@@ -216,14 +232,14 @@ class ExamControllerTest extends AbstractSpringBootTest {
 
     @Test
     void WhenAddExamineesToNonExistingExam_ShouldRespondNotFound() throws Exception {
-        createExaminees(1, STUDENT_A_EMAIL)
+        addExaminees(1, STUDENT_A_EMAIL)
                 .andExpect(status().isNotFound());
     }
 
     @Test
     void GivenExaminees_A_B_C_WhenDeleteExaminees_A_C_ShouldOnlyRemainBInExam() throws Exception {
-        var exam = createExamAndGet(new Date(), new Date(), "sample exam");
-        createExaminees(exam.id, STUDENT_A_EMAIL, STUDENT_B_EMAIL, "studentC@example.com")
+        var exam = createExamAndGet(new Date(), new Date(), "Exam");
+        addExaminees(exam.id, STUDENT_A_EMAIL, STUDENT_B_EMAIL, "studentC@example.com")
                 .andExpect(status().isOk());
 
         deleteExaminees(exam.getId(), STUDENT_A_EMAIL, "studentC@example.com");
@@ -538,6 +554,12 @@ class ExamControllerTest extends AbstractSpringBootTest {
         });
     }
 
+    private void addGroupsOfExaminees(ExamView exam, Group... groups) throws Exception {
+        mockMvc.perform(post("/api/exams/{examId}/groups", exam.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(toJson(new AddGroupOfExamineesUseCase.Request(exam.getId(), mapToList(groups, Group::getName)))))
+                .andExpect(status().isOk());
+    }
 
     private List<Student> getExaminees(ExamView exam) throws Exception {
         return getBody(mockMvc.perform(get("/api/exams/{examId}/students", exam.id))
@@ -613,6 +635,12 @@ class ExamControllerTest extends AbstractSpringBootTest {
 
     private void givenStudentParticipatingExam(int studentId, ExamView exam) {
         givenStudentParticipatingExams(studentId, singletonList(exam));
+    }
+
+    private Group givenGroupWithMembers(String name, Integer... studentIds) {
+        Group group = groupRepository.save(new Group(name));
+        group.addMembers(mapToSet(studentIds, MemberId::new));
+        return groupRepository.save(group);
     }
 
     private void givenStudentsParticipatingExam(Integer[] studentIds, ExamView exam) {
@@ -698,7 +726,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
         examRepository.addExaminee(examId, studentId);
     }
 
-    private ResultActions createExaminees(int examId, String... emails) throws Exception {
+    private ResultActions addExaminees(int examId, String... emails) throws Exception {
         return mockMvc.perform(post("/api/exams/{examId}/students", examId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(emails)));

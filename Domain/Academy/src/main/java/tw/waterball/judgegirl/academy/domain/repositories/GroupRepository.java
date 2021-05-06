@@ -23,4 +23,6 @@ public interface GroupRepository {
     List<Group> findAllGroups();
 
     void deleteGroupById(int groupId);
+
+    List<Group> findGroupsByNames(Iterable<String> names);
 }

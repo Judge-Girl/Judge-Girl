@@ -33,7 +33,7 @@ services:
       - "traefik.http.services.student-service.loadbalancer.server.port=80"
       - "traefik.http.routers.student-service.priority=1"
 
-  exam-service:
+  academy-service:
     build: Spring-Boot/Spring-Boot-Academy
     environment:
       spring.profiles.active: prod,amqp,mysql
