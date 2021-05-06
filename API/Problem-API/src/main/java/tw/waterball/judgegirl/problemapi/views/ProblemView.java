@@ -44,6 +44,7 @@ public class ProblemView {
     public List<String> tags;
     public String testcaseIOsFileId;
     public List<Testcase> testcases;
+    public int totalGrade;
     public boolean visible;
     public boolean archived;
 
@@ -58,6 +59,7 @@ public class ProblemView {
                 problem.getTags(),
                 problem.getTestcaseIOsFileId(),
                 problem.getTestcases(),
+                problem.getTotalGrade(),
                 problem.getVisible(),
                 problem.isArchived()
         );

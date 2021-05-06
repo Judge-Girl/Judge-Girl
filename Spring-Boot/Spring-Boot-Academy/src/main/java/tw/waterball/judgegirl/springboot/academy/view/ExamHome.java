@@ -44,17 +44,19 @@ public class ExamHome {
         public int remainingQuota;
         public int maxScore;
         public int questionOrder;
+        public int yourScore;
         public BestRecord bestRecord;
         public String problemTitle;
 
         public static QuestionItem toViewModel(Question question, Problem problem,
-                                               int remainingQuota,
+                                               int remainingQuota, int yourScore,
                                                @Nullable Record bestRecord) {
             var builder = QuestionItem.builder()
                     .examId(question.getExamId())
                     .problemId(question.getId().getProblemId())
                     .quota(question.getQuota())
                     .remainingQuota(remainingQuota)
+                    .yourScore(yourScore)
                     .maxScore(problem.getTotalGrade())
                     .questionOrder(question.getQuestionOrder())
                     .problemTitle(problem.getTitle());
@@ -62,10 +64,6 @@ public class ExamHome {
                 builder = builder.bestRecord(new BestRecord(bestRecord));
             }
             return builder.build();
-        }
-
-        public int getYourScore() {
-            return bestRecord == null ? 0 : bestRecord.getScore();
         }
     }
 
