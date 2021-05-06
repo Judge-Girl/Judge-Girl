@@ -103,7 +103,7 @@ public class DefaultCCJudgerFactory {
                 values.getProblemServiceInstance().getScheme(),
                 values.getProblemServiceInstance().getHost(),
                 values.getProblemServiceInstance().getPort(),
-                token);
+                () -> token);
     }
 
     private static SubmissionApiClient submissionApiClient(JudgerEnvVariables.Values values, String token) {
@@ -111,7 +111,7 @@ public class DefaultCCJudgerFactory {
                 values.getSubmissionServiceInstance().getScheme(),
                 values.getSubmissionServiceInstance().getHost(),
                 values.getSubmissionServiceInstance().getPort(),
-                token);
+                () -> token);
     }
 
     private static RetrofitFactory retrofitFactory() {
@@ -140,7 +140,7 @@ public class DefaultCCJudgerFactory {
     }
 
     // TODO the objectMapper implementation should be injected
-    private static ObjectMapper objectMapper() {
+    public static ObjectMapper objectMapper() {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);

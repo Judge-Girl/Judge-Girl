@@ -13,7 +13,6 @@
 
 package tw.waterball.judgegirl.migration.problem;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,11 +22,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Component;
 import tw.waterball.judgegirl.commons.utils.DirectoryUtils;
-import tw.waterball.judgegirl.commons.utils.ToStringUtils;
-import tw.waterball.judgegirl.entities.problem.Language;
-import tw.waterball.judgegirl.entities.problem.LanguageEnv;
-import tw.waterball.judgegirl.entities.problem.Problem;
-import tw.waterball.judgegirl.entities.problem.Testcase;
+import tw.waterball.judgegirl.primitives.problem.Language;
+import tw.waterball.judgegirl.primitives.problem.LanguageEnv;
+import tw.waterball.judgegirl.primitives.problem.Problem;
+import tw.waterball.judgegirl.primitives.problem.Testcase;
 
 import javax.annotation.PostConstruct;
 import java.io.File;
@@ -35,8 +33,10 @@ import java.io.FileReader;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 import static java.util.Objects.requireNonNull;
+import static java.util.Objects.requireNonNullElse;
 import static tw.waterball.judgegirl.commons.utils.functional.FunctionalUtils.noneMatch;
 import static tw.waterball.judgegirl.migration.utils.FileAssertions.assertDirectoryExists;
 import static tw.waterball.judgegirl.migration.utils.FileAssertions.assertFileExists;
@@ -76,6 +76,7 @@ public class NewJudgeGirlLayoutManipulator {
     public Problem verifyAndReadProblem(Path problemDirPath) {
         JsonNode jsonNode = objectMapper.readTree(new FileReader(problemDirPath.resolve(PROBLEM_JSON).toFile()));
         Problem problem = objectMapper.treeToValue(jsonNode, Problem.class);
+        problem.getTestcases().forEach(testcase -> testcase.setId(requireNonNullElse(testcase.getId(), UUID.randomUUID().toString())));
         verifyProblemReadFromJson(problem);
         problem.setDescription(IOUtils.toString(new FileReader(
                 problemDirPath.resolve(DESCRIPTION_MD).toFile())));
@@ -83,21 +84,6 @@ public class NewJudgeGirlLayoutManipulator {
         return problem;
     }
 
-    @SneakyThrows
-    public List<Testcase> verifyAndReadTestcases(Path problemDirPath) {
-        JsonNode jsonNode = objectMapper.readTree(new FileReader(problemDirPath.resolve(PROBLEM_JSON).toFile()));
-        Problem problem = objectMapper.treeToValue(jsonNode, Problem.class);
-        if (!jsonNode.has("testcases")) {
-            throw new IllegalStateException("The " + PROBLEM_JSON + " should have `testcases` attribute.");
-        }
-        List<Testcase> testcases = objectMapper.readValue(
-                objectMapper.treeAsTokens(jsonNode.get("testcases")), new TypeReference<List<Testcase>>() {});
-        verifyTestcasesReadFromJson(testcases);
-        verifyTestcaseHomeLayout(problemDirPath, problem, testcases);
-        logger.info(ToStringUtils.toString(testcases, "\n"));
-        return testcases;
-
-    }
 
     private void verifyProblemReadFromJson(Problem problem) {
         LanguageEnv langEnv = problem.getLanguageEnv(Language.C);

@@ -17,7 +17,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import tw.waterball.judgegirl.entities.Student;
+import tw.waterball.judgegirl.primitives.Student;
 
 /**
  * @author chaoyulee chaoyu2330@gmail.com

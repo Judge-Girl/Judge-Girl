@@ -7,20 +7,21 @@ import retrofit2.http.POST;
 import retrofit2.http.Query;
 import tw.waterball.judgegirl.api.retrofit.BaseRetrofitAPI;
 import tw.waterball.judgegirl.api.retrofit.RetrofitFactory;
-import tw.waterball.judgegirl.entities.Student;
+import tw.waterball.judgegirl.primitives.Student;
 
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class StudentApiClient extends BaseRetrofitAPI implements StudentServiceDriver {
     private final Api api;
-    private final String adminToken;
+    private final Supplier<String> tokenSupplier;
 
     public StudentApiClient(RetrofitFactory retrofitFactory,
                             String scheme,
                             String host, int port,
-                            String adminToken) {
-        this.adminToken = adminToken;
+                            Supplier<String> tokenSupplier) {
+        this.tokenSupplier = tokenSupplier;
         this.api = retrofitFactory.create(scheme, host, port).create(Api.class);
     }
 

@@ -15,10 +15,10 @@ package tw.waterball.judgegirl.springboot.submission.impl.fake;
 
 import lombok.Value;
 import org.springframework.stereotype.Component;
-import tw.waterball.judgegirl.entities.problem.Problem;
-import tw.waterball.judgegirl.entities.submission.Submission;
+import tw.waterball.judgegirl.primitives.problem.Problem;
+import tw.waterball.judgegirl.primitives.submission.Submission;
 import tw.waterball.judgegirl.springboot.profiles.Dev;
-import tw.waterball.judgegirl.submissionservice.deployer.JudgerDeployer;
+import tw.waterball.judgegirl.submission.deployer.JudgerDeployer;
 
 import java.util.HashSet;
 import java.util.Optional;
@@ -30,7 +30,7 @@ import java.util.Set;
 @Dev
 @Component
 public class FakeJudgerDeployer implements JudgerDeployer {
-    private Set<Deployment> deployments = new HashSet<>();
+    private final Set<Deployment> deployments = new HashSet<>();
 
     @Override
     public void deployJudger(Problem problem, int studentId, Submission submission) {

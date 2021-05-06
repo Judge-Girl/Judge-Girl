@@ -16,8 +16,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.util.LinkedMultiValueMap;
-import tw.waterball.judgegirl.entities.problem.JudgeStatus;
-import tw.waterball.judgegirl.entities.problem.Language;
+import tw.waterball.judgegirl.primitives.problem.JudgeStatus;
+import tw.waterball.judgegirl.primitives.problem.Language;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 import tw.waterball.judgegirl.submissionapi.views.VerdictView;
 import tw.waterball.judgegirl.testkit.resultmatchers.ZipResultMatcher;
@@ -35,9 +35,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static tw.waterball.judgegirl.entities.problem.JudgeStatus.AC;
-import static tw.waterball.judgegirl.entities.stubs.SubmissionStubBuilder.submission;
-import static tw.waterball.judgegirl.entities.stubs.VerdictStubBuilder.verdict;
+import static tw.waterball.judgegirl.primitives.problem.JudgeStatus.AC;
+import static tw.waterball.judgegirl.primitives.stubs.SubmissionStubBuilder.submission;
+import static tw.waterball.judgegirl.primitives.stubs.VerdictStubBuilder.verdict;
 import static tw.waterball.judgegirl.submissionapi.views.VerdictView.toViewModel;
 
 /**
@@ -236,6 +236,5 @@ public class SubmissionControllerTest extends AbstractSubmissionControllerTest {
         return getBody(mockMvc.perform(get(API_PREFIX + "/best", problem.getId(), studentId))
                 .andExpect(status().isOk()), SubmissionView.class);
     }
-
-
+    
 }

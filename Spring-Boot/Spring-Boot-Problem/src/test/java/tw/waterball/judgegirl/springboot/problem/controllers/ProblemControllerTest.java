@@ -20,21 +20,18 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.AutoConfigureDataMongo;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MvcResult;
 import tw.waterball.judgegirl.commons.utils.ZipUtils;
-import tw.waterball.judgegirl.entities.problem.*;
-import tw.waterball.judgegirl.entities.stubs.ProblemStubs;
+import tw.waterball.judgegirl.primitives.problem.*;
+import tw.waterball.judgegirl.problem.domain.repositories.ProblemRepository;
+import tw.waterball.judgegirl.problem.domain.usecases.PatchProblemUseCase;
 import tw.waterball.judgegirl.problemapi.views.ProblemItem;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
-import tw.waterball.judgegirl.problemservice.domain.repositories.ProblemRepository;
-import tw.waterball.judgegirl.problemservice.domain.usecases.PatchProblemUseCase;
 import tw.waterball.judgegirl.springboot.problem.SpringBootProblemApplication;
-import tw.waterball.judgegirl.springboot.problem.repositories.MongoProblemRepository;
 import tw.waterball.judgegirl.springboot.profiles.Profiles;
 import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
 
@@ -46,10 +43,12 @@ import java.util.stream.IntStream;
 import static java.lang.Integer.parseInt;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
-import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static tw.waterball.judgegirl.commons.utils.StreamUtils.findFirst;
+import static tw.waterball.judgegirl.primitives.stubs.ProblemStubs.problemTemplate;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -58,8 +57,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureDataMongo
 @ContextConfiguration(classes = SpringBootProblemApplication.class)
 public class ProblemControllerTest extends AbstractSpringBootTest {
-    @Autowired
-    MongoTemplate mongoTemplate;
+
     @Autowired
     GridFsTemplate gridFsTemplate;
     @Autowired
@@ -71,15 +69,13 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
 
     @BeforeEach
     void setup() {
-        problem = ProblemStubs
-                .problemTemplate()
+        problem = problemTemplate()
                 .build();
     }
 
     @AfterEach
     void clean() {
-        mongoTemplate.dropCollection(Problem.class);
-        mongoTemplate.dropCollection(Testcase.class);
+        problemRepository.deleteAll();
     }
 
     private void givenProblemSavedWithProvidedCodesAndTestcaseIOs() {
@@ -139,7 +135,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     @NotNull
     private List<String> givenTagsSaved(String... tags) {
         final List<String> tagList = asList(tags);
-        mongoTemplate.save(new MongoProblemRepository.AllTags(tagList));
+        problemRepository.saveTags(tagList);
         return tagList;
     }
 
@@ -165,16 +161,17 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     }
 
     private Problem givenProblemWithTags(int id, String... tags) {
-        final Problem targetProblem = ProblemStubs.problemTemplate().id(id)
+        final Problem targetProblem = problemTemplate().id(id)
                 .tags(asList(tags)).build();
-        mongoTemplate.save(targetProblem);
+        problemRepository.save(targetProblem);
         return targetProblem;
     }
 
     private void verifyFindProblemsByTagsWithExpectedList(List<String> tags, List<ProblemItem> problemItems) throws Exception {
         String tagsSplitByCommas = String.join(", ", tags);
 
-        mockMvc.perform(get("/api/problems?tags={tags}", tagsSplitByCommas))
+        mockMvc.perform(get("/api/problems")
+                .queryParam("tags", tagsSplitByCommas))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().json(objectMapper.writeValueAsString(problemItems)));
@@ -187,7 +184,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         // verify all problems will be found and projected into problem-items
         assertEquals(problems.stream()
                 .map(ProblemItem::fromEntity)
-                .collect(Collectors.toList()), requestGetProblems());
+                .collect(toList()), requestGetProblems());
     }
 
     @Test
@@ -246,11 +243,11 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
 
     private List<Problem> givenProblemsSaved(int count) {
         Random random = new Random();
-        List<Problem> problems = IntStream.range(0, count).mapToObj((id) ->
-                ProblemStubs.problemTemplate().id(id)
+        var problems = IntStream.range(0, count).mapToObj((id) ->
+                problemTemplate().id(id)
                         .title(String.valueOf(random.nextInt())).build())
-                .collect(Collectors.toList());
-        problems.forEach(mongoTemplate::save);
+                .collect(toList());
+        problems.forEach(problemRepository::save);
         return problems;
     }
 
@@ -262,7 +259,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
                         .contentType(MediaType.TEXT_PLAIN_VALUE).content(randomTitle))
                         .andExpect(status().isOk())));
 
-        assertEquals(randomTitle, requireNonNull(mongoTemplate.findById(id, Problem.class)).getTitle());
+        assertEquals(randomTitle, problemRepository.findProblemById(id).orElseThrow().getTitle());
     }
 
     @Test
@@ -271,9 +268,11 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         String newTitle = UUID.randomUUID().toString();
 
         savedProblem.setTitle(newTitle);
-        patchProblem(savedProblem);
+        PatchProblemUseCase.Request request = PatchProblemUseCase.Request.builder().title(newTitle).build();
+        patchProblem(request);
 
-        Problem actualProblem = mongoTemplate.findById(savedProblem.getId(), Problem.class);
+        Problem actualProblem = problemRepository.findProblemById(savedProblem.getId())
+                .orElseThrow();
         assertNotNull(actualProblem);
         assertEquals(newTitle, actualProblem.getTitle());
     }
@@ -284,9 +283,10 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         String newDescription = UUID.randomUUID().toString();
 
         savedProblem.setDescription(newDescription);
-        patchProblem(savedProblem);
+        PatchProblemUseCase.Request request = PatchProblemUseCase.Request.builder().description(newDescription).build();
+        patchProblem(request);
 
-        Problem actualProblem = mongoTemplate.findById(savedProblem.getId(), Problem.class);
+        Problem actualProblem = problemRepository.findProblemById(savedProblem.getId()).orElseThrow();
         assertNotNull(actualProblem);
         assertEquals(newDescription, actualProblem.getDescription());
     }
@@ -301,9 +301,10 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         pluginMatchTag.setType(JudgePluginTag.Type.OUTPUT_MATCH_POLICY);
 
         savedProblem.setOutputMatchPolicyPluginTag(pluginMatchTag);
-        patchProblem(savedProblem);
+        PatchProblemUseCase.Request request = PatchProblemUseCase.Request.builder().matchPolicyPluginTag(pluginMatchTag).build();
+        patchProblem(request);
 
-        Problem actualProblem = mongoTemplate.findById(savedProblem.getId(), Problem.class);
+        Problem actualProblem = problemRepository.findProblemById(savedProblem.getId()).orElseThrow();
         assertNotNull(actualProblem);
         JudgePluginTag actualPluginMatchTag = actualProblem.getOutputMatchPolicyPluginTag();
         assertEquals(pluginMatchTag, actualPluginMatchTag);
@@ -324,24 +325,21 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         }
 
         savedProblem.setFilterPluginTags(filterPluginTags);
-        patchProblem(savedProblem);
+        PatchProblemUseCase.Request request = PatchProblemUseCase.Request.builder().filterPluginTags(filterPluginTags).build();
+        patchProblem(request);
 
-        Problem actualProblem = mongoTemplate.findById(savedProblem.getId(), Problem.class);
+        Problem actualProblem = problemRepository.findProblemById(savedProblem.getId()).orElseThrow();
         assertNotNull(actualProblem);
         Set<JudgePluginTag> queryPluginFilterTags = new HashSet<>(actualProblem.getFilterPluginTags());
         assertEquals(queryPluginFilterTags, filterPluginTags);
     }
 
-    private void patchProblem(Problem problem) throws Exception {
+
+    private void patchProblem(PatchProblemUseCase.Request request) throws Exception {
         mockMvc.perform(patch("/api/problems/{problemId}", problem.getId())
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(objectMapper.writeValueAsString(
-                        new PatchProblemUseCase.Request(
-                                problem.getId(),
-                                problem.getTitle(),
-                                problem.getDescription(),
-                                problem.getOutputMatchPolicyPluginTag(),
-                                new HashSet<>(problem.getFilterPluginTags())))))
+                        request)))
                 .andExpect(status().isOk());
     }
 
@@ -359,7 +357,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    void Given_1_ProblemsSaved_WhenGetProblemsByIds_1_2_ShouldRespondThat_1() throws Exception {
+    void Given_1_ProblemSaved_WhenGetProblemsByIds_1_2_ShouldRespondThat_1() throws Exception {
         saveProblems(1);
 
         List<Problem> actualProblems = getProblems(1, 2);
@@ -367,9 +365,94 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         problemsShouldHaveIds(actualProblems, 1);
     }
 
+    @Test
+    void GivenOneProblemSaved_WhenArchiveIt_ItShouldSucceed_AndThenDeleteIt_ThenItShouldBeDeletedAndCantBeFound() throws Exception {
+        int problemId = 1;
+        saveProblems(problemId);
+
+        archiveOrDeleteProblem(problemId);
+
+        assertTrue(problemRepository.findProblemById(problemId).orElseThrow().isArchived());
+
+        archiveOrDeleteProblem(problemId);
+
+        assertTrue(problemRepository.findProblemById(problemId).isEmpty());
+    }
+
+    @Test
+    void GivenProblemsSaved_WhenArchiveProblemById_1_AndThenGetAllProblems_ShouldNotRespondProblem_1() throws Exception {
+        givenProblemsSaved(10);
+
+        archiveOrDeleteProblem(1);
+        var problems = requestGetProblems();
+
+        assertTrue(problems.stream().allMatch(problem -> problem.id != 1));
+    }
+
+    private void archiveOrDeleteProblem(int problemId) throws Exception {
+        mockMvc.perform(delete("/api/problems/{problemId}", problemId))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void GivenProblemSaved_WhenUpdateTestcase_ThenShouldUpdateSuccessfully() throws Exception {
+        int problemId = 1;
+        Problem problem = saveProblemAndGet(problemId);
+
+        Testcase expectedTestcase = problem.getTestcases().get(0);
+        String testCaseName = expectedTestcase.getName();
+        int expectedTestcaseGrade = 100;
+        expectedTestcase.setGrade(expectedTestcaseGrade);
+        updateOrAddTestCase(problemId, testCaseName, expectedTestcase);
+
+        var actualProblem = getProblem(problemId);
+        List<Testcase> testcases = actualProblem.getTestcases();
+        assertEquals(problem.getTestcases().size(), testcases.size());
+        Testcase actualTestCase = findFirst(testcases, tc -> 100 == tc.getGrade()).orElseThrow();
+        assertTestCaseEquals(expectedTestcase, actualTestCase);
+    }
+
+    @Test
+    void GivenProblemSaved_WhenAddNewTestcase_ThenShouldAddSuccessfully() throws Exception {
+        int problemId = 1;
+        Problem problem = saveProblemAndGet(problemId);
+
+        var expectedTestcaseName = "123456";
+        Testcase expectedTestcase = new Testcase(expectedTestcaseName, problemId, 100, 300, 300, -100, 500);
+        updateOrAddTestCase(problemId, expectedTestcaseName, expectedTestcase);
+
+        List<Testcase> testcases = getProblem(problemId).getTestcases();
+        assertEquals(problem.getTestcases().size() + 1, testcases.size());
+        Testcase actualTestcase = findFirst(testcases, testcase -> expectedTestcaseName.equals(testcase.getName())).orElseThrow();
+        assertNotNull(actualTestcase.getId());
+        assertTestCaseEquals(expectedTestcase, actualTestcase);
+    }
+
+    private void assertTestCaseEquals(Testcase expectedTestcase, Testcase actualTestCase) {
+        assertEquals(expectedTestcase.getName(), actualTestCase.getName());
+        assertEquals(expectedTestcase.getProblemId(), actualTestCase.getProblemId());
+        assertEquals(expectedTestcase.getTimeLimit(), actualTestCase.getTimeLimit());
+        assertEquals(expectedTestcase.getMemoryLimit(), actualTestCase.getMemoryLimit());
+        assertEquals(expectedTestcase.getOutputLimit(), actualTestCase.getOutputLimit());
+        assertEquals(expectedTestcase.getThreadNumberLimit(), actualTestCase.getThreadNumberLimit());
+        assertEquals(expectedTestcase.getGrade(), actualTestCase.getGrade());
+    }
+
+    private void updateOrAddTestCase(int problemId, String testCaseName, Testcase testcase) throws Exception {
+        mockMvc.perform(put("/api/problems/{problemId}/testcases/{testcaseName}", problemId, testCaseName)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(toJson(testcase)))
+                .andExpect(status().isOk());
+    }
+
     private void problemsShouldHaveIds(List<Problem> actualProblems, Integer... problemIds) {
         Set<Integer> idsSet = Set.of(problemIds);
         actualProblems.forEach(problem -> assertTrue(idsSet.contains(problem.getId())));
+    }
+
+    private ProblemView getProblem(int problemId) throws Exception {
+        return getBody(mockMvc.perform(get("/api/problems/{problemId}", problemId))
+                .andExpect(status().isOk()), ProblemView.class);
     }
 
     private List<Problem> getProblems(Integer... problemIds) throws Exception {
@@ -380,8 +463,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
 
     private void saveProblems(int... problemIds) {
         Arrays.stream(problemIds).forEach(problemId -> {
-            Problem problem = ProblemStubs
-                    .problemTemplate()
+            Problem problem = problemTemplate()
                     .build();
             problem.setId(problemId);
             byte[] providedCodesZip = ZipUtils.zipFilesFromResources("/stubs/file1.c", "/stubs/file2.c");
@@ -394,5 +476,57 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         });
     }
 
+    @Test
+    void GivenOneProblemWithLangEnvC_WhenUpdateTheLangEnvC_ThenCShouldBeUpdated() throws Exception {
+        int problemId = 1;
+        LanguageEnv languageEnv = saveProblemAndGet(problemId).getLanguageEnv(Language.C);
+        ResourceSpec expectResourceSpec = new ResourceSpec(9999, 9999);
+        languageEnv.setResourceSpec(expectResourceSpec);
+
+        updateLanguageEnv(problemId, languageEnv);
+
+        var problem = getProblem(problemId);
+        ResourceSpec actualResourceSpec = problem.getLanguageEnvs().get(0).getResourceSpec();
+        assertEquals(expectResourceSpec, actualResourceSpec);
+    }
+
+    @Test
+    void GivenOneProblemWithLangEnv_C_WhenPatchProblemWithJAVA_ThenProblemShouldHaveJAVA() throws Exception {
+        int problemId = 1;
+        saveProblems(problemId);
+
+        LanguageEnv languageEnv = createLanguageEnv(Language.JAVA);
+        ResourceSpec expectResourceSpec = new ResourceSpec(9999, 9999);
+        languageEnv.setResourceSpec(expectResourceSpec);
+        updateLanguageEnv(problemId, languageEnv);
+
+        var problem = getProblem(problemId);
+        List<LanguageEnv> languageEnvs = problem.getLanguageEnvs();
+        assertEquals(2, languageEnvs.size());
+        LanguageEnv actualLanguageEnv = languageEnvs.get(1);
+        assertEquals(expectResourceSpec, actualLanguageEnv.getResourceSpec());
+    }
+
+    private LanguageEnv createLanguageEnv(Language language) {
+        return LanguageEnv.builder()
+                .language(language)
+                .compilation(new Compilation("script"))
+                .resourceSpec(new ResourceSpec(0.5f, 0))
+                .submittedCodeSpec(new SubmittedCodeSpec(language, "main." + language.getFileExtension()))
+                .providedCodesFileId("providedCodesFileId")
+                .build();
+    }
+
+    private void updateLanguageEnv(Integer problemId, LanguageEnv languageEnv) throws Exception {
+        mockMvc.perform(put("/api/problems/{problemId}/langEnv/{langEnv}", problemId, languageEnv.getLanguage())
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .content(toJson(languageEnv)))
+                .andExpect(status().isOk());
+    }
+
+    private Problem saveProblemAndGet(int problemId) {
+        saveProblems(problemId);
+        return problemRepository.findProblemById(problemId).orElseThrow();
+    }
 }
 

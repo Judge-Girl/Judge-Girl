@@ -20,7 +20,7 @@ import java.util.List;
  * @author - johnny850807@gmail.com (Waterball)
  */
 public class Directory extends AbstractItem {
-    private List<Item> children = new LinkedList<>();
+    private final List<Item> children = new LinkedList<>();
 
     public Directory(String key, String name) {
         super(key, name);

@@ -16,7 +16,7 @@ package tw.waterball.judgegirl.submissionapi.clients;
 
 import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
-import tw.waterball.judgegirl.entities.submission.SubmissionThrottlingException;
+import tw.waterball.judgegirl.primitives.submission.SubmissionThrottlingException;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 
 import java.util.List;
@@ -42,6 +42,8 @@ public interface SubmissionServiceDriver {
     List<SubmissionView> getSubmissions(int problemId, int studentId, Map<String, String> bagQueryParameters);
 
     SubmissionView findBestRecord(List<String> submissionIds);
+
+    SubmissionView findBestRecord(int problemId, int studentId) throws NotFoundException;
 
 
 }

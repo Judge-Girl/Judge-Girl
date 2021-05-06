@@ -4,8 +4,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
-import tw.waterball.judgegirl.entities.problem.ResourceSpec;
 import tw.waterball.judgegirl.plugins.impl.match.AllMatchPolicyPlugin;
+import tw.waterball.judgegirl.primitives.problem.ResourceSpec;
 
 import java.nio.file.Paths;
 import java.util.OptionalInt;

@@ -37,7 +37,6 @@ import static tw.waterball.judgegirl.commons.token.TokenService.Identity.admin;
 @ServiceDriver
 @Configuration
 public class ServiceDriverConfiguration {
-    public final static String BEAN_NAME_SUBMISSION_BAG = "bean-name-submission-bag";
 
     @Bean
     public RetrofitFactory retrofitFactory(ObjectMapper objectMapper) {
@@ -50,12 +49,11 @@ public class ServiceDriverConfiguration {
             TokenService tokenService,
             ServiceProps.ProblemService problemServiceInstance,
             @Value("${judge-girl.client.problem-service.studentId}") int studentId) {
-        String adminToken = tokenService.createToken(admin(studentId)).getToken();
-
         return new ProblemApiClient(retrofitFactory,
                 problemServiceInstance.getScheme(),
                 problemServiceInstance.getHost(),
-                problemServiceInstance.getPort(), adminToken);
+                problemServiceInstance.getPort(),
+                () -> tokenService.createToken(admin(studentId)).getToken());
     }
 
     @Bean
@@ -64,11 +62,11 @@ public class ServiceDriverConfiguration {
             TokenService tokenService,
             ServiceProps.StudentService studentServiceInstance,
             @Value("${judge-girl.client.student-service.studentId}") int studentId) {
-        String adminToken = tokenService.createToken(admin(studentId)).getToken();
         return new StudentApiClient(retrofitFactory,
                 studentServiceInstance.getScheme(),
                 studentServiceInstance.getHost(),
-                studentServiceInstance.getPort(), adminToken);
+                studentServiceInstance.getPort(),
+                () -> tokenService.createToken(admin(studentId)).getToken());
 
     }
 
@@ -80,11 +78,12 @@ public class ServiceDriverConfiguration {
             ServiceProps.SubmissionService submissionServiceInstance,
             @Value("${judge-girl.client.submission-service.studentId}") int studentId,
             BagInterceptor... bagInterceptors) {
-        String adminToken = tokenService.createToken(admin(studentId)).getToken();
         return new SubmissionApiClient(retrofitFactory,
                 submissionServiceInstance.getScheme(),
                 submissionServiceInstance.getHost(),
-                submissionServiceInstance.getPort(), adminToken, bagInterceptors);
+                submissionServiceInstance.getPort(),
+                () -> tokenService.createToken(admin(studentId)).getToken(),
+                bagInterceptors);
     }
 
 }

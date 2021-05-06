@@ -15,9 +15,9 @@ package tw.waterball.judgegirl.submissionapi.views;
 
 import lombok.*;
 import org.jetbrains.annotations.Nullable;
-import tw.waterball.judgegirl.entities.problem.JudgeStatus;
-import tw.waterball.judgegirl.entities.submission.verdict.Judge;
-import tw.waterball.judgegirl.entities.submission.verdict.Verdict;
+import tw.waterball.judgegirl.primitives.problem.JudgeStatus;
+import tw.waterball.judgegirl.primitives.submission.verdict.Judge;
+import tw.waterball.judgegirl.primitives.submission.verdict.Verdict;
 
 import java.util.Date;
 import java.util.List;

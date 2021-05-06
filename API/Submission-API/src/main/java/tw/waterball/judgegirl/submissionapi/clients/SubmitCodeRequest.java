@@ -15,7 +15,7 @@ package tw.waterball.judgegirl.submissionapi.clients;
 
 import lombok.*;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
-import tw.waterball.judgegirl.entities.submission.Bag;
+import tw.waterball.judgegirl.primitives.submission.Bag;
 
 import java.util.List;
 

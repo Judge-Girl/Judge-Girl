@@ -1,11 +1,12 @@
 package tw.waterball.judgegirl.studentapi.clients;
 
-import tw.waterball.judgegirl.entities.Student;
+import tw.waterball.judgegirl.primitives.Student;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static java.util.Objects.requireNonNullElse;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.filterToList;
 
 public class FakeStudentServiceDriver implements StudentServiceDriver {
@@ -24,6 +25,7 @@ public class FakeStudentServiceDriver implements StudentServiceDriver {
 
     public void addStudent(Student student) {
         students.put(student.getEmail(), student);
+        student.setId(requireNonNullElse(student.getId(), students.size()));
     }
 
     public void clear() {

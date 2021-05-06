@@ -13,7 +13,7 @@
 
 package tw.waterball.judgegirl.plugins.impl.cqi;
 
-import tw.waterball.judgegirl.entities.submission.report.CompositeReport;
+import tw.waterball.judgegirl.primitives.submission.report.CompositeReport;
 
 import static java.util.Arrays.asList;
 

@@ -82,10 +82,13 @@ public abstract class AbstractSpringBootTest {
     }
 
     protected void anotherTransaction(ErrRunnable anotherTransaction) throws Exception {
-        TestTransaction.flagForCommit();
-        TestTransaction.end();
+        if (TestTransaction.isActive()) {
+            TestTransaction.flagForCommit();
+            TestTransaction.end();
+        }
         TestTransaction.start();
         anotherTransaction.run();
+        TestTransaction.flagForCommit();
         TestTransaction.end();
     }
 

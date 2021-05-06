@@ -2,10 +2,10 @@ package tw.waterball.judgegirl.migration.problem.in;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import tw.waterball.judgegirl.entities.problem.Problem;
-import tw.waterball.judgegirl.entities.problem.ResourceSpec;
 import tw.waterball.judgegirl.migration.problem.MigrateOneProblem;
 import tw.waterball.judgegirl.plugins.api.match.JudgeGirlMatchPolicyPlugin;
+import tw.waterball.judgegirl.primitives.problem.Problem;
+import tw.waterball.judgegirl.primitives.problem.ResourceSpec;
 
 import java.nio.file.Path;
 import java.util.List;

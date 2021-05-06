@@ -1,5 +1,5 @@
 root:
-  path: "/judger"
+  path: "judger-home"
   logHome:
     path: "log"
 

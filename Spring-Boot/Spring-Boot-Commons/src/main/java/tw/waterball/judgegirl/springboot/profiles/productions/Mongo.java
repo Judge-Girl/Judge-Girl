@@ -13,6 +13,7 @@
 
 package tw.waterball.judgegirl.springboot.profiles.productions;
 
+import org.springframework.context.annotation.Profile;
 import tw.waterball.judgegirl.springboot.profiles.Profiles;
 
 import java.lang.annotation.*;
@@ -23,6 +24,6 @@ import java.lang.annotation.*;
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@org.springframework.context.annotation.Profile({Profiles.MONGO, Profiles.EMBEDDED_MONGO})
+@Profile({Profiles.MONGO, Profiles.EMBEDDED_MONGO})
 public @interface Mongo {
 }

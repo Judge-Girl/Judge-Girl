@@ -13,7 +13,7 @@
 
 package tw.waterball.judgegirl.plugins.api.match;
 
-import tw.waterball.judgegirl.entities.problem.JudgePluginTag;
+import tw.waterball.judgegirl.primitives.problem.JudgePluginTag;
 import tw.waterball.judgegirl.plugins.api.JudgeGirlPlugin;
 import tw.waterball.judgegirl.plugins.api.exceptions.MatchPolicyPluginException;
 

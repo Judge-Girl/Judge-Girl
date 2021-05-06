@@ -14,12 +14,10 @@
 package tw.waterball.judgegirl.springboot.student.repositories.jpa;
 
 import lombok.*;
-import tw.waterball.judgegirl.entities.Admin;
-import tw.waterball.judgegirl.entities.Group;
-import tw.waterball.judgegirl.entities.Student;
+import tw.waterball.judgegirl.primitives.Admin;
+import tw.waterball.judgegirl.primitives.Student;
 
 import javax.persistence.*;
-import java.util.*;
 
 /**
  * @author chaoyulee chaoyu2330@gmail.com
@@ -41,30 +39,14 @@ public class StudentData {
     private String password;
     private boolean admin;
 
-    @ManyToMany(cascade = CascadeType.MERGE, mappedBy = "students")
-    private Set<GroupData> groups = new HashSet<>();
-
     public static StudentData toData(Student student) {
-        StudentData studentData = StudentData.builder()
+        return StudentData.builder()
                 .id(student.getId())
                 .name(student.getName())
                 .email(student.getEmail())
                 .password(student.getPassword())
                 .admin(student.isAdmin())
-                .groups(new HashSet<>())
                 .build();
-        studentData.addGroups(student.getGroups());
-        return studentData;
-    }
-
-    private void addGroups(Collection<Group> groups) {
-        List<GroupData> groupDataList = new ArrayList<>(groups.size());
-        for (Group group : groups) {
-            GroupData groupData = new GroupData(group.getId(), group.getName());
-            groupDataList.add(groupData);
-            groupData.getStudents().add(this);
-        }
-        this.groups.addAll(groupDataList);
     }
 
     public Student toEntity() {
@@ -74,9 +56,6 @@ public class StudentData {
         } else {
             student = new Student(id, name, email, password);
         }
-        groups.stream()
-                .map(groupData -> new Group(groupData.getId(), groupData.getName()))
-                .forEach(student::addGroup);
         return student;
     }
 

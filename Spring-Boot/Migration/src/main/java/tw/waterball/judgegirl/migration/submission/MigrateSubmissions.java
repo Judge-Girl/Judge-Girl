@@ -9,16 +9,16 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import tw.waterball.judgegirl.commons.models.files.StreamingResource;
-import tw.waterball.judgegirl.entities.problem.JudgeStatus;
-import tw.waterball.judgegirl.entities.problem.Language;
-import tw.waterball.judgegirl.entities.submission.Submission;
-import tw.waterball.judgegirl.entities.submission.verdict.Judge;
-import tw.waterball.judgegirl.entities.submission.verdict.ProgramProfile;
-import tw.waterball.judgegirl.entities.submission.verdict.Verdict;
 import tw.waterball.judgegirl.migration.legacy.JudgeResultCodes;
+import tw.waterball.judgegirl.primitives.problem.JudgeStatus;
+import tw.waterball.judgegirl.primitives.problem.Language;
+import tw.waterball.judgegirl.primitives.submission.Submission;
+import tw.waterball.judgegirl.primitives.submission.verdict.Judge;
+import tw.waterball.judgegirl.primitives.submission.verdict.ProgramProfile;
+import tw.waterball.judgegirl.primitives.submission.verdict.Verdict;
 import tw.waterball.judgegirl.springboot.profiles.JudgeGirlApplication;
+import tw.waterball.judgegirl.submission.domain.repositories.SubmissionRepository;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
-import tw.waterball.judgegirl.submissionservice.domain.repositories.SubmissionRepository;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -32,7 +32,7 @@ import java.util.*;
 
 import static java.lang.Integer.parseInt;
 import static java.lang.Long.parseLong;
-import static tw.waterball.judgegirl.commons.utils.ZipUtils.zipToFile;
+import static tw.waterball.judgegirl.commons.utils.ZipUtils.zipFromFile;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -118,7 +118,7 @@ public class MigrateSubmissions {
             i++;
         } while (Files.exists(submissionsPath.resolve(oldSubmission.sid + "-" + i)));
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        zipToFile(files.toArray(new File[0]), baos);
+        zipFromFile(files.toArray(new File[0]), baos);
         String fileName = String.format("%d-%s-%d.zip", oldSubmission.sid, oldSubmission.pid,
                 oldSubmission.ts);
         return saveZippedSubmittedCodeAndGetFileId(

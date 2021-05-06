@@ -14,11 +14,14 @@
 package tw.waterball.judgegirl.plugins.api;
 
 
-import tw.waterball.judgegirl.entities.problem.JudgePluginTag;
+import tw.waterball.judgegirl.primitives.problem.JudgePluginTag;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static java.util.Collections.unmodifiableSet;
 
 /**
  * The locator the preset with a set of plugins.
@@ -26,7 +29,7 @@ import java.util.Map;
  * @author - johnny850807@gmail.com (Waterball)
  */
 public class PresetJudgeGirlPluginLocator implements JudgeGirlPluginLocator {
-    private Map<JudgePluginTag, JudgeGirlPlugin> pluginMap = new HashMap<>();
+    private final Map<JudgePluginTag, JudgeGirlPlugin> pluginMap = new HashMap<>();
 
     public PresetJudgeGirlPluginLocator(JudgeGirlPlugin... plugins) {
         for (JudgeGirlPlugin plugin : plugins) {
@@ -46,6 +49,11 @@ public class PresetJudgeGirlPluginLocator implements JudgeGirlPluginLocator {
             throw new JudgeGirlPluginNotFoundException(judgePluginTag);
         }
         return pluginMap.get(judgePluginTag);
+    }
+
+    @Override
+    public Collection<JudgePluginTag> getAll() {
+        return unmodifiableSet(pluginMap.keySet());
     }
 
 }

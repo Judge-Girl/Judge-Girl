@@ -23,7 +23,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import tw.waterball.judgegirl.commons.utils.ResourceUtils;
 import tw.waterball.judgegirl.springboot.submission.impl.deployer.k8s.K8SJudgerDeployer;
-import tw.waterball.judgegirl.submissionservice.deployer.JudgerDeployer;
+import tw.waterball.judgegirl.submission.deployer.JudgerDeployer;
 
 import java.io.IOException;
 import java.io.InputStream;

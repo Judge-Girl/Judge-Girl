@@ -23,7 +23,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.jdbc.core.JdbcTemplate;
 import tw.waterball.judgegirl.commons.helpers.process.SimpleProcessRunner;
-import tw.waterball.judgegirl.entities.problem.*;
+import tw.waterball.judgegirl.primitives.problem.*;
 
 import java.io.File;
 import java.io.FileInputStream;

@@ -71,6 +71,24 @@ create table if not exists homework
 );
 
 
+create table study_groups
+(
+    id   int auto_increment primary key,
+    name varchar(255) null unique
+);
+
+create unique index groups_name_index on study_groups (name);
+
+
+create table membership
+(
+    group_id  int not null,
+    member_id int not null,
+    primary key (group_id, member_id),
+    foreign key (group_id) references study_groups (id) on delete cascade
+);
+
+
 /*  Student Service's schema definition
    If the schema below is modified,
    then you should also update "Spring-Boot/Spring-Boot-Student/src/test/resources/schema.sql"
@@ -86,26 +104,6 @@ create table if not exists students
 );
 
 create unique index students_email_index on students (email);
-
-create table if not exists student_groups
-(
-    id   int auto_increment primary key,
-    name varchar(255) null unique
-);
-
-create unique index groups_name_index on student_groups (name);
-
-
-create table if not exists membership
-(
-    group_id   int not null,
-    student_id int not null,
-    primary key (group_id, student_id),
-    FOREIGN KEY (group_id) REFERENCES student_groups (id),
-    FOREIGN KEY (student_id) REFERENCES students (id)
-);
-
-
 
 
 

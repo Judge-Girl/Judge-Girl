@@ -13,7 +13,7 @@
 
 package tw.waterball.judgegirl.commons.exceptions;
 
-import tw.waterball.judgegirl.commons.utils.StringUtils;
+import static tw.waterball.judgegirl.commons.utils.StringUtils.capitalize;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -34,9 +34,9 @@ public class NotFoundException extends RuntimeException {
         this(id, "id", resourceName);
     }
 
-    public NotFoundException(Object id, String attributeName, String resourceName) {
-        super(String.format("The %s given the %s %s is not found.",
-                StringUtils.capitalize(resourceName), attributeName, id));
+    public NotFoundException(Object id, String identifierName, String resourceName) {
+        super(String.format("Resource (%s) not found (%s = %s).",
+                capitalize(resourceName), identifierName, id));
     }
 
     public static boolean isNotFound(Runnable runnable) {
@@ -46,6 +46,10 @@ public class NotFoundException extends RuntimeException {
         } catch (NotFoundException err) {
             return true;
         }
+    }
+
+    public static NotFoundExceptionBuilder notFound(Class<?> resourceType) {
+        return notFound(resourceType.getSimpleName());
     }
 
     public static NotFoundExceptionBuilder notFound(String resourceName) {
@@ -59,8 +63,21 @@ public class NotFoundException extends RuntimeException {
             this.resourceName = resourceName;
         }
 
+        public NotFoundException identifiedBy(String identifierName, Object id) {
+            return new NotFoundException(identifierName, resourceName);
+        }
+
         public NotFoundException id(Object id) {
             return new NotFoundException(id, resourceName);
+        }
+
+        public NotFoundException message(Object messageObj) {
+            return message(messageObj.toString());
+        }
+        
+        public NotFoundException message(String message) {
+            return new NotFoundException(String.format("Resource (%s) not found: %s.",
+                    resourceName, message));
         }
     }
 }

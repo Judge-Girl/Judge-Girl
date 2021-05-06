@@ -16,20 +16,37 @@ package tw.waterball.judgegirl.commons.utils;
 import tw.waterball.judgegirl.commons.utils.functional.ErrConsumer;
 import tw.waterball.judgegirl.commons.utils.functional.ErrFunction;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
-import static java.util.stream.Collectors.toList;
+import static java.util.Arrays.asList;
+import static java.util.Arrays.stream;
+import static java.util.stream.Collectors.*;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
 public abstract class StreamUtils {
+    public static <T, R> List<T> flatMapToList(Collection<R> collection, ErrFunction<? super R, ? extends Stream<? extends T>> flatMapping) {
+        return collection.stream()
+                .flatMap(r -> {
+                    try {
+                        return flatMapping.apply(r);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                }).collect(toList());
+    }
+
+    public static <T, R> List<T> mapToList(R[] array, ErrFunction<R, T> mapping) {
+        return mapToList(asList(array), mapping);
+    }
+
     public static <T, R> List<T> mapToList(Collection<R> collection, ErrFunction<R, T> mapping) {
         return collection.stream().map(in -> {
             try {
@@ -38,6 +55,31 @@ public abstract class StreamUtils {
                 throw new RuntimeException(e);
             }
         }).collect(toList());
+    }
+
+    public static <T, R> Set<T> mapToSet(R[] array, ErrFunction<R, T> mapping) {
+        return stream(array).map(in -> {
+            try {
+                return mapping.apply(in);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }).collect(toSet());
+    }
+
+    public static <T, R> Set<T> mapToSet(Collection<R> collection, ErrFunction<R, T> mapping) {
+        return collection.stream().map(in -> {
+            try {
+                return mapping.apply(in);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }).collect(toSet());
+    }
+
+    public static <T,K,U> Map<K,U> toMap(Collection<T> collection, Function<? super T, ? extends K> keyMapper,
+                                 Function<? super T, ? extends U> valueMapper) {
+        return collection.stream().collect(Collectors.toMap(keyMapper, valueMapper));
     }
 
     public static <T, L, R> List<T> zipToList(List<L> left, List<R> right,
@@ -56,7 +98,7 @@ public abstract class StreamUtils {
     }
 
     public static <T> void atTheSameTime(T[] array, ErrConsumer<T> consumer) {
-        Arrays.stream(array)
+        stream(array)
                 .parallel()
                 .forEach(t -> {
                     try {

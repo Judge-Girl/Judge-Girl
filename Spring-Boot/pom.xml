@@ -33,7 +33,7 @@
         <module>Spring-Boot-Problem</module>
         <module>Spring-Boot-Submission</module>
         <module>Spring-Boot-Student</module>
-        <module>Spring-Boot-Exam</module>
+        <module>Spring-Boot-Academy</module>
         <module>Spring-Boot-AMQP</module>
         <module>Migration</module>
     </modules>
@@ -45,7 +45,7 @@
         </dependency>
         <dependency>
             <groupId>tw.waterball.judge-girl</groupId>
-            <artifactId>entities</artifactId>
+            <artifactId>judgegirl-primitives</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

@@ -16,7 +16,7 @@ package tw.waterball.judgegirl.springboot.student.controllers;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import tw.waterball.judgegirl.commons.token.TokenService;
-import tw.waterball.judgegirl.entities.Student;
+import tw.waterball.judgegirl.primitives.Student;
 import tw.waterball.judgegirl.springboot.student.presenters.GetStudentsPresenter;
 import tw.waterball.judgegirl.springboot.student.presenters.SignInPresenter;
 import tw.waterball.judgegirl.springboot.student.presenters.SignUpPresenter;

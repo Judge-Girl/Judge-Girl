@@ -1,0 +1,70 @@
+{
+  "id" : 3,
+  "title" : "Print Two Numbers",
+  "languageEnvs" : {
+    "C" : {
+      "language" : "C",
+      "compilation" : {
+        "script" : "gcc -std=c99 -O2 a.c -lm"
+      },
+      "submittedCodeSpecs" : [ {
+        "format" : "C",
+        "fileName" : "a.c",
+        "fileExtension" : "c"
+      } ],
+      "name" : "C",
+      "compiledLanguage" : true
+    }
+  },
+  "tags" : [ "arithmetic operation, basic I/O" ],
+  "testcases" : [ {
+    "name" : "0",
+    "problemId" : 3,
+    "timeLimit" : 1000,
+    "memoryLimit" : 67108864,
+    "outputLimit" : 65536,
+    "threadNumberLimit" : -1,
+    "grade" : 0
+  }, {
+    "name" : "1",
+    "problemId" : 3,
+    "timeLimit" : 1000,
+    "memoryLimit" : 67108864,
+    "outputLimit" : 65536,
+    "threadNumberLimit" : -1,
+    "grade" : 20
+  }, {
+    "name" : "2",
+    "problemId" : 3,
+    "timeLimit" : 1000,
+    "memoryLimit" : 67108864,
+    "outputLimit" : 65536,
+    "threadNumberLimit" : -1,
+    "grade" : 20
+  }, {
+    "name" : "3",
+    "problemId" : 3,
+    "timeLimit" : 1000,
+    "memoryLimit" : 67108864,
+    "outputLimit" : 65536,
+    "threadNumberLimit" : -1,
+    "grade" : 20
+  }, {
+    "name" : "4",
+    "problemId" : 3,
+    "timeLimit" : 1000,
+    "memoryLimit" : 67108864,
+    "outputLimit" : 65536,
+    "threadNumberLimit" : -1,
+    "grade" : 20
+  }, {
+    "name" : "5",
+    "problemId" : 3,
+    "timeLimit" : 1000,
+    "memoryLimit" : 67108864,
+    "outputLimit" : 65536,
+    "threadNumberLimit" : -1,
+    "grade" : 20
+  } ],
+  "visible" : false
+}

@@ -27,17 +27,18 @@ import tw.waterball.judgegirl.api.retrofit.BaseRetrofitAPI;
 import tw.waterball.judgegirl.api.retrofit.RetrofitFactory;
 import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
-import tw.waterball.judgegirl.entities.problem.Language;
-import tw.waterball.judgegirl.entities.submission.SubmissionThrottlingException;
+import tw.waterball.judgegirl.primitives.problem.Language;
+import tw.waterball.judgegirl.primitives.submission.SubmissionThrottlingException;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import static java.util.Arrays.asList;
-import static tw.waterball.judgegirl.api.retrofit.BaseRetrofitAPI.ExceptionDeclaration.declare;
+import static tw.waterball.judgegirl.api.retrofit.BaseRetrofitAPI.ExceptionDeclaration.mapStatusCode;
 import static tw.waterball.judgegirl.commons.utils.HttpHeaderUtils.bearerWithToken;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
 
@@ -49,13 +50,14 @@ public class SubmissionApiClient extends BaseRetrofitAPI implements SubmissionSe
     public static final String CURRENTLY_ONLY_SUPPORT_C = Language.C.toString();
     public static final String SUBMIT_CODE_MULTIPART_KEY_NAME = "submittedCodes";
     private final API api;
-    private final String token;
+    private final Supplier<String> tokenSupplier;
     private final BagInterceptor[] bagInterceptors;
 
     public SubmissionApiClient(RetrofitFactory retrofitFactory,
-                               String scheme, String host, int port, String token,
+                               String scheme, String host, int port,
+                               Supplier<String> tokenSupplier,
                                BagInterceptor... bagInterceptors) {
-        this.token = token;
+        this.tokenSupplier = tokenSupplier;
         this.bagInterceptors = bagInterceptors;
         this.api = retrofitFactory.create(scheme, host, port
                 /*TODO: add an interceptor that add Authorization header on every request*/)
@@ -67,12 +69,12 @@ public class SubmissionApiClient extends BaseRetrofitAPI implements SubmissionSe
         return errorHandlingGetBody(() -> api.submit(withSubmissionBagAsHeaders(request),
                 request.problemId, CURRENTLY_ONLY_SUPPORT_C, request.studentId,
                 mapToList(request.fileResources, this::submittedCodesMultipartBody)).execute(),
-                declare(400).toThrow(SubmissionThrottlingException::new));
+                mapStatusCode(400).toThrow(SubmissionThrottlingException::new));
     }
 
     private Map<String, String> withSubmissionBagAsHeaders(SubmitCodeRequest request) {
         Map<String, String> headers = new HashMap<>();
-        headers.put("Authorization", bearerWithToken(token));
+        headers.put("Authorization", bearerWithToken(tokenSupplier.get()));
         asList(bagInterceptors).forEach(interceptor -> interceptor.intercept(request.submissionBag));
         request.submissionBag.forEach((key, val) -> headers.put(HEADER_BAG_KEY_PREFIX + key, val));
         return headers;
@@ -97,7 +99,7 @@ public class SubmissionApiClient extends BaseRetrofitAPI implements SubmissionSe
     @Override
     public SubmissionView getSubmission(int problemId, int studentId, String submissionId) throws NotFoundException {
         return errorHandlingGetBody(() -> api.getSubmission(
-                bearerWithToken(token),
+                bearerWithToken(tokenSupplier.get()),
                 problemId, CURRENTLY_ONLY_SUPPORT_C, studentId, submissionId).execute());
     }
 
@@ -106,7 +108,7 @@ public class SubmissionApiClient extends BaseRetrofitAPI implements SubmissionSe
                                                String submissionId, String submittedCodesFileId) throws NotFoundException {
         Response<ResponseBody> resp = errorHandlingGetResponse(() ->
                 api.getSubmittedCodes(
-                        bearerWithToken(token),
+                        bearerWithToken(tokenSupplier.get()),
                         problemId, CURRENTLY_ONLY_SUPPORT_C, studentId, submissionId, submittedCodesFileId));
         return parseDownloadedFileResource(resp);
     }
@@ -114,7 +116,7 @@ public class SubmissionApiClient extends BaseRetrofitAPI implements SubmissionSe
     @Override
     public List<SubmissionView> getSubmissions(int problemId, int studentId, Map<String, String> bagQueryParameters) {
         return errorHandlingGetBody(() -> api.getSubmissions(
-                bearerWithToken(token), problemId,
+                bearerWithToken(tokenSupplier.get()), problemId,
                 CURRENTLY_ONLY_SUPPORT_C, studentId, bagQueryParameters).execute());
     }
 
@@ -124,8 +126,14 @@ public class SubmissionApiClient extends BaseRetrofitAPI implements SubmissionSe
             throw new IllegalArgumentException("The `submissionIds` should not be empty.");
         }
         return errorHandlingGetBody(() -> api.findBestRecord(
-                bearerWithToken(token),
+                bearerWithToken(tokenSupplier.get()),
                 String.join(",", submissionIds)).execute());
+    }
+
+    @Override
+    public SubmissionView findBestRecord(int problemId, int studentId) throws NotFoundException {
+        return errorHandlingGetBody(() -> api.findBestRecord(
+                problemId, CURRENTLY_ONLY_SUPPORT_C, studentId).execute());
     }
 
     private interface API {
@@ -163,6 +171,11 @@ public class SubmissionApiClient extends BaseRetrofitAPI implements SubmissionSe
                                              @Path("studentId") int studentId,
                                              @Path("submissionId") String submissionId,
                                              @Path("submittedCodesFileId") String submittedCodesFileId);
+
+        @GET("/api/problems/{problemId}/{langEnvName}/students/{studentId}/submissions/best")
+        Call<SubmissionView> findBestRecord(@Path("problemId") int problemId,
+                                            @Path("langEnvName") String langEnvName,
+                                            @Path("studentId") int studentId);
     }
 
 }

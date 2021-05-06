@@ -13,7 +13,7 @@
 
 package tw.waterball.judgegirl.plugins.api;
 
-import tw.waterball.judgegirl.entities.problem.LanguageEnv;
+import tw.waterball.judgegirl.primitives.problem.LanguageEnv;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)

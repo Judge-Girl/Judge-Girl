@@ -21,18 +21,18 @@ import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.stereotype.Component;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
 import tw.waterball.judgegirl.commons.models.files.StreamingResource;
-import tw.waterball.judgegirl.entities.problem.JudgeStatus;
-import tw.waterball.judgegirl.entities.submission.Submission;
-import tw.waterball.judgegirl.entities.submission.SubmissionThrottling;
-import tw.waterball.judgegirl.entities.submission.verdict.Verdict;
+import tw.waterball.judgegirl.primitives.problem.JudgeStatus;
+import tw.waterball.judgegirl.primitives.submission.Submission;
+import tw.waterball.judgegirl.primitives.submission.SubmissionThrottling;
+import tw.waterball.judgegirl.primitives.submission.verdict.Verdict;
 import tw.waterball.judgegirl.springboot.profiles.productions.Mongo;
 import tw.waterball.judgegirl.springboot.submission.impl.mongo.data.DataMapper;
 import tw.waterball.judgegirl.springboot.submission.impl.mongo.data.SubmissionData;
 import tw.waterball.judgegirl.springboot.submission.impl.mongo.data.VerdictData;
 import tw.waterball.judgegirl.springboot.submission.impl.mongo.strategy.SaveSubmissionWithCodesStrategy;
 import tw.waterball.judgegirl.springboot.utils.MongoUtils;
-import tw.waterball.judgegirl.submissionservice.domain.repositories.SubmissionRepository;
-import tw.waterball.judgegirl.submissionservice.domain.usecases.dto.SubmissionQueryParams;
+import tw.waterball.judgegirl.submission.domain.repositories.SubmissionRepository;
+import tw.waterball.judgegirl.submission.domain.usecases.dto.SubmissionQueryParams;
 
 import java.util.List;
 import java.util.Optional;
@@ -145,6 +145,11 @@ public class MongoSubmissionRepository implements SubmissionRepository {
     @Override
     public void saveSubmissionThrottling(SubmissionThrottling submissionThrottling) {
         mongoTemplate.save(submissionThrottling);
+    }
+
+    @Override
+    public boolean submissionExists(String submissionId) {
+        return mongoTemplate.exists(Query.query(where("id").is(submissionId)), Submission.class);
     }
 
 }

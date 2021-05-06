@@ -9,7 +9,7 @@ import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.stereotype.Component;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
 import tw.waterball.judgegirl.commons.models.files.StreamingResource;
-import tw.waterball.judgegirl.entities.submission.Submission;
+import tw.waterball.judgegirl.primitives.submission.Submission;
 import tw.waterball.judgegirl.springboot.submission.impl.mongo.data.SubmissionData;
 
 import java.io.InputStream;

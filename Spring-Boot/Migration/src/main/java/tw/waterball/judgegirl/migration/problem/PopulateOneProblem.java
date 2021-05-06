@@ -23,11 +23,15 @@ import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import tw.waterball.judgegirl.commons.utils.ArrayUtils;
 import tw.waterball.judgegirl.commons.utils.ZipUtils;
 import tw.waterball.judgegirl.commons.utils.functional.ErrConsumer;
-import tw.waterball.judgegirl.entities.problem.*;
 import tw.waterball.judgegirl.plugins.api.JudgeGirlPlugin;
 import tw.waterball.judgegirl.plugins.api.match.JudgeGirlMatchPolicyPlugin;
 import tw.waterball.judgegirl.plugins.impl.match.AllMatchPolicyPlugin;
 import tw.waterball.judgegirl.plugins.impl.match.RegexMatchPolicyPlugin;
+import tw.waterball.judgegirl.primitives.problem.Language;
+import tw.waterball.judgegirl.primitives.problem.LanguageEnv;
+import tw.waterball.judgegirl.primitives.problem.Problem;
+import tw.waterball.judgegirl.primitives.problem.ResourceSpec;
+import tw.waterball.judgegirl.springboot.problem.repositories.data.ProblemData;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -40,8 +44,10 @@ import java.util.stream.Collectors;
 import static java.util.Objects.requireNonNull;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
+import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
 import static tw.waterball.judgegirl.migration.problem.NewJudgeGirlLayoutManipulator.PROVIDED_CODES_DIR;
 import static tw.waterball.judgegirl.migration.problem.NewJudgeGirlLayoutManipulator.TESTCASES_HOME;
+import static tw.waterball.judgegirl.springboot.problem.repositories.data.ProblemData.toData;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -63,7 +69,6 @@ public class PopulateOneProblem {
             {new AllMatchPolicyPlugin(), new RegexMatchPolicyPlugin()};
 
     private Problem problem;
-    private List<Testcase> testcases;
 
     public static void main(String[] args) {
         var context = SpringApplication.run(MigrateOneProblem.class, args);
@@ -82,7 +87,6 @@ public class PopulateOneProblem {
         Path problemDirPath = Paths.get(in.problemDirPath());
         layoutManipulator.verifyProblemDirLayout(problemDirPath);
         problem = layoutManipulator.verifyAndReadProblem(problemDirPath);
-        testcases = layoutManipulator.verifyAndReadTestcases(problemDirPath);
         populateProblemAndTestcasesWithNewSchema();
         migrateToJudgeGirlDatabase(problemDirPath);
     }
@@ -97,12 +101,12 @@ public class PopulateOneProblem {
     private void migrateToJudgeGirlDatabase(Path problemDirPath) {
         logger.info("Migrating ...");
 
-        List<Problem> problems = mongoTemplate.findAll(Problem.class);
+        List<Problem> problems = mapToList(mongoTemplate.findAll(ProblemData.class), ProblemData::toEntity);
         replaceExistingProblemIfAgree(problems);
 
         try {
             saveProvidedCodes(problemDirPath);
-            saveTestcaseInputAndOutputs(problemDirPath);
+            saveTestcaseIOs(problemDirPath);
         } catch (Exception err) {
             err.printStackTrace();
         }
@@ -127,8 +131,7 @@ public class PopulateOneProblem {
 
     private void deleteProblemInDB(Problem problem) {
         LanguageEnv langEnv = problem.getLanguageEnv(DEFAULT_LANGUAGE);
-        mongoTemplate.remove(problem);
-        mongoTemplate.remove(query(where("problemId").is(problem.getId())), Testcase.class);
+        mongoTemplate.findAndRemove(query(where("_id").is(problem.getId())), ProblemData.class);
         gridFsTemplate.delete(query(where("_id").is(langEnv.getProvidedCodesFileId())));
         gridFsTemplate.delete(query(where("_id").is(problem.getTestcaseIOsFileId())));
     }
@@ -156,7 +159,7 @@ public class PopulateOneProblem {
     }
 
 
-    private void saveTestcaseInputAndOutputs(Path problemDirPath) throws Exception {
+    private void saveTestcaseIOs(Path problemDirPath) throws Exception {
         logger.info("Saving providedCodes ...");
         File[] testcaseDirs = problemDirPath.resolve(TESTCASES_HOME).toFile().listFiles();
         assert testcaseDirs != null;
@@ -175,7 +178,7 @@ public class PopulateOneProblem {
         logZippedFiles(files, ignoredFileNames);
 
         File zipOutputFile = File.createTempFile("judge-girl-", "");
-        ZipUtils.zipToFile(files, new FileOutputStream(zipOutputFile), ignoredFileNames);
+        ZipUtils.zipFromFile(files, new FileOutputStream(zipOutputFile), ignoredFileNames);
         logger.info("Successfully zipped in " + zipOutputFile.getPath());
         zipFileConsumer.accept(zipOutputFile);
         zipOutputFile.delete();
@@ -193,7 +196,7 @@ public class PopulateOneProblem {
         logger.info("Saving problem ...");
         requireNonNull(problem.getLanguageEnv(DEFAULT_LANGUAGE).getProvidedCodesFileId());
         requireNonNull(problem.getTestcaseIOsFileId());
-        problem = mongoTemplate.save(problem);
+        problem = mongoTemplate.save(toData(problem)).toEntity();
         logger.info("Saved problem, " + problem);
     }
 

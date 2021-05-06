@@ -18,12 +18,13 @@ import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
-import tw.waterball.judgegirl.entities.problem.Problem;
-import tw.waterball.judgegirl.entities.problem.Testcase;
+import tw.waterball.judgegirl.primitives.problem.LanguageEnv;
+import tw.waterball.judgegirl.primitives.problem.Problem;
+import tw.waterball.judgegirl.primitives.problem.Testcase;
+import tw.waterball.judgegirl.problem.domain.repositories.ProblemQueryParams;
+import tw.waterball.judgegirl.problem.domain.usecases.*;
 import tw.waterball.judgegirl.problemapi.views.ProblemItem;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
-import tw.waterball.judgegirl.problemservice.domain.repositories.ProblemQueryParams;
-import tw.waterball.judgegirl.problemservice.domain.usecases.*;
 import tw.waterball.judgegirl.springboot.utils.ResponseEntityUtils;
 
 import java.util.List;
@@ -47,6 +48,7 @@ public class ProblemController {
     private final GetTestCasesUseCase getTestCasesUseCase;
     private final SaveProblemWithTitleUseCase saveProblemWithTitleUseCase;
     private final PatchProblemUseCase patchProblemUseCase;
+    private final ArchiveOrDeleteProblemUseCase deleteProblemUseCase;
 
 
     @GetMapping("/tags")
@@ -109,50 +111,80 @@ public class ProblemController {
         return saveProblemWithTitleUseCase.execute(title);
     }
 
-    @PatchMapping(value = "/{problemId}")
+    @PatchMapping("/{problemId}")
     public void patchProblem(@PathVariable int problemId,
                              @RequestBody PatchProblemUseCase.Request request) {
         patchProblemUseCase.execute(request);
     }
+
+    @DeleteMapping("/{problemId}")
+    public void archiveOrDeleteProblem(@PathVariable int problemId) {
+        deleteProblemUseCase.execute(problemId);
+    }
+
+
+    @PutMapping("/{problemId}/langEnv/{langEnv}")
+    public void updateLanguageEnv(@PathVariable int problemId,
+                                  @RequestBody LanguageEnv languageEnv) {
+        PatchProblemUseCase.Request request = PatchProblemUseCase.Request.builder().problemId(problemId)
+                .languageEnv(languageEnv).build();
+        patchProblemUseCase.execute(request);
+    }
+
+    @PutMapping("/{problemId}/testcases/{testcaseName}")
+    public void updateOrAddTestcase(@PathVariable int problemId,
+                              @PathVariable String testcaseName,
+                              @RequestBody Testcase testcase) {
+        testcase.setName(testcaseName);
+        testcase.setProblemId(problemId);
+        PatchProblemUseCase.Request request = PatchProblemUseCase.Request.builder()
+                .problemId(problemId)
+                .testcase(testcase).build();
+
+        patchProblemUseCase.execute(request);
+    }
+
+
+    class GetProblemPresenter implements GetProblemUseCase.Presenter {
+        private Problem problem;
+
+        @Override
+        public void setProblem(Problem problem) {
+            this.problem = problem;
+        }
+
+        ProblemView present() {
+            return ProblemView.toViewModel(problem);
+        }
+    }
+
+
+    class GetProblemListPresenter implements GetProblemListUseCase.Presenter {
+        private List<Problem> problems;
+
+        @Override
+        public void showProblems(List<Problem> problems) {
+            this.problems = problems;
+        }
+
+        List<ProblemItem> present() {
+            return problems.stream().map(ProblemItem::fromEntity)
+                    .collect(Collectors.toList());
+        }
+    }
+
+    class GetTestCasesPresenter implements GetTestCasesUseCase.Presenter {
+        private List<Testcase> testcases;
+
+        @Override
+        public void setTestcases(List<Testcase> testcases) {
+            this.testcases = testcases;
+        }
+
+        List<Testcase> present() {
+            return testcases;
+        }
+    }
 }
 
-class GetProblemPresenter implements GetProblemUseCase.Presenter {
-    private Problem problem;
 
-    @Override
-    public void setProblem(Problem problem) {
-        this.problem = problem;
-    }
-
-    ProblemView present() {
-        return ProblemView.toViewModel(problem);
-    }
-}
-
-
-class GetProblemListPresenter implements GetProblemListUseCase.Presenter {
-    private List<Problem> problems;
-
-    @Override
-    public void showProblems(List<Problem> problems) {
-        this.problems = problems;
-    }
-
-    List<ProblemItem> present() {
-        return problems.stream().map(ProblemItem::fromEntity)
-                .collect(Collectors.toList());
-    }
-}
-
-class GetTestCasesPresenter implements GetTestCasesUseCase.Presenter {
-    private List<Testcase> testcases;
-
-    @Override
-    public void setTestcases(List<Testcase> testcases) {
-        this.testcases = testcases;
-    }
-
-    List<Testcase> present() {
-        return testcases;
-    }
-}

@@ -26,7 +26,7 @@ import static java.util.Arrays.asList;
  * @author - johnny850807@gmail.com (Waterball)
  */
 public class Plugins {
-    private static List<JudgeGirlPlugin> DEFAULT_PLUGINS = asList(
+    private static final List<JudgeGirlPlugin> DEFAULT_PLUGINS = asList(
             new AllMatchPolicyPlugin(), new RegexMatchPolicyPlugin(),
             new CodeQualityInspectionPlugin());
 

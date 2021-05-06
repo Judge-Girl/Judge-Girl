@@ -25,16 +25,12 @@
     <description>Root project of Judge Girl</description>
 
     <modules>
-        <module>Judge-Girl-Dependencies</module>
+        <module>Dependencies</module>
         <module>Commons</module>
-        <module>Submission-Service</module>
-        <module>Problem-Service</module>
-        <module>Exam-Service</module>
-        <module>Student-Service</module>
         <module>Plugins</module>
         <module>Spring-Boot</module>
-        <module>Entities</module>
         <module>API</module>
+        <module>Domain</module>
         <module>Judger</module>
         <module>Judger/Code-Quality-Inspection</module>
     </modules>

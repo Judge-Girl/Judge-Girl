@@ -25,6 +25,8 @@ import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
 
+import java.util.function.Supplier;
+
 import static tw.waterball.judgegirl.commons.utils.HttpHeaderUtils.bearerWithToken;
 
 /**
@@ -32,13 +34,13 @@ import static tw.waterball.judgegirl.commons.utils.HttpHeaderUtils.bearerWithTok
  */
 public class ProblemApiClient extends BaseRetrofitAPI implements ProblemServiceDriver {
     private final Api api;
-    private final String adminToken;
+    private final Supplier<String> tokenSupplier;
 
     public ProblemApiClient(RetrofitFactory retrofitFactory,
                             String scheme,
                             String host, int port,
-                            String adminToken) {
-        this.adminToken = adminToken;
+                            Supplier<String> tokenSupplier) {
+        this.tokenSupplier = tokenSupplier;
         this.api = retrofitFactory.create(scheme, host, port).create(Api.class);
     }
 
@@ -51,7 +53,7 @@ public class ProblemApiClient extends BaseRetrofitAPI implements ProblemServiceD
     @Override
     public FileResource downloadProvidedCodes(int problemId, String languageEnvName, String providedCodesFileId) throws NotFoundException {
         Response<ResponseBody> resp = errorHandlingGetResponse(() -> api.getZippedProvidedCodes(
-                bearerWithToken(adminToken),
+                bearerWithToken(tokenSupplier.get()),
                 problemId, languageEnvName, providedCodesFileId));
         return parseDownloadedFileResource(resp);
 
@@ -62,7 +64,7 @@ public class ProblemApiClient extends BaseRetrofitAPI implements ProblemServiceD
         System.out.printf("Problem Id: %d, Testcase IOs file id: %s.\n", problemId, testcaseIOsFileId);
         Response<ResponseBody> resp = errorHandlingGetResponse(() ->
                 api.getZippedTestCaseIOs(
-                        bearerWithToken(adminToken), problemId, testcaseIOsFileId));
+                        bearerWithToken(tokenSupplier.get()), problemId, testcaseIOsFileId));
         return parseDownloadedFileResource(resp);
     }
 

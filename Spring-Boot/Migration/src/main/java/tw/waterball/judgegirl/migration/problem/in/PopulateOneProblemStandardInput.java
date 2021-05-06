@@ -1,12 +1,11 @@
 package tw.waterball.judgegirl.migration.problem.in;
 
 import tw.waterball.judgegirl.commons.utils.Inputs;
-import tw.waterball.judgegirl.entities.problem.Problem;
-import tw.waterball.judgegirl.entities.problem.ResourceSpec;
 import tw.waterball.judgegirl.migration.problem.PopulateOneProblem;
 import tw.waterball.judgegirl.plugins.api.JudgeGirlPlugin;
 import tw.waterball.judgegirl.plugins.api.match.JudgeGirlMatchPolicyPlugin;
-import tw.waterball.judgegirl.plugins.impl.match.AllMatchPolicyPlugin;
+import tw.waterball.judgegirl.primitives.problem.Problem;
+import tw.waterball.judgegirl.primitives.problem.ResourceSpec;
 
 import java.util.List;
 import java.util.Optional;
@@ -35,7 +34,7 @@ public class PopulateOneProblemStandardInput implements PopulateOneProblem.Input
         for (int i = 0; i < matchPolicyPlugins.length; i++) {
             System.out.printf("[%d] -- %s%n", i, matchPolicyPlugins[i].getTag());
         }
-        int selection = inputRangedIntegerOrDefault("Please select the plugin: ", 0, 0, matchPolicyPlugins.length-1);
+        int selection = inputRangedIntegerOrDefault("Please select the plugin: ", 0, 0, matchPolicyPlugins.length - 1);
         return matchPolicyPlugins[selection];
     }
 

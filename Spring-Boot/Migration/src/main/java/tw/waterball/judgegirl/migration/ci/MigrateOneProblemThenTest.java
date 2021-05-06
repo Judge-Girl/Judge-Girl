@@ -11,10 +11,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
-import tw.waterball.judgegirl.entities.problem.JudgeStatus;
-import tw.waterball.judgegirl.entities.problem.Language;
-import tw.waterball.judgegirl.entities.submission.SubmissionThrottlingException;
-import tw.waterball.judgegirl.entities.submission.verdict.VerdictIssuedEvent;
 import tw.waterball.judgegirl.judger.DefaultCCJudgerFactory;
 import tw.waterball.judgegirl.judger.Judger;
 import tw.waterball.judgegirl.migration.problem.ConvertLegacyLayout;
@@ -22,14 +18,18 @@ import tw.waterball.judgegirl.migration.problem.MigrateOneProblem;
 import tw.waterball.judgegirl.migration.problem.NewJudgeGirlLayoutManipulator;
 import tw.waterball.judgegirl.migration.problem.PopulateOneProblem;
 import tw.waterball.judgegirl.plugins.impl.match.AllMatchPolicyPlugin;
+import tw.waterball.judgegirl.primitives.problem.JudgeStatus;
+import tw.waterball.judgegirl.primitives.problem.Language;
+import tw.waterball.judgegirl.primitives.submission.SubmissionThrottlingException;
+import tw.waterball.judgegirl.primitives.submission.verdict.VerdictIssuedEvent;
+import tw.waterball.judgegirl.problem.domain.repositories.ProblemRepository;
+import tw.waterball.judgegirl.problem.domain.repositories.TestCaseRepository;
 import tw.waterball.judgegirl.problemapi.clients.ProblemServiceDriver;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
-import tw.waterball.judgegirl.problemservice.domain.repositories.ProblemRepository;
-import tw.waterball.judgegirl.problemservice.domain.repositories.TestCaseRepository;
 import tw.waterball.judgegirl.springboot.profiles.JudgeGirlApplication;
+import tw.waterball.judgegirl.submission.domain.repositories.SubmissionRepository;
 import tw.waterball.judgegirl.submissionapi.clients.SubmissionServiceDriver;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
-import tw.waterball.judgegirl.submissionservice.domain.repositories.SubmissionRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -131,6 +131,11 @@ public class MigrateOneProblemThenTest {
 
             @Override
             public SubmissionView findBestRecord(List<String> submissionIds) {
+                return null;
+            }
+
+            @Override
+            public SubmissionView findBestRecord(int problemId, int studentId) throws NotFoundException {
                 return null;
             }
         };
