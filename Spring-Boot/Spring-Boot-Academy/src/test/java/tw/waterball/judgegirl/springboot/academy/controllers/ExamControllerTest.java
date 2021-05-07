@@ -46,8 +46,7 @@ import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static java.util.concurrent.TimeUnit.HOURS;
 import static java.util.stream.Collectors.toList;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -353,7 +352,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
         createQuestion(new CreateQuestionUseCase.Request(examView.getId(), 2, 5, 100, 1));
         deleteQuestion(examView.getId(), PROBLEM_ID)
                 .andExpect(status().isOk());
-        assertEquals(0, getExamOverview(examView.getId()).getQuestions().size());
+        assertEquals(0, getExamProgressOverview(examView.getId()).getQuestions().size());
     }
 
     @Test
@@ -516,7 +515,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
         publishVerdict(PROBLEM_ID, problem.getTitle(), exam, submissionWith2ACs20Point);
 
         awaitVerdictIssuedEvent();
-        ExamHome examHome = getExamOverview(exam.getId());
+        ExamHome examHome = getExamProgressOverview(exam.getId());
         ExamHome.QuestionItem firstQuestion = examHome.getQuestionById(new Question.Id(q1.examId, q1.problemId)).orElseThrow();
         ExamHome.QuestionItem secondQuestion = examHome.getQuestionById(new Question.Id(q2.examId, q2.problemId)).orElseThrow();
 
@@ -538,6 +537,39 @@ class ExamControllerTest extends AbstractSpringBootTest {
         assertEquals(secondQuestion.getProblemTitle(), anotherProblem.getTitle());
     }
 
+    @Test
+    void testGetExamOverview() throws Exception {
+        final int QUOTA = 5;
+        Date start = beforeCurrentTime(1, HOURS), end = afterCurrentTime(1, HOURS);
+        ExamView exam = createExamAndGet(start, end, "sample-exam");
+        QuestionView q1 = createQuestionAndGet(new CreateQuestionUseCase.Request(exam.getId(), PROBLEM_ID, QUOTA, 50, 1));
+        QuestionView q2 = createQuestionAndGet(new CreateQuestionUseCase.Request(exam.getId(), ANOTHER_PROBLEM_ID, QUOTA, 50, 2));
+
+        ExamHome examHome = getExamOverview(1);
+        ExamHome.QuestionItem firstQuestion = examHome.getQuestionById(new Question.Id(q1.examId, q1.problemId)).orElseThrow();
+        ExamHome.QuestionItem secondQuestion = examHome.getQuestionById(new Question.Id(q2.examId, q2.problemId)).orElseThrow();
+
+        assertEquals(exam.getId(), examHome.getId());
+        assertEquals("sample-exam", examHome.getName());
+        assertEquals(start, examHome.getStartTime());
+        assertEquals(end, examHome.getEndTime());
+        assertEquals("problem statement", examHome.getDescription());
+        assertEquals(2, examHome.getQuestions().size());
+
+        assertEquals(firstQuestion.getExamId(), q1.examId);
+        assertEquals(firstQuestion.getProblemId(), problem.getId());
+        assertEquals(firstQuestion.getQuota(), q1.getQuota());
+        assertEquals(firstQuestion.getMaxScore(), q1.getScore());
+        assertEquals(firstQuestion.getQuestionOrder(), q1.getQuestionOrder());
+        assertEquals(firstQuestion.getProblemTitle(), problem.getTitle());
+        assertEquals(secondQuestion.getExamId(), q2.examId);
+        assertEquals(secondQuestion.getProblemId(), anotherProblem.getId());
+        assertEquals(secondQuestion.getQuota(), q2.getQuota());
+        assertEquals(secondQuestion.getMaxScore(), q2.getScore());
+        assertEquals(secondQuestion.getQuestionOrder(), q2.getQuestionOrder());
+        assertEquals(secondQuestion.getProblemTitle(), anotherProblem.getTitle());
+    }
+
     @DisplayName("Give 8 students participating a current exam, one question in the exam with submission quota = 3, " +
             "When 8 students answer that question 4 times at the same time, all should succeed in the first 3 times and fail in the 4th time.")
     @Test
@@ -556,6 +588,17 @@ class ExamControllerTest extends AbstractSpringBootTest {
             answerQuestion(studentId, exam).andExpect(status().is4xxClientError());
         });
     }
+
+    @Test
+    void GivenExamSavedAndGetExam_WhenDeleteExamById_ShouldExamBeNotEmpty() throws Exception {
+        var exam = createExamAndGet(new Date(), new Date(), "exam");
+
+        deleteExam(exam.id);
+
+        Optional<Exam> optionalExam = examRepository.findById(exam.id);
+        assertTrue(optionalExam.isEmpty());
+    }
+
 
     private void addGroupsOfExaminees(ExamView exam, Group... groups) throws Exception {
         mockMvc.perform(post("/api/exams/{examId}/groups", exam.getId())
@@ -702,7 +745,6 @@ class ExamControllerTest extends AbstractSpringBootTest {
                 .content(toJson(request)));
     }
 
-
     private List<ExamView> getStudentExams(int studentId, ExamFilter.Status status, int skip, int size) throws Exception {
         return getBody(mockMvc.perform(get("/api/students/{studentId}/exams?status={status}&&skip={skip}&&size={size}", studentId, status, skip, size))
                 .andExpect(status().isOk()), new TypeReference<>() {
@@ -720,9 +762,14 @@ class ExamControllerTest extends AbstractSpringBootTest {
                 examId)).andExpect(status().isOk()), ExamView.class);
     }
 
-    private ExamHome getExamOverview(int examId) throws Exception {
+    private ExamHome getExamProgressOverview(int examId) throws Exception {
         return getBody(mockMvc.perform(get("/api/exams/{examId}/students/{studentId}/overview",
                 examId, STUDENT_A_ID)).andExpect(status().isOk()), ExamHome.class);
+    }
+
+    private ExamHome getExamOverview(int examId) throws Exception {
+        return getBody(mockMvc.perform(get("/api/exams/{examId}/overview",
+                examId)).andExpect(status().isOk()), ExamHome.class);
     }
 
     private void createExaminee(int studentId, int examId) {
@@ -761,5 +808,9 @@ class ExamControllerTest extends AbstractSpringBootTest {
         return mockMvc.perform(delete("/api/exams/{examId}/problems/{problemId}", examId, problemId));
     }
 
+    private void deleteExam(int examId) throws Exception {
+        mockMvc.perform(delete("/api/exams/{examId}", examId))
+                .andExpect(status().isOk());
+    }
 
 }
