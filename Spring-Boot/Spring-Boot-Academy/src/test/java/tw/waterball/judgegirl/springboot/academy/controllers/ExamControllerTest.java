@@ -557,13 +557,12 @@ class ExamControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    void GivenExamSavedAndGetExam_WhenDeleteExamById_ShouldExamBeNotEmpty() throws Exception {
+    void GivenOneExamSaved_WhenDeleteTheExam_ShouldSucceed() throws Exception {
         var exam = createExamAndGet(new Date(), new Date(), "exam");
 
         deleteExam(exam.id);
 
-        Optional<Exam> optionalExam = examRepository.findById( exam.id);
-        assertTrue(optionalExam.isEmpty());
+        assertTrue(examRepository.findById(exam.id).isEmpty());
     }
 
 

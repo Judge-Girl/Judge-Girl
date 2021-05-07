@@ -158,7 +158,7 @@ public class JpaExamRepository implements ExamRepository {
     }
 
     @Override
-    public boolean hasStudentParticipatedExam(int studentId, int examId) {
+    public boolean isExaminee(int studentId, int examId) {
         return jpaExamineeDAO.existsById_StudentIdAndId_ExamId(studentId, examId);
     }
 
