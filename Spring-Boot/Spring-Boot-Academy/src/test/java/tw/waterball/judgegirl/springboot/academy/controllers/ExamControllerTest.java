@@ -557,7 +557,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    void GivenOneExamSaved_WhenDeleteTheExam_ShouldSucceed() throws Exception {
+    void GivenOneExamCreated_WhenDeleteTheExam_ShouldSucceed() throws Exception {
         var exam = createExamAndGet(new Date(), new Date(), "exam");
 
         deleteExam(exam.id);
