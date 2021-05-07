@@ -13,8 +13,8 @@
 
 package tw.waterball.judgegirl.judger.tests;
 
-import tw.waterball.judgegirl.primitives.problem.*;
 import tw.waterball.judgegirl.plugins.impl.match.AllMatchPolicyPlugin;
+import tw.waterball.judgegirl.primitives.problem.*;
 
 import java.util.List;
 
@@ -23,7 +23,7 @@ import static java.util.Arrays.asList;
 @SuppressWarnings("SameParameterValue")
 public class PrefixSumTest extends AbstractJudgerTest {
     private static final int problemId = 9999999;
-    private final static int MEMORY_LIMIT = 128 << 20;
+    private static final int MEMORY_LIMIT = 128 << 20;
     public static final String COMPILATION_SCRIPT = "gcc -std=c99 -O2 -pthread prefixsum-seq.c secret.c";
     private static final List<Testcase> testcases = asList(
             new Testcase("1", problemId, 1000,

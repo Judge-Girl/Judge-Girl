@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
  * @author - johnny850807@gmail.com (Waterball)
  */
 public class JSR380Utils {
-    private final static ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+    private static final ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
 
     public static boolean isValid(Object object) {
         return getViolations(object).isEmpty();

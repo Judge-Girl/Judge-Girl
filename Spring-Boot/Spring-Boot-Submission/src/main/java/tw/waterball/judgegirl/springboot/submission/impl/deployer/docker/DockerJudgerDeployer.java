@@ -43,7 +43,7 @@ import static java.util.Collections.singletonList;
  * @author - johnny850807@gmail.com (Waterball)
  */
 public class DockerJudgerDeployer implements JudgerDeployer {
-    private final static Logger logger = LogManager.getLogger(DockerJudgerDeployer.class);
+    private static final Logger logger = LogManager.getLogger(DockerJudgerDeployer.class);
     private final int dockerRemovalIntervalInMs;
     private final String jwtSecret;
     private final DockerClient dockerClient;

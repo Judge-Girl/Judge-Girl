@@ -25,23 +25,6 @@ public class BestRecordData {
     private int score;
     private Date submissionTime;
 
-
-    @Data
-    @Embeddable
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class Id implements Serializable {
-        private int examId;
-        private int problemId;
-        private int studentId;
-
-        public Id(QuestionData.Id id, int studentId) {
-            examId = id.getExamId();
-            problemId = id.getProblemId();
-            this.studentId = studentId;
-        }
-    }
-
     public Record toEntity() {
         return new Record(new Question.Id(getExamId(), getProblemId()), getStudentId(),
                 status, maximumRuntime, maximumMemoryUsage, score, submissionTime);
@@ -65,5 +48,20 @@ public class BestRecordData {
         return id.studentId;
     }
 
+    @Data
+    @Embeddable
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class Id implements Serializable {
+        private int examId;
+        private int problemId;
+        private int studentId;
+
+        public Id(QuestionData.Id id, int studentId) {
+            examId = id.getExamId();
+            problemId = id.getProblemId();
+            this.studentId = studentId;
+        }
+    }
 
 }

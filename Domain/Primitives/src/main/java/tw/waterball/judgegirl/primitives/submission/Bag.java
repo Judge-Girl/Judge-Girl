@@ -18,12 +18,7 @@ import static java.util.Objects.requireNonNullElse;
  */
 public class Bag extends HashMap<String, String> {
 
-    public static Bag empty() {
-        return new Bag(emptyMap());
-    }
-
     public Bag() {
-        super();
     }
 
     public Bag(String key, String val) {
@@ -41,6 +36,10 @@ public class Bag extends HashMap<String, String> {
 
     public Bag(int initialCapacity) {
         super(initialCapacity);
+    }
+
+    public static Bag empty() {
+        return new Bag(emptyMap());
     }
 
     public void makeAllKeysAndValuesLowercase() {

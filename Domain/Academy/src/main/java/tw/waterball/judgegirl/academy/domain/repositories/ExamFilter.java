@@ -18,7 +18,7 @@ class ExamFilter {
     @Builder.Default
     Status status = Status.all;
     @Builder.Default
-    int skip = 0;
+    int skip;
     @Builder.Default
     int size = 50;
 

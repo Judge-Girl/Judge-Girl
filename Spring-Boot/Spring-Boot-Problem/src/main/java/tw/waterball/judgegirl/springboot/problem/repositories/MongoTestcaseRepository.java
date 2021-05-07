@@ -58,6 +58,6 @@ public class MongoTestcaseRepository implements TestCaseRepository {
                 .byId(problemId)
                 .execute()
                 .getField(Problem::getTestcaseIOsFileId)
-                .map((fileId) -> downloadFileResourceByFileId(gridFsTemplate, fileId));
+                .map(fileId -> downloadFileResourceByFileId(gridFsTemplate, fileId));
     }
 }

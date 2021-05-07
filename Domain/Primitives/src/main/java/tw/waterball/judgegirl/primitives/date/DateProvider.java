@@ -9,7 +9,7 @@ import java.util.Date;
  * @author - johnny850807@gmail.com (Waterball)
  */
 public final class DateProvider {
-    private static Date mockedNow = null;
+    private static Date mockedNow;
 
     public static void setMockedNow(Date mockedNow) {
         DateProvider.mockedNow = mockedNow;

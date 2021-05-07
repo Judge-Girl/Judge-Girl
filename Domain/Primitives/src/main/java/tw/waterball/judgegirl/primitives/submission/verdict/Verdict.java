@@ -42,6 +42,16 @@ public class Verdict implements Comparable<Verdict> {
         this(judges, new Date());
     }
 
+    public Verdict(String compileErrorMessage) throws InvalidVerdictException {
+        this(compileErrorMessage, new Date());
+    }
+
+    public Verdict(String compileErrorMessage, Date issueTime) throws InvalidVerdictException {
+        this.issueTime = issueTime;
+        this.judges = Collections.emptyList();
+        setCompileErrorMessage(compileErrorMessage);
+    }
+
     public Verdict(List<Judge> judges, Date issueTime) throws InvalidVerdictException {
         this.judges = judges;
         this.issueTime = issueTime;
@@ -62,22 +72,12 @@ public class Verdict implements Comparable<Verdict> {
         }
     }
 
-    public Verdict(String compileErrorMessage) throws InvalidVerdictException {
-        this(compileErrorMessage, new Date());
-    }
-
     public static Verdict compileError(String compileErrorMessage) {
         return new Verdict(compileErrorMessage.trim(), new Date());
     }
 
     public static Verdict compileError(String compileErrorMessage, Date issueTime) {
         return new Verdict(compileErrorMessage.trim(), issueTime);
-    }
-
-    public Verdict(String compileErrorMessage, Date issueTime) throws InvalidVerdictException {
-        this.issueTime = issueTime;
-        this.judges = Collections.emptyList();
-        setCompileErrorMessage(compileErrorMessage);
     }
 
     public Integer getTotalGrade() {
@@ -178,7 +178,8 @@ public class Verdict implements Comparable<Verdict> {
 
     @Override
     public int compareTo(@NotNull Verdict verdict) {
-        int myGrade = getTotalGrade(), hisGrade = verdict.getTotalGrade();
+        int myGrade = getTotalGrade();
+        int hisGrade = verdict.getTotalGrade();
         if (this.isCompileError() && verdict.isCompileError()) {
             return 0;
         }

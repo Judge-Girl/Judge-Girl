@@ -39,7 +39,7 @@ public class JwtTokenService implements TokenService {
     @Override
     public Token createToken(Identity identity) {
         Date expirationDate;
-        expirationDate = new Date((System.currentTimeMillis() + this.expiration.getTime()));
+        expirationDate = new Date(System.currentTimeMillis() + this.expiration.getTime());
         return new Token(identity.isAdmin(), identity.getStudentId(),
                 compactTokenString(expirationDate, identity), expirationDate);
     }

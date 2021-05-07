@@ -22,7 +22,7 @@ import java.util.function.Predicate;
  * @author - johnny850807@gmail.com (Waterball)
  */
 public class Inputs {
-    private final static Scanner scanner = new Scanner(System.in);
+    private static final Scanner scanner = new Scanner(System.in);
 
     public static boolean inputForYesOrNo(String message) {
         System.out.println(message + " [y/n]: ");

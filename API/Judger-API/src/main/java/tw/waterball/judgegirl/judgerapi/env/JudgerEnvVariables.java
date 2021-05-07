@@ -83,33 +83,6 @@ public interface JudgerEnvVariables {
         return (env, value) -> applier.apply(convertEnv(env), value);
     }
 
-    interface Applier {
-        default void apply(String env, int value) {
-            apply(env, String.valueOf(value));
-        }
-
-        void apply(String env, String value);
-    }
-
-
-    @Value
-    @Builder
-    class Values {
-        public int studentId;
-        public int problemId;
-        public String submissionId;
-        public String jwtSecret;
-        public ServiceInstance problemServiceInstance;
-        public ServiceInstance submissionServiceInstance;
-        public String amqpVirtualHost;
-        public String amqpUserName;
-        public String amqpPassword;
-        public String amqpHost;
-        public int amqpPort;
-        public String verdictExchangeName;
-        public String verdictIssuedRoutingKeyFormat;
-    }
-
     static Values fromSystemEnvs() {
         System.getenv().forEach((key, value) -> System.out.println(key + "=" + value));
 
@@ -155,6 +128,32 @@ public interface JudgerEnvVariables {
     static String convertEnv(String env) {
         return env.toUpperCase().replaceAll("\\.", "_")
                 .replaceAll("-", "_");
+    }
+
+    interface Applier {
+        default void apply(String env, int value) {
+            apply(env, String.valueOf(value));
+        }
+
+        void apply(String env, String value);
+    }
+
+    @Value
+    @Builder
+    class Values {
+        public int studentId;
+        public int problemId;
+        public String submissionId;
+        public String jwtSecret;
+        public ServiceInstance problemServiceInstance;
+        public ServiceInstance submissionServiceInstance;
+        public String amqpVirtualHost;
+        public String amqpUserName;
+        public String amqpPassword;
+        public String amqpHost;
+        public int amqpPort;
+        public String verdictExchangeName;
+        public String verdictIssuedRoutingKeyFormat;
     }
 
 }

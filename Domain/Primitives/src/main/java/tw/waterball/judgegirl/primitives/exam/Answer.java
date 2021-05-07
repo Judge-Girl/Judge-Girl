@@ -16,21 +16,6 @@ public class Answer {
     private final String submissionId;
     private final Date answerTime;
 
-
-    @Getter
-    @Setter
-    @AllArgsConstructor
-    public static class Id {
-        private Integer number;
-        private final Question.Id questionId;
-        private final int studentId;
-
-        public Id(Question.Id questionId, int studentId) {
-            this.questionId = questionId;
-            this.studentId = studentId;
-        }
-    }
-
     public int getNumber() {
         return getId().getNumber();
     }
@@ -49,6 +34,20 @@ public class Answer {
 
     public int getStudentId() {
         return getId().getStudentId();
+    }
+
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    public static class Id {
+        private Integer number;
+        private final Question.Id questionId;
+        private final int studentId;
+
+        public Id(Question.Id questionId, int studentId) {
+            this.questionId = questionId;
+            this.studentId = studentId;
+        }
     }
 
 }

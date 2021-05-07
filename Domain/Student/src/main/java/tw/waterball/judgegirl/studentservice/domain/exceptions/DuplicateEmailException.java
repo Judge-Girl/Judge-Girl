@@ -18,7 +18,6 @@ package tw.waterball.judgegirl.studentservice.domain.exceptions;
  */
 public class DuplicateEmailException extends RuntimeException {
     public DuplicateEmailException() {
-        super();
     }
 
     public DuplicateEmailException(String message) {

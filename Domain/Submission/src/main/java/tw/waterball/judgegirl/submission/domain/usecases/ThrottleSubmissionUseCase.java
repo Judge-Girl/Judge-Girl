@@ -26,7 +26,7 @@ import java.util.concurrent.TimeUnit;
  */
 @Named
 public class ThrottleSubmissionUseCase {
-    private final static long minSubmissionInterval = TimeUnit.SECONDS.toMillis(8);
+    private static final long minSubmissionInterval = TimeUnit.SECONDS.toMillis(8);
     private final SubmissionRepository submissionRepository;
 
     public ThrottleSubmissionUseCase(SubmissionRepository submissionRepository) {

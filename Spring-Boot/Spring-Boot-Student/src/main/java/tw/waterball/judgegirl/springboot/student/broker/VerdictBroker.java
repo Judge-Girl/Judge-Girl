@@ -26,7 +26,7 @@ import static tw.waterball.judgegirl.springboot.student.broker.WebSocketConfigur
 @AllArgsConstructor
 public class VerdictBroker {
     // broadcast to additional destinations (split by commas)
-    public final static String BAG_KEY_ADDITIONAL_DESTINATIONS = "broker-additional-destinations";
+    public static final String BAG_KEY_ADDITIONAL_DESTINATIONS = "broker-additional-destinations";
     private final SimpMessagingTemplate simpMessaging;
 
     public final NotifyWaitLock onHandlingCompletion$ = new NotifyWaitLock();

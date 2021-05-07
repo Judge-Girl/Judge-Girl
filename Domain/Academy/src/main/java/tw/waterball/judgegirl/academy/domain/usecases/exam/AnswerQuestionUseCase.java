@@ -89,19 +89,6 @@ public class AnswerQuestionUseCase implements VerdictIssuedEventListener {
         return new Answer(new Answer.Id(question.getId(), request.studentId), submissionView.id, answerTime);
     }
 
-    @Value
-    public static class Request {
-        int examId;
-        int problemId;
-        String langEnvName;
-        int studentId;
-        public List<FileResource> fileResources;
-    }
-
-    public interface Presenter {
-        void showAnswer(Answer answer);
-    }
-
     @Override
     public void onVerdictIssued(VerdictIssuedEvent event) {
         getExamIdFromBag(event.getSubmissionBag())
@@ -125,6 +112,19 @@ public class AnswerQuestionUseCase implements VerdictIssuedEventListener {
         return new Record(new Question.Id(examId, event.getProblemId()),
                 event.getStudentId(), newVerdict.getSummaryStatus(), newVerdict.getMaximumRuntime(), newVerdict.getMaximumMemoryUsage(),
                 newVerdict.getTotalGrade(), event.getSubmissionTime());
+    }
+
+    @Value
+    public static class Request {
+        int examId;
+        int problemId;
+        String langEnvName;
+        int studentId;
+        public List<FileResource> fileResources;
+    }
+
+    public interface Presenter {
+        void showAnswer(Answer answer);
     }
 
 }

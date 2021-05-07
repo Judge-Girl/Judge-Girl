@@ -43,7 +43,8 @@ public class GetStudentsWithFilterUseCase {
     @Getter
     public static class Request {
         private boolean admin;
-        private int skip, size;
+        private int skip;
+        private int size;
     }
 
     public interface Presenter {

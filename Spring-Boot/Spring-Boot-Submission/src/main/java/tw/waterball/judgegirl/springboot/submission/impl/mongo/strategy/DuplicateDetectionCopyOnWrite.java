@@ -35,7 +35,7 @@ import static tw.waterball.judgegirl.springboot.submission.impl.mongo.data.DataM
 @AllArgsConstructor
 @Component
 public class DuplicateDetectionCopyOnWrite implements SaveSubmissionWithCodesStrategy {
-    public final static String STRATEGY_NAME = "copy-on-write";
+    public static final String STRATEGY_NAME = "copy-on-write";
     protected final MongoTemplate mongoTemplate;
     protected final GridFsTemplate gridFsTemplate;
 

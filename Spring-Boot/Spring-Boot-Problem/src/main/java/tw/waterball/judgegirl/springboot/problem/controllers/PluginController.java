@@ -2,8 +2,8 @@ package tw.waterball.judgegirl.springboot.problem.controllers;
 
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import tw.waterball.judgegirl.primitives.problem.JudgePluginTag;
 import tw.waterball.judgegirl.plugins.api.JudgeGirlPluginLocator;
+import tw.waterball.judgegirl.primitives.problem.JudgePluginTag;
 
 import java.util.List;
 import java.util.function.Predicate;
@@ -22,7 +22,7 @@ public class PluginController {
 
     @GetMapping
     public List<JudgePluginTag> getJudgePluginTags(@RequestParam(required = false) String type) {
-        Predicate<JudgePluginTag> predicate = type == null ? (tag) -> true :
+        Predicate<JudgePluginTag> predicate = type == null ? tag -> true :
                 tag -> tag.getType().toString().equalsIgnoreCase(type);
         return pluginLocator.getAll().stream()
                 .filter(predicate).collect(toList());

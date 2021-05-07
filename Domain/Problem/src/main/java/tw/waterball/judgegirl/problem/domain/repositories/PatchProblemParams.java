@@ -40,8 +40,12 @@ public class PatchProblemParams {
         return Optional.ofNullable(filterPluginTags);
     }
 
-    public Optional<LanguageEnv> getLanguageEnv() { return Optional.ofNullable(languageEnv); }
+    public Optional<LanguageEnv> getLanguageEnv() {
+        return Optional.ofNullable(languageEnv);
+    }
 
-    public Optional<Testcase> getTestcase() { return Optional.ofNullable(testcase); }
+    public Optional<Testcase> getTestcase() {
+        return Optional.ofNullable(testcase);
+    }
 
 }

@@ -21,15 +21,7 @@ import java.io.IOException;
 public class ApiRequestFailedException extends RuntimeException {
     private int errorCode;
     private String message = "";
-    private boolean networkingError = false;
-
-    public static ApiRequestFailedException connectionError(IOException err) {
-        return new ApiRequestFailedException(err);
-    }
-
-    public static ApiRequestFailedException failed(int errorCode, String message) {
-        return new ApiRequestFailedException(errorCode, message);
-    }
+    private boolean networkingError;
 
     private ApiRequestFailedException(IOException err) {
         super(err);
@@ -40,6 +32,14 @@ public class ApiRequestFailedException extends RuntimeException {
         super("Error code: " + errorCode + ", message: " + message);
         this.errorCode = errorCode;
         this.message = message;
+    }
+
+    public static ApiRequestFailedException connectionError(IOException err) {
+        return new ApiRequestFailedException(err);
+    }
+
+    public static ApiRequestFailedException failed(int errorCode, String message) {
+        return new ApiRequestFailedException(errorCode, message);
     }
 
     @Override

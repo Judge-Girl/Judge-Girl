@@ -19,9 +19,9 @@ package tw.waterball.judgegirl.judger.filelayout;
  * @author - johnny850807@gmail.com (Waterball)
  */
 public class TreePrintVisitor implements ItemVisitor {
-    private int indentationLevel = 0;
-    private boolean finalChild = false;
-    private StringBuilder output = new StringBuilder();
+    private final StringBuilder output = new StringBuilder();
+    private int indentationLevel;
+    private boolean finalChild;
 
     @Override
     public void visit(OrdinaryFile ordinaryFile) {

@@ -15,14 +15,14 @@ package tw.waterball.judgegirl.judger;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import tw.waterball.judgegirl.plugins.api.*;
+import tw.waterball.judgegirl.plugins.api.codeinspection.JudgeGirlSourceCodeFilterPlugin;
+import tw.waterball.judgegirl.plugins.api.match.JudgeGirlMatchPolicyPlugin;
 import tw.waterball.judgegirl.primitives.problem.JudgePluginTag;
 import tw.waterball.judgegirl.primitives.problem.LanguageEnv;
 import tw.waterball.judgegirl.primitives.problem.Problem;
 import tw.waterball.judgegirl.primitives.problem.Testcase;
 import tw.waterball.judgegirl.primitives.submission.verdict.VerdictIssuer;
-import tw.waterball.judgegirl.plugins.api.*;
-import tw.waterball.judgegirl.plugins.api.codeinspection.JudgeGirlSourceCodeFilterPlugin;
-import tw.waterball.judgegirl.plugins.api.match.JudgeGirlMatchPolicyPlugin;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -35,7 +35,7 @@ import java.util.Map;
  */
 @SuppressWarnings("WeakerAccess")
 public abstract class PluginExtendedJudger extends Judger {
-    private final static Logger logger = LogManager.getLogger(PluginExtendedJudger.class);
+    private static final Logger logger = LogManager.getLogger(PluginExtendedJudger.class);
     private final JudgeGirlPluginLocator pluginLocator;
 
     public PluginExtendedJudger(JudgeGirlPluginLocator pluginLocator) {

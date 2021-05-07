@@ -20,13 +20,6 @@ import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
 import tw.waterball.judgegirl.commons.utils.ZipUtils;
-import tw.waterball.judgegirl.primitives.problem.LanguageEnv;
-import tw.waterball.judgegirl.primitives.problem.Problem;
-import tw.waterball.judgegirl.primitives.problem.SubmittedCodeSpec;
-import tw.waterball.judgegirl.primitives.problem.Testcase;
-import tw.waterball.judgegirl.primitives.submission.Submission;
-import tw.waterball.judgegirl.primitives.submission.verdict.Verdict;
-import tw.waterball.judgegirl.primitives.submission.verdict.VerdictIssuedEvent;
 import tw.waterball.judgegirl.judger.infra.compile.CompileResult;
 import tw.waterball.judgegirl.judger.infra.compile.Compiler;
 import tw.waterball.judgegirl.judger.infra.compile.CompilerFactory;
@@ -35,6 +28,13 @@ import tw.waterball.judgegirl.judger.infra.testexecutor.TestcaseExecutor;
 import tw.waterball.judgegirl.judger.infra.testexecutor.TestcaseExecutorFactory;
 import tw.waterball.judgegirl.judger.layout.*;
 import tw.waterball.judgegirl.plugins.api.JudgeGirlPluginLocator;
+import tw.waterball.judgegirl.primitives.problem.LanguageEnv;
+import tw.waterball.judgegirl.primitives.problem.Problem;
+import tw.waterball.judgegirl.primitives.problem.SubmittedCodeSpec;
+import tw.waterball.judgegirl.primitives.problem.Testcase;
+import tw.waterball.judgegirl.primitives.submission.Submission;
+import tw.waterball.judgegirl.primitives.submission.verdict.Verdict;
+import tw.waterball.judgegirl.primitives.submission.verdict.VerdictIssuedEvent;
 import tw.waterball.judgegirl.problemapi.clients.ProblemServiceDriver;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.submissionapi.clients.SubmissionServiceDriver;
@@ -65,7 +65,7 @@ import static java.util.Objects.requireNonNull;
  */
 @SuppressWarnings("WeakerAccess")
 public class CCJudger extends PluginExtendedJudger {
-    private final static Logger logger = LogManager.getLogger(CCJudger.class);
+    private static final Logger logger = LogManager.getLogger(CCJudger.class);
     public static final String TEMP_SUBMITTED_CODES_DIR_NAME = "tempSubmittedCodes";
     private static final String EXECUTABLE_NAME = "a.out";
     private final JudgerWorkspace judgerWorkspace;

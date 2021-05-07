@@ -15,13 +15,13 @@ package tw.waterball.judgegirl.judger;
 
 import lombok.AllArgsConstructor;
 import lombok.Value;
+import tw.waterball.judgegirl.judger.infra.compile.CompileResult;
+import tw.waterball.judgegirl.judger.infra.testexecutor.TestcaseExecutionResult;
 import tw.waterball.judgegirl.primitives.problem.*;
 import tw.waterball.judgegirl.primitives.submission.Submission;
 import tw.waterball.judgegirl.primitives.submission.verdict.Judge;
 import tw.waterball.judgegirl.primitives.submission.verdict.Verdict;
 import tw.waterball.judgegirl.primitives.submission.verdict.VerdictIssuer;
-import tw.waterball.judgegirl.judger.infra.compile.CompileResult;
-import tw.waterball.judgegirl.judger.infra.testexecutor.TestcaseExecutionResult;
 
 import java.io.IOException;
 import java.util.List;
@@ -95,7 +95,6 @@ public abstract class Judger {
 
     protected abstract void onAfterRunningTestcase(Testcase testcase);
 
-
     protected List<Judge> runAndJudgeAllTestcases() {
         return getTestcases().stream()
                 .map(testcase -> {
@@ -142,15 +141,6 @@ public abstract class Judger {
 
     protected abstract void publishVerdict(Verdict verdict);
 
-    @Value
-    @AllArgsConstructor
-    public static class JudgeContext {
-        public int studentId;
-        public Problem problem;
-        public List<Testcase> testcases;
-        public Submission submission;
-    }
-
     protected boolean isCompiledLanguage() {
         return getLanguageEnv().isCompiledLanguage();
     }
@@ -173,6 +163,14 @@ public abstract class Judger {
 
     protected LanguageEnv getLanguageEnv() {
         return getProblem().getLanguageEnv(getSubmission().getLanguageEnvName());
+    }
 
+    @Value
+    @AllArgsConstructor
+    public static class JudgeContext {
+        public int studentId;
+        public Problem problem;
+        public List<Testcase> testcases;
+        public Submission submission;
     }
 }

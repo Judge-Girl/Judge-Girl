@@ -24,10 +24,6 @@ public class Report {
     public static final Report EMPTY = new Report("Empty");
     private final String name;
     private final Supplier<Map<String, ?>> rawDataSupplier;
-    
-    public static RawDataReport fromData(String name, Map<String, ?> data) {
-        return new RawDataReport(name, data);
-    }
 
     public Report(String name) {
         this(name, Collections::emptyMap);
@@ -40,6 +36,10 @@ public class Report {
     public Report(String name, Supplier<Map<String, ?>> rawDataSupplier) {
         this.name = name;
         this.rawDataSupplier = rawDataSupplier;
+    }
+
+    public static RawDataReport fromData(String name, Map<String, ?> data) {
+        return new RawDataReport(name, data);
     }
 
     public String getName() {

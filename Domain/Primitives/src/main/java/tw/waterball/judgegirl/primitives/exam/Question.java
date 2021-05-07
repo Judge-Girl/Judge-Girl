@@ -11,7 +11,7 @@ import javax.validation.constraints.PositiveOrZero;
 @Setter
 public class Question {
     public static final int NO_QUOTA = Integer.MAX_VALUE;
-    private Id id = null;
+    private Id id;
 
     @Positive
     private int quota = NO_QUOTA;
@@ -21,7 +21,7 @@ public class Question {
 
     @PositiveOrZero
     private int questionOrder;
-    
+
     public Question(int examId, int problemId, int quota, int score, int questionOrder) {
         this.id = new Id(examId, problemId);
         this.quota = quota;
@@ -33,6 +33,14 @@ public class Question {
         return quota != NO_QUOTA;
     }
 
+    public int getExamId() {
+        return id.getExamId();
+    }
+
+    public int getProblemId() {
+        return id.getProblemId();
+    }
+
     @Data
     @ToString
     @NoArgsConstructor
@@ -40,13 +48,5 @@ public class Question {
     public static class Id {
         private int examId;
         private int problemId;
-    }
-
-    public int getExamId() {
-        return id.getExamId();
-    }
-
-    public int getProblemId() {
-        return id.getProblemId();
     }
 }
