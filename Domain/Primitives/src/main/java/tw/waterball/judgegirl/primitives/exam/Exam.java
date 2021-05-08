@@ -24,7 +24,7 @@ import static tw.waterball.judgegirl.primitives.date.DateProvider.now;
 @Setter
 public class Exam {
 
-    private Integer id = null;
+    private Integer id;
 
     @NotBlank
     private String name;

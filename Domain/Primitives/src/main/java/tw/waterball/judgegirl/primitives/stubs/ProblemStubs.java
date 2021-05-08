@@ -29,7 +29,7 @@ import static tw.waterball.judgegirl.primitives.problem.Language.C;
  */
 public class ProblemStubs {
     @SuppressWarnings("WeakerAccess")
-    public final static int ID = 1;
+    public static final int ID = 1;
 
     public static ProblemBuilder problemTemplate() {
         return Problem.builder()

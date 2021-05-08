@@ -40,7 +40,7 @@ import static java.util.Arrays.asList;
  */
 @Configuration
 public class JacksonConfig {
-    public final static ObjectMapper OBJECT_MAPPER;
+    public static final ObjectMapper OBJECT_MAPPER;
 
     static {
         var objectMapperBuilder = new Jackson2ObjectMapperBuilder();

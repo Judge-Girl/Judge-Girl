@@ -52,10 +52,10 @@
 // * @author - johnny850807@gmail.com (Waterball)
 // */
 //public class JudgeGirlFilterPluginTest {
-//    private final static String zippedProvidedCodesFileName = "/judgeCases/prefixsum/provided.zip";
-//    private final static String zippedTestcaseIOsFileName = "/judgeCases/prefixsum/io.zip";
-//    private final static String zippedSubmittedCodesFileNameFormat = "/judgeCases/prefixsum/%s/submitted.zip";
-//    private final static TestFilterPlugin filterPlugin = new TestFilterPlugin();
+//    private static final String zippedProvidedCodesFileName = "/judgeCases/prefixsum/provided.zip";
+//    private static final String zippedTestcaseIOsFileName = "/judgeCases/prefixsum/io.zip";
+//    private static final String zippedSubmittedCodesFileNameFormat = "/judgeCases/prefixsum/%s/submitted.zip";
+//    private static final TestFilterPlugin filterPlugin = new TestFilterPlugin();
 //    ;
 //    private static int problemId = 1;
 //    private static int studentId = 1;
@@ -63,7 +63,7 @@
 //    private static Submission submission = new Submission(submissionId, studentId, problemId, "fileId");
 //    private ProblemServiceDriver problemServiceDriver;
 //    private SubmissionServiceDriver submissionServiceDriver;
-//    private final static int MEMORY_LIMIT = 128 << 20;
+//    private static final int MEMORY_LIMIT = 128 << 20;
 //    private static ResourceSpec resourceSpec = new ResourceSpec(Language.C, ServerEnv.NORMAL, 2f, 0);
 //    private static Problem problem = Problem.builder()
 //            .id(problemId).title("Prefix Sum")

@@ -36,7 +36,7 @@ public class Student {
     @NotBlank
     protected String password;
 
-    protected boolean admin = false;
+    protected boolean admin;
 
     public Student(String name, String email, String password) {
         this.name = name;

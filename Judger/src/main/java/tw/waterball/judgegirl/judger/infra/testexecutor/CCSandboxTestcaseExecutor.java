@@ -16,11 +16,11 @@ package tw.waterball.judgegirl.judger.infra.testexecutor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tw.waterball.judgegirl.commons.helpers.process.AbstractProcessRunner;
-import tw.waterball.judgegirl.primitives.problem.Testcase;
-import tw.waterball.judgegirl.primitives.submission.verdict.ProgramProfile;
 import tw.waterball.judgegirl.judger.layout.JudgerWorkspace;
 import tw.waterball.judgegirl.judger.layout.SandboxRoot;
 import tw.waterball.judgegirl.judger.layout.TestcaseHome;
+import tw.waterball.judgegirl.primitives.problem.Testcase;
+import tw.waterball.judgegirl.primitives.submission.verdict.ProgramProfile;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -32,10 +32,10 @@ import java.util.Arrays;
  */
 public class CCSandboxTestcaseExecutor extends AbstractProcessRunner implements TestcaseExecutor {
     private static final int numOfArguments = 18;
-    private final static String seccompRuleName = "general";
-    private final static int uid = 65534;
-    private final static int gid = 65534;
-    private final static int memoryLimitCheckOnly = 0;
+    private static final String seccompRuleName = "general";
+    private static final int uid = 65534;
+    private static final int gid = 65534;
+    private static final int memoryLimitCheckOnly = 0;
     private static final Logger logger = LogManager.getLogger(CCSandboxTestcaseExecutor.class);
     private final TestcaseHome testCaseHome;
     private final Path logPath;

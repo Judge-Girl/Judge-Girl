@@ -64,7 +64,7 @@ public class ProblemController {
         if (nonNull(ids)) {
             getProblemListUseCase.execute(ids, presenter);
         } else {
-            getProblemListUseCase.execute(new ProblemQueryParams((tags == null ? new String[0] : tags), page), presenter);
+            getProblemListUseCase.execute(new ProblemQueryParams(tags == null ? new String[0] : tags, page), presenter);
         }
         return presenter.present();
     }
@@ -133,8 +133,8 @@ public class ProblemController {
 
     @PutMapping("/{problemId}/testcases/{testcaseName}")
     public void updateOrAddTestcase(@PathVariable int problemId,
-                              @PathVariable String testcaseName,
-                              @RequestBody Testcase testcase) {
+                                    @PathVariable String testcaseName,
+                                    @RequestBody Testcase testcase) {
         testcase.setName(testcaseName);
         testcase.setProblemId(problemId);
         PatchProblemUseCase.Request request = PatchProblemUseCase.Request.builder()

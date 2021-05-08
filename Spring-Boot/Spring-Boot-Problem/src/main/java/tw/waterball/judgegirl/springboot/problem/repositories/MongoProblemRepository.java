@@ -48,8 +48,8 @@ import static tw.waterball.judgegirl.springboot.utils.MongoUtils.downloadFileRes
 @Mongo
 @Component
 public class MongoProblemRepository implements ProblemRepository {
-    private final static int PAGE_SIZE = 50;
-    private final static int OFFSET_NEW_PROBLEM_ID = 70000;
+    private static final int PAGE_SIZE = 50;
+    private static final int OFFSET_NEW_PROBLEM_ID = 70000;
     private final MongoTemplate mongoTemplate;
     private final GridFsTemplate gridFsTemplate;
 
@@ -72,7 +72,7 @@ public class MongoProblemRepository implements ProblemRepository {
                 .byId(problemId)
                 .execute()
                 .getField(problem -> problem.getLanguageEnv(languageEnvName).getProvidedCodesFileId())
-                .map((fileId) -> downloadFileResourceByFileId(gridFsTemplate, fileId));
+                .map(fileId -> downloadFileResourceByFileId(gridFsTemplate, fileId));
     }
 
     @Override

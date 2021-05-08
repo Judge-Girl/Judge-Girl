@@ -26,8 +26,8 @@ import java.util.Arrays;
  * @author - Haribo, johnny850807@gmail.com (Waterball)
  */
 public class ShellCompiler extends AbstractProcessRunner implements Compiler {
-    private final static Logger logger = LogManager.getLogger(ShellCompiler.class);
-    private Path sourceRootPath;
+    private static final Logger logger = LogManager.getLogger(ShellCompiler.class);
+    private final Path sourceRootPath;
 
     public ShellCompiler(Path sourceRootPath) {
         this.sourceRootPath = sourceRootPath;

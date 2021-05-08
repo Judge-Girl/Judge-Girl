@@ -63,7 +63,8 @@ public class LoginUseCase {
     @Data
     @NoArgsConstructor
     public static class Request {
-        public String email, password;
+        public String email;
+        public String password;
         public boolean admin;
 
         public Request(String email, String password) {

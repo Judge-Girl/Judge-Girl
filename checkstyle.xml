@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<!DOCTYPE module PUBLIC
+        "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN"
+        "https://checkstyle.org/dtds/configuration_1_3.dtd">
+
+<module name="Checker">
+    <!--
+        If you set the basedir property below, then all reported file
+        names will be relative to the specified directory. See
+        https://checkstyle.org/config.html#Checker
+        <property name="basedir" value="${basedir}"/>
+    -->
+    <property name="charset" value="UTF-8"/>
+    <property name="fileExtensions" value="java"/>
+
+    <module name="TreeWalker">
+        <module name="AvoidNestedBlocks"/>
+        <module name="AvoidNoArgumentSuperConstructorCall"/>
+        <module name="DefaultComesLast"/>
+        <module name="EmptyBlock"/>
+        <module name="EmptyCatchBlock">
+            <property name="exceptionVariableName" value="ignore"/>
+        </module>
+        <module name="EqualsAvoidNull"/>
+        <module name="LeftCurly"/>
+        <module name="RightCurly"/>
+        <module name="NeedBraces"/>
+        <module name="InnerTypeLast"/>
+        <module name="DeclarationOrder">
+            <property name="ignoreModifiers" value="true"/>
+        </module>
+        <module name="ExplicitInitialization"/>
+        <module name="UnusedImports"/>
+        <module name="RedundantImport"/>
+        <module name="RedundantModifier"/>
+        <module name="ModifierOrder"/>
+        <module name="ArrayTypeStyle"/>
+        <module name="StringLiteralEquality"/>
+        <!--        <module name="MultipleStringLiterals"/>-->
+        <module name="MultipleVariableDeclarations"/>
+        <module name="UnnecessaryParentheses"/>
+        <module name="UpperEll"/>
+
+        <!--        <module name="MethodParamPad"/>-->
+        <!--        <module name="ParenPad"/>-->
+        <!--        <module name="TypecastParenPad"/>-->
+        <!--        <module name="TabCharacter"/>-->
+
+    </module>
+
+</module>

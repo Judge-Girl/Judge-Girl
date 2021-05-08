@@ -44,7 +44,7 @@ public class SubmissionThrottling {
         long intervalSeconds = MILLISECONDS.toSeconds(currentTimeMillis() - getLastSubmitTime());
         long minSubmissionIntervalSeconds = MILLISECONDS.toSeconds(minSubmissionInterval);
         if (intervalSeconds < minSubmissionIntervalSeconds) {
-            throw new SubmissionThrottlingException((minSubmissionIntervalSeconds - intervalSeconds));
+            throw new SubmissionThrottlingException(minSubmissionIntervalSeconds - intervalSeconds);
         }
         setLastSubmitTime(currentTimeMillis());
     }

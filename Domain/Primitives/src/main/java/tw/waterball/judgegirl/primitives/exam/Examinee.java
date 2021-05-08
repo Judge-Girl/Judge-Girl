@@ -24,13 +24,6 @@ public class Examinee {
         this.absent = absent;
     }
 
-    @Getter
-    @AllArgsConstructor
-    public static class Id implements Serializable {
-        private final int examId;
-        private final int studentId;
-    }
-
     public int getExamId() {
         return id.getExamId();
     }
@@ -39,4 +32,10 @@ public class Examinee {
         return id.getStudentId();
     }
 
+    @Getter
+    @AllArgsConstructor
+    public static class Id implements Serializable {
+        private final int examId;
+        private final int studentId;
+    }
 }

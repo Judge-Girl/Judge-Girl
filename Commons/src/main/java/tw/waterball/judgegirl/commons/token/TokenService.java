@@ -87,8 +87,8 @@ public interface TokenService {
     }
 
     class Identity {
-        public final static String KEY_STUDENT_ID = "studentId";
-        public final static String KEY_IS_ADMIN = "isAdmin";
+        public static final String KEY_STUDENT_ID = "studentId";
+        public static final String KEY_IS_ADMIN = "isAdmin";
         private final int studentId;
         private final boolean isAdmin;
 

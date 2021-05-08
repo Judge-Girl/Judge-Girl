@@ -27,10 +27,6 @@ public class ProgramProfile implements Comparable<ProgramProfile> {
     private long memoryUsage;
     private String errorMessage;
 
-    public static ProgramProfile onlyCompileError(String compileErrorMessage) {
-        return new ProgramProfile(0, 0, compileErrorMessage);
-    }
-
     public ProgramProfile() {
     }
 
@@ -38,6 +34,10 @@ public class ProgramProfile implements Comparable<ProgramProfile> {
         this.runtime = runtime;
         this.memoryUsage = memoryUsage;
         this.errorMessage = errorMessage;
+    }
+
+    public static ProgramProfile onlyCompileError(String compileErrorMessage) {
+        return new ProgramProfile(0, 0, compileErrorMessage);
     }
 
     public long getRuntime() {

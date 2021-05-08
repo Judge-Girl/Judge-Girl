@@ -19,8 +19,8 @@ package tw.waterball.judgegirl.judger.filelayout;
  * @author - johnny850807@gmail.com (Waterball)
  */
 public class YAMLPrintVisitor implements ItemVisitor {
-    private int indentationLevel = 0;
-    private StringBuilder output = new StringBuilder();
+    private final StringBuilder output = new StringBuilder();
+    private int indentationLevel;
 
     @Override
     public void visit(OrdinaryFile ordinaryFile) {

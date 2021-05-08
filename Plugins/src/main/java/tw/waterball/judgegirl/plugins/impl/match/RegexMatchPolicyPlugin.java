@@ -14,9 +14,9 @@
 package tw.waterball.judgegirl.plugins.impl.match;
 
 import org.apache.commons.io.FileUtils;
-import tw.waterball.judgegirl.primitives.problem.JudgePluginTag;
 import tw.waterball.judgegirl.plugins.api.ParameterMeta;
 import tw.waterball.judgegirl.plugins.api.match.JudgeGirlMatchPolicyPlugin;
+import tw.waterball.judgegirl.primitives.problem.JudgePluginTag;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
@@ -31,11 +31,11 @@ import java.util.regex.Pattern;
  * @author - johnny850807@gmail.com (Waterball)
  */
 public class RegexMatchPolicyPlugin extends AbstractJudgeGirlMatchPolicyPlugin {
-    public final static String GROUP = JUDGE_GIRL_GROUP;
-    public final static String NAME = "Regex";
-    public final static String DESCRIPTION = "Use the regex expression (stated in the expected output) to match the actual output.";
-    public final static String VERSION = "1.0";
-    public final static JudgePluginTag TAG = new JudgePluginTag(JudgeGirlMatchPolicyPlugin.TYPE, GROUP, NAME, VERSION);
+    public static final String GROUP = JUDGE_GIRL_GROUP;
+    public static final String NAME = "Regex";
+    public static final String DESCRIPTION = "Use the regex expression (stated in the expected output) to match the actual output.";
+    public static final String VERSION = "1.0";
+    public static final JudgePluginTag TAG = new JudgePluginTag(JudgeGirlMatchPolicyPlugin.TYPE, GROUP, NAME, VERSION);
 
     public RegexMatchPolicyPlugin() {
         super(Collections.emptyMap());
@@ -46,6 +46,7 @@ public class RegexMatchPolicyPlugin extends AbstractJudgeGirlMatchPolicyPlugin {
         return Collections.emptySet();
     }
 
+    @Override
     public String getDescription() {
         return DESCRIPTION;
     }

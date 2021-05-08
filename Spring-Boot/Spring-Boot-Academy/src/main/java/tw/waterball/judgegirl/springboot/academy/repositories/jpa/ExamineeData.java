@@ -19,8 +19,8 @@ import java.io.Serializable;
 public class ExamineeData {
     @EmbeddedId
     private Id id;
-    private Integer score = null;
-    private Boolean absent = null;
+    private Integer score;
+    private Boolean absent;
 
     public ExamineeData(int examId, int studentId) {
         this(new Id(examId, studentId));
@@ -43,6 +43,14 @@ public class ExamineeData {
                 .build();
     }
 
+    public int getExamId() {
+        return id.examId;
+    }
+
+    public int getStudentId() {
+        return id.studentId;
+    }
+
     @Data
     @Embeddable
     @NoArgsConstructor
@@ -55,13 +63,5 @@ public class ExamineeData {
             examId = id.getExamId();
             studentId = id.getStudentId();
         }
-    }
-
-    public int getExamId() {
-        return id.examId;
-    }
-
-    public int getStudentId() {
-        return id.studentId;
     }
 }

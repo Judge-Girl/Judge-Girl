@@ -37,8 +37,12 @@ public class FileResource extends StreamingResource {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         FileResource that = (FileResource) o;
         try {
             return contentLength == that.contentLength &&

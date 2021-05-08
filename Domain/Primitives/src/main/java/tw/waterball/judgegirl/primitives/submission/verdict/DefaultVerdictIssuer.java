@@ -26,7 +26,7 @@ import java.util.function.Consumer;
  * @author - johnny850807@gmail.com (Waterball)
  */
 public class DefaultVerdictIssuer implements VerdictIssuer {
-    private final static Logger logger = LogManager.getLogger(DefaultVerdictIssuer.class);
+    private static final Logger logger = LogManager.getLogger(DefaultVerdictIssuer.class);
     private final Verdict verdict;
 
     public DefaultVerdictIssuer(List<Judge> judges) {

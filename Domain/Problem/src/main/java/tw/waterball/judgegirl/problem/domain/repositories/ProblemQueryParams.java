@@ -22,7 +22,7 @@ import java.util.Optional;
  * @author - johnny850807@gmail.com (Waterball)
  */
 public class ProblemQueryParams {
-    public final static ProblemQueryParams NO_PARAMS = new ProblemQueryParams(null, null);
+    public static final ProblemQueryParams NO_PARAMS = new ProblemQueryParams(null, null);
 
     private final String[] tags;
 

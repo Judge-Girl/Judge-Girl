@@ -40,12 +40,12 @@
 //// TODO the test should be parameterized in the future
 //@SuppressWarnings("SameParameterValue")
 //class DotProductJudgeIT {
-//    private final static String zippedProvidedCodesFileName = "/problem/gpu/dotProduct/provided.zip";
-//    private final static String zippedTestCaseInputsFileName = "/problem/gpu/dotProduct/in.zip";
-//    private final static String zippedTestCaseOutputsFileName = "/problem/gpu/dotProduct/out.zip";
-//    private final static String zippedSubmittedCodesFileName = "/problem/gpu/dotProduct/submitted.zip";
-//    private final static String compilationScript = "gcc -std=c99 -O2 main.c -lOpenCL -fopenmp";
-//    private final static long MEMORY_LIMIT = 512 * 1024 * 1024;
+//    private static final String zippedProvidedCodesFileName = "/problem/gpu/dotProduct/provided.zip";
+//    private static final String zippedTestCaseInputsFileName = "/problem/gpu/dotProduct/in.zip";
+//    private static final String zippedTestCaseOutputsFileName = "/problem/gpu/dotProduct/out.zip";
+//    private static final String zippedSubmittedCodesFileName = "/problem/gpu/dotProduct/submitted.zip";
+//    private static final String compilationScript = "gcc -std=c99 -O2 main.c -lOpenCL -fopenmp";
+//    private static final long MEMORY_LIMIT = 512 * 1024 * 1024;
 //    private static JudgeSpec judgeSpec = new JudgeSpec(JudgeLang.C, JudgeEnv.NORMAL, 0.5f, 1);
 //    private static int problemId = 1;
 //    private static Problem problem = Problem.builder()

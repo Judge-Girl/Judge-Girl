@@ -64,7 +64,7 @@ public class YAMLJudgerWorkspace implements JudgerWorkspace {
     static class YAMLSubmissionHome implements SubmissionHome {
         private final Directory submissionHome;
 
-        public YAMLSubmissionHome(Directory submissionHome) {
+        YAMLSubmissionHome(Directory submissionHome) {
             this.submissionHome = submissionHome;
         }
 
@@ -89,7 +89,7 @@ public class YAMLJudgerWorkspace implements JudgerWorkspace {
     private static class YAMLCompileHome implements CompileHome {
         private final Directory compileHome;
 
-        public YAMLCompileHome(Directory compileHome) {
+        YAMLCompileHome(Directory compileHome) {
             this.compileHome = compileHome;
         }
 
@@ -131,7 +131,7 @@ public class YAMLJudgerWorkspace implements JudgerWorkspace {
     private static class YAMLTestcaseHome implements TestcaseHome {
         private final Directory testcaseHome;
 
-        public YAMLTestcaseHome(Directory testcaseHome) {
+        YAMLTestcaseHome(Directory testcaseHome) {
             this.testcaseHome = testcaseHome;
         }
 
@@ -157,7 +157,7 @@ public class YAMLJudgerWorkspace implements JudgerWorkspace {
     private static class YAMLSandboxRoot implements SandboxRoot {
         private final Directory sandboxRoot;
 
-        public YAMLSandboxRoot(Directory sandboxRoot) {
+        YAMLSandboxRoot(Directory sandboxRoot) {
             this.sandboxRoot = sandboxRoot;
         }
 
@@ -190,7 +190,7 @@ public class YAMLJudgerWorkspace implements JudgerWorkspace {
     private static class YAMLTestcaseOutputHome implements TestCaseOutputHome {
         private final Directory testcaseOutputHome;
 
-        public YAMLTestcaseOutputHome(Directory testcaseOutputHome) {
+        YAMLTestcaseOutputHome(Directory testcaseOutputHome) {
             this.testcaseOutputHome = testcaseOutputHome;
         }
 

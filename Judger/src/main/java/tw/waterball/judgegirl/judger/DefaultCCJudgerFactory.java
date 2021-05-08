@@ -53,7 +53,7 @@ import static tw.waterball.judgegirl.commons.utils.DateUtils.afterCurrentTime;
  * @author - johnny850807@gmail.com (Waterball)
  */
 public class DefaultCCJudgerFactory {
-    private final static int JUDGER_STUDENT_ID = -999999;
+    private static final int JUDGER_STUDENT_ID = -999999;
 
     @SneakyThrows
     public static CCJudger create(JudgerEnvVariables.Values values,

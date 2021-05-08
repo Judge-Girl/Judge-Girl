@@ -50,7 +50,7 @@ import static tw.waterball.judgegirl.springboot.utils.MongoUtils.downloadFileRes
 @Component
 @AllArgsConstructor
 public class MongoSubmissionRepository implements SubmissionRepository {
-    private final static int PAGE_SIZE = 30;
+    private static final int PAGE_SIZE = 30;
     private final MongoTemplate mongoTemplate;
     private final GridFsTemplate gridFsTemplate;
     private final SaveSubmissionWithCodesStrategy saveSubmissionWithCodesStrategy;
@@ -112,7 +112,7 @@ public class MongoSubmissionRepository implements SubmissionRepository {
                 .byId(submissionId)
                 .execute()
                 .getField(SubmissionData::getSubmittedCodesFileId)
-                .map((fileId) -> downloadFileResourceByFileId(gridFsTemplate, fileId));
+                .map(fileId -> downloadFileResourceByFileId(gridFsTemplate, fileId));
     }
 
     @Override

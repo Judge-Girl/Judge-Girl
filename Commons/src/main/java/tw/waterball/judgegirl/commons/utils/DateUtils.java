@@ -21,8 +21,8 @@ import java.util.concurrent.TimeUnit;
  * @author - johnny850807@gmail.com (Waterball)
  */
 public class DateUtils {
-    private final static Calendar NEVER_EXPIRED_IN_LIFETIME_CALENDAR = Calendar.getInstance();
-    public final static Date NEVER_EXPIRED_IN_LIFETIME_DATE = NEVER_EXPIRED_IN_LIFETIME_CALENDAR.getTime();
+    private static final Calendar NEVER_EXPIRED_IN_LIFETIME_CALENDAR = Calendar.getInstance();
+    public static final Date NEVER_EXPIRED_IN_LIFETIME_DATE = NEVER_EXPIRED_IN_LIFETIME_CALENDAR.getTime();
 
     static {
         NEVER_EXPIRED_IN_LIFETIME_CALENDAR.set(2100, Calendar.AUGUST, 7);

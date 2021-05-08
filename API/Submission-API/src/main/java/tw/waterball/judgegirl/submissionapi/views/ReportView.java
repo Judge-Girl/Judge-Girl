@@ -29,15 +29,6 @@ public class ReportView {
     private String name;
     private Map<String, ?> rawData;
 
-
-    public static ReportView toViewModel(Report report) {
-        return new ReportView(report.getName(), report.getRawData());
-    }
-
-    public static ReportView fromData(Map<String, ?> data) {
-        return new ReportView("RawDataReport", data);
-    }
-
     public ReportView() {
     }
 
@@ -48,6 +39,14 @@ public class ReportView {
     public ReportView(String name, Map<String, ?> rawData) {
         this.name = name;
         this.rawData = rawData;
+    }
+
+    public static ReportView toViewModel(Report report) {
+        return new ReportView(report.getName(), report.getRawData());
+    }
+
+    public static ReportView fromData(Map<String, ?> data) {
+        return new ReportView("RawDataReport", data);
     }
 
     public String getName() {

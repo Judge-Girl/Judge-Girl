@@ -20,15 +20,15 @@ import tw.waterball.judgegirl.cqi.csa.CodingStyleAnalyzer;
 import tw.waterball.judgegirl.cqi.csa.CodingStyleAnalyzerImpl;
 import tw.waterball.judgegirl.cqi.cyclomatic.CyclomaticComplexityCalculator;
 import tw.waterball.judgegirl.cqi.cyclomatic.CyclomaticComplexityCalculatorImpl;
-import tw.waterball.judgegirl.primitives.problem.JudgePluginTag;
-import tw.waterball.judgegirl.primitives.problem.LanguageEnv;
-import tw.waterball.judgegirl.primitives.problem.Problem;
-import tw.waterball.judgegirl.primitives.submission.verdict.VerdictIssuer;
 import tw.waterball.judgegirl.plugins.api.AbstractJudgeGirlPlugin;
 import tw.waterball.judgegirl.plugins.api.JudgeGirlVerdictFilterPlugin;
 import tw.waterball.judgegirl.plugins.api.LanguageEnvAware;
 import tw.waterball.judgegirl.plugins.api.ProblemAware;
 import tw.waterball.judgegirl.plugins.api.codeinspection.JudgeGirlSourceCodeFilterPlugin;
+import tw.waterball.judgegirl.primitives.problem.JudgePluginTag;
+import tw.waterball.judgegirl.primitives.problem.LanguageEnv;
+import tw.waterball.judgegirl.primitives.problem.Problem;
+import tw.waterball.judgegirl.primitives.submission.verdict.VerdictIssuer;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -42,14 +42,13 @@ import java.util.List;
  */
 public class CodeQualityInspectionPlugin extends AbstractJudgeGirlPlugin
         implements ProblemAware, LanguageEnvAware, JudgeGirlSourceCodeFilterPlugin, JudgeGirlVerdictFilterPlugin {
-    private final static Logger logger = LogManager.getLogger(CodeQualityInspectionPlugin.class);
-    public final static String GROUP = JUDGE_GIRL_GROUP;
-    public final static String NAME = "CodeQualityInspection";
-    public final static String DESCRIPTION = "Calculate cyclomatic complexity and perform code quality inspection" +
+    private static final Logger logger = LogManager.getLogger(CodeQualityInspectionPlugin.class);
+    public static final String GROUP = JUDGE_GIRL_GROUP;
+    public static final String NAME = "CodeQualityInspection";
+    public static final String DESCRIPTION = "Calculate cyclomatic complexity and perform code quality inspection" +
             "of the submission source code.";
-    public final static String VERSION = "1.0";
-    public final static JudgePluginTag TAG = new JudgePluginTag(JudgePluginTag.Type.FILTER, GROUP, NAME, VERSION);
-
+    public static final String VERSION = "1.0";
+    public static final JudgePluginTag TAG = new JudgePluginTag(JudgePluginTag.Type.FILTER, GROUP, NAME, VERSION);
     private final CyclomaticComplexityCalculator ccCalculator;
     private final CodingStyleAnalyzer csAnalyzer;
     private CodeQualityInspectionReport report;

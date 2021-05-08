@@ -14,7 +14,7 @@ import tw.waterball.judgegirl.springboot.submission.impl.mongo.data.SubmissionDa
         havingValue = VerdictShortcut.STRATEGY_NAME)
 @Component
 public class VerdictShortcut extends DuplicateDetectionCopyOnWrite {
-    public final static String STRATEGY_NAME = "verdict-shortcut";
+    public static final String STRATEGY_NAME = "verdict-shortcut";
 
     public VerdictShortcut(MongoTemplate mongoTemplate, GridFsTemplate gridFsTemplate) {
         super(mongoTemplate, gridFsTemplate);

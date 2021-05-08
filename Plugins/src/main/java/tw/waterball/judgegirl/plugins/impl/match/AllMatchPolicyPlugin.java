@@ -14,9 +14,9 @@
 package tw.waterball.judgegirl.plugins.impl.match;
 
 import org.apache.commons.io.IOUtils;
-import tw.waterball.judgegirl.primitives.problem.JudgePluginTag;
 import tw.waterball.judgegirl.plugins.api.ParameterMeta;
 import tw.waterball.judgegirl.plugins.api.match.JudgeGirlMatchPolicyPlugin;
+import tw.waterball.judgegirl.primitives.problem.JudgePluginTag;
 
 import java.io.FileInputStream;
 import java.nio.charset.StandardCharsets;
@@ -33,13 +33,13 @@ import java.util.Set;
  * @author - johnny850807@gmail.com (Waterball)
  */
 public class AllMatchPolicyPlugin extends AbstractJudgeGirlMatchPolicyPlugin {
-    public final static String GROUP = JUDGE_GIRL_GROUP;
-    public final static String NAME = "All Match";
-    public final static String DESCRIPTION = "Assert the actual output exactly as same as the expected output, " +
+    public static final String GROUP = JUDGE_GIRL_GROUP;
+    public static final String NAME = "All Match";
+    public static final String DESCRIPTION = "Assert the actual output exactly as same as the expected output, " +
             "even any differences in `lines` or `spaces` will lead to WA.";
-    public final static String VERSION = "1.0";
-    public final static JudgePluginTag TAG = new JudgePluginTag(JudgeGirlMatchPolicyPlugin.TYPE, GROUP, NAME, VERSION);
-    private boolean strictTrailingBreakLine = false;
+    public static final String VERSION = "1.0";
+    public static final JudgePluginTag TAG = new JudgePluginTag(JudgeGirlMatchPolicyPlugin.TYPE, GROUP, NAME, VERSION);
+    private boolean strictTrailingBreakLine;
 
     public AllMatchPolicyPlugin() {
         super(Collections.emptyMap());
@@ -54,6 +54,7 @@ public class AllMatchPolicyPlugin extends AbstractJudgeGirlMatchPolicyPlugin {
         return Collections.emptySet();
     }
 
+    @Override
     public String getDescription() {
         return DESCRIPTION;
     }
