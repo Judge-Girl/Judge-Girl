@@ -13,7 +13,7 @@ import java.util.List;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.zipToList;
 
 /**
- * @author - johnny850807@gmail.com (Waterball)
+ * @author - c11037at@gmail.com (snowmancc)
  */
 public class ExamOverviewPresenter implements GetExamOverviewUseCase.Presenter {
     private Exam exam;
@@ -25,25 +25,24 @@ public class ExamOverviewPresenter implements GetExamOverviewUseCase.Presenter {
     }
 
     @Override
-    public void showQuestion(Question question, Problem problem) {
+    public void showProblem(Problem problem) {
         problems.add(problem);
     }
 
     public ExamHome present() {
-        List<QuestionItem> questionItems = aggregateQuestionOverviews();
         return ExamHome.builder()
                 .id(exam.getId())
                 .name(exam.getName())
                 .startTime(exam.getStartTime())
                 .endTime(exam.getEndTime())
                 .description(exam.getDescription())
-                .questions(questionItems)
+                .questions(aggregateQuestionOverviews())
                 .build();
     }
 
     private List<QuestionItem> aggregateQuestionOverviews() {
         return zipToList(exam.getQuestions(), problems,
-                (q, p) -> QuestionItem.toViewModel(q, p));
+                QuestionItem::toViewModel);
     }
 
 }

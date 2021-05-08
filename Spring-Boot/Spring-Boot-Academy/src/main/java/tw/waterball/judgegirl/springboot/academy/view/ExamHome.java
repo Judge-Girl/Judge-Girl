@@ -53,7 +53,7 @@ public class ExamHome {
                                                @Nullable Record bestRecord) {
             var builder = QuestionItem.builder()
                     .examId(question.getExamId())
-                    .problemId(question.getId().getProblemId())
+                    .problemId(problem.getId())
                     .quota(question.getQuota())
                     .remainingQuota(remainingQuota)
                     .yourScore(yourScore)
@@ -67,14 +67,13 @@ public class ExamHome {
         }
 
         public static QuestionItem toViewModel(Question question, Problem problem) {
-            var builder = QuestionItem.builder()
+            return QuestionItem.builder()
                     .examId(question.getExamId())
-                    .problemId(question.getId().getProblemId())
+                    .problemId(problem.getId())
                     .quota(question.getQuota())
                     .maxScore(question.getScore())
                     .questionOrder(question.getQuestionOrder())
-                    .problemTitle(problem.getTitle());
-            return builder.build();
+                    .problemTitle(problem.getTitle()).build();
         }
     }
 

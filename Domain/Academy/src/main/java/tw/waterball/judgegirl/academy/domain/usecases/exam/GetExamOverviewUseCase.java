@@ -18,19 +18,16 @@ public class GetExamOverviewUseCase {
     private final ExamRepository examRepository;
     private final ProblemServiceDriver problemService;
 
-    public void execute(Request request, Presenter presenter) {
-        Exam exam = findExam(request);
+    public void execute(int examId, Presenter presenter) {
+        Exam exam = findExam(examId);
         presenter.showExam(exam);
 
-        exam.foreachQuestion(question -> {
-            Problem problem = findProblem(question);
-            presenter.showQuestion(question, problem);
-        });
+        exam.foreachQuestion(question -> presenter.showProblem(findProblem(question)));
     }
 
-    private Exam findExam(Request request) {
-        return examRepository.findById(request.examId)
-                .orElseThrow(() -> notFound(Exam.class).id(request.examId));
+    private Exam findExam(int examId) {
+        return examRepository.findById(examId)
+                .orElseThrow(() -> notFound(Exam.class).id(examId));
     }
 
     private Problem findProblem(Question question) {
@@ -40,12 +37,8 @@ public class GetExamOverviewUseCase {
     public interface Presenter {
         void showExam(Exam exam);
 
-        void showQuestion(Question question, Problem problem);
+        void showProblem(Problem problem);
 
     }
 
-    @AllArgsConstructor
-    public static class Request {
-        public int examId;
-    }
 }

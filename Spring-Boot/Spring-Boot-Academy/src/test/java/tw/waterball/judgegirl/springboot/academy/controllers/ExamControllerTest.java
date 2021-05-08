@@ -46,7 +46,8 @@ import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static java.util.concurrent.TimeUnit.HOURS;
 import static java.util.stream.Collectors.toList;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -545,7 +546,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
         QuestionView q1 = createQuestionAndGet(new CreateQuestionUseCase.Request(exam.getId(), PROBLEM_ID, QUOTA, 50, 1));
         QuestionView q2 = createQuestionAndGet(new CreateQuestionUseCase.Request(exam.getId(), ANOTHER_PROBLEM_ID, QUOTA, 50, 2));
 
-        ExamHome examHome = getExamOverview(1);
+        ExamHome examHome = getExamOverview(exam.getId());
         ExamHome.QuestionItem firstQuestion = examHome.getQuestionById(new Question.Id(q1.examId, q1.problemId)).orElseThrow();
         ExamHome.QuestionItem secondQuestion = examHome.getQuestionById(new Question.Id(q2.examId, q2.problemId)).orElseThrow();
 
@@ -556,18 +557,17 @@ class ExamControllerTest extends AbstractSpringBootTest {
         assertEquals("problem statement", examHome.getDescription());
         assertEquals(2, examHome.getQuestions().size());
 
-        assertEquals(firstQuestion.getExamId(), q1.examId);
-        assertEquals(firstQuestion.getProblemId(), problem.getId());
-        assertEquals(firstQuestion.getQuota(), q1.getQuota());
-        assertEquals(firstQuestion.getMaxScore(), q1.getScore());
-        assertEquals(firstQuestion.getQuestionOrder(), q1.getQuestionOrder());
-        assertEquals(firstQuestion.getProblemTitle(), problem.getTitle());
-        assertEquals(secondQuestion.getExamId(), q2.examId);
-        assertEquals(secondQuestion.getProblemId(), anotherProblem.getId());
-        assertEquals(secondQuestion.getQuota(), q2.getQuota());
-        assertEquals(secondQuestion.getMaxScore(), q2.getScore());
-        assertEquals(secondQuestion.getQuestionOrder(), q2.getQuestionOrder());
-        assertEquals(secondQuestion.getProblemTitle(), anotherProblem.getTitle());
+        questionAssertEquals(q1, firstQuestion, problem);
+        questionAssertEquals(q2, secondQuestion, anotherProblem);
+    }
+
+    void questionAssertEquals(QuestionView expectedQuestion, ExamHome.QuestionItem actualQuestion, ProblemView problem) {
+        assertEquals(expectedQuestion.getExamId(), actualQuestion.getExamId());
+        assertEquals(expectedQuestion.getProblemId(), actualQuestion.getProblemId());
+        assertEquals(expectedQuestion.getQuota(), actualQuestion.getQuota());
+        assertEquals(expectedQuestion.getScore(), actualQuestion.getMaxScore());
+        assertEquals(expectedQuestion.getQuestionOrder(), actualQuestion.getQuestionOrder());
+        assertEquals(problem.getTitle(), actualQuestion.getProblemTitle());
     }
 
     @DisplayName("Give 8 students participating a current exam, one question in the exam with submission quota = 3, " +
@@ -588,17 +588,6 @@ class ExamControllerTest extends AbstractSpringBootTest {
             answerQuestion(studentId, exam).andExpect(status().is4xxClientError());
         });
     }
-
-    @Test
-    void GivenExamSavedAndGetExam_WhenDeleteExamById_ShouldExamBeNotEmpty() throws Exception {
-        var exam = createExamAndGet(new Date(), new Date(), "exam");
-
-        deleteExam(exam.id);
-
-        Optional<Exam> optionalExam = examRepository.findById(exam.id);
-        assertTrue(optionalExam.isEmpty());
-    }
-
 
     private void addGroupsOfExaminees(ExamView exam, Group... groups) throws Exception {
         mockMvc.perform(post("/api/exams/{examId}/groups", exam.getId())

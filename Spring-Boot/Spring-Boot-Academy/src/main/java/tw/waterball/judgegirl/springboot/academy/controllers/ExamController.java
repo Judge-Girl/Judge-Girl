@@ -177,7 +177,7 @@ public class ExamController {
     @GetMapping("/exams/{examId}/overview")
     public ExamHome getExamOverview(@PathVariable int examId) {
         ExamOverviewPresenter presenter = new ExamOverviewPresenter();
-        getExamOverviewUseCase.execute(new GetExamOverviewUseCase.Request(examId), presenter);
+        getExamOverviewUseCase.execute(examId, presenter);
         return presenter.present();
     }
 }
