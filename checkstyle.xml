@@ -18,8 +18,9 @@
         <module name="AvoidNoArgumentSuperConstructorCall"/>
         <module name="DefaultComesLast"/>
         <module name="EmptyBlock"/>
-        <!--        忽略 ignore -->
-        <!--        <module name="EmptyCatchBlock"/>-->
+        <module name="EmptyCatchBlock">
+            <property name="exceptionVariableName" value="ignore"/>
+        </module>
         <module name="EqualsAvoidNull"/>
         <module name="LeftCurly"/>
         <module name="RightCurly"/>
