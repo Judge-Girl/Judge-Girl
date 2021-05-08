@@ -204,6 +204,11 @@ public class CCJudger extends PluginExtendedJudger {
         files.add("std.out");
         files.add("std.err");
         files.add(EXECUTABLE_NAME);
+        try {
+            FileUtils.touch(FileUtils.getFile(getSourceRootPath().toString(), "../out/std.out"));
+        } catch (Exception exception) {
+
+        }
         return files;
     }
 
