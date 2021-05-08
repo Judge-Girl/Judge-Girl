@@ -164,7 +164,10 @@ public class JpaExamRepository implements ExamRepository {
 
     @Override
     public void deleteExamById(int examId) {
-        jpaExamDAO.deleteById(examId);
+        try {
+            jpaExamDAO.deleteById(examId);
+        } catch (EmptyResultDataAccessException ignored) {
+        }
     }
 
 }
