@@ -53,7 +53,7 @@ public class ExamHome {
                                                @Nullable Record bestRecord) {
             var builder = QuestionItem.builder()
                     .examId(question.getExamId())
-                    .problemId(question.getId().getProblemId())
+                    .problemId(problem.getId())
                     .quota(question.getQuota())
                     .remainingQuota(remainingQuota)
                     .yourScore(yourScore)
@@ -65,6 +65,7 @@ public class ExamHome {
             }
             return builder.build();
         }
+
     }
 
     @Builder

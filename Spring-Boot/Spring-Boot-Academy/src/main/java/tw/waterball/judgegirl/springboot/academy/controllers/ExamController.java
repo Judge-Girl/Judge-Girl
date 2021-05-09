@@ -15,11 +15,9 @@ import tw.waterball.judgegirl.primitives.exam.Question;
 import tw.waterball.judgegirl.primitives.exam.YouAreNotAnExamineeException;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.springboot.academy.presenters.ExamHomePresenter;
+import tw.waterball.judgegirl.springboot.academy.presenters.ExamOverviewPresenter;
 import tw.waterball.judgegirl.springboot.academy.presenters.ExamPresenter;
-import tw.waterball.judgegirl.springboot.academy.view.AnswerView;
-import tw.waterball.judgegirl.springboot.academy.view.ExamHome;
-import tw.waterball.judgegirl.springboot.academy.view.ExamView;
-import tw.waterball.judgegirl.springboot.academy.view.QuestionView;
+import tw.waterball.judgegirl.springboot.academy.view.*;
 import tw.waterball.judgegirl.studentapi.clients.view.StudentView;
 
 import java.util.List;
@@ -41,6 +39,7 @@ public class ExamController {
     private final UpdateQuestionUseCase updateQuestionUseCase;
     private final DeleteQuestionUseCase deleteQuestionUseCase;
     private final GetExamProgressOverviewUseCase getExamProgressOverviewUseCase;
+    private final GetExamOverviewUseCase getExamOverviewUseCase;
     private final AnswerQuestionUseCase answerQuestionUseCase;
     private final UpdateExamUseCase updateExamUseCase;
     private final GetExamUseCase getExamUseCase;
@@ -122,7 +121,6 @@ public class ExamController {
         deleteQuestionUseCase.execute(new DeleteQuestionUseCase.Request(examId, problemId));
     }
 
-
     @GetMapping("/exams/{examId}")
     public ExamView getExamById(@PathVariable int examId) {
         getExamUseCase.execute(examId, examPresenter);
@@ -130,8 +128,8 @@ public class ExamController {
     }
 
     @GetMapping("/exams/{examId}/students/{studentId}/overview")
-    public ExamHome getExamOverview(@PathVariable int examId,
-                                    @PathVariable int studentId) {
+    public ExamHome getExamProgressOverview(@PathVariable int examId,
+                                            @PathVariable int studentId) {
         ExamHomePresenter presenter = new ExamHomePresenter();
         getExamProgressOverviewUseCase.execute(new GetExamProgressOverviewUseCase.Request(examId, studentId), presenter);
         return presenter.present();
@@ -177,6 +175,13 @@ public class ExamController {
     @ResponseStatus(HttpStatus.FORBIDDEN)
     @ExceptionHandler({YouAreNotAnExamineeException.class})
     public void handleYouAreNotAnExamineeException() {
+    }
+
+    @GetMapping("/exams/{examId}/overview")
+    public ExamOverview getExamOverview(@PathVariable int examId) {
+        ExamOverviewPresenter presenter = new ExamOverviewPresenter();
+        getExamOverviewUseCase.execute(examId, presenter);
+        return presenter.present();
     }
 }
 

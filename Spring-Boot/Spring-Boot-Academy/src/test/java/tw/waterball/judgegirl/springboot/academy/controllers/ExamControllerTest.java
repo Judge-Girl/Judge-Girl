@@ -26,10 +26,7 @@ import tw.waterball.judgegirl.problemapi.clients.FakeProblemServiceDriver;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.springboot.academy.SpringBootAcademyApplication;
 import tw.waterball.judgegirl.springboot.academy.handler.VerdictIssuedEventHandler;
-import tw.waterball.judgegirl.springboot.academy.view.AnswerView;
-import tw.waterball.judgegirl.springboot.academy.view.ExamHome;
-import tw.waterball.judgegirl.springboot.academy.view.ExamView;
-import tw.waterball.judgegirl.springboot.academy.view.QuestionView;
+import tw.waterball.judgegirl.springboot.academy.view.*;
 import tw.waterball.judgegirl.springboot.profiles.Profiles;
 import tw.waterball.judgegirl.studentapi.clients.FakeStudentServiceDriver;
 import tw.waterball.judgegirl.submissionapi.clients.SubmissionServiceDriver;
@@ -352,7 +349,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
         createQuestion(new CreateQuestionUseCase.Request(examView.getId(), 2, 5, 100, 1));
         deleteQuestion(examView.getId(), PROBLEM_ID)
                 .andExpect(status().isOk());
-        assertEquals(0, getExamOverview(examView.getId()).getQuestions().size());
+        assertEquals(0, getExamProgressOverview(examView.getId()).getQuestions().size());
     }
 
     @Test
@@ -515,7 +512,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
         publishVerdict(PROBLEM_ID, problem.getTitle(), exam, submissionWith2ACs20Point);
 
         awaitVerdictIssuedEvent();
-        ExamHome examHome = getExamOverview(exam.getId());
+        ExamHome examHome = getExamProgressOverview(exam.getId());
         ExamHome.QuestionItem firstQuestion = examHome.getQuestionById(new Question.Id(q1.examId, q1.problemId)).orElseThrow();
         ExamHome.QuestionItem secondQuestion = examHome.getQuestionById(new Question.Id(q2.examId, q2.problemId)).orElseThrow();
 
@@ -535,6 +532,38 @@ class ExamControllerTest extends AbstractSpringBootTest {
         assertEquals(0, secondQuestion.getYourScore());
         assertEquals(firstQuestion.getProblemTitle(), problem.getTitle());
         assertEquals(secondQuestion.getProblemTitle(), anotherProblem.getTitle());
+    }
+
+    @Test
+    void testGetExamOverview() throws Exception {
+        final int QUOTA = 5;
+        Date start = beforeCurrentTime(1, HOURS), end = afterCurrentTime(1, HOURS);
+        ExamView exam = createExamAndGet(start, end, "sample-exam");
+        QuestionView q1 = createQuestionAndGet(new CreateQuestionUseCase.Request(exam.getId(), PROBLEM_ID, QUOTA, 50, 1));
+        QuestionView q2 = createQuestionAndGet(new CreateQuestionUseCase.Request(exam.getId(), ANOTHER_PROBLEM_ID, QUOTA, 50, 2));
+
+        ExamOverview examOverview = getExamOverview(exam.getId());
+        ExamOverview.QuestionItem firstQuestion = examOverview.getQuestionById(new Question.Id(q1.examId, q1.problemId)).orElseThrow();
+        ExamOverview.QuestionItem secondQuestion = examOverview.getQuestionById(new Question.Id(q2.examId, q2.problemId)).orElseThrow();
+
+        assertEquals(exam.getId(), examOverview.getId());
+        assertEquals("sample-exam", examOverview.getName());
+        assertEquals(start, examOverview.getStartTime());
+        assertEquals(end, examOverview.getEndTime());
+        assertEquals("problem statement", examOverview.getDescription());
+        assertEquals(2, examOverview.getQuestions().size());
+
+        assertQuestionEquals(q1, firstQuestion, problem);
+        assertQuestionEquals(q2, secondQuestion, anotherProblem);
+    }
+
+    void assertQuestionEquals(QuestionView expectedQuestion, ExamOverview.QuestionItem actualQuestion, ProblemView problem) {
+        assertEquals(expectedQuestion.getExamId(), actualQuestion.getExamId());
+        assertEquals(expectedQuestion.getProblemId(), actualQuestion.getProblemId());
+        assertEquals(expectedQuestion.getQuota(), actualQuestion.getQuota());
+        assertEquals(expectedQuestion.getScore(), actualQuestion.getMaxScore());
+        assertEquals(expectedQuestion.getQuestionOrder(), actualQuestion.getQuestionOrder());
+        assertEquals(problem.getTitle(), actualQuestion.getProblemTitle());
     }
 
     @DisplayName("Give 8 students participating a current exam, one question in the exam with submission quota = 3, " +
@@ -711,7 +740,6 @@ class ExamControllerTest extends AbstractSpringBootTest {
                 .content(toJson(request)));
     }
 
-
     private List<ExamView> getStudentExams(int studentId, ExamFilter.Status status, int skip, int size) throws Exception {
         return getBody(mockMvc.perform(get("/api/students/{studentId}/exams?status={status}&&skip={skip}&&size={size}", studentId, status, skip, size))
                 .andExpect(status().isOk()), new TypeReference<>() {
@@ -729,9 +757,14 @@ class ExamControllerTest extends AbstractSpringBootTest {
                 examId)).andExpect(status().isOk()), ExamView.class);
     }
 
-    private ExamHome getExamOverview(int examId) throws Exception {
+    private ExamHome getExamProgressOverview(int examId) throws Exception {
         return getBody(mockMvc.perform(get("/api/exams/{examId}/students/{studentId}/overview",
                 examId, STUDENT_A_ID)).andExpect(status().isOk()), ExamHome.class);
+    }
+
+    private ExamOverview getExamOverview(int examId) throws Exception {
+        return getBody(mockMvc.perform(get("/api/exams/{examId}/overview",
+                examId)).andExpect(status().isOk()), ExamOverview.class);
     }
 
     private void createExaminee(int studentId, int examId) {
