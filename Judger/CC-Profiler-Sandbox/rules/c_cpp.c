@@ -9,7 +9,7 @@
 
 
 int _c_cpp_seccomp_rules(struct config *_config, bool allow_write_file) {
-    int syscalls_whitelist[] = {SCMP_SYS(read), SCMP_SYS(fstat),
+    int syscalls_whitelist[] = {SCMP_SYS(read), SCMP_SYS(fstat), SCMP_SYS(stat),
                                 SCMP_SYS(mmap), SCMP_SYS(mprotect),
                                 SCMP_SYS(munmap), SCMP_SYS(uname),
                                 SCMP_SYS(arch_prctl), SCMP_SYS(brk),
