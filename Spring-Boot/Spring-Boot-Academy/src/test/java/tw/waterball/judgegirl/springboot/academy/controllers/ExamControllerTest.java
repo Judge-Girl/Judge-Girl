@@ -26,10 +26,7 @@ import tw.waterball.judgegirl.problemapi.clients.FakeProblemServiceDriver;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.springboot.academy.SpringBootAcademyApplication;
 import tw.waterball.judgegirl.springboot.academy.handler.VerdictIssuedEventHandler;
-import tw.waterball.judgegirl.springboot.academy.view.AnswerView;
-import tw.waterball.judgegirl.springboot.academy.view.ExamHome;
-import tw.waterball.judgegirl.springboot.academy.view.ExamView;
-import tw.waterball.judgegirl.springboot.academy.view.QuestionView;
+import tw.waterball.judgegirl.springboot.academy.view.*;
 import tw.waterball.judgegirl.springboot.profiles.Profiles;
 import tw.waterball.judgegirl.studentapi.clients.FakeStudentServiceDriver;
 import tw.waterball.judgegirl.submissionapi.clients.SubmissionServiceDriver;
@@ -546,22 +543,22 @@ class ExamControllerTest extends AbstractSpringBootTest {
         QuestionView q1 = createQuestionAndGet(new CreateQuestionUseCase.Request(exam.getId(), PROBLEM_ID, QUOTA, 50, 1));
         QuestionView q2 = createQuestionAndGet(new CreateQuestionUseCase.Request(exam.getId(), ANOTHER_PROBLEM_ID, QUOTA, 50, 2));
 
-        ExamHome examHome = getExamOverview(exam.getId());
-        ExamHome.QuestionItem firstQuestion = examHome.getQuestionById(new Question.Id(q1.examId, q1.problemId)).orElseThrow();
-        ExamHome.QuestionItem secondQuestion = examHome.getQuestionById(new Question.Id(q2.examId, q2.problemId)).orElseThrow();
+        ExamOverview examOverview = getExamOverview(exam.getId());
+        ExamOverview.QuestionItem firstQuestion = examOverview.getQuestionById(new Question.Id(q1.examId, q1.problemId)).orElseThrow();
+        ExamOverview.QuestionItem secondQuestion = examOverview.getQuestionById(new Question.Id(q2.examId, q2.problemId)).orElseThrow();
 
-        assertEquals(exam.getId(), examHome.getId());
-        assertEquals("sample-exam", examHome.getName());
-        assertEquals(start, examHome.getStartTime());
-        assertEquals(end, examHome.getEndTime());
-        assertEquals("problem statement", examHome.getDescription());
-        assertEquals(2, examHome.getQuestions().size());
+        assertEquals(exam.getId(), examOverview.getId());
+        assertEquals("sample-exam", examOverview.getName());
+        assertEquals(start, examOverview.getStartTime());
+        assertEquals(end, examOverview.getEndTime());
+        assertEquals("problem statement", examOverview.getDescription());
+        assertEquals(2, examOverview.getQuestions().size());
 
         questionAssertEquals(q1, firstQuestion, problem);
         questionAssertEquals(q2, secondQuestion, anotherProblem);
     }
 
-    void questionAssertEquals(QuestionView expectedQuestion, ExamHome.QuestionItem actualQuestion, ProblemView problem) {
+    void questionAssertEquals(QuestionView expectedQuestion, ExamOverview.QuestionItem actualQuestion, ProblemView problem) {
         assertEquals(expectedQuestion.getExamId(), actualQuestion.getExamId());
         assertEquals(expectedQuestion.getProblemId(), actualQuestion.getProblemId());
         assertEquals(expectedQuestion.getQuota(), actualQuestion.getQuota());
@@ -756,9 +753,9 @@ class ExamControllerTest extends AbstractSpringBootTest {
                 examId, STUDENT_A_ID)).andExpect(status().isOk()), ExamHome.class);
     }
 
-    private ExamHome getExamOverview(int examId) throws Exception {
+    private ExamOverview getExamOverview(int examId) throws Exception {
         return getBody(mockMvc.perform(get("/api/exams/{examId}/overview",
-                examId)).andExpect(status().isOk()), ExamHome.class);
+                examId)).andExpect(status().isOk()), ExamOverview.class);
     }
 
     private void createExaminee(int studentId, int examId) {

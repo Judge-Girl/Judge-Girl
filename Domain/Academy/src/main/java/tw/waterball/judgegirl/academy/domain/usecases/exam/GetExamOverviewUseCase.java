@@ -22,7 +22,10 @@ public class GetExamOverviewUseCase {
         Exam exam = findExam(examId);
         presenter.showExam(exam);
 
-        exam.foreachQuestion(question -> presenter.showProblem(findProblem(question)));
+        exam.foreachQuestion(question -> {
+            Problem problem = findProblem(question);
+            presenter.showQuestion(question, problem);
+        });
     }
 
     private Exam findExam(int examId) {
@@ -37,7 +40,7 @@ public class GetExamOverviewUseCase {
     public interface Presenter {
         void showExam(Exam exam);
 
-        void showProblem(Problem problem);
+        void showQuestion(Question question, Problem problem);
 
     }
 

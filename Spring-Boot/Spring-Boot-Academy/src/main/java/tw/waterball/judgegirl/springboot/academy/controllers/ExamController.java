@@ -17,10 +17,7 @@ import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.springboot.academy.presenters.ExamHomePresenter;
 import tw.waterball.judgegirl.springboot.academy.presenters.ExamOverviewPresenter;
 import tw.waterball.judgegirl.springboot.academy.presenters.ExamPresenter;
-import tw.waterball.judgegirl.springboot.academy.view.AnswerView;
-import tw.waterball.judgegirl.springboot.academy.view.ExamHome;
-import tw.waterball.judgegirl.springboot.academy.view.ExamView;
-import tw.waterball.judgegirl.springboot.academy.view.QuestionView;
+import tw.waterball.judgegirl.springboot.academy.view.*;
 import tw.waterball.judgegirl.studentapi.clients.view.StudentView;
 
 import java.util.List;
@@ -175,7 +172,7 @@ public class ExamController {
     }
 
     @GetMapping("/exams/{examId}/overview")
-    public ExamHome getExamOverview(@PathVariable int examId) {
+    public ExamOverview getExamOverview(@PathVariable int examId) {
         ExamOverviewPresenter presenter = new ExamOverviewPresenter();
         getExamOverviewUseCase.execute(examId, presenter);
         return presenter.present();

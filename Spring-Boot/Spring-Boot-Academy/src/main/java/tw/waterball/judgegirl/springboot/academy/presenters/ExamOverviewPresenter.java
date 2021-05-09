@@ -2,9 +2,9 @@ package tw.waterball.judgegirl.springboot.academy.presenters;
 
 import tw.waterball.judgegirl.academy.domain.usecases.exam.GetExamOverviewUseCase;
 import tw.waterball.judgegirl.primitives.exam.Exam;
+import tw.waterball.judgegirl.primitives.exam.Question;
 import tw.waterball.judgegirl.primitives.problem.Problem;
-import tw.waterball.judgegirl.springboot.academy.view.ExamHome;
-import tw.waterball.judgegirl.springboot.academy.view.ExamHome.QuestionItem;
+import tw.waterball.judgegirl.springboot.academy.view.ExamOverview;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,12 +24,12 @@ public class ExamOverviewPresenter implements GetExamOverviewUseCase.Presenter {
     }
 
     @Override
-    public void showProblem(Problem problem) {
+    public void showQuestion(Question question, Problem problem) {
         problems.add(problem);
     }
 
-    public ExamHome present() {
-        return ExamHome.builder()
+    public ExamOverview present() {
+        return ExamOverview.builder()
                 .id(exam.getId())
                 .name(exam.getName())
                 .startTime(exam.getStartTime())
@@ -39,9 +39,9 @@ public class ExamOverviewPresenter implements GetExamOverviewUseCase.Presenter {
                 .build();
     }
 
-    private List<QuestionItem> aggregateQuestionOverviews() {
+    private List<ExamOverview.QuestionItem> aggregateQuestionOverviews() {
         return zipToList(exam.getQuestions(), problems,
-                QuestionItem::toViewModel);
+                ExamOverview.QuestionItem::toViewModel);
     }
 
 }
