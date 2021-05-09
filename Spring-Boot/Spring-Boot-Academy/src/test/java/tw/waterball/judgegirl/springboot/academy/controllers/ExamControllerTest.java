@@ -554,11 +554,11 @@ class ExamControllerTest extends AbstractSpringBootTest {
         assertEquals("problem statement", examOverview.getDescription());
         assertEquals(2, examOverview.getQuestions().size());
 
-        questionAssertEquals(q1, firstQuestion, problem);
-        questionAssertEquals(q2, secondQuestion, anotherProblem);
+        assertQuestionEquals(q1, firstQuestion, problem);
+        assertQuestionEquals(q2, secondQuestion, anotherProblem);
     }
 
-    void questionAssertEquals(QuestionView expectedQuestion, ExamOverview.QuestionItem actualQuestion, ProblemView problem) {
+    void assertQuestionEquals(QuestionView expectedQuestion, ExamOverview.QuestionItem actualQuestion, ProblemView problem) {
         assertEquals(expectedQuestion.getExamId(), actualQuestion.getExamId());
         assertEquals(expectedQuestion.getProblemId(), actualQuestion.getProblemId());
         assertEquals(expectedQuestion.getQuota(), actualQuestion.getQuota());
