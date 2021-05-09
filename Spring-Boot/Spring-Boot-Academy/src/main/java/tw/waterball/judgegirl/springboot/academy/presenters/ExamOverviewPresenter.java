@@ -2,7 +2,6 @@ package tw.waterball.judgegirl.springboot.academy.presenters;
 
 import tw.waterball.judgegirl.academy.domain.usecases.exam.GetExamOverviewUseCase;
 import tw.waterball.judgegirl.primitives.exam.Exam;
-import tw.waterball.judgegirl.primitives.exam.Question;
 import tw.waterball.judgegirl.primitives.problem.Problem;
 import tw.waterball.judgegirl.springboot.academy.view.ExamHome;
 import tw.waterball.judgegirl.springboot.academy.view.ExamHome.QuestionItem;
