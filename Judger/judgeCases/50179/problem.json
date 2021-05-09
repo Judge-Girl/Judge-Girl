@@ -28,7 +28,7 @@
     {
       "name": "00",
       "problemId": 50179,
-      "timeLimit": 5,
+      "timeLimit": 1000,
       "memoryLimit": 67108864,
       "outputLimit": 67108864,
       "threadNumberLimit": -1,
@@ -37,7 +37,7 @@
     {
       "name": "01",
       "problemId": 50179,
-      "timeLimit": 5,
+      "timeLimit": 1000,
       "memoryLimit": 67108864,
       "outputLimit": 67108864,
       "threadNumberLimit": -1,
@@ -46,7 +46,7 @@
     {
       "name": "02",
       "problemId": 50179,
-      "timeLimit": 5,
+      "timeLimit": 1000,
       "memoryLimit": 67108864,
       "outputLimit": 67108864,
       "threadNumberLimit": -1,
@@ -55,7 +55,7 @@
     {
       "name": "1",
       "problemId": 50179,
-      "timeLimit": 5,
+      "timeLimit": 1000,
       "memoryLimit": 67108864,
       "outputLimit": 67108864,
       "threadNumberLimit": -1,
@@ -64,7 +64,7 @@
     {
       "name": "2",
       "problemId": 50179,
-      "timeLimit": 5,
+      "timeLimit": 1000,
       "memoryLimit": 67108864,
       "outputLimit": 67108864,
       "threadNumberLimit": -1,
@@ -73,7 +73,7 @@
     {
       "name": "3",
       "problemId": 50179,
-      "timeLimit": 5,
+      "timeLimit": 1000,
       "memoryLimit": 67108864,
       "outputLimit": 67108864,
       "threadNumberLimit": -1,
@@ -82,7 +82,7 @@
     {
       "name": "4",
       "problemId": 50179,
-      "timeLimit": 5,
+      "timeLimit": 1000,
       "memoryLimit": 67108864,
       "outputLimit": 67108864,
       "threadNumberLimit": -1,
@@ -91,7 +91,7 @@
     {
       "name": "5",
       "problemId": 50179,
-      "timeLimit": 5,
+      "timeLimit": 1000,
       "memoryLimit": 67108864,
       "outputLimit": 67108864,
       "threadNumberLimit": -1,
@@ -100,7 +100,7 @@
     {
       "name": "6",
       "problemId": 50179,
-      "timeLimit": 5,
+      "timeLimit": 1000,
       "memoryLimit": 67108864,
       "outputLimit": 67108864,
       "threadNumberLimit": -1,
@@ -109,7 +109,7 @@
     {
       "name": "7",
       "problemId": 50179,
-      "timeLimit": 5,
+      "timeLimit": 1000,
       "memoryLimit": 67108864,
       "outputLimit": 67108864,
       "threadNumberLimit": -1,
@@ -118,7 +118,7 @@
     {
       "name": "8",
       "problemId": 50179,
-      "timeLimit": 5,
+      "timeLimit": 1000,
       "memoryLimit": 67108864,
       "outputLimit": 67108864,
       "threadNumberLimit": -1,
@@ -127,7 +127,7 @@
     {
       "name": "9",
       "problemId": 50179,
-      "timeLimit": 5,
+      "timeLimit": 1000,
       "memoryLimit": 67108864,
       "outputLimit": 67108864,
       "threadNumberLimit": -1,
@@ -136,7 +136,7 @@
     {
       "name": "10",
       "problemId": 50179,
-      "timeLimit": 5,
+      "timeLimit": 1000,
       "memoryLimit": 67108864,
       "outputLimit": 67108864,
       "threadNumberLimit": -1,
