@@ -49,6 +49,7 @@ public class ExamController {
     private final AddExamineesUseCase addExamineesUseCase;
     private final AddGroupOfExamineesUseCase addGroupOfExamineesUseCase;
     private final DeleteExamineesUseCase deleteExamineesUseCase;
+    private final DeleteExamUseCase deleteExamUseCase;
 
     @PostMapping("/exams")
     public ExamView createExam(@RequestBody CreateExamUseCase.Request request) {
@@ -166,6 +167,11 @@ public class ExamController {
         request.emails = emails;
         request.examId = examId;
         deleteExamineesUseCase.execute(request);
+    }
+
+    @DeleteMapping("/exams/{examId}")
+    public void deleteExam(@PathVariable int examId) {
+        deleteExamUseCase.execute(examId);
     }
 
     @ResponseStatus(HttpStatus.FORBIDDEN)

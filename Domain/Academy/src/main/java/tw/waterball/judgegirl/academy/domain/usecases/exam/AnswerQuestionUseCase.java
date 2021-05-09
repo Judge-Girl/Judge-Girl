@@ -50,7 +50,7 @@ public class AnswerQuestionUseCase implements VerdictIssuedEventListener {
     }
 
     private void studentMustParticipateExam(Request request) throws YouAreNotAnExamineeException {
-        if (!examRepository.hasStudentParticipatedExam(request.studentId, request.examId)) {
+        if (!examRepository.isExaminee(request.studentId, request.examId)) {
             throw new YouAreNotAnExamineeException();
         }
     }
