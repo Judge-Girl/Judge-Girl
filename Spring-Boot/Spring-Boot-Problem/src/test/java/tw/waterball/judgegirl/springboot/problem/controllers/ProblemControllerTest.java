@@ -400,10 +400,10 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         Problem problem = saveProblemAndGet(problemId);
 
         Testcase expectedTestcase = problem.getTestcases().get(0);
-        String testCaseName = expectedTestcase.getName();
+        String testCaseId = expectedTestcase.getId();
         int expectedTestcaseGrade = 100;
         expectedTestcase.setGrade(expectedTestcaseGrade);
-        updateOrAddTestCase(problemId, testCaseName, expectedTestcase);
+        updateOrAddTestCase(problemId, testCaseId, expectedTestcase);
 
         var actualProblem = getProblem(problemId);
         List<Testcase> testcases = actualProblem.getTestcases();
