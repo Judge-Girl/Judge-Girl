@@ -66,15 +66,6 @@ public class ExamHome {
             return builder.build();
         }
 
-        public static QuestionItem toViewModel(Question question, Problem problem) {
-            return QuestionItem.builder()
-                    .examId(question.getExamId())
-                    .problemId(problem.getId())
-                    .quota(question.getQuota())
-                    .maxScore(question.getScore())
-                    .questionOrder(question.getQuestionOrder())
-                    .problemTitle(problem.getTitle()).build();
-        }
     }
 
     @Builder
