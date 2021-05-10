@@ -131,11 +131,11 @@ public class ProblemController {
         patchProblemUseCase.execute(request);
     }
 
-    @PutMapping("/{problemId}/testcases/{testcaseName}")
+    @PutMapping("/{problemId}/testcases/{testcaseId}")
     public void updateOrAddTestcase(@PathVariable int problemId,
-                                    @PathVariable String testcaseName,
+                                    @PathVariable String testcaseId,
                                     @RequestBody Testcase testcase) {
-        testcase.setName(testcaseName);
+        testcase.setId(testcaseId);
         testcase.setProblemId(problemId);
         PatchProblemUseCase.Request request = PatchProblemUseCase.Request.builder()
                 .problemId(problemId)
