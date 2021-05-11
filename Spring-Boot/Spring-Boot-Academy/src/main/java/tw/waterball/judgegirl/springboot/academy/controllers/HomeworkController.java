@@ -2,9 +2,7 @@ package tw.waterball.judgegirl.springboot.academy.controllers;
 
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import tw.waterball.judgegirl.academy.domain.usecases.homework.CreateHomeworkUseCase;
-import tw.waterball.judgegirl.academy.domain.usecases.homework.GetHomeworkProgressUseCase;
-import tw.waterball.judgegirl.academy.domain.usecases.homework.GetHomeworkUseCase;
+import tw.waterball.judgegirl.academy.domain.usecases.homework.*;
 import tw.waterball.judgegirl.primitives.Homework;
 import tw.waterball.judgegirl.springboot.academy.view.HomeworkProgress;
 import tw.waterball.judgegirl.springboot.academy.view.HomeworkView;
@@ -12,6 +10,8 @@ import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 
 import java.util.LinkedList;
 import java.util.List;
+
+import static java.util.stream.Collectors.toList;
 
 /**
  * @author - wally55077@gmail.com
@@ -25,6 +25,8 @@ public class HomeworkController {
     private final CreateHomeworkUseCase createHomeworkUseCase;
     private final GetHomeworkUseCase getHomeworkUseCase;
     private final GetHomeworkProgressUseCase getHomeworkProgressUseCase;
+    private final GetAllHomeworkUseCase getAllHomeworkUseCase;
+    private final DeleteHomeworkUseCase deleteHomeworkUseCase;
 
     @PostMapping("/homework")
     public HomeworkView createHomework(@RequestBody CreateHomeworkUseCase.Request request) {
@@ -38,6 +40,18 @@ public class HomeworkController {
         GetHomeworkPresenter presenter = new GetHomeworkPresenter();
         getHomeworkUseCase.execute(homeworkId, presenter);
         return presenter.present();
+    }
+
+    @GetMapping("/homework")
+    public List<HomeworkView> getAllHomework() {
+        GetAllHomeworkPresenter presenter = new GetAllHomeworkPresenter();
+        getAllHomeworkUseCase.execute(presenter);
+        return presenter.present();
+    }
+
+    @DeleteMapping("/homework/{homeworkId}")
+    public void deleteHomework(@PathVariable int homeworkId) {
+        deleteHomeworkUseCase.execute(homeworkId);
     }
 
     @GetMapping("/students/{studentId}/homework/{homeworkId}/progress")
@@ -61,6 +75,20 @@ class CreateHomeworkPresenter implements CreateHomeworkUseCase.Presenter {
 
     public HomeworkView present() {
         return HomeworkView.toViewModel(homework);
+    }
+}
+
+class GetAllHomeworkPresenter implements GetAllHomeworkUseCase.Presenter {
+
+    private List<Homework> allHomework;
+
+    @Override
+    public void showAllHomework(List<Homework> allHomework) {
+        this.allHomework = allHomework;
+    }
+
+    public List<HomeworkView> present() {
+        return allHomework.stream().map(HomeworkView::toViewModel).collect(toList());
     }
 }
 

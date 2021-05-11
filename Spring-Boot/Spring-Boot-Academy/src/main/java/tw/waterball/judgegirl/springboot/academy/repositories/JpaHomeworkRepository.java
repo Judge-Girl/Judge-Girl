@@ -7,8 +7,10 @@ import tw.waterball.judgegirl.primitives.Homework;
 import tw.waterball.judgegirl.springboot.academy.repositories.jpa.HomeworkData;
 import tw.waterball.judgegirl.springboot.academy.repositories.jpa.JpaHomeworkDAO;
 
+import java.util.List;
 import java.util.Optional;
 
+import static java.util.stream.Collectors.toList;
 import static tw.waterball.judgegirl.springboot.academy.repositories.jpa.HomeworkData.toData;
 
 /**
@@ -31,6 +33,18 @@ public class JpaHomeworkRepository implements HomeworkRepository {
     public Optional<Homework> findHomeworkById(int homeworkId) {
         return jpaHomeworkDAO.findById(homeworkId)
                 .map(HomeworkData::toEntity);
+    }
+
+    @Override
+    public List<Homework> findAllHomework() {
+        return jpaHomeworkDAO.findAll().stream()
+                .map(HomeworkData::toEntity)
+                .collect(toList());
+    }
+
+    @Override
+    public void deleteHomeworkById(int homeworkId) {
+        jpaHomeworkDAO.deleteById(homeworkId);
     }
 
     @Override
