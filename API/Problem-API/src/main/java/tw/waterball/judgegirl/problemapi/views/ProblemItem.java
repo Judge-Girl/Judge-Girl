@@ -18,6 +18,8 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import tw.waterball.judgegirl.primitives.problem.Problem;
 
+import java.util.List;
+
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
@@ -27,8 +29,9 @@ import tw.waterball.judgegirl.primitives.problem.Problem;
 public class ProblemItem {
     public int id;
     public String title;
+    public List<String> tags;
 
     public static ProblemItem fromEntity(Problem problem) {
-        return new ProblemItem(problem.getId(), problem.getTitle());
+        return new ProblemItem(problem.getId(), problem.getTitle(), problem.getTags());
     }
 }
