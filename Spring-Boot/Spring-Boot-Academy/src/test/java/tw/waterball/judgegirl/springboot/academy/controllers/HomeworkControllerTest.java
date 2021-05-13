@@ -31,8 +31,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -101,21 +103,24 @@ public class HomeworkControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    public void GivenOneHomeworkCreated_WhenDeleteHomeworkById_ShouldRespondSuccessfully() throws Exception {
-        HomeworkView homework = createHomeworkAndGet(HOMEWORK_NAME);
+    public void GivenOneHomeworkCreated_WhenDeleteHomeworkById_ShouldSucceed() throws Exception {
+        var homework = createHomeworkAndGet(HOMEWORK_NAME);
 
         deleteHomework(homework.id).andExpect(status().isOk());
-        getHomework(homework.id).andExpect(status().isNotFound());
+
+        assertFalse(homeworkRepository.findHomeworkById(homework.id).isPresent());
     }
 
     @Test
     public void GivenManyHomeworkCreated_WhenGetAllHomework_ShouldReturnAllHomework() throws Exception {
         List<HomeworkView> homeworkList = createHomeworkAndGet(3);
 
-        List<HomeworkView> actualHomeworkList = getBody(getAllHomework().andExpect(status().isOk()), new TypeReference<>() {
+        List<HomeworkView> actualHomeworkList = getBody(getAllHomework(), new TypeReference<>() {
         });
 
         assertEquals(homeworkList.size(), actualHomeworkList.size());
+        IntStream.range(0, homeworkList.size())
+                .forEach(i -> assertEquals(homeworkList.get(i), actualHomeworkList.get(i)));
     }
 
     @Test
@@ -172,10 +177,10 @@ public class HomeworkControllerTest extends AbstractSpringBootTest {
 
 
     private List<HomeworkView> createHomeworkAndGet(int count) throws Exception {
-        List<HomeworkView> homeworkViews = new ArrayList<>();
+        var homeworkViews = new ArrayList<HomeworkView>(count);
         for (int i = 0; i < count; i++) {
-            HomeworkView homeworkView = createHomeworkAndGet(HOMEWORK_NAME + i);
-            homeworkViews.add(homeworkView);
+            HomeworkView homework = createHomeworkAndGet(HOMEWORK_NAME + i);
+            homeworkViews.add(homework);
         }
         return homeworkViews;
     }
@@ -193,7 +198,7 @@ public class HomeworkControllerTest extends AbstractSpringBootTest {
     }
 
     private ResultActions getAllHomework() throws Exception {
-        return mockMvc.perform(get(HOMEWORK_PATH));
+        return mockMvc.perform(get(HOMEWORK_PATH)).andExpect(status().isOk());
     }
 
     private ResultActions deleteHomework(int homeworkId) throws Exception {

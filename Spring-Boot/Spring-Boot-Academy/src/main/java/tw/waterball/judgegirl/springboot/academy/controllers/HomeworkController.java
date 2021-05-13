@@ -11,7 +11,7 @@ import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 import java.util.LinkedList;
 import java.util.List;
 
-import static java.util.stream.Collectors.toList;
+import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
 
 /**
  * @author - wally55077@gmail.com
@@ -88,7 +88,7 @@ class GetAllHomeworkPresenter implements GetAllHomeworkUseCase.Presenter {
     }
 
     public List<HomeworkView> present() {
-        return allHomework.stream().map(HomeworkView::toViewModel).collect(toList());
+        return mapToList(allHomework, HomeworkView::toViewModel);
     }
 }
 

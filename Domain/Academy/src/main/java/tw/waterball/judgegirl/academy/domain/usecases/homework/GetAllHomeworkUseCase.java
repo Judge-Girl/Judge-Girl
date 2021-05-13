@@ -19,8 +19,7 @@ public class GetAllHomeworkUseCase {
     private final HomeworkRepository homeworkRepository;
 
     public void execute(GetAllHomeworkUseCase.Presenter presenter) throws NotFoundException {
-        List<Homework> allHomework = homeworkRepository.findAllHomework();
-        presenter.showAllHomework(allHomework);
+        presenter.showAllHomework(homeworkRepository.findAllHomework());
     }
 
     public interface Presenter {

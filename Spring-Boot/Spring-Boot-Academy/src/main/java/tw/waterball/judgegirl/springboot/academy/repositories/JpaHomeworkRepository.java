@@ -1,6 +1,7 @@
 package tw.waterball.judgegirl.springboot.academy.repositories;
 
 import lombok.AllArgsConstructor;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Component;
 import tw.waterball.judgegirl.academy.domain.repositories.HomeworkRepository;
 import tw.waterball.judgegirl.primitives.Homework;
@@ -44,7 +45,10 @@ public class JpaHomeworkRepository implements HomeworkRepository {
 
     @Override
     public void deleteHomeworkById(int homeworkId) {
-        jpaHomeworkDAO.deleteById(homeworkId);
+        try {
+            jpaHomeworkDAO.deleteById(homeworkId);
+        } catch (EmptyResultDataAccessException ignored) {
+        }
     }
 
     @Override
