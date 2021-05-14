@@ -27,7 +27,7 @@ import java.util.List;
  */
 @Named
 public class UploadProvidedCodeUseCase extends BaseProblemUseCase {
-    public final static String PROVIDED_CODE_MULTIPART_KEY_NAME = "providedCodes";
+    public static final String PROVIDED_CODE_MULTIPART_KEY_NAME = "providedCodes";
 
     public UploadProvidedCodeUseCase(ProblemRepository problemRepository) {
         super(problemRepository);

@@ -199,18 +199,6 @@ public class MongoProblemRepository implements ProblemRepository {
         mongoTemplate.save(new MongoProblemRepository.AllTags(tagList));
     }
 
-    @Document("tag")
-    public static class AllTags {
-        public List<String> all;
-
-        public AllTags() {
-        }
-
-        public AllTags(List<String> all) {
-            this.all = all;
-        }
-    }
-
     @Override
     public String updateProblemWithProvidedCodes(Problem problem, Language language, List<FileResource> providedCodes) {
         String fileId = saveProvidedCodesAndGetFileId(problem.getId(), language, providedCodes);
@@ -250,6 +238,18 @@ public class MongoProblemRepository implements ProblemRepository {
         Query query = new Query(where("_id").is(problemId));
         update.set("languageEnvs." + language, langEnv);
         mongoTemplate.upsert(query, update, ProblemData.class);
+    }
+
+    @Document("tag")
+    public static class AllTags {
+        public List<String> all;
+
+        public AllTags() {
+        }
+
+        public AllTags(List<String> all) {
+            this.all = all;
+        }
     }
 
 }
