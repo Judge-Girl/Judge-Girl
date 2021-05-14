@@ -126,39 +126,6 @@ public class MongoProblemRepository implements ProblemRepository {
     }
 
     @Override
-    public String updateProblemWithProvidedCodes(Problem problem, Language language, List<FileResource> providedCodes) {
-        String fileId = saveProvidedCodesAndGetFileId(problem.getId(), language, providedCodes);
-        updateProvidedCodesFileIdInProblem(problem, fileId, language);
-        return fileId;
-    }
-
-    private String saveProvidedCodesAndGetFileId(int problemId, Language language, List<FileResource> providedCodes) {
-        String fileName = format("%d-%s-provided.zip", problemId, language.toString());
-        ByteArrayInputStream zip = zipToStream(providedCodes);
-        return gridFsTemplate.store(zip, fileName).toString();
-    }
-
-    private void updateProvidedCodesFileIdInProblem(Problem problem, String fileId, Language language) {
-        LanguageEnv langEnv = problem.getLanguageEnv(language);
-        removeFileIdIfExist(langEnv.getProvidedCodesFileId());
-        langEnv.setProvidedCodesFileId(fileId);
-        updateLanguageEnv(problem.getId(), langEnv, language);
-    }
-
-    private void removeFileIdIfExist(String fileId) {
-        if (!fileId.isEmpty()) {
-            gridFsTemplate.delete(new Query(Criteria.where("_id").is(fileId)));
-        }
-    }
-
-    private void updateLanguageEnv(int problemId, LanguageEnv langEnv, Language language) {
-        Update update = new Update();
-        Query query = new Query(where("_id").is(problemId));
-        update.set("languageEnvs." + language, langEnv);
-        mongoTemplate.upsert(query, update, ProblemData.class);
-    }
-
-    @Override
     public Problem save(Problem problem) {
         return mongoTemplate.save(toData(problem)).toEntity();
     }
@@ -242,6 +209,47 @@ public class MongoProblemRepository implements ProblemRepository {
         public AllTags(List<String> all) {
             this.all = all;
         }
+    }
+
+    @Override
+    public String updateProblemWithProvidedCodes(Problem problem, Language language, List<FileResource> providedCodes) {
+        String fileId = saveProvidedCodesAndGetFileId(problem.getId(), language, providedCodes);
+        updateProvidedCodesFileIdInProblem(problem, fileId, language);
+        return fileId;
+    }
+
+    private String saveProvidedCodesAndGetFileId(int problemId, Language language, List<FileResource> providedCodes) {
+        String fileName = format("%d-%s-provided.zip", problemId, language.toString());
+        ByteArrayInputStream zip = zipToStream(providedCodes);
+        return gridFsTemplate.store(zip, fileName).toString();
+    }
+
+    private void updateProvidedCodesFileIdInProblem(Problem problem, String fileId, Language language) {
+        problem.mayHaveLanguageEnv(language)
+                .ifPresentOrElse(langEnv -> {
+                    removeFileIdIfExist(langEnv.getProvidedCodesFileId());
+                    langEnv.setProvidedCodesFileId(fileId);
+                    updateLanguageEnv(problem.getId(), langEnv, language);
+                }, () -> {
+                    LanguageEnv langEnv = LanguageEnv.builder()
+                            .language(language)
+                            .providedCodesFileId(fileId)
+                            .build();
+                    updateLanguageEnv(problem.getId(), langEnv, language);
+                });
+    }
+
+    private void removeFileIdIfExist(String fileId) {
+        if (!fileId.isEmpty()) {
+            gridFsTemplate.delete(new Query(Criteria.where("_id").is(fileId)));
+        }
+    }
+
+    private void updateLanguageEnv(int problemId, LanguageEnv langEnv, Language language) {
+        Update update = new Update();
+        Query query = new Query(where("_id").is(problemId));
+        update.set("languageEnvs." + language, langEnv);
+        mongoTemplate.upsert(query, update, ProblemData.class);
     }
 
 }

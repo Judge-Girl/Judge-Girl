@@ -27,6 +27,7 @@ import java.util.*;
 
 import static java.util.Collections.emptyList;
 import static java.util.Objects.requireNonNullElse;
+import static java.util.Optional.ofNullable;
 import static tw.waterball.judgegirl.primitives.problem.JudgePluginTag.Type.FILTER;
 import static tw.waterball.judgegirl.primitives.problem.JudgePluginTag.Type.OUTPUT_MATCH_POLICY;
 
@@ -153,6 +154,10 @@ public class Problem {
             languageEnvs = new HashMap<>();
         }
         languageEnvs.put(languageEnv.getName(), languageEnv);
+    }
+
+    public Optional<LanguageEnv> mayHaveLanguageEnv(Language language) {
+        return ofNullable(getLanguageEnv(language));
     }
 
     public LanguageEnv getLanguageEnv(Language language) {

@@ -260,12 +260,16 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     @Test
     void WhenSaveProblemWithTitle_ProblemShouldBeSavedAndRespondItsId() throws Exception {
         String randomTitle = UUID.randomUUID().toString();
-        int id = parseInt(getContentAsString(
-                mockMvc.perform(post("/api/problems")
-                        .contentType(MediaType.TEXT_PLAIN_VALUE).content(randomTitle))
-                        .andExpect(status().isOk())));
+        int id = saveProblemWithTitle(randomTitle);
 
         assertEquals(randomTitle, problemRepository.findProblemById(id).orElseThrow().getTitle());
+    }
+
+    private int saveProblemWithTitle(String title) throws Exception {
+        return parseInt(getContentAsString(
+                mockMvc.perform(post("/api/problems")
+                        .contentType(MediaType.TEXT_PLAIN_VALUE).content(title))
+                        .andExpect(status().isOk())));
     }
 
     @Test
@@ -535,7 +539,38 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         return problemRepository.findProblemById(problemId).orElseThrow();
     }
 
-    private MockMultipartFile[] getProvidedCodes() throws IOException {
+    @Test
+    void GivenTwoProvidedCodes_WhenUploadProvidedCodes_ShouldResponseProvidedCodesFileId() throws Exception {
+        Language language = Language.C;
+        int problemId = 1;
+        saveProblems(problemId);
+
+        String fileId = uploadProvidedCodesAndGetFileId(problemId, language, getTwoProvidedCodes());
+
+        problemRepository.findProblemById(problemId)
+                .ifPresent(problem -> assertFileIdEquals(fileId, problem, language));
+    }
+
+    @Test
+    void GivenNotExistedProblemIdAndTwoProvidedCodes_WhenUploadProvidedCodes_ShouldResponseNotFound() throws Exception {
+        Language language = Language.C;
+        int problemId = 123;
+
+        uploadProvidedCodes(problemId, language, getTwoProvidedCodes()).andExpect(status().isNotFound());
+    }
+
+    @Test
+    void GivenProblemWithEmptyLanguageEnvAndTwoProvidedCodes_WhenUploadProvidedCodes_ShouldResponseProvidedCodesFileIds() throws Exception {
+        Language language = Language.C;
+        int problemId = saveProblemWithTitle("problemTitle");
+
+        String fileId = uploadProvidedCodesAndGetFileId(problemId, language, getTwoProvidedCodes());
+
+        problemRepository.findProblemById(problemId)
+                .ifPresent(problem -> assertFileIdEquals(fileId, problem, language));
+    }
+
+    private MockMultipartFile[] getTwoProvidedCodes() throws IOException {
         return new MockMultipartFile[]{
                 new MockMultipartFile(PROVIDED_CODE_MULTIPART_KEY_NAME, "file1.c", "text/plain",
                         ResourceUtils.getResourceAsStream("/stubs/file1.c")),
@@ -544,25 +579,13 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         };
     }
 
-    @Test
-    void GivenTwoProvidedCodes_WhenUploadProvidedCodes_ShouldResponseProvidedCodesFileIds() throws Exception {
-        Language language = Language.C;
-        int problemId = 1;
-        saveProblems(problemId);
-
-        String fileId = uploadProvidedCodesAndGetFileId(problemId, language, getProvidedCodes());
-
-        problemRepository.findProblemById(problemId)
-                .ifPresent(problem -> assertFileIdEquals(fileId, problem, language));
-    }
-
     private String uploadProvidedCodesAndGetFileId(int problemId, Language language, MockMultipartFile... files) throws Exception {
-        return getContentAsString(uploadProvidedCodes(problemId, language, files));
+        return getContentAsString(uploadProvidedCodes(problemId, language, files)
+                .andExpect(status().isOk()));
     }
 
     private ResultActions uploadProvidedCodes(int problemId, Language language, MockMultipartFile[] files) throws Exception {
-        return mockMvc.perform(multipartRequestWithProvidedCodes(problemId, language, files))
-                .andExpect(status().isOk());
+        return mockMvc.perform(multipartRequestWithProvidedCodes(problemId, language, files));
     }
 
     private MockHttpServletRequestBuilder multipartRequestWithProvidedCodes(int problemId, Language language, MockMultipartFile... files) {
