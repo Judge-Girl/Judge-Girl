@@ -540,34 +540,34 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    void GivenTwoProvidedCodes_WhenUploadProvidedCodes_ShouldResponseProvidedCodesFileId() throws Exception {
+    void GiveOneProblemSaved_WhenUploadTwoProvidedCodes_ShouldRespondProvidedCodesFileId() throws Exception {
         Language language = Language.C;
         int problemId = 1;
         saveProblems(problemId);
 
         String fileId = uploadProvidedCodesAndGetFileId(problemId, language, getTwoProvidedCodes());
 
-        problemRepository.findProblemById(problemId)
-                .ifPresent(problem -> assertFileIdEquals(fileId, problem, language));
+        ProblemView problem = getProblem(problemId);
+        problemShouldHaveProvidedCodesId(problem, fileId, language);
     }
 
     @Test
-    void GivenNotExistedProblemIdAndTwoProvidedCodes_WhenUploadProvidedCodes_ShouldResponseNotFound() throws Exception {
+    void WhenUploadTwoProvidedCodesWithNonExistingProblemId_ShouldResponseNotFound() throws Exception {
         Language language = Language.C;
-        int problemId = 123;
+        int nonExistingProblemId = 123;
 
-        uploadProvidedCodes(problemId, language, getTwoProvidedCodes()).andExpect(status().isNotFound());
+        uploadProvidedCodes(nonExistingProblemId, language, getTwoProvidedCodes()).andExpect(status().isNotFound());
     }
 
     @Test
-    void GivenProblemWithEmptyLanguageEnvAndTwoProvidedCodes_WhenUploadProvidedCodes_ShouldResponseProvidedCodesFileIds() throws Exception {
+    void GiveOneProblemSavedWithNonExistingLanguageEnv_WhenUploadTwoProvidedCodes_ShouldResponseProvidedCodesFileIds() throws Exception {
         Language language = Language.C;
         int problemId = saveProblemWithTitle("problemTitle");
 
         String fileId = uploadProvidedCodesAndGetFileId(problemId, language, getTwoProvidedCodes());
 
-        problemRepository.findProblemById(problemId)
-                .ifPresent(problem -> assertFileIdEquals(fileId, problem, language));
+        ProblemView problem = getProblem(problemId);
+        problemShouldHaveProvidedCodesId(problem, fileId, language);
     }
 
     private MockMultipartFile[] getTwoProvidedCodes() throws IOException {
@@ -603,9 +603,12 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         return call;
     }
 
-    private void assertFileIdEquals(String fileId, Problem problem, Language language) {
-        LanguageEnv langEnv = problem.getLanguageEnv(language);
-        assertEquals(fileId, langEnv.getProvidedCodesFileId());
+    private void problemShouldHaveProvidedCodesId(ProblemView problem, String fileId, Language language) {
+        problem.languageEnvs.forEach(langEnv -> {
+            if (langEnv.getLanguage().equals(language)) {
+                assertEquals(fileId, langEnv.getProvidedCodesFileId());
+            }
+        });
     }
 }
 

@@ -50,7 +50,7 @@ public interface ProblemRepository {
 
     void patchProblem(int problemId, PatchProblemParams params);
 
-    String updateProblemWithProvidedCodes(Problem problem, Language language, List<FileResource> providedCodes);
+    void updateProblemWithProvidedCodes(Problem problem, Language language, List<FileResource> providedCodes);
 
     boolean problemExists(int problemId);
 

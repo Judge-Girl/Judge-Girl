@@ -17,6 +17,8 @@ import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.primitives.problem.Problem;
 import tw.waterball.judgegirl.problem.domain.repositories.ProblemRepository;
 
+import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
+
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
@@ -27,8 +29,8 @@ public abstract class BaseProblemUseCase {
         this.problemRepository = problemRepository;
     }
 
-    protected Problem doFindProblemById(int problemId) throws NotFoundException {
+    protected Problem findProblem(int problemId) throws NotFoundException {
         return problemRepository.findProblemById(problemId)
-                .orElseThrow(() -> NotFoundException.notFound(Problem.class).id(problemId));
+                .orElseThrow(() -> notFound(Problem.class).id(problemId));
     }
 }

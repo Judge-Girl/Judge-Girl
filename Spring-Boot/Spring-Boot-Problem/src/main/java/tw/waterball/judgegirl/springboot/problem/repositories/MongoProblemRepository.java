@@ -200,10 +200,9 @@ public class MongoProblemRepository implements ProblemRepository {
     }
 
     @Override
-    public String updateProblemWithProvidedCodes(Problem problem, Language language, List<FileResource> providedCodes) {
+    public void updateProblemWithProvidedCodes(Problem problem, Language language, List<FileResource> providedCodes) {
         String fileId = saveProvidedCodesAndGetFileId(problem.getId(), language, providedCodes);
-        updateProvidedCodesFileIdInProblem(problem, fileId, language);
-        return fileId;
+        updateProvidedCodesFileIdInProblem(problem, language, fileId);
     }
 
     private String saveProvidedCodesAndGetFileId(int problemId, Language language, List<FileResource> providedCodes) {
@@ -212,7 +211,7 @@ public class MongoProblemRepository implements ProblemRepository {
         return gridFsTemplate.store(zip, fileName).toString();
     }
 
-    private void updateProvidedCodesFileIdInProblem(Problem problem, String fileId, Language language) {
+    private void updateProvidedCodesFileIdInProblem(Problem problem, Language language, String fileId) {
         problem.mayHaveLanguageEnv(language)
                 .ifPresentOrElse(langEnv -> {
                     removeFileIdIfExist(langEnv.getProvidedCodesFileId());
@@ -223,6 +222,7 @@ public class MongoProblemRepository implements ProblemRepository {
                             .language(language)
                             .providedCodesFileId(fileId)
                             .build();
+                    problem.addLanguageEnv(langEnv);
                     updateLanguageEnv(problem.getId(), langEnv, language);
                 });
     }

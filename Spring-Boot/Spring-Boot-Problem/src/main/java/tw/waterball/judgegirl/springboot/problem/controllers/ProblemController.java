@@ -143,6 +143,7 @@ public class ProblemController {
         UploadProvidedCodeUseCase.Request request =
                 new UploadProvidedCodeUseCase.Request(problemId, Language.valueOf(langEnvName), convertMultipartFilesToFileResources(providedCodes));
         UploadProvidedCodesPresenter presenter = new UploadProvidedCodesPresenter();
+        presenter.setLanguage(Language.valueOf(langEnvName));
         uploadProvidedCodeUseCase.execute(request, presenter);
         return presenter.present();
     }
@@ -203,15 +204,20 @@ public class ProblemController {
     }
 
     class UploadProvidedCodesPresenter implements UploadProvidedCodeUseCase.Presenter {
-        private String fileId;
+        private Problem problem;
+        private Language language;
 
         @Override
-        public void setProvidedCodesFileId(String fileId) {
-            this.fileId = fileId;
+        public void showResult(Problem problem) {
+            this.problem = problem;
+        }
+
+        public void setLanguage(Language language) {
+            this.language = language;
         }
 
         String present() {
-            return fileId;
+            return problem.getLanguageEnv(language).getProvidedCodesFileId();
         }
     }
 }

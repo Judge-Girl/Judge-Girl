@@ -30,7 +30,7 @@ public class GetProblemUseCase extends BaseProblemUseCase {
     }
 
     public void execute(Request request, Presenter presenter) throws NotFoundException {
-        presenter.setProblem(doFindProblemById(request.problemId));
+        presenter.setProblem(findProblem(request.problemId));
     }
 
     public interface Presenter {

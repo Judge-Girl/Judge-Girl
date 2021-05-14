@@ -34,14 +34,13 @@ public class UploadProvidedCodeUseCase extends BaseProblemUseCase {
     }
 
     public void execute(Request request, Presenter presenter) {
-        Problem problem = doFindProblemById(request.problemId);
-        String fileId = problemRepository.updateProblemWithProvidedCodes(problem, request.language, request.providedCodes);
-        presenter.setProvidedCodesFileId(fileId);
+        Problem problem = findProblem(request.problemId);
+        problemRepository.updateProblemWithProvidedCodes(problem, request.language, request.providedCodes);
+        presenter.showResult(problem);
     }
 
-
     public interface Presenter {
-        void setProvidedCodesFileId(String fileId);
+        void showResult(Problem problem);
     }
 
     @Value

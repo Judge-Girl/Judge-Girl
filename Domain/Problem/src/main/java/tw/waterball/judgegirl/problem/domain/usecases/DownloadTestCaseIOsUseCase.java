@@ -27,7 +27,7 @@ import javax.inject.Named;
  */
 @Named
 public class DownloadTestCaseIOsUseCase extends BaseProblemUseCase {
-    private TestCaseRepository testCaseRepository;
+    private final TestCaseRepository testCaseRepository;
 
     public DownloadTestCaseIOsUseCase(ProblemRepository problemRepository,
                                       TestCaseRepository testCaseRepository) {
@@ -36,7 +36,7 @@ public class DownloadTestCaseIOsUseCase extends BaseProblemUseCase {
     }
 
     public FileResource execute(Request request) throws NotFoundException {
-        Problem problem = doFindProblemById(request.problemId);
+        Problem problem = findProblem(request.problemId);
         if (problem.getTestcaseIOsFileId().equals(request.testcaseIOsFileId)) {
             return testCaseRepository.downloadTestCaseIOs(request.problemId, request.testcaseIOsFileId)
                     .orElseThrow(() -> new NotFoundException(request.problemId, "problem"));
