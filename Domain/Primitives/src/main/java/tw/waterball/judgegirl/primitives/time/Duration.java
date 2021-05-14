@@ -11,16 +11,16 @@ public class Duration {
     private final Date start;
     private final Date end;
 
-    public static Duration during(Date start, Date end) {
-        return new Duration(start, end);
-    }
-
     public Duration(Date start, Date end) {
         this.start = start;
         this.end = end;
         if (start.after(end)) {
             throw new IllegalStateException("The start time should not exceed the end time.");
         }
+    }
+
+    public static Duration during(Date start, Date end) {
+        return new Duration(start, end);
     }
 
     public Date getStartTime() {
@@ -30,7 +30,7 @@ public class Duration {
     public Date getEndTime() {
         return end;
     }
-    
+
     public boolean isUpcoming() {
         return getStartTime().after(now());
     }

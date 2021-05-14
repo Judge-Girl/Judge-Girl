@@ -13,7 +13,7 @@ import static tw.waterball.judgegirl.commons.utils.JSR380Utils.validate;
 @Setter
 public class Question {
     public static final int NO_QUOTA_LIMITATION = Integer.MAX_VALUE;
-    private Id id = null;
+    private Id id;
 
     @Positive
     private int quota = NO_QUOTA_LIMITATION;

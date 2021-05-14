@@ -11,7 +11,7 @@ import java.util.Date;
  * @author - johnny850807@gmail.com (Waterball)
  */
 public final class DateProvider {
-    private static Date now = null;
+    private static Date now;
 
     public static void setNow(Date now) {
         DateProvider.now = now;
