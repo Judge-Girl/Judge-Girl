@@ -190,7 +190,7 @@ public class CCJudger extends PluginExtendedJudger {
           (The files-difference must be 'std.out', 'std.err' and out-files)
          */
         filesWithinSandboxRootOtherThanOutFiles =
-                generateFilesOtherThanOutFilesFromSandboxRoot(sandboxRootPath, testcase);
+                generateFilesOtherThanOutFilesFromSandboxRoot(sandboxRootPath);
 
         copyExecutableIntoSandboxRoot(testcase);
         // TODO should also copy provided codes, this will fail in an interpreted language case
@@ -198,17 +198,12 @@ public class CCJudger extends PluginExtendedJudger {
     }
 
     @NotNull
-    private Set<String> generateFilesOtherThanOutFilesFromSandboxRoot(Path sandboxRootPath, Testcase testcase) {
+    private Set<String> generateFilesOtherThanOutFilesFromSandboxRoot(Path sandboxRootPath) {
         var files = stream(requireNonNull(sandboxRootPath.toFile().listFiles()))
                 .map(File::getName).collect(Collectors.toSet());
         files.add("std.out");
         files.add("std.err");
         files.add(EXECUTABLE_NAME);
-        try {
-            FileUtils.touch(FileUtils.getFile(getTestcaseOutputHome(testcase).getPath().toString(), "std.out"));
-        } catch (Exception exception) {
-            throw new RuntimeException();
-        }
         return files;
     }
 
