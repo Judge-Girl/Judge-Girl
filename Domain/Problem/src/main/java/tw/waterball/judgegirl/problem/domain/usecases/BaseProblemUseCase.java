@@ -29,6 +29,6 @@ public abstract class BaseProblemUseCase {
 
     protected Problem doFindProblemById(int problemId) throws NotFoundException {
         return problemRepository.findProblemById(problemId)
-                .orElseThrow(() -> new NotFoundException(problemId, "problem"));
+                .orElseThrow(() -> NotFoundException.notFound(Problem.class).id(problemId));
     }
 }

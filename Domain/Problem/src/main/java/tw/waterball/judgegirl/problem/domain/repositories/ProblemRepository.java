@@ -14,6 +14,7 @@
 package tw.waterball.judgegirl.problem.domain.repositories;
 
 import tw.waterball.judgegirl.commons.models.files.FileResource;
+import tw.waterball.judgegirl.primitives.problem.Language;
 import tw.waterball.judgegirl.primitives.problem.LanguageEnv;
 import tw.waterball.judgegirl.primitives.problem.Problem;
 
@@ -48,6 +49,8 @@ public interface ProblemRepository {
     int saveProblemWithTitleAndGetId(String title);
 
     void patchProblem(int problemId, PatchProblemParams params);
+
+    String updateProblemWithProvidedCodes(Problem problem, Language language, List<FileResource> providedCodes);
 
     boolean problemExists(int problemId);
 

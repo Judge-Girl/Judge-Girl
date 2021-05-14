@@ -22,9 +22,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.AutoConfigureDataMongo;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import tw.waterball.judgegirl.commons.utils.ResourceUtils;
 import tw.waterball.judgegirl.commons.utils.ZipUtils;
 import tw.waterball.judgegirl.primitives.problem.*;
 import tw.waterball.judgegirl.problem.domain.repositories.ProblemRepository;
@@ -36,6 +40,7 @@ import tw.waterball.judgegirl.springboot.profiles.Profiles;
 import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -49,6 +54,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.findFirst;
 import static tw.waterball.judgegirl.primitives.stubs.ProblemStubs.problemTemplate;
+import static tw.waterball.judgegirl.problem.domain.usecases.UploadProvidedCodeUseCase.PROVIDED_CODE_MULTIPART_KEY_NAME;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -527,6 +533,50 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     private Problem saveProblemAndGet(int problemId) {
         saveProblems(problemId);
         return problemRepository.findProblemById(problemId).orElseThrow();
+    }
+
+    private MockMultipartFile[] getProvidedCodes() throws IOException {
+        return new MockMultipartFile[]{
+                new MockMultipartFile(PROVIDED_CODE_MULTIPART_KEY_NAME, "file1.c", "text/plain",
+                        ResourceUtils.getResourceAsStream("/stubs/file1.c")),
+                new MockMultipartFile(PROVIDED_CODE_MULTIPART_KEY_NAME, "file2.c", "text/plain",
+                        ResourceUtils.getResourceAsStream("/stubs/file2.c"))
+        };
+    }
+
+    @Test
+    void GivenTwoProvidedCodes_WhenUploadProvidedCodes_ShouldResponseProvidedCodesFileIds() throws Exception {
+        Language language = Language.C;
+        int problemId = 1;
+        saveProblems(problemId);
+
+        String fileId = uploadProvidedCodesAndGetFileId(problemId, language, getProvidedCodes());
+
+        problemRepository.findProblemById(problemId)
+                .ifPresent(problem -> assertFileIdEquals(fileId, problem, language));
+    }
+
+    private String uploadProvidedCodesAndGetFileId(int problemId, Language language, MockMultipartFile... files) throws Exception {
+        return getContentAsString(uploadProvidedCodes(problemId, language, files));
+    }
+
+    private ResultActions uploadProvidedCodes(int problemId, Language language, MockMultipartFile[] files) throws Exception {
+        return mockMvc.perform(multipartRequestWithProvidedCodes(problemId, language, files))
+                .andExpect(status().isOk());
+    }
+
+    protected MockHttpServletRequestBuilder multipartRequestWithProvidedCodes(int problemId, Language language, MockMultipartFile... files) {
+        var call =
+                multipart("/api/problems/{problemId}/{langEnvName}/providedCodes", problemId, language.toString());
+        for (MockMultipartFile file : files) {
+            call = call.file(file);
+        }
+        return call;
+    }
+
+    private void assertFileIdEquals(String fileId, Problem problem, Language language) {
+        LanguageEnv langEnv = problem.getLanguageEnv(language);
+        assertEquals(fileId, langEnv.getProvidedCodesFileId());
     }
 }
 
