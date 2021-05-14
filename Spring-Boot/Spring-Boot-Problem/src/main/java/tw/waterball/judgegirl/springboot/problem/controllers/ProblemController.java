@@ -136,7 +136,7 @@ public class ProblemController {
         patchProblemUseCase.execute(request);
     }
 
-    @PostMapping("/{problemId}/{langEnvName}/providedCodes")
+    @PutMapping("/{problemId}/{langEnvName}/providedCodes")
     public String uploadProvidedCodes(@PathVariable int problemId,
                                       @PathVariable String langEnvName,
                                       @RequestParam(PROVIDED_CODE_MULTIPART_KEY_NAME) MultipartFile[] providedCodes) {

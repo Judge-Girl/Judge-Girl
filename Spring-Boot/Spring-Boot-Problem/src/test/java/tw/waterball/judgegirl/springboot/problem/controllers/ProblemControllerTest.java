@@ -565,9 +565,15 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
                 .andExpect(status().isOk());
     }
 
-    protected MockHttpServletRequestBuilder multipartRequestWithProvidedCodes(int problemId, Language language, MockMultipartFile... files) {
+    private MockHttpServletRequestBuilder multipartRequestWithProvidedCodes(int problemId, Language language, MockMultipartFile... files) {
         var call =
                 multipart("/api/problems/{problemId}/{langEnvName}/providedCodes", problemId, language.toString());
+
+        call.with(request -> {
+            request.setMethod("PUT");
+            return request;
+        });
+
         for (MockMultipartFile file : files) {
             call = call.file(file);
         }
