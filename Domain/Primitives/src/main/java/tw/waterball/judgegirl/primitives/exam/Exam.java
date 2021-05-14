@@ -1,72 +1,70 @@
 package tw.waterball.judgegirl.primitives.exam;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import tw.waterball.judgegirl.commons.utils.JSR380Utils;
-import tw.waterball.judgegirl.primitives.Student;
+import tw.waterball.judgegirl.primitives.time.Duration;
 
-import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 
+import static java.util.Objects.requireNonNull;
 import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
+import static tw.waterball.judgegirl.commons.utils.JSR380Utils.validate;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.findFirst;
-import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
-import static tw.waterball.judgegirl.primitives.date.DateProvider.now;
+import static tw.waterball.judgegirl.primitives.time.Duration.during;
 
-@AllArgsConstructor
-@NoArgsConstructor
 @Getter
-@Setter
 public class Exam {
 
-    private Integer id;
+    private final Integer id;
 
     @NotBlank
     private String name;
 
     @NotNull
-    private Date startTime;
-
-    @NotNull
-    private Date endTime;
+    private Duration duration;
 
     @NotNull
     private String description;
 
-    private List<@Valid Question> questions = new ArrayList<>();
+    private final List<Question> questions;
 
-    private List<@Valid Examinee> examinees = new ArrayList<>();
+    private final List<Examinee> examinees;
 
-    public Exam(String name, Date startTime, Date endTime, String description) {
-        this.name = name;
-        this.startTime = startTime;
-        this.endTime = endTime;
-        this.description = description;
+    public Exam(String name, Duration duration, String description) {
+        this(name, duration, description, new ArrayList<>(), new ArrayList<>());
     }
 
-    public void validate() {
-        JSR380Utils.validate(this);
-        if (startTime.after(endTime)) {
-            throw new IllegalStateException();
-        }
+    public Exam(String name, Duration duration, String description,
+                List<Question> questions, List<Examinee> examinees) {
+        this(null, name, duration, description, questions, examinees);
+    }
+
+    public Exam(Integer id, String name, Duration duration, String description,
+                List<Question> questions, List<Examinee> examinees) {
+        this.id = id;
+        this.name = name;
+        this.duration = duration;
+        this.description = description;
+        this.questions = questions;
+        this.examinees = examinees;
+        validate(this);
     }
 
     public boolean isUpcoming() {
-        return getStartTime().after(now());
+        return getDuration().isUpcoming();
     }
 
     public boolean isPast() {
-        return getEndTime().before(now());
+        return getDuration().isPast();
     }
 
     public boolean isCurrent() {
-        Date now = now();
-        return getStartTime().before(now) && getEndTime().after(now);
+        return getDuration().isOngoing();
     }
 
     public Optional<Question> getQuestionByProblemId(int problemId) {
@@ -85,15 +83,35 @@ public class Exam {
         updatedQuestion.setScore(question.getScore());
     }
 
-    public void addStudentsAsExaminees(Collection<Student> students) {
-        addExaminees(mapToList(students, student -> new Examinee(id, student.getId())));
-    }
-
-    public void addExaminees(Collection<Examinee> examinees) {
-        this.examinees.addAll(examinees);
-    }
-
     public void foreachQuestion(Consumer<Question> questionConsumer) {
         questions.forEach(questionConsumer);
+    }
+
+    public void setName(String name) {
+        this.name = requireNonNull(name);
+    }
+
+    public void setDescription(String description) {
+        this.description = requireNonNull(description);
+    }
+
+    public Date getStartTime() {
+        return getDuration().getStartTime();
+    }
+
+    public Date getEndTime() {
+        return getDuration().getEndTime();
+    }
+
+    public void setDuration(Duration duration) {
+        this.duration = duration;
+    }
+
+    public void setStartTime(Date startTime) {
+        setDuration(during(startTime, getEndTime()));
+    }
+
+    public void setEndTime(Date endTime) {
+        setDuration(during(getStartTime(), endTime));
     }
 }

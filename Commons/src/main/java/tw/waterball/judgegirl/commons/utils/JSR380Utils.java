@@ -42,7 +42,7 @@ public class JSR380Utils {
         return validator.validate(object);
     }
 
-    public static class EntityInvalidException extends IllegalArgumentException {
+    public static class EntityInvalidException extends IllegalStateException {
         private final Set<ConstraintViolation<Object>> violations;
 
         EntityInvalidException(Set<ConstraintViolation<Object>> violations) {

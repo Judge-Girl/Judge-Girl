@@ -9,6 +9,7 @@ import java.util.Date;
 import java.util.List;
 
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
+import static tw.waterball.judgegirl.primitives.time.Duration.during;
 
 @Table(name = "exams")
 @Builder
@@ -35,7 +36,7 @@ public class ExamData {
     private List<ExamineeData> examinees = new ArrayList<>();
 
     public Exam toEntity() {
-        return new Exam(id, name, startTime, endTime, description,
+        return new Exam(id, name, during(startTime, endTime), description,
                 mapToList(questions, QuestionData::toEntity), mapToList(examinees, ExamineeData::toEntity));
     }
 

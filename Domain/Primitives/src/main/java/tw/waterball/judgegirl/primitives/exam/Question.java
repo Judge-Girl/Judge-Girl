@@ -5,16 +5,18 @@ import lombok.*;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
 
+import static tw.waterball.judgegirl.commons.utils.JSR380Utils.validate;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
 public class Question {
-    public static final int NO_QUOTA = Integer.MAX_VALUE;
-    private Id id;
+    public static final int NO_QUOTA_LIMITATION = Integer.MAX_VALUE;
+    private Id id = null;
 
     @Positive
-    private int quota = NO_QUOTA;
+    private int quota = NO_QUOTA_LIMITATION;
 
     @PositiveOrZero
     private int score;
@@ -27,10 +29,11 @@ public class Question {
         this.quota = quota;
         this.score = score;
         this.questionOrder = questionOrder;
+        validate(this);
     }
 
-    public boolean hasSubmissionQuota() {
-        return quota != NO_QUOTA;
+    public boolean hasSubmissionQuotaLimitation() {
+        return quota != NO_QUOTA_LIMITATION;
     }
 
     public int getExamId() {

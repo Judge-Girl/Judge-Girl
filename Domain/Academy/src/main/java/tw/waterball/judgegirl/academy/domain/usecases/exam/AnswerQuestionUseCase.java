@@ -35,7 +35,7 @@ public class AnswerQuestionUseCase implements VerdictIssuedEventListener {
 
     public void execute(Request request, Presenter presenter) throws SubmissionThrottlingException, ExamHasNotBeenStartedException, NoSubmissionQuotaException {
         Date answerTime = new Date();
-        Exam exam = findExam(request);
+        Exam exam = findExam(request.examId);
         Question question = findQuestion(request, exam);
 
         studentMustParticipateExam(request);
@@ -68,9 +68,9 @@ public class AnswerQuestionUseCase implements VerdictIssuedEventListener {
         }
     }
 
-    private Exam findExam(Request request) {
-        return examRepository.findById(request.examId)
-                .orElseThrow(() -> notFound(Exam.class).id(request.examId));
+    private Exam findExam(int examId) {
+        return examRepository.findById(examId)
+                .orElseThrow(() -> notFound(Exam.class).id(examId));
     }
 
     private Question findQuestion(Request request, Exam exam) {
