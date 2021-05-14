@@ -9,6 +9,8 @@ import tw.waterball.judgegirl.primitives.exam.Exam;
 import javax.inject.Named;
 import java.util.Date;
 
+import static tw.waterball.judgegirl.primitives.time.Duration.during;
+
 @Named
 public class CreateExamUseCase {
     private final ExamRepository examRepository;
@@ -18,8 +20,7 @@ public class CreateExamUseCase {
     }
 
     public void execute(Request request, ExamPresenter presenter) throws IllegalStateException {
-        Exam exam = new Exam(request.name, request.startTime, request.endTime, request.description);
-        exam.validate();
+        Exam exam = new Exam(request.name, during(request.startTime, request.endTime), request.description);
         presenter.showExam(examRepository.save(exam));
     }
 

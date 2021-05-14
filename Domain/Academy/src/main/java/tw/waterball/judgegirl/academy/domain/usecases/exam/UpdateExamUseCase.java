@@ -3,14 +3,15 @@ package tw.waterball.judgegirl.academy.domain.usecases.exam;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import tw.waterball.judgegirl.academy.domain.repositories.ExamRepository;
 import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.primitives.exam.Exam;
-import tw.waterball.judgegirl.academy.domain.repositories.ExamRepository;
 
 import javax.inject.Named;
 import java.util.Date;
 
 import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
+import static tw.waterball.judgegirl.primitives.time.Duration.during;
 
 @Named
 public class UpdateExamUseCase {
@@ -33,10 +34,8 @@ public class UpdateExamUseCase {
 
     private void updateExam(Exam exam, Request request) throws IllegalStateException {
         exam.setName(request.name);
-        exam.setStartTime(request.startTime);
-        exam.setEndTime(request.endTime);
+        exam.setDuration(during(request.startTime, request.endTime));
         exam.setDescription(request.description);
-        exam.validate();
     }
 
     @Data

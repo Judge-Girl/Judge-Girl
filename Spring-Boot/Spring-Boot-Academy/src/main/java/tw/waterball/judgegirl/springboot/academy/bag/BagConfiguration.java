@@ -1,4 +1,4 @@
-package tw.waterball.judgegirl.springboot.academy.config;
+package tw.waterball.judgegirl.springboot.academy.bag;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

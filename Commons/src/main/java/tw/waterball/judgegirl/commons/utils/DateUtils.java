@@ -28,6 +28,10 @@ public class DateUtils {
         NEVER_EXPIRED_IN_LIFETIME_CALENDAR.set(2100, Calendar.AUGUST, 7);
     }
 
+    public static Date oneSecondAgo() {
+        return beforeCurrentTime(1, TimeUnit.SECONDS);
+    }
+
     public static Date afterCurrentTime(int unit, TimeUnit timeUnit) {
         long now = System.currentTimeMillis();
         long after = timeUnit.toMillis(unit);
@@ -39,4 +43,5 @@ public class DateUtils {
         long before = timeUnit.toMillis(unit);
         return new Date(now - before);
     }
+
 }

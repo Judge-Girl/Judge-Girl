@@ -1,4 +1,4 @@
-package tw.waterball.judgegirl.springboot.academy.handler;
+package tw.waterball.judgegirl.springboot.academy.amqp;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

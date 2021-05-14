@@ -25,7 +25,7 @@ import tw.waterball.judgegirl.primitives.submission.verdict.VerdictIssuedEvent;
 import tw.waterball.judgegirl.problemapi.clients.FakeProblemServiceDriver;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.springboot.academy.SpringBootAcademyApplication;
-import tw.waterball.judgegirl.springboot.academy.handler.VerdictIssuedEventHandler;
+import tw.waterball.judgegirl.springboot.academy.amqp.VerdictIssuedEventHandler;
 import tw.waterball.judgegirl.springboot.academy.view.*;
 import tw.waterball.judgegirl.springboot.profiles.Profiles;
 import tw.waterball.judgegirl.studentapi.clients.FakeStudentServiceDriver;
@@ -35,7 +35,10 @@ import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
 
 import javax.transaction.Transactional;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
 
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
@@ -53,10 +56,11 @@ import static tw.waterball.judgegirl.academy.domain.usecases.exam.AnswerQuestion
 import static tw.waterball.judgegirl.commons.utils.DateUtils.afterCurrentTime;
 import static tw.waterball.judgegirl.commons.utils.DateUtils.beforeCurrentTime;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.*;
-import static tw.waterball.judgegirl.primitives.exam.Question.NO_QUOTA;
+import static tw.waterball.judgegirl.primitives.exam.Question.NO_QUOTA_LIMITATION;
 import static tw.waterball.judgegirl.primitives.stubs.ProblemStubs.problemTemplate;
 import static tw.waterball.judgegirl.primitives.stubs.SubmissionStubBuilder.randomJudgedSubmissionFromProblem;
 import static tw.waterball.judgegirl.primitives.stubs.SubmissionStubBuilder.submission;
+import static tw.waterball.judgegirl.primitives.time.Duration.during;
 import static tw.waterball.judgegirl.problemapi.views.ProblemView.toViewModel;
 import static tw.waterball.judgegirl.submissionapi.clients.SubmissionApiClient.SUBMIT_CODE_MULTIPART_KEY_NAME;
 import static tw.waterball.judgegirl.testkit.stubs.MultipartFileStubs.codes;
@@ -144,7 +148,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
     void WhenCreateExamWithEndTimeAfterStartTime_ShouldSucceed() throws Exception {
         String name = "test-contest", description = "problem statement";
         Date startTime = new Date(), endTime = new Date();
-        Exam exam = new Exam(name, startTime, endTime, description);
+        Exam exam = new Exam(name, during(startTime, endTime), description);
 
         createExam(exam)
                 .andExpect(status().isOk())
@@ -153,20 +157,6 @@ class ExamControllerTest extends AbstractSpringBootTest {
                 .andExpect(jsonPath("startTime").value(startTime))
                 .andExpect(jsonPath("endTime").value(endTime))
                 .andExpect(jsonPath("description").value(description));
-    }
-
-    @Test
-    void WhenCreateExamWithEndTimeBeforeStartTime_ShouldRespondBadRequest() throws Exception {
-        String name = "test-contest", description = "problem statement";
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(new Date());
-        cal.add(Calendar.HOUR_OF_DAY, 1);
-        Date startTime = cal.getTime(), endTime = new Date();
-        Exam exam = new Exam(name, startTime, endTime, description);
-
-        createExam(exam)
-                .andExpect(status().isBadRequest());
-
     }
 
     @Test
@@ -444,7 +434,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
     @Test
     void GivenIAmNotAnExaminee_WhenAnswerExamQuestion_ShouldBeForbidden() throws Exception {
         ExamView currentExam = createExamAndGet(beforeCurrentTime(1, HOURS), afterCurrentTime(1, HOURS), "A");
-        createQuestion(new CreateQuestionUseCase.Request(currentExam.getId(), PROBLEM_ID, NO_QUOTA, 100, 1));
+        createQuestion(new CreateQuestionUseCase.Request(currentExam.getId(), PROBLEM_ID, NO_QUOTA_LIMITATION, 100, 1));
 
         answerQuestion(STUDENT_A_ID, currentExam)
                 .andExpect(status().isForbidden());
@@ -454,7 +444,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
     void GivenStudentParticipatingAPastExamWithOneQuestion_WhenAnswerExamQuestion_ShouldFail() throws Exception {
         ExamView pastExam = createExamAndGet(beforeCurrentTime(2, HOURS), beforeCurrentTime(1, HOURS), "A");
         givenStudentParticipatingExam(STUDENT_A_ID, pastExam);
-        createQuestion(new CreateQuestionUseCase.Request(pastExam.getId(), PROBLEM_ID, NO_QUOTA, 100, 1));
+        createQuestion(new CreateQuestionUseCase.Request(pastExam.getId(), PROBLEM_ID, NO_QUOTA_LIMITATION, 100, 1));
 
         answerQuestion(STUDENT_A_ID, pastExam)
                 .andExpect(status().is4xxClientError());
@@ -463,7 +453,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
     @Test
     void GivenStudentParticipatingAnUpcomingExamWithOneQuestion_WhenAnswerExamQuestion_ShouldFail() throws Exception {
         ExamView upcomingExam = createExamAndGet(afterCurrentTime(1, HOURS), afterCurrentTime(2, HOURS), "A");
-        createQuestion(new CreateQuestionUseCase.Request(upcomingExam.getId(), PROBLEM_ID, NO_QUOTA, 100, 1));
+        createQuestion(new CreateQuestionUseCase.Request(upcomingExam.getId(), PROBLEM_ID, NO_QUOTA_LIMITATION, 100, 1));
         givenStudentParticipatingExam(STUDENT_A_ID, upcomingExam);
 
         answerQuestion(STUDENT_A_ID, upcomingExam)
@@ -473,7 +463,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
     @Test
     void WheneverReceiveNewVerdict_ShouldUpdateBestRecordOfAQuestion() throws Exception {
         ExamView exam = createExamAndGet(beforeCurrentTime(1, HOURS), afterCurrentTime(1, HOURS), "A");
-        createQuestion(new CreateQuestionUseCase.Request(exam.id, PROBLEM_ID, NO_QUOTA, 100, 1));
+        createQuestion(new CreateQuestionUseCase.Request(exam.id, PROBLEM_ID, NO_QUOTA_LIMITATION, 100, 1));
 
         publishVerdict(exam, submission("A").CE());
         var bestRecord = awaitVerdictIssuedEventAndGetBestRecord(exam.id);
@@ -724,7 +714,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
     }
 
     private ExamView createExamAndGet(Date startTime, Date endTime, String name) throws Exception {
-        return getBody(createExam(new Exam(name, startTime, endTime, "problem statement"))
+        return getBody(createExam(new Exam(name, during(startTime, endTime), "problem statement"))
                 .andExpect(status().isOk()), ExamView.class);
     }
 

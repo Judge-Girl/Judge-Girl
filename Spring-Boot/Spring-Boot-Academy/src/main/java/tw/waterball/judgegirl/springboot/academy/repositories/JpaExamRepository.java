@@ -19,7 +19,7 @@ import java.util.Optional;
 import static java.util.stream.Collectors.toList;
 import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
-import static tw.waterball.judgegirl.primitives.date.DateProvider.now;
+import static tw.waterball.judgegirl.primitives.time.DateProvider.now;
 import static tw.waterball.judgegirl.springboot.academy.repositories.jpa.ExamData.toData;
 import static tw.waterball.judgegirl.springboot.academy.repositories.jpa.QuestionData.toData;
 
