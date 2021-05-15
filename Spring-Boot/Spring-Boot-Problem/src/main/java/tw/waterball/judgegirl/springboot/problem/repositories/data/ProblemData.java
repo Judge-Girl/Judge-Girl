@@ -70,7 +70,14 @@ public class ProblemData {
     public Problem toEntity() {
         return new Problem(id, title, description, languageEnvs, outputMatchPolicyPluginTag,
                 new HashSet<>(filterPluginTags), tags,
-                new ArrayList<>(testcases.values()), visible, testcaseIOsFileId, archived);
+                getTestCases(), visible, testcaseIOsFileId, archived);
+    }
+
+    public List<Testcase> getTestCases() {
+        return Optional.ofNullable(testcases)
+                .map(Map::values)
+                .map(ArrayList::new)
+                .orElseGet(ArrayList::new);
     }
 
     public LanguageEnv getLanguageEnv(String name) {

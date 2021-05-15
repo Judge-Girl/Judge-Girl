@@ -32,8 +32,8 @@ import tw.waterball.judgegirl.judgerapi.env.JudgerEnvVariables;
 import tw.waterball.judgegirl.plugins.Plugins;
 import tw.waterball.judgegirl.plugins.api.JudgeGirlPlugin;
 import tw.waterball.judgegirl.plugins.api.PresetJudgeGirlPluginLocator;
-import tw.waterball.judgegirl.problemapi.clients.ProblemRestApiClient;
 import tw.waterball.judgegirl.problemapi.clients.ProblemServiceDriver;
+import tw.waterball.judgegirl.problemapi.clients.RestProblemApiClient;
 import tw.waterball.judgegirl.springboot.amqp.AmqpVerdictPublisher;
 import tw.waterball.judgegirl.submissionapi.clients.SubmissionApiClient;
 import tw.waterball.judgegirl.submissionapi.clients.SubmissionServiceDriver;
@@ -65,7 +65,7 @@ public class DefaultCCJudgerFactory {
         return new CCJudger(
                 new YAMLJudgerWorkspace(judgeWorkspaceLayoutYamlResourcePath),
                 new PresetJudgeGirlPluginLocator(aggregateJudgeGirlPlugins(plugins)),
-                problemRestApiClient(values, token),
+                restProblemApiClient(values, token),
                 submissionApiClient(values, token),
                 verdictPublisher(values),
                 new ShellCompilerFactory(),
@@ -98,12 +98,12 @@ public class DefaultCCJudgerFactory {
         return allPlugins;
     }
 
-    private static ProblemRestApiClient problemRestApiClient(JudgerEnvVariables.Values values, String token) {
-        return new ProblemRestApiClient(restTemplateFactory(),
+    private static RestProblemApiClient restProblemApiClient(JudgerEnvVariables.Values values, String token) {
+        var restTemplate = restTemplateFactory().create(
                 values.getProblemServiceInstance().getScheme(),
                 values.getProblemServiceInstance().getHost(),
-                values.getProblemServiceInstance().getPort(),
-                () -> token);
+                values.getProblemServiceInstance().getPort());
+        return new RestProblemApiClient(restTemplate, () -> token);
     }
 
 

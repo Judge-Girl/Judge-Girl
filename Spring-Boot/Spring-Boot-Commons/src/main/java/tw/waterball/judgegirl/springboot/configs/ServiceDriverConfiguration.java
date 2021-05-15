@@ -17,11 +17,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.client.ClientHttpRequestInterceptor;
 import tw.waterball.judgegirl.api.rest.RestTemplateFactory;
 import tw.waterball.judgegirl.api.retrofit.RetrofitFactory;
 import tw.waterball.judgegirl.commons.token.TokenService;
-import tw.waterball.judgegirl.problemapi.clients.ProblemRestApiClient;
 import tw.waterball.judgegirl.problemapi.clients.ProblemServiceDriver;
+import tw.waterball.judgegirl.problemapi.clients.RestProblemApiClient;
 import tw.waterball.judgegirl.springboot.configs.properties.ServiceProps;
 import tw.waterball.judgegirl.springboot.profiles.productions.ServiceDriver;
 import tw.waterball.judgegirl.studentapi.clients.StudentApiClient;
@@ -54,11 +55,14 @@ public class ServiceDriverConfiguration {
             RestTemplateFactory restTemplateFactory,
             TokenService tokenService,
             ServiceProps.ProblemService problemServiceInstance,
-            @Value("${judge-girl.client.problem-service.studentId}") int studentId) {
-        return new ProblemRestApiClient(restTemplateFactory,
+            @Value("${judge-girl.client.problem-service.studentId}") int studentId,
+            ClientHttpRequestInterceptor[] interceptors) {
+        var restTemplate = restTemplateFactory.create(
                 problemServiceInstance.getScheme(),
                 problemServiceInstance.getHost(),
                 problemServiceInstance.getPort(),
+                interceptors);
+        return new RestProblemApiClient(restTemplate,
                 () -> tokenService.createToken(admin(studentId)).getToken());
     }
 
