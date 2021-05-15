@@ -119,8 +119,6 @@ public class HomeworkControllerTest extends AbstractSpringBootTest {
         var actualHomeworkList = getAllHomework();
 
         assertEquals(homeworkList, actualHomeworkList);
-        range(0, homeworkList.size())
-                .forEach(i -> assertEquals(homeworkList.get(i), actualHomeworkList.get(i)));
     }
 
     @Test
