@@ -31,9 +31,9 @@ class DefaultVerdictIssuerTest {
     ProgramProfile programProfile = new ProgramProfile(2000, 2000, "");
 
     List<Judge> judges = Arrays.asList(
-            new Judge("A", JudgeStatus.WA, programProfile, new Grade(0, 20)),
-            new Judge("B", JudgeStatus.WA, programProfile, new Grade(0, 20)),
-            new Judge("C", JudgeStatus.WA, programProfile, new Grade(0, 20)));
+            new Judge("A", JudgeStatus.WA, programProfile, new Grade(0, 80)),
+            new Judge("B", JudgeStatus.WA, programProfile, new Grade(0, 80)),
+            new Judge("C", JudgeStatus.WA, programProfile, new Grade(0, 80)));
 
     @Test
     void test() {
