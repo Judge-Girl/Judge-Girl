@@ -39,7 +39,7 @@ public class RestProblemApiClient implements ProblemServiceDriver {
                 problemId, languageEnvName, providedCodesFileId);
         HttpEntity<?> entity = new HttpEntity<>(withBearerTokenHeader(tokenSupplier.get()));
         ResponseEntity<byte[]> response = restTemplate.exchange(url, HttpMethod.GET, entity, byte[].class);
-        return parseDownloadedFileResource(response);
+        return parseFileResourceFromResponse(response);
     }
 
     @Override
@@ -48,7 +48,7 @@ public class RestProblemApiClient implements ProblemServiceDriver {
                 problemId, testcaseIOsFileId);
         HttpEntity<?> entity = new HttpEntity<>(withBearerTokenHeader(tokenSupplier.get()));
         ResponseEntity<byte[]> response = restTemplate.exchange(url, HttpMethod.GET, entity, byte[].class);
-        return parseDownloadedFileResource(response);
+        return parseFileResourceFromResponse(response);
     }
 
 }

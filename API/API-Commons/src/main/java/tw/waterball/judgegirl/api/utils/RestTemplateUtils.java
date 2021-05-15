@@ -41,7 +41,7 @@ public class RestTemplateUtils {
         return headers;
     }
 
-    public static FileResource parseDownloadedFileResource(ResponseEntity<byte[]> response) {
+    public static FileResource parseFileResourceFromResponse(ResponseEntity<byte[]> response) {
         HttpHeaders headers = response.getHeaders();
         String fileName = parseFileNameFromContentDisposition(requireNonNull(headers.getFirst("Content-Disposition")));
         try {

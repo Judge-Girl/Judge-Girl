@@ -74,10 +74,7 @@ public class ProblemData {
     }
 
     public List<Testcase> getTestCases() {
-        return Optional.ofNullable(testcases)
-                .map(Map::values)
-                .map(ArrayList::new)
-                .orElseGet(ArrayList::new);
+        return testcases != null ? new ArrayList<>(testcases.values()) : new ArrayList<>();
     }
 
     public LanguageEnv getLanguageEnv(String name) {
