@@ -1,6 +1,7 @@
 package tw.waterball.judgegirl.springboot.academy.controllers;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,12 +28,12 @@ import tw.waterball.judgegirl.submissionapi.clients.SubmissionServiceDriver;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.IntStream;
 
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.IntStream.range;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
@@ -117,8 +118,8 @@ public class HomeworkControllerTest extends AbstractSpringBootTest {
 
         var actualHomeworkList = getAllHomework();
 
-        assertEquals(homeworkList.size(), actualHomeworkList.size());
-        IntStream.range(0, homeworkList.size())
+        assertEquals(homeworkList, actualHomeworkList);
+        range(0, homeworkList.size())
                 .forEach(i -> assertEquals(homeworkList.get(i), actualHomeworkList.get(i)));
     }
 
@@ -170,18 +171,15 @@ public class HomeworkControllerTest extends AbstractSpringBootTest {
         }
     }
 
-    private HomeworkView createHomeworkAndGet(String homeworkName, Integer... problemIds) throws Exception {
+    @SneakyThrows
+    private HomeworkView createHomeworkAndGet(String homeworkName, Integer... problemIds) {
         return getBody(createHomework(homeworkName, problemIds), HomeworkView.class);
     }
 
-
-    private List<HomeworkView> createHomeworkListAndGet(int count) throws Exception {
-        var homeworkViews = new ArrayList<HomeworkView>(count);
-        for (int i = 0; i < count; i++) {
-            HomeworkView homework = createHomeworkAndGet(HOMEWORK_NAME + i);
-            homeworkViews.add(homework);
-        }
-        return homeworkViews;
+    private List<HomeworkView> createHomeworkListAndGet(int count)  {
+        return range(0, count)
+                .mapToObj(i -> createHomeworkAndGet(HOMEWORK_NAME + i))
+                .collect(toList());
     }
 
     private ResultActions createHomework(String homeworkName, Integer... problemIds) throws Exception {
