@@ -14,6 +14,7 @@ import tw.waterball.judgegirl.primitives.problem.Testcase;
 
 import java.util.*;
 
+import static java.util.Collections.emptyList;
 import static java.util.function.Function.identity;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.toMap;
 
@@ -74,7 +75,7 @@ public class ProblemData {
     }
 
     public List<Testcase> getTestCases() {
-        return testcases != null ? new ArrayList<>(testcases.values()) : new ArrayList<>();
+        return testcases != null ? new ArrayList<>(testcases.values()) : emptyList();
     }
 
     public LanguageEnv getLanguageEnv(String name) {
