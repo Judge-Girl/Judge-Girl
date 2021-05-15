@@ -559,7 +559,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    void GiveOneProblemSavedWithoutLanguageEnv_WhenUploadTwoProvidedCodes_ShouldRespondProvidedCodesFileIds() throws Exception {
+    void GiveOneProblemSavedWithoutLanguageEnv_WhenUploadTwoProvidedCodes_ShouldRespondProvidedCodesFileId() throws Exception {
         Language language = Language.C;
         int problemId = saveProblemWithTitle("problemTitle");
 
