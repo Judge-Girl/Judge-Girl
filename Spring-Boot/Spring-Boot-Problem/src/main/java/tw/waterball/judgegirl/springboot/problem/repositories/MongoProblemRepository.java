@@ -40,6 +40,7 @@ import static java.lang.String.format;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
+import static tw.waterball.judgegirl.commons.utils.StringUtils.isNullOrEmpty;
 import static tw.waterball.judgegirl.commons.utils.ZipUtils.zipToStream;
 import static tw.waterball.judgegirl.springboot.problem.repositories.data.ProblemData.toData;
 import static tw.waterball.judgegirl.springboot.utils.MongoUtils.downloadFileResourceByFileId;
@@ -211,10 +212,11 @@ public class MongoProblemRepository implements ProblemRepository {
         return gridFsTemplate.store(zip, fileName).toString();
     }
 
+    // TODO: Transaction: Operations in `updateProvidedCodesFileIdInProblem` should be atomic
     private void updateProvidedCodesFileIdInProblem(Problem problem, Language language, String fileId) {
         problem.mayHaveLanguageEnv(language)
                 .ifPresentOrElse(langEnv -> {
-                    removeFileIdIfExist(langEnv.getProvidedCodesFileId());
+                    removeFileIdIfExists(langEnv.getProvidedCodesFileId());
                     langEnv.setProvidedCodesFileId(fileId);
                     updateLanguageEnv(problem.getId(), langEnv, language);
                 }, () -> {
@@ -227,8 +229,8 @@ public class MongoProblemRepository implements ProblemRepository {
                 });
     }
 
-    private void removeFileIdIfExist(String fileId) {
-        if (!fileId.isEmpty()) {
+    private void removeFileIdIfExists(String fileId) {
+        if (isNullOrEmpty(fileId)) {
             gridFsTemplate.delete(new Query(Criteria.where("_id").is(fileId)));
         }
     }

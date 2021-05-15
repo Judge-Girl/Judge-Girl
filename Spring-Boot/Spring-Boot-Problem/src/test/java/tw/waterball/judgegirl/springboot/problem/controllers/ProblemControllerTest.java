@@ -552,15 +552,14 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    void WhenUploadTwoProvidedCodesWithNonExistingProblemId_ShouldResponseNotFound() throws Exception {
+    void WhenUploadTwoProvidedCodesWithNonExistingProblemId_ShouldRespondNotFound() throws Exception {
         Language language = Language.C;
         int nonExistingProblemId = 123;
-
         uploadProvidedCodes(nonExistingProblemId, language, getTwoProvidedCodes()).andExpect(status().isNotFound());
     }
 
     @Test
-    void GiveOneProblemSavedWithNonExistingLanguageEnv_WhenUploadTwoProvidedCodes_ShouldResponseProvidedCodesFileIds() throws Exception {
+    void GiveOneProblemSavedWithoutLanguageEnv_WhenUploadTwoProvidedCodes_ShouldRespondProvidedCodesFileIds() throws Exception {
         Language language = Language.C;
         int problemId = saveProblemWithTitle("problemTitle");
 
@@ -589,8 +588,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     }
 
     private MockHttpServletRequestBuilder multipartRequestWithProvidedCodes(int problemId, Language language, MockMultipartFile... files) {
-        var call =
-                multipart("/api/problems/{problemId}/{langEnvName}/providedCodes", problemId, language.toString());
+        var call = multipart("/api/problems/{problemId}/{langEnvName}/providedCodes", problemId, language.toString());
 
         call.with(request -> {
             request.setMethod("PUT");
