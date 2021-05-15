@@ -66,9 +66,9 @@ public class SubmissionStubBuilder extends Submission {
         return judge(RE, runtime, memoryUsage, 0);
     }
 
-    public SubmissionStubBuilder CE() {
+    public SubmissionStubBuilder CE(int maxGrade) {
         lazyInitializeVerdictIfNull();
-        verdictBuilder.CE();
+        verdictBuilder.CE(maxGrade);
         return this;
     }
 
@@ -121,7 +121,7 @@ public class SubmissionStubBuilder extends Submission {
             statuses.add(NORMAL_JUDGE_STATUSES[random.nextInt(NORMAL_JUDGE_STATUSES.length)]);
         }
         for (int i = 0; i < problem.getTestcases().size(); i++) {
-            judges.add(new Judge(problem.getTestcases().get(i).getName(),
+            judges.add(new Judge(problem.getTestcases().get(i),
                     statuses.get(i), new ProgramProfile(10, 10,
                     statuses.get(i) == RE ? "Error" : ""),
                     statuses.get(i) == AC ? gradePerAc : 0));

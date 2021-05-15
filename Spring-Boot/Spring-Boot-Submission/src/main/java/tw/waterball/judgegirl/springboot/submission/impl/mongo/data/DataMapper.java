@@ -13,14 +13,17 @@
 
 package tw.waterball.judgegirl.springboot.submission.impl.mongo.data;
 
+import tw.waterball.judgegirl.primitives.grading.Grade;
 import tw.waterball.judgegirl.primitives.submission.Bag;
 import tw.waterball.judgegirl.primitives.submission.Submission;
 import tw.waterball.judgegirl.primitives.submission.report.Report;
+import tw.waterball.judgegirl.primitives.submission.verdict.Judge;
 import tw.waterball.judgegirl.primitives.submission.verdict.Verdict;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
 import static tw.waterball.judgegirl.commons.utils.StringUtils.isNullOrEmpty;
 
 /**
@@ -58,9 +61,10 @@ public class DataMapper {
             return null;
         }
         return new VerdictData(
-                verdict.getJudges(),
+                mapToList(verdict.getJudges(), DataMapper::toData),
                 verdict.getIssueTime(),
-                verdict.getTotalGrade(),
+                verdict.getGrade(),
+                verdict.getMaxGrade(),
                 verdict.getSummaryStatus(),
                 verdict.getCompileErrorMessage(),
                 verdict.getReport().getName(),
@@ -92,10 +96,20 @@ public class DataMapper {
         }
 
         Verdict verdict = isNullOrEmpty(data.getCompileErrorMessage()) ?
-                new Verdict(data.getJudges(), data.getIssueTime()) :
-                Verdict.compileError(data.getCompileErrorMessage(), data.getIssueTime());
+                new Verdict(mapToList(data.getJudges(), DataMapper::toEntity), data.getIssueTime()) :
+                Verdict.compileError(data.getCompileErrorMessage(), data.getMaxGrade(), data.getIssueTime());
 
         verdict.setReport(Report.fromData(data.getReportName(), data.getReportData()));
         return verdict;
+    }
+
+    public static JudgeData toData(Judge judge) {
+        return new JudgeData(judge.getTestcaseName(), judge.getStatus(),
+                judge.getProgramProfile(), judge.getGrade(), judge.getMaxGrade());
+    }
+
+    public static Judge toEntity(JudgeData data) {
+        return new Judge(data.getTestcaseName(), data.getStatus(),
+                data.getProgramProfile(), new Grade(data.getGrade(), data.getMaxGrade()));
     }
 }

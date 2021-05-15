@@ -41,7 +41,7 @@ class SubmissionTest {
     @Test
     void GivenWA_RE_CE_bestRecordShouldNotBeCE() {
         bestRecordShouldNotBe("A",
-                submission("A").CE(),
+                submission("A").CE(100),
                 submission("B").WA(0, 0),
                 submission("C").RE(0, 0));
     }

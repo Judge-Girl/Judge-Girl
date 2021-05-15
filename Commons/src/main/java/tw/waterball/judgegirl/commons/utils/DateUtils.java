@@ -28,6 +28,10 @@ public class DateUtils {
         NEVER_EXPIRED_IN_LIFETIME_CALENDAR.set(2100, Calendar.AUGUST, 7);
     }
 
+    public static Date oneSecondAfter() {
+        return afterCurrentTime(1, TimeUnit.SECONDS);
+    }
+    
     public static Date oneSecondAgo() {
         return beforeCurrentTime(1, TimeUnit.SECONDS);
     }

@@ -1,6 +1,7 @@
 package tw.waterball.judgegirl.primitives.stubs;
 
 import org.jetbrains.annotations.Nullable;
+import tw.waterball.judgegirl.primitives.grading.Grade;
 import tw.waterball.judgegirl.primitives.problem.JudgeStatus;
 import tw.waterball.judgegirl.primitives.submission.verdict.Judge;
 import tw.waterball.judgegirl.primitives.submission.verdict.ProgramProfile;
@@ -18,6 +19,7 @@ public class VerdictStubBuilder {
     private @Nullable
     String compileError;
     private final List<Judge> judges = new LinkedList<>();
+    private int maxGrade; // For CE
 
     public static VerdictStubBuilder verdict() {
         return new VerdictStubBuilder();
@@ -47,7 +49,8 @@ public class VerdictStubBuilder {
         return judge(RE, runtime, memoryUsage, 0);
     }
 
-    public VerdictStubBuilder CE() {
+    public VerdictStubBuilder CE(int maxGrade) {
+        this.maxGrade = maxGrade;
         return CE("Compile Error");
     }
 
@@ -56,7 +59,11 @@ public class VerdictStubBuilder {
         return this;
     }
 
-    protected VerdictStubBuilder judge(JudgeStatus status, long runtime, long memoryUsage, int grade) {
+    protected VerdictStubBuilder judge(JudgeStatus status, long runtime, long memoryUsage, int maxGrade) {
+        return judge(status, runtime, memoryUsage, new Grade(maxGrade, maxGrade));
+    }
+
+    protected VerdictStubBuilder judge(JudgeStatus status, long runtime, long memoryUsage, Grade grade) {
         if (compileError != null) {
             throw new IllegalArgumentException("CE verdict can't have judges");
         }
@@ -69,7 +76,7 @@ public class VerdictStubBuilder {
         if (compileError == null) {
             verdict = new Verdict(judges);
         } else {
-            verdict = Verdict.compileError("Compile Error");
+            verdict = Verdict.compileError("Compile Error", maxGrade);
         }
         verdict.setReport(ProblemStubs.compositeReport());
         return verdict;

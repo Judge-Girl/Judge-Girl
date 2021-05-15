@@ -97,6 +97,8 @@ class ExamControllerTest extends AbstractSpringBootTest {
 
     @Autowired
     SubmissionServiceDriver submissionServiceDriver;
+    private final int[] testcaseGrades = {20, 30, 50};
+    private final int numOfTestcases = testcaseGrades.length;
     private ProblemView problem;
     private Submission submissionWith2ACs20Point;
     private ProblemView anotherProblem;
@@ -111,13 +113,13 @@ class ExamControllerTest extends AbstractSpringBootTest {
     }
 
     private void fakeProblemServiceDriver() {
-        Problem p1 = problemTemplate().id(PROBLEM_ID).build(), p2 = problemTemplate().id(ANOTHER_PROBLEM_ID).build();
+        Problem p1 = problemTemplate(testcaseGrades).id(PROBLEM_ID).build(),
+                p2 = problemTemplate(testcaseGrades).id(ANOTHER_PROBLEM_ID).build();
         problem = toViewModel(p1);
         submissionWith2ACs20Point = randomJudgedSubmissionFromProblem(p1, STUDENT_A_ID, 2, 10);
         problemServiceDriver.addProblemView(problem);
         anotherProblem = toViewModel(p2);
         problemServiceDriver.addProblemView(anotherProblem);
-
     }
 
     private void fakeStudentServiceDriver() {
@@ -465,7 +467,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
         ExamView exam = createExamAndGet(beforeCurrentTime(1, HOURS), afterCurrentTime(1, HOURS), "A");
         createQuestion(new CreateQuestionUseCase.Request(exam.id, PROBLEM_ID, NO_QUOTA_LIMITATION, 100, 1));
 
-        publishVerdict(exam, submission("A").CE());
+        publishVerdict(exam, submission("A").CE(100));
         var bestRecord = awaitVerdictIssuedEventAndGetBestRecord(exam.id);
         assertEquals(0, bestRecord.getScore());
 
@@ -492,7 +494,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
     void testGetStudentExamProgressOverview() throws Exception {
         final int QUOTA = 5;
         int PROBLEM_TOTAL_GRADE = problem.totalGrade;
-        int SUBMISSION_TOTAL_GRADE = submissionWith2ACs20Point.mayHaveVerdict().orElseThrow().getTotalGrade();
+        int SUBMISSION_TOTAL_GRADE = submissionWith2ACs20Point.mayHaveVerdict().orElseThrow().getGrade();
         Date start = beforeCurrentTime(1, HOURS), end = afterCurrentTime(1, HOURS);
         ExamView exam = createExamAndGet(start, end, "sample-exam");
         QuestionView q1 = createQuestionAndGet(new CreateQuestionUseCase.Request(exam.getId(), PROBLEM_ID, QUOTA, 50, 1));

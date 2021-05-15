@@ -16,7 +16,6 @@ package tw.waterball.judgegirl.primitives.submission.verdict;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import tw.waterball.judgegirl.primitives.submission.Bag;
 
 import java.util.Date;
@@ -27,7 +26,6 @@ import java.util.Date;
 @Builder
 @Data
 @AllArgsConstructor
-@NoArgsConstructor
 public class VerdictIssuedEvent {
     private int problemId;
     private String problemTitle;

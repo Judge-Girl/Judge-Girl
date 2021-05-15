@@ -36,7 +36,11 @@ public class Exam {
     private final List<Examinee> examinees;
 
     public Exam(String name, Duration duration, String description) {
-        this(name, duration, description, new ArrayList<>(), new ArrayList<>());
+        this(null, name, duration, description);
+    }
+
+    public Exam(Integer id, String name, Duration duration, String description) {
+        this(id, name, duration, description, new ArrayList<>(), new ArrayList<>());
     }
 
     public Exam(String name, Duration duration, String description,
@@ -83,6 +87,14 @@ public class Exam {
         updatedQuestion.setScore(question.getScore());
     }
 
+    public void addQuestion(Question question) {
+        questions.add(question);
+    }
+
+    public void addExaminee(Examinee examinee) {
+        examinees.add(examinee);
+    }
+
     public void foreachQuestion(Consumer<Question> questionConsumer) {
         questions.forEach(questionConsumer);
     }
@@ -113,5 +125,9 @@ public class Exam {
 
     public void setEndTime(Date endTime) {
         setDuration(during(getStartTime(), endTime));
+    }
+
+    public Optional<Examinee> getExaminee(Examinee.Id examineeId) {
+        return findFirst(getExaminees(), examinee -> examinee.getId().equals(examineeId));
     }
 }

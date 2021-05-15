@@ -16,25 +16,34 @@ package tw.waterball.judgegirl.primitives.submission.verdict;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import org.jetbrains.annotations.NotNull;
+import tw.waterball.judgegirl.primitives.grading.Grade;
+import tw.waterball.judgegirl.primitives.grading.Grading;
 import tw.waterball.judgegirl.primitives.problem.JudgeStatus;
+import tw.waterball.judgegirl.primitives.problem.Testcase;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
 @ToString
 @EqualsAndHashCode
-public class Judge implements Comparable<Judge> {
+public class Judge implements Comparable<Judge>, Grading {
     private String testcaseName;
     private JudgeStatus status;
     private ProgramProfile programProfile;
-    private int grade;
+    private Grade grade;
 
     public Judge() {
     }
 
+    public Judge(Testcase testcase,
+                 JudgeStatus status, ProgramProfile programProfile, int grade) {
+        this(testcase.getName(), status, programProfile,
+                new Grade(grade, testcase.getGrade()));
+    }
+
     public Judge(String testcaseName,
                  JudgeStatus status,
-                 ProgramProfile programProfile, int grade) {
+                 ProgramProfile programProfile, Grade grade) {
         this.testcaseName = testcaseName;
         this.status = status;
         this.programProfile = programProfile;
@@ -61,16 +70,22 @@ public class Judge implements Comparable<Judge> {
         return programProfile;
     }
 
-    public void setProgramProfile(ProgramProfile programProfile) {
-        this.programProfile = programProfile;
-    }
-
+    @Override
     public int getGrade() {
-        return grade;
+        return grade.value();
     }
 
     public void setGrade(int grade) {
-        this.grade = grade;
+        this.grade = new Grade(grade, getMaxGrade());
+    }
+
+    @Override
+    public int getMaxGrade() {
+        return grade.max();
+    }
+
+    public void setMaxGrade(int maxGrade) {
+        this.grade = new Grade(getGrade(), maxGrade);
     }
 
     @Override
@@ -80,6 +95,5 @@ public class Judge implements Comparable<Judge> {
         }
         return getStatus().getOrder() - judge.getStatus().getOrder();
     }
-
 
 }

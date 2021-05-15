@@ -14,6 +14,7 @@
 package tw.waterball.judgegirl.primitives.submission;
 
 import org.junit.jupiter.api.Test;
+import tw.waterball.judgegirl.primitives.grading.Grade;
 import tw.waterball.judgegirl.primitives.problem.JudgeStatus;
 import tw.waterball.judgegirl.primitives.submission.report.Report;
 import tw.waterball.judgegirl.primitives.submission.verdict.Judge;
@@ -30,9 +31,9 @@ class DefaultVerdictIssuerTest {
     ProgramProfile programProfile = new ProgramProfile(2000, 2000, "");
 
     List<Judge> judges = Arrays.asList(
-            new Judge("A", JudgeStatus.WA, programProfile, 0),
-            new Judge("B", JudgeStatus.WA, programProfile, 0),
-            new Judge("C", JudgeStatus.WA, programProfile, 0));
+            new Judge("A", JudgeStatus.WA, programProfile, new Grade(0, 20)),
+            new Judge("B", JudgeStatus.WA, programProfile, new Grade(0, 20)),
+            new Judge("C", JudgeStatus.WA, programProfile, new Grade(0, 20)));
 
     @Test
     void test() {

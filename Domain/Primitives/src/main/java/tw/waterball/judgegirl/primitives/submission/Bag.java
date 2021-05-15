@@ -42,6 +42,11 @@ public class Bag extends HashMap<String, String> {
         return new Bag(emptyMap());
     }
 
+    public Bag addEntry(String key, String value) {
+        put(key, value);
+        return this;
+    }
+
     public void makeAllKeysAndValuesLowercase() {
         var entries = new ArrayList<>(entrySet());
         for (var entry : entries) {

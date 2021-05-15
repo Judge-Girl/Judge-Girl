@@ -52,8 +52,6 @@ public class HomeworkControllerTest extends AbstractSpringBootTest {
     public static final int STUDENT_ID = 11;
     private static final String HOMEWORK_PATH = "/api/homework";
     private static final String HOMEWORK_PROGRESS_PATH = "/api/students/{studentId}/homework/{homeworkId}/progress";
-    private static final String SUBMISSION1_ID = "1";
-    private static final String SUBMISSION2_ID = "2";
 
     @Autowired
     private FakeProblemServiceDriver problemServiceDriver;
@@ -135,7 +133,7 @@ public class HomeworkControllerTest extends AbstractSpringBootTest {
     public void testGetHomeworkProgress() throws Exception {
         var homework = createHomeworkConsistsOfProblems(PROBLEM1_ID, PROBLEM2_ID);
         var bestRecord1 = achieveBestRecord(PROBLEM1_ID, submission("AC").AC(1, 1, 100).build(STUDENT_ID, PROBLEM1_ID, LANG_ENV));
-        var bestRecord2 = achieveBestRecord(PROBLEM2_ID, submission("CE").CE().build(STUDENT_ID, PROBLEM2_ID, LANG_ENV));
+        var bestRecord2 = achieveBestRecord(PROBLEM2_ID, submission("CE").CE(100).build(STUDENT_ID, PROBLEM2_ID, LANG_ENV));
 
         HomeworkProgress homeworkProgress = getHomeworkProgress(STUDENT_ID, homework.id);
 

@@ -88,7 +88,8 @@ public abstract class Judger {
     protected abstract CompileResult doCompile();
 
     protected Verdict issueCompileErrorVerdict(CompileResult compileResult) {
-        return Verdict.compileError(compileResult.getErrorMessage());
+        int maxGrade = getProblem().getTotalGrade();
+        return Verdict.compileError(compileResult.getErrorMessage(), maxGrade);
     }
 
     protected abstract void onBeforeRunningTestcase(Testcase testcase);
@@ -110,15 +111,15 @@ public abstract class Judger {
     protected Judge judgeFromProgramExecutionResult(Testcase testcase, TestcaseExecutionResult executionResult) {
         if (executionResult.isSuccessful()) {
             if (isProgramOutputAllCorrect(testcase)) {
-                return new Judge(testcase.getName(), JudgeStatus.AC,
+                return new Judge(testcase, JudgeStatus.AC,
                         executionResult.getProfile(), testcase.getGrade());
             } else {
-                return new Judge(testcase.getName(), JudgeStatus.WA,
+                return new Judge(testcase, JudgeStatus.WA,
                         executionResult.getProfile(), 0);
             }
         }
         JudgeStatus failureStatus = executionResult.getStatus().mapToJudgeStatus();
-        return new Judge(testcase.getName(), failureStatus,
+        return new Judge(testcase, failureStatus,
                 executionResult.getProfile(), 0);
     }
 

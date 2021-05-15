@@ -32,7 +32,11 @@ public class ProblemStubs {
     public static final int ID = 1;
 
     public static ProblemBuilder problemTemplate() {
-        return Problem.builder()
+        return problemTemplate(3, 20, 30, 50);
+    }
+
+    public static ProblemBuilder problemTemplate(int... testcaseGrades) {
+        var builder = Problem.builder()
                 .id(ID)
                 .title("Title")
                 .description("# Title \n ```\n Code \n ```")
@@ -47,10 +51,12 @@ public class ProblemStubs {
                                 .resourceSpec(new ResourceSpec(0.5f, 0))
                                 .submittedCodeSpec(new SubmittedCodeSpec(C, "main.c"))
                                 .providedCodesFileId("providedCodesFileId")
-                                .build())
-                .testcase(new Testcase(UUID.randomUUID().toString(),"1", ID, 5, 5, 5000, 1, 20))
-                .testcase(new Testcase(UUID.randomUUID().toString(),"2", ID, 5, 5, 5000, 1, 30))
-                .testcase(new Testcase(UUID.randomUUID().toString(),"3", ID, 3, 4, 5000, 1, 50));
+                                .build());
+        for (int i = 0; i < testcaseGrades.length; i++) {
+            builder.testcase(new Testcase(UUID.randomUUID().toString(), String.valueOf(i), ID,
+                    5, 5, 5000, 1, testcaseGrades[i]));
+        }
+        return builder;
     }
 
     public static CompositeReport compositeReport() {

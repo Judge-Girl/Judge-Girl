@@ -52,6 +52,7 @@ import tw.waterball.judgegirl.problemapi.clients.ProblemServiceDriver;
 import tw.waterball.judgegirl.springboot.profiles.Profiles;
 import tw.waterball.judgegirl.springboot.submission.SpringBootSubmissionApplication;
 import tw.waterball.judgegirl.springboot.submission.handler.VerdictIssuedEventHandler;
+import tw.waterball.judgegirl.springboot.submission.impl.mongo.data.DataMapper;
 import tw.waterball.judgegirl.springboot.submission.impl.mongo.data.SubmissionData;
 import tw.waterball.judgegirl.springboot.submission.impl.mongo.data.VerdictData;
 import tw.waterball.judgegirl.springboot.submission.impl.mongo.strategy.SaveSubmissionWithCodesStrategy;
@@ -82,6 +83,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static tw.waterball.judgegirl.commons.token.TokenService.Identity.admin;
 import static tw.waterball.judgegirl.commons.token.TokenService.Identity.student;
 import static tw.waterball.judgegirl.commons.utils.Delay.delay;
+import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
+import static tw.waterball.judgegirl.primitives.time.DateProvider.now;
 import static tw.waterball.judgegirl.problemapi.views.ProblemView.toViewModel;
 import static tw.waterball.judgegirl.submissionapi.clients.SubmissionApiClient.HEADER_BAG_KEY_PREFIX;
 import static tw.waterball.judgegirl.submissionapi.clients.SubmissionApiClient.SUBMIT_CODE_MULTIPART_KEY_NAME;
@@ -266,7 +269,7 @@ public class AbstractSubmissionControllerTest extends AbstractSpringBootTest {
         assertEquals(expectTotalGrade, verdictData.getTotalGrade());
         assertEquals(judgeStatus, verdictData.getSummaryStatus());
         assertEquals(new HashSet<>(verdictIssuedEvent.getVerdict().getJudges()),
-                new HashSet<>(verdictData.getJudges()));
+                new HashSet<>(mapToList(verdictData.getJudges(), DataMapper::toEntity)));
         assertEquals(stubReport.getRawData(), verdictData.getReportData());
     }
 
@@ -276,6 +279,7 @@ public class AbstractSubmissionControllerTest extends AbstractSpringBootTest {
                 .studentId(submissionView.studentId)
                 .problemTitle(problem.getTitle())
                 .submissionId(submissionView.getId())
+                .submissionTime(now())
                 .verdict(toEntity(verdict)).build();
     }
 

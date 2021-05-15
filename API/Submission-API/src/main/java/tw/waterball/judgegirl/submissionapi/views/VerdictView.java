@@ -16,11 +16,12 @@ package tw.waterball.judgegirl.submissionapi.views;
 import lombok.*;
 import org.jetbrains.annotations.Nullable;
 import tw.waterball.judgegirl.primitives.problem.JudgeStatus;
-import tw.waterball.judgegirl.primitives.submission.verdict.Judge;
 import tw.waterball.judgegirl.primitives.submission.verdict.Verdict;
 
 import java.util.Date;
 import java.util.List;
+
+import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -31,9 +32,10 @@ import java.util.List;
 @AllArgsConstructor
 public class VerdictView {
     @Singular
-    private List<Judge> judges;
+    private List<JudgeView> judges;
     private JudgeStatus summaryStatus;
     private int totalGrade;
+    private int maxGrade;
     private String compileErrorMessage;
     private long maximumRuntime;
     private long maximumMemoryUsage;
@@ -44,9 +46,10 @@ public class VerdictView {
         if (verdict == null) {
             return null;
         }
-        return new VerdictView(verdict.getJudges(),
+        return new VerdictView(mapToList(verdict.getJudges(), JudgeView::toViewModel),
                 verdict.getSummaryStatus(),
-                verdict.getTotalGrade(),
+                verdict.getGrade(),
+                verdict.getMaxGrade(),
                 verdict.getCompileErrorMessage(),
                 verdict.getMaximumRuntime(),
                 verdict.getMaximumMemoryUsage(),
@@ -58,8 +61,12 @@ public class VerdictView {
         if (verdictView == null) {
             return null;
         }
+        if (verdictView.getSummaryStatus() == JudgeStatus.CE) {
+            return Verdict.compileError(verdictView.compileErrorMessage,
+                    verdictView.maxGrade, verdictView.issueTime);
+        }
         Verdict verdict = new Verdict(
-                verdictView.getJudges(),
+                mapToList(verdictView.getJudges(), JudgeView::toEntity),
                 verdictView.getIssueTime());
         verdict.setReport(verdictView.getReport().toEntity());
         return verdict;
