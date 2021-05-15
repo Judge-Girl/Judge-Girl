@@ -17,7 +17,9 @@ import lombok.AllArgsConstructor;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
+import tw.waterball.judgegirl.primitives.problem.Language;
 import tw.waterball.judgegirl.primitives.problem.LanguageEnv;
 import tw.waterball.judgegirl.primitives.problem.Problem;
 import tw.waterball.judgegirl.primitives.problem.Testcase;
@@ -31,6 +33,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.nonNull;
+import static tw.waterball.judgegirl.problem.domain.usecases.UploadProvidedCodeUseCase.PROVIDED_CODE_MULTIPART_KEY_NAME;
+import static tw.waterball.judgegirl.springboot.utils.MultipartFileUtils.convertMultipartFilesToFileResources;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -49,6 +53,7 @@ public class ProblemController {
     private final SaveProblemWithTitleUseCase saveProblemWithTitleUseCase;
     private final PatchProblemUseCase patchProblemUseCase;
     private final ArchiveOrDeleteProblemUseCase deleteProblemUseCase;
+    private final UploadProvidedCodeUseCase uploadProvidedCodeUseCase;
 
 
     @GetMapping("/tags")
@@ -131,6 +136,18 @@ public class ProblemController {
         patchProblemUseCase.execute(request);
     }
 
+    @PutMapping("/{problemId}/{langEnvName}/providedCodes")
+    public String uploadProvidedCodes(@PathVariable int problemId,
+                                      @PathVariable String langEnvName,
+                                      @RequestParam(PROVIDED_CODE_MULTIPART_KEY_NAME) MultipartFile[] providedCodes) {
+        UploadProvidedCodeUseCase.Request request =
+                new UploadProvidedCodeUseCase.Request(problemId, Language.valueOf(langEnvName), convertMultipartFilesToFileResources(providedCodes));
+        UploadProvidedCodesPresenter presenter = new UploadProvidedCodesPresenter();
+        presenter.setLanguage(Language.valueOf(langEnvName));
+        uploadProvidedCodeUseCase.execute(request, presenter);
+        return presenter.present();
+    }
+
     @PutMapping("/{problemId}/testcases/{testcaseId}")
     public void updateOrAddTestcase(@PathVariable int problemId,
                                     @PathVariable String testcaseId,
@@ -183,6 +200,24 @@ public class ProblemController {
 
         List<Testcase> present() {
             return testcases;
+        }
+    }
+
+    class UploadProvidedCodesPresenter implements UploadProvidedCodeUseCase.Presenter {
+        private Problem problem;
+        private Language language;
+
+        @Override
+        public void showResult(Problem problem) {
+            this.problem = problem;
+        }
+
+        public void setLanguage(Language language) {
+            this.language = language;
+        }
+
+        String present() {
+            return problem.getLanguageEnv(language).getProvidedCodesFileId();
         }
     }
 }

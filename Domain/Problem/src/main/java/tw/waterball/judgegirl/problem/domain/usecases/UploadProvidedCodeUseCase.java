@@ -14,43 +14,39 @@
 package tw.waterball.judgegirl.problem.domain.usecases;
 
 import lombok.Value;
-import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
-import tw.waterball.judgegirl.primitives.problem.LanguageEnv;
+import tw.waterball.judgegirl.primitives.problem.Language;
 import tw.waterball.judgegirl.primitives.problem.Problem;
 import tw.waterball.judgegirl.problem.domain.repositories.ProblemRepository;
 
 import javax.inject.Named;
-
-import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
+import java.util.List;
 
 /**
- * @author - johnny850807@gmail.com (Waterball)
+ * @author chaoyulee chaoyu2330@gmail.com
  */
 @Named
-public class DownloadProvidedCodesUseCase extends BaseProblemUseCase {
+public class UploadProvidedCodeUseCase extends BaseProblemUseCase {
+    public static final String PROVIDED_CODE_MULTIPART_KEY_NAME = "providedCodes";
 
-    public DownloadProvidedCodesUseCase(ProblemRepository problemRepository) {
+    public UploadProvidedCodeUseCase(ProblemRepository problemRepository) {
         super(problemRepository);
     }
 
-    public FileResource execute(Request request) throws NotFoundException {
+    public void execute(Request request, Presenter presenter) {
         Problem problem = findProblem(request.problemId);
-        LanguageEnv languageEnv = problem.getLanguageEnv(request.langEnvName);
-        if (languageEnv.getProvidedCodesFileId().equals(request.providedCodesFileId)) {
-            return problemRepository.downloadProvidedCodes(request.problemId, request.langEnvName)
-                    .orElseThrow(() -> notFound(Problem.class).id(request.problemId));
-        }
-        throw new IllegalArgumentException(
-                String.format("Invalid provided codes' file id: %s.", request.providedCodesFileId));
+        problemRepository.updateProblemWithProvidedCodes(problem, request.language, request.providedCodes);
+        presenter.showResult(problem);
+    }
 
+    public interface Presenter {
+        void showResult(Problem problem);
     }
 
     @Value
     public static class Request {
         public int problemId;
-        public String langEnvName;
-        public String providedCodesFileId;
+        public Language language;
+        public List<FileResource> providedCodes;
     }
-
 }

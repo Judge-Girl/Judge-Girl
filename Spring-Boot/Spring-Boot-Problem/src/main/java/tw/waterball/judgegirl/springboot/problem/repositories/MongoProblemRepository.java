@@ -22,6 +22,7 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.stereotype.Component;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
+import tw.waterball.judgegirl.primitives.problem.Language;
 import tw.waterball.judgegirl.primitives.problem.LanguageEnv;
 import tw.waterball.judgegirl.primitives.problem.Problem;
 import tw.waterball.judgegirl.problem.domain.repositories.PatchProblemParams;
@@ -31,6 +32,7 @@ import tw.waterball.judgegirl.springboot.problem.repositories.data.ProblemData;
 import tw.waterball.judgegirl.springboot.profiles.productions.Mongo;
 import tw.waterball.judgegirl.springboot.utils.MongoUtils;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.*;
 
@@ -38,6 +40,8 @@ import static java.lang.String.format;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
+import static tw.waterball.judgegirl.commons.utils.StringUtils.isNullOrEmpty;
+import static tw.waterball.judgegirl.commons.utils.ZipUtils.zipToStream;
 import static tw.waterball.judgegirl.springboot.problem.repositories.data.ProblemData.toData;
 import static tw.waterball.judgegirl.springboot.utils.MongoUtils.downloadFileResourceByFileId;
 
@@ -158,7 +162,6 @@ public class MongoProblemRepository implements ProblemRepository {
         if (!update.getUpdateObject().isEmpty()) {
             mongoTemplate.upsert(query, update, ProblemData.class);
         }
-
     }
 
     @Override
@@ -195,6 +198,48 @@ public class MongoProblemRepository implements ProblemRepository {
     @Override
     public void saveTags(List<String> tagList) {
         mongoTemplate.save(new MongoProblemRepository.AllTags(tagList));
+    }
+
+    @Override
+    public void updateProblemWithProvidedCodes(Problem problem, Language language, List<FileResource> providedCodes) {
+        String fileId = saveProvidedCodesAndGetFileId(problem.getId(), language, providedCodes);
+        updateProvidedCodesFileIdInProblem(problem, language, fileId);
+    }
+
+    private String saveProvidedCodesAndGetFileId(int problemId, Language language, List<FileResource> providedCodes) {
+        String fileName = format("%d-%s-provided.zip", problemId, language.toString());
+        ByteArrayInputStream zip = zipToStream(providedCodes);
+        return gridFsTemplate.store(zip, fileName).toString();
+    }
+
+    // TODO: Transaction: Operations in `updateProvidedCodesFileIdInProblem` should be atomic
+    private void updateProvidedCodesFileIdInProblem(Problem problem, Language language, String fileId) {
+        problem.mayHaveLanguageEnv(language)
+                .ifPresentOrElse(langEnv -> {
+                    removeFileIdIfExists(langEnv.getProvidedCodesFileId());
+                    langEnv.setProvidedCodesFileId(fileId);
+                    updateLanguageEnv(problem.getId(), langEnv, language);
+                }, () -> {
+                    LanguageEnv langEnv = LanguageEnv.builder()
+                            .language(language)
+                            .providedCodesFileId(fileId)
+                            .build();
+                    problem.addLanguageEnv(langEnv);
+                    updateLanguageEnv(problem.getId(), langEnv, language);
+                });
+    }
+
+    private void removeFileIdIfExists(String fileId) {
+        if (isNullOrEmpty(fileId)) {
+            gridFsTemplate.delete(new Query(Criteria.where("_id").is(fileId)));
+        }
+    }
+
+    private void updateLanguageEnv(int problemId, LanguageEnv langEnv, Language language) {
+        Update update = new Update();
+        Query query = new Query(where("_id").is(problemId));
+        update.set("languageEnvs." + language, langEnv);
+        mongoTemplate.upsert(query, update, ProblemData.class);
     }
 
     @Document("tag")
