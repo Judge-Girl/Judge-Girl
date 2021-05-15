@@ -11,7 +11,7 @@ import tw.waterball.judgegirl.springboot.academy.repositories.jpa.JpaHomeworkDAO
 import java.util.List;
 import java.util.Optional;
 
-import static java.util.stream.Collectors.toList;
+import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
 import static tw.waterball.judgegirl.springboot.academy.repositories.jpa.HomeworkData.toData;
 
 /**
@@ -38,9 +38,7 @@ public class JpaHomeworkRepository implements HomeworkRepository {
 
     @Override
     public List<Homework> findAllHomework() {
-        return jpaHomeworkDAO.findAll().stream()
-                .map(HomeworkData::toEntity)
-                .collect(toList());
+        return mapToList(jpaHomeworkDAO.findAll(), HomeworkData::toEntity);
     }
 
     @Override

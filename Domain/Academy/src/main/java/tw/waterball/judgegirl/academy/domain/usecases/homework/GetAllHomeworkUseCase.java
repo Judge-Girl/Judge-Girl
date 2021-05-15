@@ -2,7 +2,6 @@ package tw.waterball.judgegirl.academy.domain.usecases.homework;
 
 import lombok.AllArgsConstructor;
 import tw.waterball.judgegirl.academy.domain.repositories.HomeworkRepository;
-import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.primitives.Homework;
 
 import javax.inject.Named;
@@ -18,7 +17,7 @@ public class GetAllHomeworkUseCase {
 
     private final HomeworkRepository homeworkRepository;
 
-    public void execute(GetAllHomeworkUseCase.Presenter presenter) throws NotFoundException {
+    public void execute(GetAllHomeworkUseCase.Presenter presenter) {
         presenter.showAllHomework(homeworkRepository.findAllHomework());
     }
 

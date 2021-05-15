@@ -34,7 +34,7 @@ import java.util.Map;
 import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -106,17 +106,16 @@ public class HomeworkControllerTest extends AbstractSpringBootTest {
     public void GivenOneHomeworkCreated_WhenDeleteHomeworkById_ShouldSucceed() throws Exception {
         var homework = createHomeworkAndGet(HOMEWORK_NAME);
 
-        deleteHomework(homework.id).andExpect(status().isOk());
+        deleteHomework(homework.id);
 
-        assertFalse(homeworkRepository.findHomeworkById(homework.id).isPresent());
+        assertTrue(homeworkRepository.findHomeworkById(homework.id).isEmpty());
     }
 
     @Test
-    public void GivenManyHomeworkCreated_WhenGetAllHomework_ShouldReturnAllHomework() throws Exception {
-        List<HomeworkView> homeworkList = createHomeworkAndGet(3);
+    public void Given3HomeworkCreated_WhenGetAllHomework_ShouldRespondHomeworkListOfSize3() throws Exception {
+        var homeworkList = createHomeworkListAndGet(3);
 
-        List<HomeworkView> actualHomeworkList = getBody(getAllHomework(), new TypeReference<>() {
-        });
+        var actualHomeworkList = getAllHomework();
 
         assertEquals(homeworkList.size(), actualHomeworkList.size());
         IntStream.range(0, homeworkList.size())
@@ -176,7 +175,7 @@ public class HomeworkControllerTest extends AbstractSpringBootTest {
     }
 
 
-    private List<HomeworkView> createHomeworkAndGet(int count) throws Exception {
+    private List<HomeworkView> createHomeworkListAndGet(int count) throws Exception {
         var homeworkViews = new ArrayList<HomeworkView>(count);
         for (int i = 0; i < count; i++) {
             HomeworkView homework = createHomeworkAndGet(HOMEWORK_NAME + i);
@@ -197,12 +196,14 @@ public class HomeworkControllerTest extends AbstractSpringBootTest {
         return mockMvc.perform(get(HOMEWORK_PATH + "/{homeworkId}", homeworkId));
     }
 
-    private ResultActions getAllHomework() throws Exception {
-        return mockMvc.perform(get(HOMEWORK_PATH)).andExpect(status().isOk());
+    private List<HomeworkView> getAllHomework() throws Exception {
+        return getBody(mockMvc.perform(get(HOMEWORK_PATH)).andExpect(status().isOk()), new TypeReference<>() {
+        });
     }
 
     private ResultActions deleteHomework(int homeworkId) throws Exception {
-        return mockMvc.perform(delete(HOMEWORK_PATH + "/{homeworkId}", homeworkId));
+        return mockMvc.perform(delete(HOMEWORK_PATH + "/{homeworkId}", homeworkId))
+                .andExpect(status().isOk());
     }
 
     private void createProblems(Integer... problemIds) {
