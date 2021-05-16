@@ -23,6 +23,7 @@ import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
+import tw.waterball.judgegirl.api.rest.RestTemplateFactory;
 import tw.waterball.judgegirl.api.retrofit.RetrofitFactory;
 import tw.waterball.judgegirl.commons.token.jwt.JwtTokenService;
 import tw.waterball.judgegirl.judger.infra.compile.ShellCompilerFactory;
@@ -31,8 +32,8 @@ import tw.waterball.judgegirl.judgerapi.env.JudgerEnvVariables;
 import tw.waterball.judgegirl.plugins.Plugins;
 import tw.waterball.judgegirl.plugins.api.JudgeGirlPlugin;
 import tw.waterball.judgegirl.plugins.api.PresetJudgeGirlPluginLocator;
-import tw.waterball.judgegirl.problemapi.clients.ProblemApiClient;
 import tw.waterball.judgegirl.problemapi.clients.ProblemServiceDriver;
+import tw.waterball.judgegirl.problemapi.clients.RestProblemApiClient;
 import tw.waterball.judgegirl.springboot.amqp.AmqpVerdictPublisher;
 import tw.waterball.judgegirl.submissionapi.clients.SubmissionApiClient;
 import tw.waterball.judgegirl.submissionapi.clients.SubmissionServiceDriver;
@@ -64,7 +65,7 @@ public class DefaultCCJudgerFactory {
         return new CCJudger(
                 new YAMLJudgerWorkspace(judgeWorkspaceLayoutYamlResourcePath),
                 new PresetJudgeGirlPluginLocator(aggregateJudgeGirlPlugins(plugins)),
-                problemApiClient(values, token),
+                restProblemApiClient(values, token),
                 submissionApiClient(values, token),
                 verdictPublisher(values),
                 new ShellCompilerFactory(),
@@ -79,7 +80,6 @@ public class DefaultCCJudgerFactory {
                                   SubmissionServiceDriver submissionServiceDriver,
                                   VerdictPublisher verdictPublisher,
                                   JudgeGirlPlugin... plugins) {
-
         return new CCJudger(
                 new YAMLJudgerWorkspace(judgeWorkspaceLayoutYamlResourcePath),
                 new PresetJudgeGirlPluginLocator(aggregateJudgeGirlPlugins(plugins)),
@@ -98,13 +98,14 @@ public class DefaultCCJudgerFactory {
         return allPlugins;
     }
 
-    private static ProblemApiClient problemApiClient(JudgerEnvVariables.Values values, String token) {
-        return new ProblemApiClient(retrofitFactory(),
+    private static RestProblemApiClient restProblemApiClient(JudgerEnvVariables.Values values, String token) {
+        var restTemplate = restTemplateFactory().create(
                 values.getProblemServiceInstance().getScheme(),
                 values.getProblemServiceInstance().getHost(),
-                values.getProblemServiceInstance().getPort(),
-                () -> token);
+                values.getProblemServiceInstance().getPort());
+        return new RestProblemApiClient(restTemplate, () -> token);
     }
+
 
     private static SubmissionApiClient submissionApiClient(JudgerEnvVariables.Values values, String token) {
         return new SubmissionApiClient(retrofitFactory(),
@@ -116,6 +117,10 @@ public class DefaultCCJudgerFactory {
 
     private static RetrofitFactory retrofitFactory() {
         return new RetrofitFactory(objectMapper());
+    }
+
+    private static RestTemplateFactory restTemplateFactory() {
+        return new RestTemplateFactory(objectMapper());
     }
 
     private static VerdictPublisher verdictPublisher(JudgerEnvVariables.Values values) {

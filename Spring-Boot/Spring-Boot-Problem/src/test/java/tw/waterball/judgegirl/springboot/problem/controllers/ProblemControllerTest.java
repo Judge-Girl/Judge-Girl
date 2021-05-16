@@ -109,7 +109,6 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     @Test
     void GivenProblemSaved_WhenGetProblemById_ShouldRespondThatProblem() throws Exception {
         givenProblemSavedWithProvidedCodesAndTestcaseIOs();
-
         mockMvc.perform(get("/api/problems/{problemId}", problem.getId()))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -130,7 +129,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
 
     @Test
     void GivenTagsSaved_WhenGetAllTags_ShouldRespondAllTags() throws Exception {
-        final List<String> tags = givenTagsSaved("tag1", "tag2", "tag3");
+        List<String> tags = givenTagsSaved("tag1", "tag2", "tag3");
 
         mockMvc.perform(get("/api/problems/tags"))
                 .andExpect(status().isOk())
@@ -140,16 +139,16 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
 
     @NotNull
     private List<String> givenTagsSaved(String... tags) {
-        final List<String> tagList = asList(tags);
+        List<String> tagList = asList(tags);
         problemRepository.saveTags(tagList);
         return tagList;
     }
 
     @Test
     void GivenTaggedProblemsSaved_WhenGetProblemsThatMatchToTags_ShouldRespondThoseProblemItems() throws Exception {
-        final ProblemItem targetProblem1 = ProblemItem.fromEntity(
+        ProblemItem targetProblem1 = ProblemItem.fromEntity(
                 givenProblemWithTags(1, "tag1", "tag2"));
-        final ProblemItem targetProblem2 = ProblemItem.fromEntity(
+        ProblemItem targetProblem2 = ProblemItem.fromEntity(
                 givenProblemWithTags(2, "tag1", "tag2"));
 
         verifyFindProblemsByTagsWithExpectedList(asList("tag1", "tag2"), asList(targetProblem1, targetProblem2));
@@ -167,7 +166,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     }
 
     private Problem givenProblemWithTags(int id, String... tags) {
-        final Problem targetProblem = problemTemplate().id(id)
+        Problem targetProblem = problemTemplate().id(id)
                 .tags(asList(tags)).build();
         problemRepository.save(targetProblem);
         return targetProblem;
@@ -175,7 +174,6 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
 
     private void verifyFindProblemsByTagsWithExpectedList(List<String> tags, List<ProblemItem> problemItems) throws Exception {
         String tagsSplitByCommas = String.join(", ", tags);
-
         mockMvc.perform(get("/api/problems")
                 .queryParam("tags", tagsSplitByCommas))
                 .andExpect(status().isOk())
