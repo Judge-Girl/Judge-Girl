@@ -1,5 +1,7 @@
 package tw.waterball.judgegirl.springboot.academy.controllers;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -30,10 +32,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.IntStream.range;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static tw.waterball.judgegirl.primitives.stubs.SubmissionStubBuilder.submission;
 import static tw.waterball.judgegirl.springboot.academy.controllers.ExamControllerTest.LANG_ENV;
@@ -100,6 +104,24 @@ public class HomeworkControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
+    public void GivenOneHomeworkCreated_WhenDeleteHomeworkById_ShouldSucceed() throws Exception {
+        var homework = createHomeworkAndGet(HOMEWORK_NAME);
+
+        deleteHomework(homework.id);
+
+        assertTrue(homeworkRepository.findHomeworkById(homework.id).isEmpty());
+    }
+
+    @Test
+    public void Given3HomeworkCreated_WhenGetAllHomework_ShouldRespondHomeworkListOfSize3() throws Exception {
+        var homeworkList = createHomeworkListAndGet(3);
+
+        var actualHomeworkList = getAllHomework();
+
+        assertEquals(homeworkList, actualHomeworkList);
+    }
+
+    @Test
     public void WhenGetHomeworkByNonExistingHomeworkId_ShouldRespondNotFound() throws Exception {
         int nonExistingHomeworkId = 123123;
         getHomework(nonExistingHomeworkId)
@@ -147,8 +169,15 @@ public class HomeworkControllerTest extends AbstractSpringBootTest {
         }
     }
 
-    private HomeworkView createHomeworkAndGet(String homeworkName, Integer... problemIds) throws Exception {
+    @SneakyThrows
+    private HomeworkView createHomeworkAndGet(String homeworkName, Integer... problemIds) {
         return getBody(createHomework(homeworkName, problemIds), HomeworkView.class);
+    }
+
+    private List<HomeworkView> createHomeworkListAndGet(int count)  {
+        return range(0, count)
+                .mapToObj(i -> createHomeworkAndGet(HOMEWORK_NAME + i))
+                .collect(toList());
     }
 
     private ResultActions createHomework(String homeworkName, Integer... problemIds) throws Exception {
@@ -161,6 +190,16 @@ public class HomeworkControllerTest extends AbstractSpringBootTest {
 
     private ResultActions getHomework(int homeworkId) throws Exception {
         return mockMvc.perform(get(HOMEWORK_PATH + "/{homeworkId}", homeworkId));
+    }
+
+    private List<HomeworkView> getAllHomework() throws Exception {
+        return getBody(mockMvc.perform(get(HOMEWORK_PATH)).andExpect(status().isOk()), new TypeReference<>() {
+        });
+    }
+
+    private ResultActions deleteHomework(int homeworkId) throws Exception {
+        return mockMvc.perform(delete(HOMEWORK_PATH + "/{homeworkId}", homeworkId))
+                .andExpect(status().isOk());
     }
 
     private void createProblems(Integer... problemIds) {
