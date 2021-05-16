@@ -240,22 +240,22 @@ class ExamControllerTest extends AbstractSpringBootTest {
     @Test
     void testFilterUpcomingStudentExams() throws Exception {
         givenStudentParticipatingExams(STUDENT_A_ID,
-                givenCurrentExams("A", "C"),
+                givenOngoingExams("A", "C"),
                 givenUpcomingExams("B", "D"));
 
         List<ExamView> exams = getStudentExams(STUDENT_A_ID, ExamFilter.Status.upcoming);
         shouldRespondExams(exams, "B", "D");
     }
 
-    @DisplayName("Given Student participates Exams A, B, C, D, E, F, G (only B, F, G are past) " +
-            "When get student's past exams with skip=1, size=2, Should respond F, G")
+    @DisplayName("Given Student participates Exams A, B, C, D, E, F, G (only B, F, G are closed) " +
+            "When get student's closed exams with skip=1, size=2, Should respond F, G")
     @Test
-    void testFilterPastStudentExamsWithPaging() throws Exception {
+    void testFilterClosedStudentExamsWithPaging() throws Exception {
         givenStudentParticipatingExams(STUDENT_A_ID,
-                givenCurrentExams("A", "C", "D", "E"),
-                givenPastExams("B", "F", "G"));
+                givenOngoingExams("A", "C", "D", "E"),
+                givenClosedExams("B", "F", "G"));
 
-        List<ExamView> exams = getStudentExams(STUDENT_A_ID, ExamFilter.Status.past, 1, 2);
+        List<ExamView> exams = getStudentExams(STUDENT_A_ID, ExamFilter.Status.closed, 1, 2);
         shouldRespondExams(exams, "F", "G");
     }
 
@@ -263,27 +263,27 @@ class ExamControllerTest extends AbstractSpringBootTest {
     @DisplayName("Given Student participates Exams A, B, C, D, E, F, G, " +
             "When get all student's exams with skip=1, size=4, Should respond B, C, D, E, F")
     @Test
-    void testGetALlStudentsExams() throws Exception {
+    void testGetAllStudentsExams() throws Exception {
         givenStudentParticipatingExams(
                 STUDENT_A_ID,
-                givenCurrentExams("A", "B", "C"),
+                givenOngoingExams("A", "B", "C"),
                 givenUpcomingExams("D", "E"),
-                givenPastExams("F", "G"));
+                givenClosedExams("F", "G"));
 
         List<ExamView> exams = getStudentExams(STUDENT_A_ID, ExamFilter.Status.all, 1, 5);
         shouldRespondExams(exams, "B", "C", "D", "E", "F");
     }
 
 
-    @DisplayName("Given Student participates Exams A, B, C, D, E, F, G (only A, B, C, D are current) " +
-            "When get student's current exams with skip=1, size=500000, Should respond B, C, D")
+    @DisplayName("Given Student participates Exams A, B, C, D, E, F, G (only A, B, C, D are ongoing) " +
+            "When get student's ongoing exams with skip=1, size=500000, Should respond B, C, D")
     @Test
-    void testFilterCurrentStudentExamsWithPaging() throws Exception {
+    void testFilterOngoingStudentExamsWithPaging() throws Exception {
         givenStudentParticipatingExams(STUDENT_A_ID,
-                givenPastExams("E", "F", "G"),
-                givenCurrentExams("A", "B", "C", "D"));
+                givenClosedExams("E", "F", "G"),
+                givenOngoingExams("A", "B", "C", "D"));
 
-        List<ExamView> exams = getStudentExams(STUDENT_A_ID, ExamFilter.Status.current, 1, 50000);
+        List<ExamView> exams = getStudentExams(STUDENT_A_ID, ExamFilter.Status.ongoing, 1, 50000);
         shouldRespondExams(exams, "B", "C", "D");
     }
 
@@ -360,7 +360,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
 
     @Test
     void GivenExams_A_B_WhenGetAllExams_ShouldRespondExams_A_B() throws Exception {
-        givenCurrentExams("A", "B");
+        givenOngoingExams("A", "B");
 
         List<ExamView> exams = getAllExams();
         shouldRespondExams(exams, "A", "B");
@@ -368,7 +368,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
 
     @Test
     void GivenExams_A_B_C_D_E_WhenGetExamsWithSkip2Size2_ShouldRespondExams_C_D() throws Exception {
-        givenCurrentExams("A", "B", "C", "D", "E");
+        givenOngoingExams("A", "B", "C", "D", "E");
 
         List<ExamView> exams = getExamsWithPaging(2, 2);
         shouldRespondExams(exams, "C", "D");
@@ -376,7 +376,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
 
     @Test
     void GivenExams_A_B_C_D_E_WhenGetExamsWithSkip2Size1000_ShouldRespondExams_C_D_E() throws Exception {
-        givenCurrentExams("A", "B", "C", "D", "E");
+        givenOngoingExams("A", "B", "C", "D", "E");
 
         List<ExamView> exams = getExamsWithPaging(2, 1000);
         shouldRespondExams(exams, "C", "D", "E");
@@ -388,34 +388,34 @@ class ExamControllerTest extends AbstractSpringBootTest {
             "Then should respond only C")
     @Test
     void testFilterUpcomingExams() throws Exception {
-        givenCurrentExams("B", "E");
+        givenOngoingExams("B", "E");
         givenUpcomingExams("A", "C", "D");
 
         List<ExamView> exams = getExamsWithPaging(ExamFilter.Status.upcoming, 1, 1);
         shouldRespondExams(exams, "C");
     }
 
-    @DisplayName("Given exams A, B, C, D, E, F, G, H, I (A, B, G, H, I are past), " +
-            "When filter past exams with skip=2, size=3, " +
+    @DisplayName("Given exams A, B, C, D, E, F, G, H, I (A, B, G, H, I are closed), " +
+            "When filter closed exams with skip=2, size=3, " +
             "Then should respond G, H, I")
     @Test
-    void testFilterPastExams() throws Exception {
-        givenCurrentExams("C", "D", "E", "F");
-        givenPastExams("A", "B", "G", "H", "I");
+    void testFilterClosedExams() throws Exception {
+        givenOngoingExams("C", "D", "E", "F");
+        givenClosedExams("A", "B", "G", "H", "I");
 
-        List<ExamView> exams = getExamsWithPaging(ExamFilter.Status.past, 2, 3);
+        List<ExamView> exams = getExamsWithPaging(ExamFilter.Status.closed, 2, 3);
         shouldRespondExams(exams, "G", "H", "I");
     }
 
-    @DisplayName("Given exams A, B, C, D, E, F, G, H, I (C, D, E, F are current), " +
-            "When filter current exams with skip=2, size=9999, " +
+    @DisplayName("Given exams A, B, C, D, E, F, G, H, I (C, D, E, F are ongoing), " +
+            "When filter ongoing exams with skip=2, size=9999, " +
             "Then should respond E, F")
     @Test
-    void testFilterCurrentExams() throws Exception {
-        givenPastExams("A", "B", "G", "H", "I");
-        givenCurrentExams("C", "D", "E", "F");
+    void testFilterOngoingExams() throws Exception {
+        givenClosedExams("A", "B", "G", "H", "I");
+        givenOngoingExams("C", "D", "E", "F");
 
-        List<ExamView> exams = getExamsWithPaging(ExamFilter.Status.current, 2, 9999);
+        List<ExamView> exams = getExamsWithPaging(ExamFilter.Status.ongoing, 2, 9999);
         shouldRespondExams(exams, "E", "F");
     }
 
@@ -441,7 +441,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    void GivenStudentParticipatingAPastExamWithOneQuestion_WhenAnswerExamQuestion_ShouldFail() throws Exception {
+    void GivenStudentParticipatingAClosedExamWithOneQuestion_WhenAnswerExamQuestion_ShouldFail() throws Exception {
         ExamView pastExam = createExamAndGet(beforeCurrentTime(2, HOURS), beforeCurrentTime(1, HOURS), "A");
         givenStudentParticipatingExam(STUDENT_A_ID, pastExam);
         createQuestion(new CreateQuestionUseCase.Request(pastExam.getId(), PROBLEM_ID, NO_QUOTA_LIMITATION, 100, 1));
@@ -491,8 +491,8 @@ class ExamControllerTest extends AbstractSpringBootTest {
     @Test
     void testGetStudentExamProgressOverview() throws Exception {
         final int QUOTA = 5;
-        final int PROBLEM_TOTAL_GRADE = problem.totalGrade;
-        final int SUBMISSION_TOTAL_GRADE = submissionWith2ACs20Point.mayHaveVerdict().orElseThrow().getTotalGrade();
+        int PROBLEM_TOTAL_GRADE = problem.totalGrade;
+        int SUBMISSION_TOTAL_GRADE = submissionWith2ACs20Point.mayHaveVerdict().orElseThrow().getTotalGrade();
         Date start = beforeCurrentTime(1, HOURS), end = afterCurrentTime(1, HOURS);
         ExamView exam = createExamAndGet(start, end, "sample-exam");
         QuestionView q1 = createQuestionAndGet(new CreateQuestionUseCase.Request(exam.getId(), PROBLEM_ID, QUOTA, 50, 1));
@@ -556,7 +556,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
         assertEquals(problem.getTitle(), actualQuestion.getProblemTitle());
     }
 
-    @DisplayName("Give 8 students participating a current exam, one question in the exam with submission quota = 3, " +
+    @DisplayName("Give 8 students participating a ongoing exam, one question in the exam with submission quota = 3, " +
             "When 8 students answer that question 4 times at the same time, all should succeed in the first 3 times and fail in the 4th time.")
     @Test
     void testAnswerQuestionConcurrentlyWithSubmissionQuotas() throws Exception {
@@ -691,12 +691,12 @@ class ExamControllerTest extends AbstractSpringBootTest {
         }
     }
 
-    private List<ExamView> givenPastExams(String... names) throws Exception {
+    private List<ExamView> givenClosedExams(String... names) throws Exception {
         return givenExams(beforeCurrentTime(2, HOURS),
                 beforeCurrentTime(1, HOURS), names);
     }
 
-    private List<ExamView> givenCurrentExams(String... names) throws Exception {
+    private List<ExamView> givenOngoingExams(String... names) throws Exception {
         return givenExams(new Date(), afterCurrentTime(1, HOURS), names);
     }
 
