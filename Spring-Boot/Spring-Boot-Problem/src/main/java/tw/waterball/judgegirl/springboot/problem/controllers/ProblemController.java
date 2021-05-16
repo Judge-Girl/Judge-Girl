@@ -161,65 +161,63 @@ public class ProblemController {
         patchProblemUseCase.execute(request);
     }
 
+}
 
-    class GetProblemPresenter implements GetProblemUseCase.Presenter {
-        private Problem problem;
+class GetProblemPresenter implements GetProblemUseCase.Presenter {
+    private Problem problem;
 
-        @Override
-        public void setProblem(Problem problem) {
-            this.problem = problem;
-        }
-
-        ProblemView present() {
-            return ProblemView.toViewModel(problem);
-        }
+    @Override
+    public void setProblem(Problem problem) {
+        this.problem = problem;
     }
 
-
-    class GetProblemListPresenter implements GetProblemListUseCase.Presenter {
-        private List<Problem> problems;
-
-        @Override
-        public void showProblems(List<Problem> problems) {
-            this.problems = problems;
-        }
-
-        List<ProblemItem> present() {
-            return problems.stream().map(ProblemItem::fromEntity)
-                    .collect(Collectors.toList());
-        }
-    }
-
-    class GetTestCasesPresenter implements GetTestCasesUseCase.Presenter {
-        private List<Testcase> testcases;
-
-        @Override
-        public void setTestcases(List<Testcase> testcases) {
-            this.testcases = testcases;
-        }
-
-        List<Testcase> present() {
-            return testcases;
-        }
-    }
-
-    class UploadProvidedCodesPresenter implements UploadProvidedCodeUseCase.Presenter {
-        private Problem problem;
-        private Language language;
-
-        @Override
-        public void showResult(Problem problem) {
-            this.problem = problem;
-        }
-
-        public void setLanguage(Language language) {
-            this.language = language;
-        }
-
-        String present() {
-            return problem.getLanguageEnv(language).getProvidedCodesFileId();
-        }
+    ProblemView present() {
+        return ProblemView.toViewModel(problem);
     }
 }
 
 
+class GetProblemListPresenter implements GetProblemListUseCase.Presenter {
+    private List<Problem> problems;
+
+    @Override
+    public void showProblems(List<Problem> problems) {
+        this.problems = problems;
+    }
+
+    List<ProblemItem> present() {
+        return problems.stream().map(ProblemItem::fromEntity)
+                .collect(Collectors.toList());
+    }
+}
+
+class GetTestCasesPresenter implements GetTestCasesUseCase.Presenter {
+    private List<Testcase> testcases;
+
+    @Override
+    public void setTestcases(List<Testcase> testcases) {
+        this.testcases = testcases;
+    }
+
+    List<Testcase> present() {
+        return testcases;
+    }
+}
+
+class UploadProvidedCodesPresenter implements UploadProvidedCodeUseCase.Presenter {
+    private Problem problem;
+    private Language language;
+
+    @Override
+    public void showResult(Problem problem) {
+        this.problem = problem;
+    }
+
+    public void setLanguage(Language language) {
+        this.language = language;
+    }
+
+    String present() {
+        return problem.getLanguageEnv(language).getProvidedCodesFileId();
+    }
+}

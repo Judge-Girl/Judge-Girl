@@ -8,11 +8,11 @@ import tw.waterball.judgegirl.commons.models.files.FileResource;
 import java.io.ByteArrayInputStream;
 import java.util.Arrays;
 import java.util.LinkedList;
-import java.util.stream.Collectors;
 
 import static java.lang.Long.parseLong;
 import static java.util.Arrays.asList;
 import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.joining;
 import static tw.waterball.judgegirl.commons.utils.HttpHeaderUtils.bearerWithToken;
 import static tw.waterball.judgegirl.commons.utils.HttpHeaderUtils.parseFileNameFromContentDisposition;
 
@@ -32,7 +32,7 @@ public class RestTemplateUtils {
         return Arrays.stream(regexPath.split("/"))
                 .map(path -> path.contains("{") && path.contains("}") ? pathVariables.removeFirst().toString() : path)
                 .filter(path -> !path.isEmpty())
-                .collect(Collectors.joining("/"));
+                .collect(joining("/"));
     }
 
     public static HttpHeaders withBearerTokenHeader(String token) {
