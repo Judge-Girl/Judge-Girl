@@ -641,5 +641,45 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         findFirst(problem.languageEnvs, langEnv -> langEnv.getLanguage().equals(language))
                 .ifPresent(langEnv -> assertEquals(fileId, langEnv.getProvidedCodesFileId()));
     }
+
+    @Test
+    void GivenOneProblemSaved_WhenArchiveIt_ThenProblemProvidedCodesAndTestcaseIOsShouldBeExist() throws Exception {
+        int problemId = 1;
+        Problem problem = saveProblemAndGet(problemId);
+
+        archiveOrDeleteProblem(problemId);
+
+        assertTrue(problemRepository.findProblemById(problemId).orElseThrow().isArchived());
+
+        itsShouldBeExist(problem);
+    }
+
+    @Test
+    void GivenOneProblemSaved_WhenArchiveIt_AndThenDeleteIt_ThenProblemProvidedCodesAndTestcaseIOsShouldBeDeleted() throws Exception {
+        int problemId = 1;
+        Problem problem = saveProblemAndGet(problemId);
+
+        archiveOrDeleteProblem(problemId);
+
+        assertTrue(problemRepository.findProblemById(problemId).orElseThrow().isArchived());
+
+        archiveOrDeleteProblem(problemId);
+
+        itsShouldBeNotFounds(problem);
+    }
+
+    private void itsShouldBeExist(Problem problem) {
+        String testcaseIOsFileId = problem.getTestcaseIOsFileId();
+        List<String> providedCodes = mapToList(problem.getLanguageEnvs().values(),LanguageEnv::getProvidedCodesFileId);
+        assertTrue(problemRepository.isFileExistsById(testcaseIOsFileId));
+        providedCodes.forEach(id -> assertTrue(problemRepository.isFileExistsById(id)));
+    }
+
+    private void itsShouldBeNotFounds(Problem problem) {
+        String testcaseIOsFileId = problem.getTestcaseIOsFileId();
+        List<String> providedCodes = mapToList(problem.getLanguageEnvs().values(),LanguageEnv::getProvidedCodesFileId);
+        assertFalse(problemRepository.isFileExistsById(testcaseIOsFileId));
+        providedCodes.forEach(id -> assertFalse(problemRepository.isFileExistsById(id)));
+    }
 }
 

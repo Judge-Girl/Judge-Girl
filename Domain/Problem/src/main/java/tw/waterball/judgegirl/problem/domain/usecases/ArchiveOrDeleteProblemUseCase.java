@@ -24,9 +24,9 @@ public class ArchiveOrDeleteProblemUseCase extends BaseProblemUseCase {
 
     private void archiveOrDeleteProblem(Problem problem) {
         if (problem.isArchived()) {
-            problemRepository.deleteProblemById(problem.getId());
+            problemRepository.deleteProblem(problem);
         } else {
-            problemRepository.archiveProblemById(problem.getId());
+            problemRepository.archiveProblem(problem);
         }
     }
 

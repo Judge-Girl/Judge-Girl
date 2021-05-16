@@ -57,11 +57,13 @@ public interface ProblemRepository {
 
     List<Problem> findProblemsByIds(int... problemIds);
 
-    void archiveProblemById(int problemId);
+    void archiveProblem(Problem problem);
 
-    void deleteProblemById(int problemId);
+    void deleteProblem(Problem problem);
 
     void deleteAll();
 
     void saveTags(List<String> tagList);
+
+    boolean isFileExistsById(String fileId);
 }
