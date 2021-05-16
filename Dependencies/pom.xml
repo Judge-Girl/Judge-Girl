@@ -34,7 +34,7 @@
         <kubernetes.client-java.version>5.0.0</kubernetes.client-java.version>
         <log4j.version>2.11.2</log4j.version>
         <jackson-yaml.version>2.11.1</jackson-yaml.version>
-        <commons-io.version>2.6</commons-io.version>
+        <commons-io.version>2.7</commons-io.version>
         <jsonwebtoken.jjwt.version>0.11.0</jsonwebtoken.jjwt.version>
         <fridujo.rabbitmq-mock.version>1.0.14</fridujo.rabbitmq-mock.version>
         <h2database.version>1.4.200</h2database.version>
