@@ -189,9 +189,9 @@ public class CCJudger extends PluginExtendedJudger {
           and compare it after running the testcase.
           (The files-difference must be 'std.out', 'std.err' and out-files)
          */
-        Path path=getTestcaseOutputHome(testcase).getPath().resolve("std.out");
-        if(!Files.exists(path)){
-            Files.createFile(path);
+        Path testcaseOutputHomePath = getTestcaseOutputHome(testcase).getPath().resolve("std.out");
+        if (!Files.exists(testcaseOutputHomePath)) {
+            Files.createFile(testcaseOutputHomePath);
         }
         filesWithinSandboxRootOtherThanOutFiles =
                 generateFilesOtherThanOutFilesFromSandboxRoot(sandboxRootPath);
