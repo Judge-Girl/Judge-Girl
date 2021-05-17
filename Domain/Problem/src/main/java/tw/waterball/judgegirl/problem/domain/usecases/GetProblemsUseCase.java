@@ -21,24 +21,40 @@ import tw.waterball.judgegirl.problem.domain.repositories.ProblemRepository;
 import javax.inject.Named;
 import java.util.List;
 
+import static tw.waterball.judgegirl.commons.utils.StreamUtils.filterToList;
+
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
 @Named
 @AllArgsConstructor
-public class GetProblemListUseCase {
+public class GetProblemsUseCase {
     private final ProblemRepository problemRepository;
 
     public void execute(ProblemQueryParams problemQueryParams, Presenter presenter) {
-        List<Problem> problems = problemRepository.find(problemQueryParams);
+        var problems = problemRepository.find(problemQueryParams);
+        if (!problemQueryParams.isAdmin()) {
+            problems = filterToList(problems, Problem::getVisible);
+        }
         presenter.showProblems(problems);
     }
 
-    public void execute(int[] problemIds, Presenter presenter) {
-        presenter.showProblems(problemRepository.findProblemsByIds(problemIds));
+    public void execute(Request request, Presenter presenter) {
+        var problems = problemRepository.findProblemsByIds(request.problemIds);
+        if (!request.isAdmin) {
+            problems = filterToList(problems, Problem::getVisible);
+        }
+        presenter.showProblems(problems);
     }
 
     public interface Presenter {
         void showProblems(List<Problem> problems);
     }
+
+    @AllArgsConstructor
+    public static class Request {
+        public final boolean isAdmin;
+        public final int[] problemIds;
+    }
+
 }

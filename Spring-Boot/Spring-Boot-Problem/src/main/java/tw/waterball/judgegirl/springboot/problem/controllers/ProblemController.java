@@ -19,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
+import tw.waterball.judgegirl.commons.token.TokenService;
 import tw.waterball.judgegirl.primitives.problem.Language;
 import tw.waterball.judgegirl.primitives.problem.LanguageEnv;
 import tw.waterball.judgegirl.primitives.problem.Problem;
@@ -30,9 +31,9 @@ import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.springboot.utils.ResponseEntityUtils;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static java.util.Objects.nonNull;
+import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
 import static tw.waterball.judgegirl.problem.domain.usecases.UploadProvidedCodeUseCase.PROVIDED_CODE_MULTIPART_KEY_NAME;
 import static tw.waterball.judgegirl.springboot.utils.MultipartFileUtils.convertMultipartFilesToFileResources;
 
@@ -45,7 +46,7 @@ import static tw.waterball.judgegirl.springboot.utils.MultipartFileUtils.convert
 @AllArgsConstructor
 public class ProblemController {
     private final GetProblemUseCase getProblemUseCase;
-    private final GetProblemListUseCase getProblemListUseCase;
+    private final GetProblemsUseCase getProblemsUseCase;
     private final DownloadProvidedCodesUseCase downloadProvidedCodesUseCase;
     private final DownloadTestCaseIOsUseCase downloadTestCaseIOsUseCase;
     private final GetAllTagsUseCase getAllTagsUseCase;
@@ -54,6 +55,7 @@ public class ProblemController {
     private final PatchProblemUseCase patchProblemUseCase;
     private final ArchiveOrDeleteProblemUseCase deleteProblemUseCase;
     private final UploadProvidedCodeUseCase uploadProvidedCodeUseCase;
+    private final TokenService tokenService;
 
 
     @GetMapping("/tags")
@@ -62,18 +64,20 @@ public class ProblemController {
     }
 
     @GetMapping
-    public List<ProblemItem> getProblems(@RequestParam(value = "tags", required = false) String[] tags,
+    public List<ProblemItem> getProblems(@RequestHeader("Authorization") String authorization,
+                                         @RequestParam(value = "tags", required = false) String[] tags,
                                          @RequestParam(value = "page", defaultValue = "0") int page,
                                          @RequestParam(required = false) int[] ids) {
-        GetProblemListPresenter presenter = new GetProblemListPresenter();
+        var token = tokenService.parseBearerTokenAndValidate(authorization);
+        boolean isAdmin = token.isAdmin();
+        GetProblemsPresenter presenter = new GetProblemsPresenter();
         if (nonNull(ids)) {
-            getProblemListUseCase.execute(ids, presenter);
+            getProblemsUseCase.execute(new GetProblemsUseCase.Request(isAdmin, ids), presenter);
         } else {
-            getProblemListUseCase.execute(new ProblemQueryParams(tags == null ? new String[0] : tags, page), presenter);
+            getProblemsUseCase.execute(new ProblemQueryParams(tags == null ? new String[0] : tags, page, isAdmin), presenter);
         }
         return presenter.present();
     }
-
 
     @GetMapping("/{problemId}")
     public ProblemView getProblem(@PathVariable int problemId) {
@@ -81,7 +85,6 @@ public class ProblemController {
         getProblemUseCase.execute(new GetProblemUseCase.Request(problemId), presenter);
         return presenter.present();
     }
-
 
     @GetMapping(value = "/{problemId}/{langEnvName}/providedCodes/{providedCodesFileId}",
             produces = "application/zip")
@@ -93,14 +96,12 @@ public class ProblemController {
         return ResponseEntityUtils.respondInputStreamResource(fileResource);
     }
 
-
     @GetMapping("/{problemId}/testcases")
     public List<Testcase> getTestCases(@PathVariable int problemId) {
         GetTestCasesPresenter presenter = new GetTestCasesPresenter();
         getTestCasesUseCase.execute(new GetTestCasesUseCase.Request(problemId), presenter);
         return presenter.present();
     }
-
 
     @GetMapping(value = "/{problemId}/testcaseIOs/{testcaseIOsFileId}",
             produces = "application/zip")
@@ -177,7 +178,7 @@ class GetProblemPresenter implements GetProblemUseCase.Presenter {
 }
 
 
-class GetProblemListPresenter implements GetProblemListUseCase.Presenter {
+class GetProblemsPresenter implements GetProblemsUseCase.Presenter {
     private List<Problem> problems;
 
     @Override
@@ -186,8 +187,7 @@ class GetProblemListPresenter implements GetProblemListUseCase.Presenter {
     }
 
     List<ProblemItem> present() {
-        return problems.stream().map(ProblemItem::fromEntity)
-                .collect(Collectors.toList());
+        return mapToList(problems, ProblemItem::fromEntity);
     }
 }
 

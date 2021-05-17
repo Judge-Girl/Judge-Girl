@@ -22,7 +22,7 @@ import java.util.Optional;
  * @author - johnny850807@gmail.com (Waterball)
  */
 public class ProblemQueryParams {
-    public static final ProblemQueryParams NO_PARAMS = new ProblemQueryParams(null, null);
+    public static final ProblemQueryParams NO_PARAMS = new ProblemQueryParams(null, null, false);
 
     private final String[] tags;
 
@@ -31,14 +31,17 @@ public class ProblemQueryParams {
 
     private final boolean excludeArchive;
 
-    public ProblemQueryParams(String[] tags, @Nullable Integer page) {
-        this(tags, page, true);
+    private final boolean isAdmin;
+
+    public ProblemQueryParams(String[] tags, @Nullable Integer page, boolean isAdmin) {
+        this(tags, page, true, isAdmin);
     }
 
-    public ProblemQueryParams(String[] tags, @Nullable Integer page, boolean excludeArchive) {
+    public ProblemQueryParams(String[] tags, @Nullable Integer page, boolean excludeArchive, boolean isAdmin) {
         this.tags = tags;
         this.page = page;
         this.excludeArchive = excludeArchive;
+        this.isAdmin = isAdmin;
     }
 
     public String[] getTags() {
@@ -53,4 +56,7 @@ public class ProblemQueryParams {
         return excludeArchive;
     }
 
+    public boolean isAdmin() {
+        return isAdmin;
+    }
 }
