@@ -30,9 +30,9 @@ import tw.waterball.judgegirl.primitives.submission.verdict.VerdictIssuedEvent;
 import tw.waterball.judgegirl.springboot.ScanRoot;
 import tw.waterball.judgegirl.submissionapi.views.ReportView;
 
-import java.util.Arrays;
 import java.util.Date;
 
+import static java.util.Arrays.asList;
 import static java.util.Collections.singletonMap;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static tw.waterball.judgegirl.primitives.time.DateProvider.now;
@@ -59,7 +59,7 @@ class JacksonConfigTest {
     @Test
     void testDeserializingVerdictIssuedEvent() throws JsonProcessingException {
         Verdict verdict = new Verdict(
-                Arrays.asList(new Judge("T", JudgeStatus.AC, new ProgramProfile(10, 10, ""),
+                asList(new Judge("T", JudgeStatus.AC, new ProgramProfile(10, 10, ""),
                                 new Grade(50, 50)),
                         new Judge("T", JudgeStatus.WA, new ProgramProfile(10, 100, ""),
                                 new Grade(0, 50))

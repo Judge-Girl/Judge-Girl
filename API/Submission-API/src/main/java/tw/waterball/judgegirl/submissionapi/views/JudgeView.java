@@ -1,6 +1,8 @@
 package tw.waterball.judgegirl.submissionapi.views;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import tw.waterball.judgegirl.primitives.grading.Grade;
 import tw.waterball.judgegirl.primitives.problem.JudgeStatus;
 import tw.waterball.judgegirl.primitives.submission.verdict.Judge;
@@ -12,8 +14,6 @@ import tw.waterball.judgegirl.primitives.submission.verdict.ProgramProfile;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@ToString
-@EqualsAndHashCode
 public class JudgeView {
     public String testcaseName;
     public JudgeStatus status;

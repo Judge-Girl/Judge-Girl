@@ -34,6 +34,7 @@ import tw.waterball.judgegirl.springboot.utils.MongoUtils;
 import tw.waterball.judgegirl.submission.domain.repositories.SubmissionRepository;
 import tw.waterball.judgegirl.submission.domain.usecases.dto.SubmissionQueryParams;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -41,6 +42,7 @@ import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Update.update;
+import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
 import static tw.waterball.judgegirl.springboot.utils.MongoUtils.downloadFileResourceByFileId;
 
 /**
@@ -149,7 +151,15 @@ public class MongoSubmissionRepository implements SubmissionRepository {
 
     @Override
     public boolean submissionExists(String submissionId) {
-        return mongoTemplate.exists(Query.query(where("id").is(submissionId)), Submission.class);
+        return mongoTemplate.exists(Query.query(where("id").is(submissionId)), SubmissionData.class);
+    }
+
+    @Override
+    public List<Submission> findAllByIds(String... submissionIds) {
+        List<String> ids = Arrays.asList(submissionIds);
+        var dataList = mongoTemplate.find(
+                Query.query(where("id").in(ids)), SubmissionData.class);
+        return mapToList(dataList, DataMapper::toEntity);
     }
 
 }
