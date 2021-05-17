@@ -92,14 +92,15 @@ public class AnswerQuestionUseCase implements VerdictIssuedEventListener {
     @Override
     public void onVerdictIssued(VerdictIssuedEvent event) {
         getExamIdFromBag(event.getSubmissionBag())
-                .ifPresent(examId -> updateBestRecordOfQuestion(event, examId));
+                .ifPresent(examId -> updateBestRecord(event, examId));
     }
 
-    private void updateBestRecordOfQuestion(VerdictIssuedEvent event, int examId) {
+    private void updateBestRecord(VerdictIssuedEvent event, int examId) {
         Record record = record(event, examId);
         Record bestRecord = examRepository.findBestRecordOfQuestion(record.getQuestionId(), event.getStudentId())
                 .map(currentBest -> betterAndNewer(currentBest, record))
                 .orElse(record);
+
         examRepository.saveBestRecordOfQuestion(bestRecord);
     }
 
@@ -111,7 +112,7 @@ public class AnswerQuestionUseCase implements VerdictIssuedEventListener {
         Verdict newVerdict = event.getVerdict();
         return new Record(new Question.Id(examId, event.getProblemId()),
                 event.getStudentId(), newVerdict.getSummaryStatus(), newVerdict.getMaximumRuntime(), newVerdict.getMaximumMemoryUsage(),
-                newVerdict.getTotalGrade(), event.getSubmissionTime());
+                newVerdict.getGrade(), event.getSubmissionTime());
     }
 
     @Value

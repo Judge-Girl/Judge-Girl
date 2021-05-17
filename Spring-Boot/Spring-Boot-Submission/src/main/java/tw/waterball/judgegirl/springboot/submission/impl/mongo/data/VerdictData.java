@@ -17,7 +17,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import tw.waterball.judgegirl.primitives.problem.JudgeStatus;
-import tw.waterball.judgegirl.primitives.submission.verdict.Judge;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -31,9 +30,10 @@ import java.util.Map;
 @AllArgsConstructor
 @NoArgsConstructor
 public class VerdictData {
-    private List<Judge> judges = new ArrayList<>();
+    private List<JudgeData> judges = new ArrayList<>();
     private Date issueTime;
     private int totalGrade;
+    private int maxGrade;
     private JudgeStatus summaryStatus;
     private String compileErrorMessage;
     private String reportName;

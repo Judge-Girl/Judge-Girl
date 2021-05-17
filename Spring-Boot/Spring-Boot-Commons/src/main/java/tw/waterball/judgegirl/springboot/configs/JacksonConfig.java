@@ -14,26 +14,25 @@
 package tw.waterball.judgegirl.springboot.configs;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.ObjectCodec;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.*;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.boot.jackson.JsonObjectDeserializer;
+import org.springframework.boot.jackson.JsonObjectSerializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
-import tw.waterball.judgegirl.primitives.submission.verdict.Judge;
-import tw.waterball.judgegirl.primitives.submission.verdict.Verdict;
-import tw.waterball.judgegirl.submissionapi.views.ReportView;
+import tw.waterball.judgegirl.primitives.submission.Bag;
+import tw.waterball.judgegirl.primitives.submission.verdict.VerdictIssuedEvent;
+import tw.waterball.judgegirl.submissionapi.views.VerdictView;
 
 import java.io.IOException;
 import java.util.Date;
-import java.util.List;
 
-import static java.util.Arrays.asList;
+import static tw.waterball.judgegirl.submissionapi.views.VerdictView.toEntity;
+import static tw.waterball.judgegirl.submissionapi.views.VerdictView.toViewModel;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -53,31 +52,45 @@ public class JacksonConfig {
         return builder -> builder.serializationInclusion(JsonInclude.Include.NON_NULL)
                 .failOnUnknownProperties(false)
                 .featuresToEnable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-                .deserializers(new VerdictDeserializer());
+                .deserializers(new VerdictIssuedEventDeserializer())
+                .serializers(new VerdictIssuedEventSerializer());
     }
 }
 
-
-class VerdictDeserializer extends JsonObjectDeserializer<Verdict> {
+class VerdictIssuedEventSerializer extends JsonObjectSerializer<VerdictIssuedEvent> {
     @Override
-    public Class<Verdict> handledType() {
-        return Verdict.class;
+    public Class<VerdictIssuedEvent> handledType() {
+        return VerdictIssuedEvent.class;
     }
 
     @Override
-    protected Verdict deserializeObject(JsonParser jsonParser, DeserializationContext context, ObjectCodec codec, JsonNode tree) throws IOException {
-        Verdict verdict;
+    protected void serializeObject(VerdictIssuedEvent value, JsonGenerator jgen, SerializerProvider provider) throws IOException {
+        jgen.writeNumberField("problemId", value.getProblemId());
+        jgen.writeStringField("problemTitle", value.getProblemTitle());
+        jgen.writeNumberField("studentId", value.getStudentId());
+        jgen.writeStringField("submissionId", value.getSubmissionId());
+        jgen.writeNumberField("submissionTime", value.getSubmissionTime().getTime());
+        jgen.writeObjectField("verdict", toViewModel(value.getVerdict()));
+        jgen.writeObjectField("submissionBag", value.getSubmissionBag());
+    }
+}
 
-        Date issueTime = new Date(tree.get("issueTime").asLong());
-        if (tree.has("compileErrorMessage")) {
-            String compileErrorMessage = tree.get("compileErrorMessage").asText();
-            verdict = Verdict.compileError(compileErrorMessage, issueTime);
-        } else {
-            List<Judge> judges = asList(codec.treeToValue(tree.get("judges"), Judge[].class));
-            verdict = new Verdict(judges, issueTime);
-        }
-        ReportView reportView = codec.treeToValue(tree.get("report"), ReportView.class);
-        verdict.setReport(reportView.toEntity());
-        return verdict;
+class VerdictIssuedEventDeserializer extends JsonObjectDeserializer<VerdictIssuedEvent> {
+    @Override
+    public Class<VerdictIssuedEvent> handledType() {
+        return VerdictIssuedEvent.class;
+    }
+
+    @Override
+    protected VerdictIssuedEvent deserializeObject(JsonParser jsonParser, DeserializationContext context, ObjectCodec codec, JsonNode tree) throws IOException {
+        int problemId = tree.get("problemId").asInt();
+        String problemTitle = tree.get("problemTitle").asText();
+        int studentId = tree.get("studentId").asInt();
+        String submissionId = tree.get("submissionId").asText();
+        Date submissionTime = new Date(tree.get("submissionTime").asLong());
+        Bag submissionBag = codec.treeToValue(tree.get("submissionBag"), Bag.class);
+        VerdictView verdictView = codec.treeToValue(tree.get("verdict"), VerdictView.class);
+        return new VerdictIssuedEvent(problemId, problemTitle, studentId, submissionId,
+                toEntity(verdictView), submissionTime, submissionBag);
     }
 }

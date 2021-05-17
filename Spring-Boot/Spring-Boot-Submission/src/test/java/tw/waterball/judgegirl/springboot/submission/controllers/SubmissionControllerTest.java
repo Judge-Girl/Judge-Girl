@@ -169,7 +169,7 @@ public class SubmissionControllerTest extends AbstractSubmissionControllerTest {
             "Should only respond B")
     @Test
     void testGetSubmissionsWithBagQueryParameters() throws Exception {
-        givenSubmission(submission("A").CE().bag("a", "1").bag("b", "1").build(ADMIN_ID, problem.getId(), Language.C.toString()));
+        givenSubmission(submission("A").CE(100).bag("a", "1").bag("b", "1").build(ADMIN_ID, problem.getId(), Language.C.toString()));
         givenSubmission(submission("B").bag("a", "1").bag("b", "2").build(ADMIN_ID, problem.getId(), Language.C.toString()));
         givenSubmission(submission("C").bag("a", "2").bag("b", "2").build(ADMIN_ID, problem.getId(), Language.C.toString()));
 
@@ -236,5 +236,5 @@ public class SubmissionControllerTest extends AbstractSubmissionControllerTest {
         return getBody(mockMvc.perform(get(API_PREFIX + "/best", problem.getId(), studentId))
                 .andExpect(status().isOk()), SubmissionView.class);
     }
-    
+
 }

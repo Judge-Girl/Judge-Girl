@@ -54,4 +54,6 @@ public interface SubmissionRepository {
     void saveSubmissionThrottling(SubmissionThrottling submissionThrottling);
 
     boolean submissionExists(String submissionId);
+
+    List<Submission> findAllByIds(String... submissionIds);
 }

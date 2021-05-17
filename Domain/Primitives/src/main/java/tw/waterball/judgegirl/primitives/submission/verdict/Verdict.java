@@ -16,6 +16,7 @@ package tw.waterball.judgegirl.primitives.submission.verdict;
 import lombok.Singular;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import tw.waterball.judgegirl.primitives.grading.Grade;
 import tw.waterball.judgegirl.primitives.problem.JudgeStatus;
 import tw.waterball.judgegirl.primitives.submission.report.CompositeReport;
 import tw.waterball.judgegirl.primitives.submission.report.Report;
@@ -25,6 +26,7 @@ import java.util.Date;
 import java.util.List;
 
 import static tw.waterball.judgegirl.commons.utils.StringUtils.isNullOrEmpty;
+import static tw.waterball.judgegirl.primitives.time.DateProvider.now;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -37,29 +39,29 @@ public class Verdict implements Comparable<Verdict> {
     private Date issueTime;
     private Report report = Report.EMPTY;
 
+    private final Grade grade;
 
     public Verdict(List<Judge> judges) throws InvalidVerdictException {
-        this(judges, new Date());
+        this(judges, now());
     }
 
-    public Verdict(String compileErrorMessage) throws InvalidVerdictException {
-        this(compileErrorMessage, new Date());
-    }
-
-    public Verdict(String compileErrorMessage, Date issueTime) throws InvalidVerdictException {
+    // Summary Status: CE, the maxGrade is sourced here.
+    public Verdict(String compileErrorMessage, int maxGrade, Date issueTime) throws InvalidVerdictException {
         this.issueTime = issueTime;
         this.judges = Collections.emptyList();
+        this.grade = new Grade(0, maxGrade);
         setCompileErrorMessage(compileErrorMessage);
     }
 
     public Verdict(List<Judge> judges, Date issueTime) throws InvalidVerdictException {
         this.judges = judges;
         this.issueTime = issueTime;
-        mustHaveAtLeastOneJudges();
+        this.grade = new Grade(judges);
+        mustHaveAtLeastOneJudge();
         mustNotHaveNoneJudgeStatus();
     }
 
-    private void mustHaveAtLeastOneJudges() {
+    private void mustHaveAtLeastOneJudge() {
         if (judges.isEmpty()) {
             throw new InvalidVerdictException("Verdict must have at least one judge.");
         }
@@ -72,20 +74,20 @@ public class Verdict implements Comparable<Verdict> {
         }
     }
 
-    public static Verdict compileError(String compileErrorMessage) {
-        return new Verdict(compileErrorMessage.trim(), new Date());
+    public static Verdict compileError(String compileErrorMessage, int maxGrade) {
+        return new Verdict(compileErrorMessage.trim(), maxGrade, now());
     }
 
-    public static Verdict compileError(String compileErrorMessage, Date issueTime) {
-        return new Verdict(compileErrorMessage.trim(), issueTime);
+    public static Verdict compileError(String compileErrorMessage, int maxGrade, Date issueTime) {
+        return new Verdict(compileErrorMessage.trim(), maxGrade, issueTime);
     }
 
-    public Integer getTotalGrade() {
-        if (judges.isEmpty()) {
-            return 0;
-        }
-        return judges.stream()
-                .mapToInt(Judge::getGrade).sum();
+    public int getMaxGrade() {
+        return grade.max();
+    }
+
+    public int getGrade() {
+        return grade.value();
     }
 
     public JudgeStatus getSummaryStatus() {
@@ -178,8 +180,8 @@ public class Verdict implements Comparable<Verdict> {
 
     @Override
     public int compareTo(@NotNull Verdict verdict) {
-        int myGrade = getTotalGrade();
-        int hisGrade = verdict.getTotalGrade();
+        int myGrade = getGrade();
+        int hisGrade = verdict.getGrade();
         if (this.isCompileError() && verdict.isCompileError()) {
             return 0;
         }

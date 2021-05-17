@@ -8,10 +8,7 @@ import tw.waterball.judgegirl.primitives.submission.Submission;
 import tw.waterball.judgegirl.submission.domain.repositories.SubmissionRepository;
 
 import javax.inject.Named;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * Find a best record submission given a list of submission ids
@@ -34,10 +31,7 @@ public class FindBestRecordUseCase {
 
     @NotNull
     private List<Submission> findSubmissions(Request request) {
-        return Arrays.stream(request.submissionIds)
-                .map(submissionRepository::findById)
-                .filter(Optional::isPresent)
-                .map(Optional::get).collect(Collectors.toList());
+        return submissionRepository.findAllByIds(request.submissionIds);
     }
 
     @Data
