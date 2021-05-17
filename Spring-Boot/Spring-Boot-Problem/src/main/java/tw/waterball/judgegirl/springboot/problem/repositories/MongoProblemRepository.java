@@ -22,6 +22,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.data.mongodb.gridfs.GridFsResource;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.stereotype.Component;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
@@ -40,9 +41,10 @@ import java.io.InputStream;
 import java.util.*;
 
 import static java.lang.String.format;
-import static java.util.Objects.requireNonNull;
+import static java.util.Optional.ofNullable;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
+import static org.springframework.data.mongodb.core.query.Update.update;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
 import static tw.waterball.judgegirl.commons.utils.StringUtils.isNullOrEmpty;
 import static tw.waterball.judgegirl.commons.utils.ZipUtils.zipToStream;
@@ -79,7 +81,7 @@ public class MongoProblemRepository implements ProblemRepository {
 
     @Override
     public Optional<Problem> findProblemById(int problemId) {
-        return Optional.ofNullable(mongoTemplate.findById(problemId, ProblemData.class))
+        return ofNullable(mongoTemplate.findById(problemId, ProblemData.class))
                 .map(ProblemData::toEntity);
     }
 
@@ -188,15 +190,11 @@ public class MongoProblemRepository implements ProblemRepository {
     }
 
     @Override
-    public boolean isFileExistsById(String fileId) {
-        try {
-            GridFSFile gridFsFile = gridFsTemplate.findOne(new Query(Criteria.where("_id").is(fileId)));
-            gridFsTemplate.getResource(requireNonNull(gridFsFile));
-            return true;
-
-        } catch (Exception e) {
-            return false;
-        }
+    public boolean existsFile(String fileId) {
+        return ofNullable(gridFsTemplate.findOne(new Query(where("_id").is(fileId))))
+                .map(gridFsTemplate::getResource)
+                .map(GridFsResource::exists)
+                .orElse(false);
     }
 
     @Override
@@ -207,46 +205,39 @@ public class MongoProblemRepository implements ProblemRepository {
 
     @Override
     public void archiveProblem(Problem problem) {
-        Update update = Update.update("archived", true);
-        Query query = new Query(where("_id").is(problem.getId()));
+        Update update = update("archived", true);
+        Query query = query(where("_id").is(problem.getId()));
         mongoTemplate.updateFirst(query, update, ProblemData.class);
     }
 
     @Override
     public void deleteProblem(Problem problem) {
         mongoTemplate.remove(query(where("_id").is(problem.getId())), ProblemData.class);
-        List<String> fileIds = new ArrayList<>();
-        if (problem.getLanguageEnvs() != null) {
-            var providedCodesFileIds = mapToList(problem.getLanguageEnvs().values(), LanguageEnv::getProvidedCodesFileId);
-            fileIds.addAll(providedCodesFileIds);
-        }
-        if (problem.getTestcaseIOsFileId() != null) {
-            fileIds.add(problem.getTestcaseIOsFileId());
-        }
-        if(!fileIds.isEmpty()){
-            gridFsTemplate.delete(query(where("_id").in(fileIds)));
-        }
+        deleteFiles(problem);
     }
-
 
     @Override
     public void deleteAll() {
-        List<Problem> problems = mapToList(mongoTemplate.findAll(ProblemData.class), ProblemData::toEntity);
-        List<String> fileIds = new ArrayList<>();
-        problems.forEach(problem -> {
-            if (problem.getLanguageEnvs() != null) {
-                List<String> providedCodesFileIds = mapToList(problem.getLanguageEnvs().values(), LanguageEnv::getProvidedCodesFileId);
-                fileIds.addAll(providedCodesFileIds);
-            }
-            if (problem.getTestcaseIOsFileId() != null) {
-                fileIds.add(problem.getTestcaseIOsFileId());
-            }
-        });
-        if(!fileIds.isEmpty()){
-            gridFsTemplate.delete(query(where("_id").in(fileIds)));
-        }
+        findAll().forEach(this::deleteFiles);
         mongoTemplate.dropCollection(ProblemData.class);
     }
+
+    private void deleteFiles(Problem problem) {
+        List<String> fileIds = new LinkedList<>();
+        var languageEnvs = problem.getLanguageEnvs();
+        if (languageEnvs != null) {
+            List<String> providedCodesFileIds = mapToList(languageEnvs.values(), LanguageEnv::getProvidedCodesFileId);
+            fileIds.addAll(providedCodesFileIds);
+        }
+        var testcaseIOsFileId = problem.getTestcaseIOsFileId();
+        if (testcaseIOsFileId != null) {
+            fileIds.add(testcaseIOsFileId);
+        }
+        if (!fileIds.isEmpty()) {
+            gridFsTemplate.delete(query(where("_id").in(fileIds)));
+        }
+    }
+
 
     @Override
     public void saveTags(List<String> tagList) {

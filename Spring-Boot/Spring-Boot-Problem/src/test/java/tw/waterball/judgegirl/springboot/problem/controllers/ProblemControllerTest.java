@@ -649,9 +649,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
 
         archiveOrDeleteProblem(problemId);
 
-        assertTrue(problemRepository.findProblemById(problemId).orElseThrow().isArchived());
-
-        itsShouldBeExist(problem);
+        problemProvidedCodesAndTestcaseIOsShouldBeExist(problem);
     }
 
     @Test
@@ -661,25 +659,23 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
 
         archiveOrDeleteProblem(problemId);
 
-        assertTrue(problemRepository.findProblemById(problemId).orElseThrow().isArchived());
-
         archiveOrDeleteProblem(problemId);
 
-        itsShouldBeNotFounds(problem);
+        problemProvidedCodesAndTestcaseIOsShouldBeDeleted(problem);
     }
 
-    private void itsShouldBeExist(Problem problem) {
-        String testcaseIOsFileId = problem.getTestcaseIOsFileId();
+    private void problemProvidedCodesAndTestcaseIOsShouldBeExist(Problem problem) {
         List<String> providedCodes = mapToList(problem.getLanguageEnvs().values(),LanguageEnv::getProvidedCodesFileId);
-        assertTrue(problemRepository.isFileExistsById(testcaseIOsFileId));
-        providedCodes.forEach(id -> assertTrue(problemRepository.isFileExistsById(id)));
+        List<String> fileIds = new LinkedList<>(providedCodes);
+        fileIds.add(problem.getTestcaseIOsFileId());
+        fileIds.forEach(fileId -> assertTrue(problemRepository.existsFile(fileId)));
     }
 
-    private void itsShouldBeNotFounds(Problem problem) {
-        String testcaseIOsFileId = problem.getTestcaseIOsFileId();
+    private void problemProvidedCodesAndTestcaseIOsShouldBeDeleted(Problem problem) {
         List<String> providedCodes = mapToList(problem.getLanguageEnvs().values(),LanguageEnv::getProvidedCodesFileId);
-        assertFalse(problemRepository.isFileExistsById(testcaseIOsFileId));
-        providedCodes.forEach(id -> assertFalse(problemRepository.isFileExistsById(id)));
+        List<String> fileIds = new LinkedList<>(providedCodes);
+        fileIds.add(problem.getTestcaseIOsFileId());
+        fileIds.forEach(fileId -> assertFalse(problemRepository.existsFile(fileId)));
     }
 }
 
