@@ -16,7 +16,7 @@ public class ExamTranscriptPresenter implements CalculateExamScoreUseCase.Presen
     }
 
     @Override
-    public void showEveryRecord(ExamineeRecord examineeRecord) {
+    public void addRecord(ExamineeRecord examineeRecord) {
         builder.examineeRecord(examineeRecord.getExaminee().getEmail(),
                 new TranscriptView.ExamineeRecord(
                         examineeRecord.getTotalScore(), examineeRecord.getScores()

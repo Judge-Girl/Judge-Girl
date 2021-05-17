@@ -2,20 +2,18 @@ package tw.waterball.judgegirl.academy.domain.usecases.exam;
 
 import lombok.Value;
 import tw.waterball.judgegirl.academy.domain.repositories.ExamRepository;
+import tw.waterball.judgegirl.commons.utils.functional.GetById;
 import tw.waterball.judgegirl.primitives.Student;
 import tw.waterball.judgegirl.primitives.exam.Exam;
+import tw.waterball.judgegirl.primitives.exam.Examinee;
 import tw.waterball.judgegirl.primitives.exam.Question;
 import tw.waterball.judgegirl.primitives.exam.Record;
 import tw.waterball.judgegirl.studentapi.clients.StudentServiceDriver;
 
 import javax.inject.Named;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 import static java.util.function.Function.identity;
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.*;
 
 /**
@@ -33,27 +31,45 @@ public class CalculateExamScoreUseCase extends AbstractExamUseCase {
     public void execute(int examId, Presenter presenter) {
         Exam exam = findExam(examId);
         List<Record> records = examRepository.findAllRecordsInAnExam(examId);
-        Map<Integer, Student> studentMap = studentServiceDriver.getStudentsByIds(
-                mapToList(records, Record::getStudentId))
-                .stream().collect(toMap(Student::getId, identity()));
-        Map<Integer, List<Record>> studentIdToRecords = records.stream().collect(Collectors.groupingBy(Record::getStudentId));
-        List<ExamineeRecord> examineeRecords = records.stream().map(record -> {
-            List<Record> studentRecords = studentIdToRecords.get(record.getStudentId());
-            Map<Question, Record> map = studentRecords.stream().collect(
-                    toMap(r -> exam.getQuestionById(r.getQuestionId()).orElseThrow(), identity()));
-            return new ExamineeRecord(studentMap.get(record.getStudentId()), map);
-        }).collect(toList());
-        examineeRecords.forEach(presenter::showEveryRecord);
-        double averageScore = examineeRecords.stream().mapToInt(ExamineeRecord::getTotalScore).average().orElse(0);
-        int maxScore = sum(exam.getQuestions(), Question::getScore);
+
+        var examinees = examinees(exam);
+        List<ExamineeRecord> examineeRecords = examineeRecords(exam, records, examinees);
+        double averageScore = average(examineeRecords, ExamineeRecord::getTotalScore);
+        present(presenter, exam, examineeRecords, averageScore);
+    }
+
+    private List<Record> filterRecords(List<Record> records, GetById<Integer, Student> examinees) {
+        return filterToList(records, record -> examinees.get(record.getStudentId()) != null);
+    }
+
+    private GetById<Integer, Student> examinees(Exam exam) {
+        var idToExaminee = toMap(studentServiceDriver.getStudentsByIds(
+                mapToList(exam.getExaminees(), Examinee::getStudentId)), Student::getId, identity());
+        return idToExaminee::get;
+    }
+
+    private List<ExamineeRecord> examineeRecords(Exam exam, List<Record> records, GetById<Integer, Student> examinees) {
+        var examineeToQuestionRecords =
+                groupingBy(questionRecords(exam, records),
+                        questionRecord -> examinees.get(questionRecord.getStudentId()));
+        return zipToList(examineeToQuestionRecords, ExamineeRecord::new);
+    }
+
+    private List<QuestionRecord> questionRecords(Exam exam, List<Record> records) {
+        return mapToList(records, record -> new QuestionRecord(exam.getQuestionById(record.getQuestionId()), record));
+    }
+
+    private void present(Presenter presenter, Exam exam, List<ExamineeRecord> examineeRecords, double averageScore) {
         presenter.showExam(exam);
-        presenter.showStatistics(averageScore, maxScore);
+        examineeRecords.forEach(presenter::addRecord);
+        presenter.showStatistics(averageScore, exam.getMaxScore());
     }
 
     public interface Presenter {
+
         void showExam(Exam exam);
 
-        void showEveryRecord(ExamineeRecord examineeRecord);
+        void addRecord(ExamineeRecord examineeRecord);
 
         void showStatistics(double averageScore, int maxScore);
     }
@@ -61,16 +77,29 @@ public class CalculateExamScoreUseCase extends AbstractExamUseCase {
     @Value
     public static class ExamineeRecord {
         Student examinee;
-        Map<Question, Record> recordSheet;
+        List<QuestionRecord> questionRecords;
         List<Integer> scores;
         int totalScore;
 
-        public ExamineeRecord(Student examinee, Map<Question, Record> recordSheet) {
+        public ExamineeRecord(Student examinee, List<QuestionRecord> questionRecords) {
             this.examinee = examinee;
-            this.recordSheet = recordSheet;
-            this.scores = zipToList(recordSheet.entrySet(), Question::calculateScore);
+            this.questionRecords = questionRecords;
+            this.scores = mapToList(questionRecords, QuestionRecord::calculateScore);
             this.totalScore = sum(scores);
         }
+    }
 
+    @Value
+    public static class QuestionRecord {
+        Question question;
+        Record record;
+
+        public int calculateScore() {
+            return question.calculateScore(record);
+        }
+
+        public int getStudentId() {
+            return record.getStudentId();
+        }
     }
 }

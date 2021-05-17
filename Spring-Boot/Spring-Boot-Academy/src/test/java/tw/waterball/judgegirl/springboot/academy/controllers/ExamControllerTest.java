@@ -77,11 +77,13 @@ class ExamControllerTest extends AbstractSpringBootTest {
     public static final int STUDENT_A_ID = 1;
     public static final int STUDENT_B_ID = 1234;
     public static final int STUDENT_C_ID = 200;
+    public static final int STUDENT_D_ID = 20000;
     public static final String LANG_ENV = Language.C.toString();
     public static final String SUBMISSION_ID = "SubmissionId";
     public static final String STUDENT_A_EMAIL = "studentA@example.com";
     public static final String STUDENT_B_EMAIL = "studentB@example.com";
     public static final String STUDENT_C_EMAIL = "studentC@example.com";
+    public static final String STUDENT_D_EMAIL = "studentD@example.com";
 
     @Autowired
     ExamRepository examRepository;
@@ -124,15 +126,11 @@ class ExamControllerTest extends AbstractSpringBootTest {
     }
 
     private void fakeStudentServiceDriver() {
-        Student studentA = new Student("studentA", STUDENT_A_EMAIL, "passwordA");
-        studentA.setId(STUDENT_A_ID);
-        Student studentB = new Student("studentB", STUDENT_B_EMAIL, "passwordB");
-        studentB.setId(STUDENT_B_ID);
-        Student studentC = new Student("studentC", STUDENT_C_EMAIL, "passwordC");
-        studentC.setId(STUDENT_C_ID);
-        studentServiceDriver.addStudent(studentA);
-        studentServiceDriver.addStudent(studentB);
-        studentServiceDriver.addStudent(studentC);
+        asList(new Student(STUDENT_A_ID, "studentA", STUDENT_A_EMAIL, "passwordA"),
+                new Student(STUDENT_B_ID, "studentB", STUDENT_B_EMAIL, "passwordB"),
+                new Student(STUDENT_C_ID, "studentC", STUDENT_C_EMAIL, "passwordC"),
+                new Student(STUDENT_D_ID, "studentD", STUDENT_D_EMAIL, "passwordD"))
+                .forEach(studentServiceDriver::addStudent);
     }
 
     private void mockSubmissionServiceDriver() {
@@ -465,7 +463,8 @@ class ExamControllerTest extends AbstractSpringBootTest {
 
     @Test
     void WheneverReceiveNewVerdict_ShouldUpdateBestRecordOfAQuestion() throws Exception {
-        ExamView exam = createExamAndGet(beforeCurrentTime(1, HOURS), afterCurrentTime(1, HOURS), "A");
+        var exam = createExamAndGet(beforeCurrentTime(1, HOURS), afterCurrentTime(1, HOURS), "A");
+        givenStudentParticipatingExam(STUDENT_A_ID, exam);
         createQuestion(new CreateQuestionUseCase.Request(exam.id, PROBLEM_ID, NO_QUOTA_LIMITATION, 100, 1));
 
         publishVerdict(exam, submission("A").CE(100).build(STUDENT_A_ID, PROBLEM_ID, CURRENTLY_ONLY_SUPPORT_C));
@@ -587,7 +586,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
     // TODO: drunk code, need to be improved
     @Test
     void testProduceExamTranscript() throws Exception {
-        Integer[] studentIds = {STUDENT_A_ID, STUDENT_B_ID, STUDENT_C_ID};
+        Integer[] studentIds = {STUDENT_A_ID, STUDENT_B_ID, STUDENT_C_ID, STUDENT_D_ID};
         var exam = createExamAndGet(new Date(), oneSecondAfter(), "Exam");
         var q1 = createQuestionAndGet(new CreateQuestionUseCase.Request(exam.id, PROBLEM_ID, 1, 50, 0)).toEntity();
         var q2 = createQuestionAndGet(new CreateQuestionUseCase.Request(exam.id, ANOTHER_PROBLEM_ID, 1, 50, 1)).toEntity();
@@ -596,10 +595,10 @@ class ExamControllerTest extends AbstractSpringBootTest {
         var sA2 = publishVerdictAndAwait(anotherProblem, exam, randomizedSubmission(toEntity(anotherProblem), STUDENT_A_ID, 3));
         var sB1 = publishVerdictAndAwait(problem, exam, randomizedSubmission(toEntity(problem), STUDENT_B_ID, 2));
         var sB2 = publishVerdictAndAwait(anotherProblem, exam, randomizedSubmission(toEntity(anotherProblem), STUDENT_B_ID, 1));
-        var sC1 = publishVerdictAndAwait(problem, exam, submission(randomUUID().toString()).CE(10).build(STUDENT_C_ID, PROBLEM_ID, CURRENTLY_ONLY_SUPPORT_C));
+        var sC1 = publishVerdictAndAwait(problem, exam, submission(randomUUID().toString()).CE(problem.totalGrade).build(STUDENT_C_ID, PROBLEM_ID, CURRENTLY_ONLY_SUPPORT_C));
         var sC2 = publishVerdictAndAwait(anotherProblem, exam, randomizedSubmission(toEntity(anotherProblem), STUDENT_C_ID, 1));
 
-        var transcript = getBody(mockMvc.perform(post("/api/exams/{examId}/transcript", exam.getId()))
+        var transcript = getBody(mockMvc.perform(get("/api/exams/{examId}/transcript", exam.getId()))
                 .andExpect(status().isOk()), TranscriptView.class);
 
         var examineeRecordA = transcript.examineeRecords.get(STUDENT_A_EMAIL);
@@ -608,6 +607,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
         int scoreA1 = q1.calculateScore(sA1), scoreA2 = q2.calculateScore(sA2);
         int scoreB1 = q1.calculateScore(sB1), scoreB2 = q2.calculateScore(sB2);
         int scoreC1 = q1.calculateScore(sC1), scoreC2 = q2.calculateScore(sC2);
+
         assertEquals(q1.getScore() + q2.getScore(), transcript.getMaxScore());
         assertEquals(scoreA1 + scoreA2, examineeRecordA.totalScore);
         assertEqualsIgnoreOrder(asList(scoreA1, scoreA2), examineeRecordA.questionScores);
@@ -615,7 +615,12 @@ class ExamControllerTest extends AbstractSpringBootTest {
         assertEqualsIgnoreOrder(asList(scoreB1, scoreB2), examineeRecordB.questionScores);
         assertEquals(scoreC1 + scoreC2, examineeRecordC.totalScore);
         assertEqualsIgnoreOrder(asList(scoreC1, scoreC2), examineeRecordC.questionScores);
-        assertEquals(average((scoreA1 + scoreA2), (scoreB1 + scoreB2), (scoreC1 + scoreC2)), transcript.getAverageScore());
+        assertFalse(transcript.examineeRecords.containsKey(STUDENT_D_EMAIL),
+                "Student D doesn't participate the exam, should not include hos record.");
+
+        // D is absent, don't count D's score in average
+        assertEquals(average((scoreA1 + scoreA2), (scoreB1 + scoreB2), (scoreC1 + scoreC2)),
+                transcript.getAverageScore());
         assertEquals(q1.getScore() + q2.getScore(), transcript.getMaxScore());
     }
 

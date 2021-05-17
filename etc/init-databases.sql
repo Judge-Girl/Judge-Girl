@@ -46,7 +46,9 @@ create table if not exists answers
     submission_id varchar(255) null,
     answer_time   datetime     null,
     primary key (number, exam_id, problem_id, student_id),
-    foreign key (exam_id) references exams (id) on delete cascade
+    foreign key (exam_id) references exams (id) on delete cascade,
+    foreign key (exam_id, problem_id) references questions (exam_id, problem_id) on delete cascade,
+    foreign key (exam_id, student_id) references examinees (exam_id, student_id) on delete cascade
 );
 
 create table if not exists best_records
@@ -61,7 +63,9 @@ create table if not exists best_records
     status               enum ('AC', 'TLE', 'MLE', 'WA', 'CE', 'OLE', 'RE', 'PE', 'SYSTEM_ERR') null,
     submission_time      datetime                                                               null,
     primary key (exam_id, problem_id, student_id),
-    foreign key (exam_id) references exams (id) on delete cascade
+    foreign key (exam_id) references exams (id) on delete cascade,
+    foreign key (exam_id, problem_id) references questions (exam_id, problem_id) on delete cascade,
+    foreign key (exam_id, student_id) references examinees (exam_id, student_id) on delete cascade
 );
 
 create table if not exists homework

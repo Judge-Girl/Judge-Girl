@@ -186,7 +186,7 @@ public class ExamController {
         return presenter.present();
     }
 
-    @PostMapping("/exams/{examId}/transcript")
+    @GetMapping("/exams/{examId}/transcript")
     public TranscriptView createTranscript(@PathVariable int examId) {
         ExamTranscriptPresenter presenter = new ExamTranscriptPresenter();
         calculateExamScoreUseCase.execute(examId, presenter);

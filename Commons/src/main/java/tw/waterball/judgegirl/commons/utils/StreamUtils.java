@@ -81,6 +81,18 @@ public abstract class StreamUtils {
         return collection.stream().collect(Collectors.toMap(keyMapper, valueMapper));
     }
 
+    public static <T, L, R> List<T> zipOneToMany(L left, List<R> right,
+                                                 BiFunction<L, R, T> zipAndMap) {
+        return right.stream()
+                .map(r -> zipAndMap.apply(left, r))
+                .collect(toList());
+    }
+
+    public static <T, L, R> List<T> zipToList(Map<L, R> map,
+                                              BiFunction<L, R, T> zipAndMap) {
+        return zipToList(map.entrySet(), zipAndMap);
+    }
+
     public static <T, L, R> List<T> zipToList(Collection<Map.Entry<L, R>> entrySet,
                                               BiFunction<L, R, T> zipAndMap) {
         return entrySet.stream()
@@ -103,8 +115,17 @@ public abstract class StreamUtils {
         return collection.stream().filter(predicate).collect(toList());
     }
 
+
+    public static <T, K> Map<K, List<T>> groupingBy(Collection<T> collection, Function<? super T, ? extends K> classifier) {
+        return collection.stream().collect(Collectors.groupingBy(classifier));
+    }
+
     public static double average(Integer... nums) {
         return Arrays.stream(nums).mapToInt(Integer::intValue).average().orElse(0);
+    }
+
+    public static <T> double average(Collection<T> collection, ToIntFunction<T> mapper) {
+        return collection.stream().mapToInt(mapper).average().orElse(0);
     }
 
     public static int sum(Collection<Integer> collection) {
