@@ -34,11 +34,11 @@ import tw.waterball.judgegirl.springboot.utils.MongoUtils;
 import tw.waterball.judgegirl.submission.domain.repositories.SubmissionRepository;
 import tw.waterball.judgegirl.submission.domain.usecases.dto.SubmissionQueryParams;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 import static java.lang.String.format;
+import static java.util.Arrays.asList;
 import static java.util.Optional.ofNullable;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Update.update;
@@ -156,7 +156,7 @@ public class MongoSubmissionRepository implements SubmissionRepository {
 
     @Override
     public List<Submission> findAllByIds(String... submissionIds) {
-        List<String> ids = Arrays.asList(submissionIds);
+        List<String> ids = asList(submissionIds);
         var dataList = mongoTemplate.find(
                 Query.query(where("id").in(ids)), SubmissionData.class);
         return mapToList(dataList, DataMapper::toEntity);
