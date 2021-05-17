@@ -88,7 +88,10 @@ public class MongoProblemRepository implements ProblemRepository {
                     .all((Object[]) params.getTags()));
         }
         if (params.isExcludeArchive()) {
-            query.addCriteria(Criteria.where("archived").is(false));
+            query.addCriteria(where("archived").is(false));
+        }
+        if (!params.isIncludeInvisibleProblems()) {
+            query.addCriteria(where("visible").is(true));
         }
         params.getPage().ifPresent(page -> query.skip(page * PAGE_SIZE).limit(PAGE_SIZE));
 
@@ -231,7 +234,7 @@ public class MongoProblemRepository implements ProblemRepository {
 
     private void removeFileIdIfExists(String fileId) {
         if (isNullOrEmpty(fileId)) {
-            gridFsTemplate.delete(new Query(Criteria.where("_id").is(fileId)));
+            gridFsTemplate.delete(new Query(where("_id").is(fileId)));
         }
     }
 
