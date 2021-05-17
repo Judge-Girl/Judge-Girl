@@ -87,10 +87,9 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
 
     @BeforeEach
     void setup() {
-        problem = problemTemplate()
-                .build();
-        adminToken = tokenService.createToken(new Identity(true, ADMIN_ID));
-        student1Token = tokenService.createToken(new Identity(false, STUDENT1_ID));
+        problem = problemTemplate().build();
+        adminToken = tokenService.createToken(Identity.admin(ADMIN_ID));
+        student1Token = tokenService.createToken(Identity.student(STUDENT1_ID));
     }
 
     @AfterEach

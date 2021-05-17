@@ -32,16 +32,12 @@ public class GetProblemsUseCase {
     private final ProblemRepository problemRepository;
 
     public void execute(ProblemQueryParams problemQueryParams, Presenter presenter) {
-        var problems = problemRepository.find(problemQueryParams);
-        if (!problemQueryParams.isAdmin()) {
-            problems = filterToList(problems, Problem::getVisible);
-        }
-        presenter.showProblems(problems);
+        presenter.showProblems(problemRepository.find(problemQueryParams));
     }
 
     public void execute(Request request, Presenter presenter) {
         var problems = problemRepository.findProblemsByIds(request.problemIds);
-        if (!request.isAdmin) {
+        if (!request.includeInvisibleProblems) {
             problems = filterToList(problems, Problem::getVisible);
         }
         presenter.showProblems(problems);
@@ -53,7 +49,7 @@ public class GetProblemsUseCase {
 
     @AllArgsConstructor
     public static class Request {
-        public final boolean isAdmin;
+        public final boolean includeInvisibleProblems;
         public final int[] problemIds;
     }
 

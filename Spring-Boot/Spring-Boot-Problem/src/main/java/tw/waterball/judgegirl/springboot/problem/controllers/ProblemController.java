@@ -69,12 +69,12 @@ public class ProblemController {
                                          @RequestParam(value = "page", defaultValue = "0") int page,
                                          @RequestParam(required = false) int[] ids) {
         var token = tokenService.parseBearerTokenAndValidate(authorization);
-        boolean isAdmin = token.isAdmin();
+        boolean includeInvisibleProblems = token.isAdmin();
         GetProblemsPresenter presenter = new GetProblemsPresenter();
         if (nonNull(ids)) {
-            getProblemsUseCase.execute(new GetProblemsUseCase.Request(isAdmin, ids), presenter);
+            getProblemsUseCase.execute(new GetProblemsUseCase.Request(includeInvisibleProblems, ids), presenter);
         } else {
-            getProblemsUseCase.execute(new ProblemQueryParams(tags == null ? new String[0] : tags, page, isAdmin), presenter);
+            getProblemsUseCase.execute(new ProblemQueryParams(tags == null ? new String[0] : tags, page, includeInvisibleProblems), presenter);
         }
         return presenter.present();
     }

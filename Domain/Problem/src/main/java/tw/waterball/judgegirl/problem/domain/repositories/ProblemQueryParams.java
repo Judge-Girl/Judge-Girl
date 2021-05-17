@@ -31,17 +31,17 @@ public class ProblemQueryParams {
 
     private final boolean excludeArchive;
 
-    private final boolean isAdmin;
+    private final boolean includeInvisibleProblems;
 
-    public ProblemQueryParams(String[] tags, @Nullable Integer page, boolean isAdmin) {
-        this(tags, page, true, isAdmin);
+    public ProblemQueryParams(String[] tags, @Nullable Integer page, boolean includeInvisibleProblems) {
+        this(tags, page, true, includeInvisibleProblems);
     }
 
-    public ProblemQueryParams(String[] tags, @Nullable Integer page, boolean excludeArchive, boolean isAdmin) {
+    public ProblemQueryParams(String[] tags, @Nullable Integer page, boolean excludeArchive, boolean includeInvisibleProblems) {
         this.tags = tags;
         this.page = page;
         this.excludeArchive = excludeArchive;
-        this.isAdmin = isAdmin;
+        this.includeInvisibleProblems = includeInvisibleProblems;
     }
 
     public String[] getTags() {
@@ -56,7 +56,7 @@ public class ProblemQueryParams {
         return excludeArchive;
     }
 
-    public boolean isAdmin() {
-        return isAdmin;
+    public boolean isIncludeInvisibleProblems() {
+        return includeInvisibleProblems;
     }
 }
