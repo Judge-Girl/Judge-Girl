@@ -133,30 +133,6 @@ void child_process(FILE *log_fp, struct config *_config, int mount_list_len) {
         }
     }
 
-    // load seccomp
-    if (_config->seccomp_rule_name != NULL) {
-        if (strcmp("c_cpp", _config->seccomp_rule_name) == 0) {
-            if (c_cpp_seccomp_rules(_config) != SUCCESS) {
-                CHILD_ERROR_EXIT(LOAD_SECCOMP_FAILED);
-            }
-        }
-        else if (strcmp("c_cpp_file_io", _config->seccomp_rule_name) == 0) {
-            if (c_cpp_file_io_seccomp_rules(_config) != SUCCESS) {
-                CHILD_ERROR_EXIT(LOAD_SECCOMP_FAILED);
-            }
-        }
-        else if (strcmp("general", _config->seccomp_rule_name) == 0) {
-            if (general_seccomp_rules(_config) != SUCCESS) {
-                CHILD_ERROR_EXIT(LOAD_SECCOMP_FAILED);
-            }
-        }
-        // other rules
-        else {
-            // rule does not exist
-            CHILD_ERROR_EXIT(LOAD_SECCOMP_FAILED);
-        }
-    }
-
     if (strcmp(_config->input_path, "")) {
         input_file = fopen(_config->input_path, "r");
         if (input_file == NULL) {
@@ -206,6 +182,11 @@ void child_process(FILE *log_fp, struct config *_config, int mount_list_len) {
         CHILD_ERROR_EXIT(CHROOT_FAILED);
     }
 
+    //make sure the sandbox_path is executable and writable (for creating new file to output)
+    if (chmod(_config->sandbox_path, 0777) != 0) {
+        CHILD_ERROR_EXIT(SET_PERMISSION_FAILED);
+    }
+
     //make sure the file whose path is exe_path is executable
     if (chmod(_config->exe_path, 0755) != 0) {
         CHILD_ERROR_EXIT(CHMOD_EXECUTABLE_FAILED);
@@ -220,6 +201,30 @@ void child_process(FILE *log_fp, struct config *_config, int mount_list_len) {
     // set uid
     if (_config->uid != -1 && setuid(_config->uid) == -1) {
         CHILD_ERROR_EXIT(SETUID_FAILED);
+    }
+
+    // load seccomp
+    if (_config->seccomp_rule_name != NULL) {
+        if (strcmp("c_cpp", _config->seccomp_rule_name) == 0) {
+            if (c_cpp_seccomp_rules(_config) != SUCCESS) {
+                CHILD_ERROR_EXIT(LOAD_SECCOMP_FAILED);
+            }
+        }
+        else if (strcmp("c_cpp_file_io", _config->seccomp_rule_name) == 0) {
+            if (c_cpp_file_io_seccomp_rules(_config) != SUCCESS) {
+                CHILD_ERROR_EXIT(LOAD_SECCOMP_FAILED);
+            }
+        }
+        else if (strcmp("general", _config->seccomp_rule_name) == 0) {
+            if (general_seccomp_rules(_config) != SUCCESS) {
+                CHILD_ERROR_EXIT(LOAD_SECCOMP_FAILED);
+            }
+        }
+        // other rules
+        else {
+            // rule does not exist
+            CHILD_ERROR_EXIT(LOAD_SECCOMP_FAILED);
+        }
     }
     
     //since we have chroot, the path must be relative to sandbox_path ./program, not /home/k8s_admin/docker/judger/program
