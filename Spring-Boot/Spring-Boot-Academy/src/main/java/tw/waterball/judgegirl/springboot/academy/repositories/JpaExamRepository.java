@@ -53,7 +53,7 @@ public class JpaExamRepository implements ExamRepository {
 
     @Override
     public List<Exam> findByIdIn(Collection<Integer> examIds) {
-        return jpaExamDAO.findByIdIn(examIds).stream().map(ExamData::toEntity).collect(toList());
+        return mapToList(jpaExamDAO.findByIdIn(examIds), ExamData::toEntity);
     }
 
     @Override
@@ -107,7 +107,6 @@ public class JpaExamRepository implements ExamRepository {
     @Override
     public void addExaminees(int examId, List<Integer> studentIds) {
         jpaExamineeDAO.saveAll(mapToList(studentIds, studentId -> new ExamineeData(examId, studentId)));
-
     }
 
     @Override
@@ -126,9 +125,7 @@ public class JpaExamRepository implements ExamRepository {
 
     @Override
     public Exam save(Exam exam) {
-        ExamData data = jpaExamDAO.saveAndFlush(toData(exam));
-        exam = data.toEntity();
-        return exam;
+        return jpaExamDAO.saveAndFlush(toData(exam)).toEntity();
     }
 
     @Override

@@ -23,7 +23,7 @@ class ExamFilter {
     int size = 50;
 
     public enum Status {
-        all, past, current, upcoming
+        all, closed, ongoing, upcoming
     }
 
     public static ExamFilter.ExamFilterBuilder studentId(int studentId) {

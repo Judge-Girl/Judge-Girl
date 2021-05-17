@@ -12,6 +12,7 @@ import java.util.Date;
 import java.util.List;
 
 import static java.lang.String.format;
+import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -64,9 +65,9 @@ public class FilterExamsImpl implements FilterExams {
         switch (status) {
             case all:
                 return new ArrayList<>();
-            case past:
+            case closed:
                 return new ArrayList<>(List.of(":now >= e.endTime"));
-            case current:
+            case ongoing:
                 return new ArrayList<>(List.of("e.startTime < :now", ":now < e.endTime"));
             case upcoming:
                 return new ArrayList<>(List.of(":now < e.startTime"));
@@ -77,8 +78,6 @@ public class FilterExamsImpl implements FilterExams {
 
     private List<ExamData> getExamDataListFromQuery(Query query) {
         List<?> result = query.getResultList();
-        List<ExamData> examDataList = new ArrayList<>(result.size());
-        result.forEach(obj -> examDataList.add((ExamData) obj));
-        return examDataList;
+        return mapToList(result, obj -> (ExamData) obj);
     }
 }
