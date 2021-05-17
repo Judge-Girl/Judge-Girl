@@ -32,7 +32,7 @@ public class GetExamProgressOverviewUseCase {
             showRemainingQuotaOfQuestion(presenter, studentId, question);
             findBestRecord(studentId, question)
                     .ifPresentOrElse(record -> {
-                        int yourScore = record.getScore() * question.getScore() / problem.getTotalGrade();
+                        int yourScore = question.calculateScore(record);
                         presenter.showBestRecordOfQuestion(record);
                         presenter.showYourScoreOfQuestion(question, yourScore);
                     }, () -> presenter.showYourScoreOfQuestion(question, 0));
@@ -43,13 +43,13 @@ public class GetExamProgressOverviewUseCase {
         return examRepository.findById(request.examId)
                 .orElseThrow(() -> notFound(Exam.class).id(request.examId));
     }
-    
+
     private Problem findProblem(Question question) {
         return toEntity(problemService.getProblem(question.getId().getProblemId()));
     }
 
     private Optional<Record> findBestRecord(int studentId, @Valid Question question) {
-        return examRepository.findBestRecordOfQuestion(question.getId(), studentId);
+        return examRepository.findRecordOfQuestion(question.getId(), studentId);
     }
 
     private void showRemainingQuotaOfQuestion(Presenter presenter, int studentId, Question question) {

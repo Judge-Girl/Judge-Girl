@@ -1,6 +1,7 @@
 package tw.waterball.judgegirl.primitives.exam;
 
 import lombok.*;
+import tw.waterball.judgegirl.primitives.grading.Grading;
 
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
@@ -42,6 +43,12 @@ public class Question {
 
     public int getProblemId() {
         return id.getProblemId();
+    }
+
+    public int calculateScore(Grading grading) {
+        int grade = grading.getGrade();
+        int max = grading.getMaxGrade();
+        return grade * getScore() / max;
     }
 
     @Data

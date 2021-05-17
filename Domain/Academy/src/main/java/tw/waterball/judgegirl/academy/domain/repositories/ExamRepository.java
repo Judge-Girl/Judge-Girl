@@ -18,9 +18,11 @@ public interface ExamRepository {
 
     List<Exam> findExams(ExamFilter examFilter);
 
-    void saveBestRecordOfQuestion(Record record);
+    void saveRecordOfQuestion(Record record);
 
-    Optional<Record> findBestRecordOfQuestion(Question.Id questionId, int studentId);
+    Optional<Record> findRecordOfQuestion(Question.Id questionId, int studentId);
+
+    List<Record> findAllRecordsInAnExam(int examId);
 
     void addQuestion(Question question);
 

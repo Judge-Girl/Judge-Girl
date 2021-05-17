@@ -10,11 +10,14 @@ import tw.waterball.judgegirl.primitives.submission.verdict.Judge;
 import tw.waterball.judgegirl.primitives.submission.verdict.ProgramProfile;
 import tw.waterball.judgegirl.primitives.submission.verdict.Verdict;
 
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.Random;
 
 import static java.lang.System.currentTimeMillis;
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.IntStream.range;
+import static java.util.UUID.randomUUID;
+import static tw.waterball.judgegirl.commons.utils.StreamUtils.generate;
 import static tw.waterball.judgegirl.primitives.problem.JudgeStatus.*;
 
 /**
@@ -81,6 +84,10 @@ public class SubmissionStubBuilder extends Submission {
         return build(DONT_CARE, DONT_CARE, DONT_CARE_STRING);
     }
 
+    public Submission build(int studentId) {
+        return build(studentId, DONT_CARE, DONT_CARE_STRING);
+    }
+
     public Submission build(int studentId, int problemId, String languageEnvName) {
         Submission submission = new Submission(submissionId, studentId, problemId, languageEnvName, "s", new Date());
         submission.setBag(bag);
@@ -112,22 +119,28 @@ public class SubmissionStubBuilder extends Submission {
         }
     }
 
-    public static Submission randomJudgedSubmissionFromProblem(Problem problem, int studentId, int howManyACs, int gradePerAc) {
-        var judges = new ArrayList<Judge>();
-        List<JudgeStatus> statuses = range(0, howManyACs).mapToObj(i -> AC).collect(toList());
+    /**
+     * @param problem    The problem the submission submits to.
+     *                   The problem's testcases are used to create the corresponding judges.
+     * @param studentId  The id of the student who submits the submission.
+     * @param howManyACs Number of AC judges that will be given in the submission.
+     * @param gradePerAc The grade of every AC judge.
+     * @return A randomized and judged submission.
+     */
+    public static Submission randomizedSubmission(Problem problem, int studentId, int howManyACs) {
         Random random = new Random(currentTimeMillis());
-        JudgeStatus[] NORMAL_JUDGE_STATUSES = JudgeStatus.NORMAL_STATUSES;
-        for (int i = 0; i < problem.getTestcases().size() - howManyACs; i++) {
-            statuses.add(NORMAL_JUDGE_STATUSES[random.nextInt(NORMAL_JUDGE_STATUSES.length)]);
-        }
-        for (int i = 0; i < problem.getTestcases().size(); i++) {
-            judges.add(new Judge(problem.getTestcases().get(i),
-                    statuses.get(i), new ProgramProfile(10, 10,
-                    statuses.get(i) == RE ? "Error" : ""),
-                    statuses.get(i) == AC ? gradePerAc : 0));
-        }
-        Submission submission = new Submission(UUID.randomUUID().toString(), studentId, problem.getId(),
-                Language.C.toString(), "fileId");
+        List<JudgeStatus> statuses = generate(howManyACs, AC);
+        statuses.addAll(generate(problem.numOfTestcases() - howManyACs,
+                i -> NORMAL_STATUSES_NO_CE[random.nextInt(NORMAL_STATUSES_NO_CE.length)]));
+
+        List<Judge> judges = generate(problem.numOfTestcases(),
+                i -> new Judge(problem.getTestcases().get(i),
+                        statuses.get(i), new ProgramProfile(10, 10,
+                        statuses.get(i) == RE ? "Error" : ""),
+                        statuses.get(i) == AC ? problem.getTestcase(i).getGrade() : 0));
+
+        Submission submission = new Submission(randomUUID().toString(),
+                studentId, problem.getId(), Language.C.toString(), "fileId");
         submission.setVerdict(new Verdict(judges));
         return submission;
     }

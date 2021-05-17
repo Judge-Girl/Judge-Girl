@@ -1,10 +1,8 @@
 package tw.waterball.judgegirl.springboot.academy.controllers;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.h2.tools.Server;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
@@ -35,6 +33,7 @@ import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
 
 import javax.transaction.Transactional;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -44,6 +43,7 @@ import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
+import static java.util.UUID.randomUUID;
 import static java.util.concurrent.TimeUnit.HOURS;
 import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.Assertions.*;
@@ -53,15 +53,16 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static tw.waterball.judgegirl.academy.domain.usecases.exam.AnswerQuestionUseCase.BAG_KEY_EXAM_ID;
-import static tw.waterball.judgegirl.commons.utils.DateUtils.afterCurrentTime;
-import static tw.waterball.judgegirl.commons.utils.DateUtils.beforeCurrentTime;
+import static tw.waterball.judgegirl.commons.utils.DateUtils.*;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.*;
 import static tw.waterball.judgegirl.primitives.exam.Question.NO_QUOTA_LIMITATION;
 import static tw.waterball.judgegirl.primitives.stubs.ProblemStubs.problemTemplate;
-import static tw.waterball.judgegirl.primitives.stubs.SubmissionStubBuilder.randomJudgedSubmissionFromProblem;
+import static tw.waterball.judgegirl.primitives.stubs.SubmissionStubBuilder.randomizedSubmission;
 import static tw.waterball.judgegirl.primitives.stubs.SubmissionStubBuilder.submission;
 import static tw.waterball.judgegirl.primitives.time.Duration.during;
+import static tw.waterball.judgegirl.problemapi.views.ProblemView.toEntity;
 import static tw.waterball.judgegirl.problemapi.views.ProblemView.toViewModel;
+import static tw.waterball.judgegirl.submissionapi.clients.SubmissionApiClient.CURRENTLY_ONLY_SUPPORT_C;
 import static tw.waterball.judgegirl.submissionapi.clients.SubmissionApiClient.SUBMIT_CODE_MULTIPART_KEY_NAME;
 import static tw.waterball.judgegirl.testkit.stubs.MultipartFileStubs.codes;
 
@@ -100,7 +101,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
     private final int[] testcaseGrades = {20, 30, 50};
     private final int numOfTestcases = testcaseGrades.length;
     private ProblemView problem;
-    private Submission submissionWith2ACs20Point;
+    private Submission submissionWith2ACs;
     private ProblemView anotherProblem;
 
     private final MockMultipartFile[] mockFiles = codes(SUBMIT_CODE_MULTIPART_KEY_NAME, 2);
@@ -116,7 +117,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
         Problem p1 = problemTemplate(testcaseGrades).id(PROBLEM_ID).build(),
                 p2 = problemTemplate(testcaseGrades).id(ANOTHER_PROBLEM_ID).build();
         problem = toViewModel(p1);
-        submissionWith2ACs20Point = randomJudgedSubmissionFromProblem(p1, STUDENT_A_ID, 2, 10);
+        submissionWith2ACs = randomizedSubmission(p1, STUDENT_A_ID, 2);
         problemServiceDriver.addProblemView(problem);
         anotherProblem = toViewModel(p2);
         problemServiceDriver.addProblemView(anotherProblem);
@@ -467,58 +468,58 @@ class ExamControllerTest extends AbstractSpringBootTest {
         ExamView exam = createExamAndGet(beforeCurrentTime(1, HOURS), afterCurrentTime(1, HOURS), "A");
         createQuestion(new CreateQuestionUseCase.Request(exam.id, PROBLEM_ID, NO_QUOTA_LIMITATION, 100, 1));
 
-        publishVerdict(exam, submission("A").CE(100));
-        var bestRecord = awaitVerdictIssuedEventAndGetBestRecord(exam.id);
-        assertEquals(0, bestRecord.getScore());
+        publishVerdict(exam, submission("A").CE(100).build(STUDENT_A_ID, PROBLEM_ID, CURRENTLY_ONLY_SUPPORT_C));
+        var bestRecord = awaitVerdictIssuedEventAndGetBestRecord(exam.id, PROBLEM_ID, STUDENT_A_ID);
+        assertEquals(0, bestRecord.getGrade());
 
-        publishVerdict(exam, submission("B").WA(10, 10)
-                .AC(10, 10, 20));
-        bestRecord = awaitVerdictIssuedEventAndGetBestRecord(exam.id);
-        assertEquals(20, bestRecord.getScore());
+        publishVerdict(exam, submission("B").WA(10, 10).AC(10, 10, 20)
+                .build(STUDENT_A_ID, PROBLEM_ID, CURRENTLY_ONLY_SUPPORT_C));
+        bestRecord = awaitVerdictIssuedEventAndGetBestRecord(exam.id, PROBLEM_ID, STUDENT_A_ID);
+        assertEquals(20, bestRecord.getGrade());
 
         publishVerdict(exam, submission("C").AC(50, 50, 10)
-                .AC(10, 10, 20));
-        bestRecord = awaitVerdictIssuedEventAndGetBestRecord(exam.id);
-        assertEquals(30, bestRecord.getScore());
+                .AC(10, 10, 20)
+                .build(STUDENT_A_ID, PROBLEM_ID, CURRENTLY_ONLY_SUPPORT_C));
+        bestRecord = awaitVerdictIssuedEventAndGetBestRecord(exam.id, PROBLEM_ID, STUDENT_A_ID);
+        assertEquals(30, bestRecord.getGrade());
 
         publishVerdict(exam, submission("D").AC(25, 25, 10)
-                .AC(10, 10, 20));
-        bestRecord = awaitVerdictIssuedEventAndGetBestRecord(exam.id);
-        assertEquals(30, bestRecord.getScore());
+                .AC(10, 10, 20)
+                .build(STUDENT_A_ID, PROBLEM_ID, CURRENTLY_ONLY_SUPPORT_C));
+        bestRecord = awaitVerdictIssuedEventAndGetBestRecord(exam.id, PROBLEM_ID, STUDENT_A_ID);
+        assertEquals(30, bestRecord.getGrade());
         assertEquals(25, bestRecord.getMaximumRuntime());
         assertEquals(25, bestRecord.getMaximumMemoryUsage());
     }
 
-    // TODO: drunk, improve the code
+    // TODO: drunk code, need to be improved
     @Test
     void testGetStudentExamProgressOverview() throws Exception {
         final int QUOTA = 5;
-        int PROBLEM_TOTAL_GRADE = problem.totalGrade;
-        int SUBMISSION_TOTAL_GRADE = submissionWith2ACs20Point.mayHaveVerdict().orElseThrow().getGrade();
         Date start = beforeCurrentTime(1, HOURS), end = afterCurrentTime(1, HOURS);
         ExamView exam = createExamAndGet(start, end, "sample-exam");
-        QuestionView q1 = createQuestionAndGet(new CreateQuestionUseCase.Request(exam.getId(), PROBLEM_ID, QUOTA, 50, 1));
-        QuestionView q2 = createQuestionAndGet(new CreateQuestionUseCase.Request(exam.getId(), ANOTHER_PROBLEM_ID, QUOTA, 50, 2));
+        var q1 = createQuestionAndGet(new CreateQuestionUseCase.Request(exam.getId(), PROBLEM_ID, QUOTA, 50, 1)).toEntity();
+        var q2 = createQuestionAndGet(new CreateQuestionUseCase.Request(exam.getId(), ANOTHER_PROBLEM_ID, QUOTA, 50, 2)).toEntity();
         givenStudentParticipatingExam(STUDENT_A_ID, exam);
         answerQuestion(STUDENT_A_ID, exam).andExpect(status().isOk());
-        publishVerdict(PROBLEM_ID, problem.getTitle(), exam, submissionWith2ACs20Point);
+        publishVerdict(problem, exam, submissionWith2ACs);
 
         awaitVerdictIssuedEvent();
         ExamHome examHome = getExamProgressOverview(exam.getId());
-        ExamHome.QuestionItem firstQuestion = examHome.getQuestionById(new Question.Id(q1.examId, q1.problemId)).orElseThrow();
-        ExamHome.QuestionItem secondQuestion = examHome.getQuestionById(new Question.Id(q2.examId, q2.problemId)).orElseThrow();
+        ExamHome.QuestionItem firstQuestion = examHome.getQuestionById(q1.getId()).orElseThrow();
+        ExamHome.QuestionItem secondQuestion = examHome.getQuestionById(q2.getId()).orElseThrow();
 
-        int expectedQ1Score = SUBMISSION_TOTAL_GRADE * q1.score / PROBLEM_TOTAL_GRADE;
+        int expectedQ1Score = q1.calculateScore(submissionWith2ACs);
         assertEquals(exam.getId(), examHome.getId());
-        assertEquals("sample-exam", examHome.getName());
+        assertEquals(exam.getName(), examHome.getName());
         assertEquals(start, examHome.getStartTime());
         assertEquals(end, examHome.getEndTime());
-        assertEquals("problem statement", examHome.getDescription());
+        assertEquals(exam.getDescription(), examHome.getDescription());
         assertEquals(2, examHome.getQuestions().size());
         assertEquals(expectedQ1Score, examHome.getTotalScore());
 
         assertEquals(QUOTA - 1, firstQuestion.getRemainingQuota());
-        assertEquals(SUBMISSION_TOTAL_GRADE, firstQuestion.getBestRecord().getScore());
+        assertEquals(submissionWith2ACs.getGrade(), firstQuestion.getBestRecord().getScore());
         assertEquals(QUOTA, secondQuestion.getRemainingQuota());
         assertEquals(expectedQ1Score, firstQuestion.getYourScore());
         assertEquals(0, secondQuestion.getYourScore());
@@ -530,7 +531,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
     void testGetExamOverview() throws Exception {
         final int QUOTA = 5;
         Date start = beforeCurrentTime(1, HOURS), end = afterCurrentTime(1, HOURS);
-        ExamView exam = createExamAndGet(start, end, "sample-exam");
+        ExamView exam = createExamAndGet(start, end, "exam");
         QuestionView q1 = createQuestionAndGet(new CreateQuestionUseCase.Request(exam.getId(), PROBLEM_ID, QUOTA, 50, 1));
         QuestionView q2 = createQuestionAndGet(new CreateQuestionUseCase.Request(exam.getId(), ANOTHER_PROBLEM_ID, QUOTA, 50, 2));
 
@@ -539,23 +540,14 @@ class ExamControllerTest extends AbstractSpringBootTest {
         ExamOverview.QuestionItem secondQuestion = examOverview.getQuestionById(new Question.Id(q2.examId, q2.problemId)).orElseThrow();
 
         assertEquals(exam.getId(), examOverview.getId());
-        assertEquals("sample-exam", examOverview.getName());
+        assertEquals(exam.getName(), examOverview.getName());
         assertEquals(start, examOverview.getStartTime());
         assertEquals(end, examOverview.getEndTime());
-        assertEquals("problem statement", examOverview.getDescription());
+        assertEquals(exam.getDescription(), examOverview.getDescription());
         assertEquals(2, examOverview.getQuestions().size());
 
         assertQuestionEquals(q1, firstQuestion, problem);
         assertQuestionEquals(q2, secondQuestion, anotherProblem);
-    }
-
-    void assertQuestionEquals(QuestionView expectedQuestion, ExamOverview.QuestionItem actualQuestion, ProblemView problem) {
-        assertEquals(expectedQuestion.getExamId(), actualQuestion.getExamId());
-        assertEquals(expectedQuestion.getProblemId(), actualQuestion.getProblemId());
-        assertEquals(expectedQuestion.getQuota(), actualQuestion.getQuota());
-        assertEquals(expectedQuestion.getScore(), actualQuestion.getMaxScore());
-        assertEquals(expectedQuestion.getQuestionOrder(), actualQuestion.getQuestionOrder());
-        assertEquals(problem.getTitle(), actualQuestion.getProblemTitle());
     }
 
     @DisplayName("Give 8 students participating a ongoing exam, one question in the exam with submission quota = 3, " +
@@ -586,6 +578,55 @@ class ExamControllerTest extends AbstractSpringBootTest {
         assertTrue(examRepository.findById(exam.id).isEmpty());
     }
 
+    @BeforeAll
+    public static void initTest() throws SQLException {
+        Server.createWebServer("-web", "-webAllowOthers", "-webPort", "8082")
+                .start();
+    }
+
+    // TODO: drunk code, need to be improved
+    @Test
+    void testProduceExamTranscript() throws Exception {
+        Integer[] studentIds = {STUDENT_A_ID, STUDENT_B_ID, STUDENT_C_ID};
+        var exam = createExamAndGet(new Date(), oneSecondAfter(), "Exam");
+        var q1 = createQuestionAndGet(new CreateQuestionUseCase.Request(exam.id, PROBLEM_ID, 1, 50, 0)).toEntity();
+        var q2 = createQuestionAndGet(new CreateQuestionUseCase.Request(exam.id, ANOTHER_PROBLEM_ID, 1, 50, 1)).toEntity();
+        givenStudentsParticipatingExam(studentIds, exam);
+        var sA1 = publishVerdictAndAwait(problem, exam, randomizedSubmission(toEntity(problem), STUDENT_A_ID, 3));
+        var sA2 = publishVerdictAndAwait(anotherProblem, exam, randomizedSubmission(toEntity(anotherProblem), STUDENT_A_ID, 3));
+        var sB1 = publishVerdictAndAwait(problem, exam, randomizedSubmission(toEntity(problem), STUDENT_B_ID, 2));
+        var sB2 = publishVerdictAndAwait(anotherProblem, exam, randomizedSubmission(toEntity(anotherProblem), STUDENT_B_ID, 1));
+        var sC1 = publishVerdictAndAwait(problem, exam, submission(randomUUID().toString()).CE(10).build(STUDENT_C_ID, PROBLEM_ID, CURRENTLY_ONLY_SUPPORT_C));
+        var sC2 = publishVerdictAndAwait(anotherProblem, exam, randomizedSubmission(toEntity(anotherProblem), STUDENT_C_ID, 1));
+
+        var transcript = getBody(mockMvc.perform(post("/api/exams/{examId}/transcript", exam.getId()))
+                .andExpect(status().isOk()), TranscriptView.class);
+
+        var examineeRecordA = transcript.examineeRecords.get(STUDENT_A_EMAIL);
+        var examineeRecordB = transcript.examineeRecords.get(STUDENT_B_EMAIL);
+        var examineeRecordC = transcript.examineeRecords.get(STUDENT_C_EMAIL);
+        int scoreA1 = q1.calculateScore(sA1), scoreA2 = q2.calculateScore(sA2);
+        int scoreB1 = q1.calculateScore(sB1), scoreB2 = q2.calculateScore(sB2);
+        int scoreC1 = q1.calculateScore(sC1), scoreC2 = q2.calculateScore(sC2);
+        assertEquals(q1.getScore() + q2.getScore(), transcript.getMaxScore());
+        assertEquals(scoreA1 + scoreA2, examineeRecordA.totalScore);
+        assertEqualsIgnoreOrder(asList(scoreA1, scoreA2), examineeRecordA.questionScores);
+        assertEquals(scoreB1 + scoreB2, examineeRecordB.totalScore);
+        assertEqualsIgnoreOrder(asList(scoreB1, scoreB2), examineeRecordB.questionScores);
+        assertEquals(scoreC1 + scoreC2, examineeRecordC.totalScore);
+        assertEqualsIgnoreOrder(asList(scoreC1, scoreC2), examineeRecordC.questionScores);
+        assertEquals(average((scoreA1 + scoreA2), (scoreB1 + scoreB2), (scoreC1 + scoreC2)), transcript.getAverageScore());
+        assertEquals(q1.getScore() + q2.getScore(), transcript.getMaxScore());
+    }
+
+    void assertQuestionEquals(QuestionView expectedQuestion, ExamOverview.QuestionItem actualQuestion, ProblemView problem) {
+        assertEquals(expectedQuestion.getExamId(), actualQuestion.getExamId());
+        assertEquals(expectedQuestion.getProblemId(), actualQuestion.getProblemId());
+        assertEquals(expectedQuestion.getQuota(), actualQuestion.getQuota());
+        assertEquals(expectedQuestion.getScore(), actualQuestion.getMaxScore());
+        assertEquals(expectedQuestion.getQuestionOrder(), actualQuestion.getQuestionOrder());
+        assertEquals(problem.getTitle(), actualQuestion.getProblemTitle());
+    }
 
     private void addGroupsOfExaminees(ExamView exam, Group... groups) throws Exception {
         mockMvc.perform(post("/api/exams/{examId}/groups", exam.getId())
@@ -601,26 +642,32 @@ class ExamControllerTest extends AbstractSpringBootTest {
     }
 
     private void publishVerdict(ExamView exam, Submission submission) {
-        publishVerdict(PROBLEM_ID, problem.getTitle(), exam, submission);
+        publishVerdict(problem, exam, submission);
     }
 
-    private void publishVerdict(int problemId, String problemTitle, ExamView exam, Submission submission) {
-        verdictPublisher.publish(new VerdictIssuedEvent(problemId, problemTitle, STUDENT_A_ID, SUBMISSION_ID,
+    private Submission publishVerdictAndAwait(ProblemView problem, ExamView exam, Submission submission) {
+        publishVerdict(problem, exam, submission);
+        awaitVerdictIssuedEvent();
+        return submission;
+    }
+
+    private Submission publishVerdict(ProblemView problem, ExamView exam, Submission submission) {
+        assertEquals(problem.getId(), submission.getProblemId());
+        verdictPublisher.publish(new VerdictIssuedEvent(problem.getId(), problem.getTitle(), submission.getStudentId(), submission.getId(),
                 submission.mayHaveVerdict().orElseThrow(),
                 submission.getSubmissionTime(),
                 new Bag(singletonMap(BAG_KEY_EXAM_ID, String.valueOf(exam.id)))));
+        return submission;
     }
 
-
-    private Record awaitVerdictIssuedEventAndGetBestRecord(int examId) {
+    private Record awaitVerdictIssuedEventAndGetBestRecord(int examId, int problemId, int studentId) {
         awaitVerdictIssuedEvent();
-        return examRepository.findBestRecordOfQuestion(new Question.Id(examId, PROBLEM_ID), STUDENT_A_ID).orElseThrow();
+        return examRepository.findRecordOfQuestion(new Question.Id(examId, problemId), studentId).orElseThrow();
     }
 
     private void awaitVerdictIssuedEvent() {
         verdictIssuedEventHandler.onHandlingCompletion$.doWait(3000);
     }
-
 
     private void shouldHaveSavedAnswer(AnswerView answer) {
         examRepository.findAnswer(new Answer.Id(answer.number, new Question.Id(answer.examId, answer.problemId), answer.studentId))
@@ -716,7 +763,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
     }
 
     private ExamView createExamAndGet(Date startTime, Date endTime, String name) throws Exception {
-        return getBody(createExam(new Exam(name, during(startTime, endTime), "problem statement"))
+        return getBody(createExam(new Exam(name, during(startTime, endTime), "description"))
                 .andExpect(status().isOk()), ExamView.class);
     }
 

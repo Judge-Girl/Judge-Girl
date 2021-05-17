@@ -180,6 +180,14 @@ public class Problem {
                 .mapToInt(Testcase::getGrade).sum();
     }
 
+    public int numOfTestcases() {
+        return getTestcases().size();
+    }
+
+    public Testcase getTestcase(int index) {
+        return getTestcases().get(index);
+    }
+
     public List<Testcase> getTestcases() {
         if (testcases == null) {
             testcases = new LinkedList<>();

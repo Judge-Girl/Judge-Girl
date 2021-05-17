@@ -71,6 +71,10 @@ public class Exam {
         return getDuration().isOngoing();
     }
 
+    public Optional<Question> getQuestionById(Question.Id questionId) {
+        return findFirst(questions, q -> q.getId().equals(questionId));
+    }
+
     public Optional<Question> getQuestionByProblemId(int problemId) {
         return findFirst(questions, q -> q.getProblemId() == problemId);
     }

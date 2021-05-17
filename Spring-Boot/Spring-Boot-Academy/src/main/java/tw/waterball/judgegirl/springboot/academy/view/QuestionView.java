@@ -26,4 +26,8 @@ public class QuestionView {
                 .questionOrder(question.getQuestionOrder())
                 .build();
     }
+
+    public Question toEntity() {
+        return new Question(examId, problemId, quota, score, questionOrder);
+    }
 }

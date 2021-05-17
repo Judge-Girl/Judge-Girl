@@ -74,14 +74,19 @@ public class JpaExamRepository implements ExamRepository {
     }
 
     @Override
-    public void saveBestRecordOfQuestion(Record record) {
+    public void saveRecordOfQuestion(Record record) {
         jpaBestRecordDAO.saveAndFlush(BestRecordData.toData(record));
     }
 
     @Override
-    public Optional<Record> findBestRecordOfQuestion(Question.Id questionId, int studentId) {
+    public Optional<Record> findRecordOfQuestion(Question.Id questionId, int studentId) {
         return jpaBestRecordDAO.findById(new BestRecordData.Id(new QuestionData.Id(questionId), studentId))
                 .map(BestRecordData::toEntity);
+    }
+
+    @Override
+    public List<Record> findAllRecordsInAnExam(int examId) {
+        return mapToList(jpaBestRecordDAO.findAllById_ExamId(examId), BestRecordData::toEntity);
     }
 
     @Override

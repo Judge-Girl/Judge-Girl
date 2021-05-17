@@ -17,18 +17,15 @@ import tw.waterball.judgegirl.commons.utils.functional.ErrConsumer;
 import tw.waterball.judgegirl.commons.utils.functional.ErrFunction;
 
 import java.util.*;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.function.ToIntFunction;
+import java.util.function.*;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
+import static java.util.stream.IntStream.range;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -84,9 +81,16 @@ public abstract class StreamUtils {
         return collection.stream().collect(Collectors.toMap(keyMapper, valueMapper));
     }
 
+    public static <T, L, R> List<T> zipToList(Collection<Map.Entry<L, R>> entrySet,
+                                              BiFunction<L, R, T> zipAndMap) {
+        return entrySet.stream()
+                .map(entry -> zipAndMap.apply(entry.getKey(), entry.getValue()))
+                .collect(toList());
+    }
+
     public static <T, L, R> List<T> zipToList(List<L> left, List<R> right,
                                               BiFunction<L, R, T> zipAndMap) {
-        return IntStream.range(0, left.size())
+        return range(0, left.size())
                 .mapToObj(i -> zipAndMap.apply(left.get(i), right.get(i)))
                 .collect(toList());
     }
@@ -99,8 +103,24 @@ public abstract class StreamUtils {
         return collection.stream().filter(predicate).collect(toList());
     }
 
+    public static double average(Integer... nums) {
+        return Arrays.stream(nums).mapToInt(Integer::intValue).average().orElse(0);
+    }
+
+    public static int sum(Collection<Integer> collection) {
+        return collection.stream().mapToInt(Integer::intValue).sum();
+    }
+
     public static <T> int sum(Collection<T> collection, ToIntFunction<T> mapper) {
         return collection.stream().mapToInt(mapper).sum();
+    }
+
+    public static <T> List<T> generate(int count, T obj) {
+        return range(0, count).mapToObj(i -> obj).collect(toList());
+    }
+
+    public static <T> List<T> generate(int count, IntFunction<T> generator) {
+        return range(0, count).mapToObj(generator).collect(toList());
     }
 
     public static <T> void atTheSameTime(T[] array, ErrConsumer<T> consumer) {

@@ -17,6 +17,7 @@ import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.springboot.academy.presenters.ExamHomePresenter;
 import tw.waterball.judgegirl.springboot.academy.presenters.ExamOverviewPresenter;
 import tw.waterball.judgegirl.springboot.academy.presenters.ExamPresenter;
+import tw.waterball.judgegirl.springboot.academy.presenters.ExamTranscriptPresenter;
 import tw.waterball.judgegirl.springboot.academy.view.*;
 import tw.waterball.judgegirl.studentapi.clients.view.StudentView;
 
@@ -49,6 +50,7 @@ public class ExamController {
     private final AddGroupOfExamineesUseCase addGroupOfExamineesUseCase;
     private final DeleteExamineesUseCase deleteExamineesUseCase;
     private final DeleteExamUseCase deleteExamUseCase;
+    private final CalculateExamScoreUseCase calculateExamScoreUseCase;
 
     @PostMapping("/exams")
     public ExamView createExam(@RequestBody CreateExamUseCase.Request request) {
@@ -181,6 +183,13 @@ public class ExamController {
     public ExamOverview getExamOverview(@PathVariable int examId) {
         ExamOverviewPresenter presenter = new ExamOverviewPresenter();
         getExamOverviewUseCase.execute(examId, presenter);
+        return presenter.present();
+    }
+
+    @PostMapping("/exams/{examId}/transcript")
+    public TranscriptView createTranscript(@PathVariable int examId) {
+        ExamTranscriptPresenter presenter = new ExamTranscriptPresenter();
+        calculateExamScoreUseCase.execute(examId, presenter);
         return presenter.present();
     }
 }

@@ -46,29 +46,40 @@ public class VerdictView {
         if (verdict == null) {
             return null;
         }
-        return new VerdictView(mapToList(verdict.getJudges(), JudgeView::toViewModel),
-                verdict.getSummaryStatus(),
-                verdict.getGrade(),
-                verdict.getMaxGrade(),
-                verdict.getCompileErrorMessage(),
-                verdict.getMaximumRuntime(),
-                verdict.getMaximumMemoryUsage(),
-                ReportView.toViewModel(verdict.getReport()),
-                verdict.getIssueTime());
+        try {
+
+
+            return new VerdictView(mapToList(verdict.getJudges(), JudgeView::toViewModel),
+                    verdict.getSummaryStatus(),
+                    verdict.getGrade(),
+                    verdict.getMaxGrade(),
+                    verdict.getCompileErrorMessage(),
+                    verdict.getMaximumRuntime(),
+                    verdict.getMaximumMemoryUsage(),
+                    ReportView.toViewModel(verdict.getReport()),
+                    verdict.getIssueTime());
+        } catch (Exception err) {
+            return null;
+        }
     }
 
     public static Verdict toEntity(@Nullable VerdictView verdictView) {
         if (verdictView == null) {
             return null;
         }
-        if (verdictView.getSummaryStatus() == JudgeStatus.CE) {
-            return Verdict.compileError(verdictView.compileErrorMessage,
-                    verdictView.maxGrade, verdictView.issueTime);
+        try {
+
+            if (verdictView.getSummaryStatus() == JudgeStatus.CE) {
+                return Verdict.compileError(verdictView.compileErrorMessage,
+                        verdictView.maxGrade, verdictView.issueTime);
+            }
+            Verdict verdict = new Verdict(
+                    mapToList(verdictView.getJudges(), JudgeView::toEntity),
+                    verdictView.getIssueTime());
+            verdict.setReport(verdictView.getReport().toEntity());
+            return verdict;
+        } catch (Exception err) {
+            return null;
         }
-        Verdict verdict = new Verdict(
-                mapToList(verdictView.getJudges(), JudgeView::toEntity),
-                verdictView.getIssueTime());
-        verdict.setReport(verdictView.getReport().toEntity());
-        return verdict;
     }
 }

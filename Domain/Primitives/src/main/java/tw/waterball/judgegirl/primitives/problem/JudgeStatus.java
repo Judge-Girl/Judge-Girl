@@ -70,6 +70,7 @@ public enum JudgeStatus {
     SYSTEM_ERR("System Error");
 
     public static JudgeStatus[] NORMAL_STATUSES = {AC, TLE, MLE, WA, CE, OLE, RE, PE};
+    public static JudgeStatus[] NORMAL_STATUSES_NO_CE = {AC, TLE, MLE, WA, OLE, RE, PE};
 
     private final String fullName;
 

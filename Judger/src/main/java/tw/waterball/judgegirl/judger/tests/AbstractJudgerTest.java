@@ -5,6 +5,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
+import tw.waterball.judgegirl.judger.CCJudger;
+import tw.waterball.judgegirl.judger.DefaultCCJudgerFactory;
+import tw.waterball.judgegirl.plugins.impl.match.AllMatchPolicyPlugin;
 import tw.waterball.judgegirl.primitives.problem.JudgeStatus;
 import tw.waterball.judgegirl.primitives.problem.Language;
 import tw.waterball.judgegirl.primitives.problem.Problem;
@@ -14,9 +17,6 @@ import tw.waterball.judgegirl.primitives.submission.verdict.Judge;
 import tw.waterball.judgegirl.primitives.submission.verdict.ProgramProfile;
 import tw.waterball.judgegirl.primitives.submission.verdict.Verdict;
 import tw.waterball.judgegirl.primitives.submission.verdict.VerdictIssuedEvent;
-import tw.waterball.judgegirl.judger.CCJudger;
-import tw.waterball.judgegirl.judger.DefaultCCJudgerFactory;
-import tw.waterball.judgegirl.plugins.impl.match.AllMatchPolicyPlugin;
 import tw.waterball.judgegirl.problemapi.clients.ProblemServiceDriver;
 import tw.waterball.judgegirl.submissionapi.clients.SubmissionServiceDriver;
 import tw.waterball.judgegirl.submissionapi.clients.VerdictPublisher;
@@ -129,7 +129,7 @@ public abstract class AbstractJudgerTest {
     private void verifyACPublished() {
         VerdictIssuedEvent event = captureVerdictIssuedEvent();
         Verdict verdict = event.getVerdict();
-        for (int i = 0; i < problem.getTestcases().size(); i++) {
+        for (int i = 0; i < problem.numOfTestcases(); i++) {
             Judge judge = verdict.getJudges().get(i);
             Testcase testCase = problem.getTestcases().get(i);
             assertEquals(JudgeStatus.AC, judge.getStatus(), event.toString());
@@ -159,7 +159,7 @@ public abstract class AbstractJudgerTest {
     private void verifyTLEPublished() {
         VerdictIssuedEvent event = captureVerdictIssuedEvent();
         Verdict verdict = event.getVerdict();
-        for (int i = 0; i < problem.getTestcases().size(); i++) {
+        for (int i = 0; i < problem.numOfTestcases(); i++) {
             Judge judge = verdict.getJudges().get(i);
             Testcase testCase = problem.getTestcases().get(i);
             assertEquals(JudgeStatus.TLE, judge.getStatus(), event.toString());
@@ -177,7 +177,7 @@ public abstract class AbstractJudgerTest {
     private void verifyWAPublished() {
         VerdictIssuedEvent event = captureVerdictIssuedEvent();
         Verdict verdict = event.getVerdict();
-        for (int i = 0; i < problem.getTestcases().size(); i++) {
+        for (int i = 0; i < problem.numOfTestcases(); i++) {
             Judge judge = verdict.getJudges().get(i);
             Testcase testCase = problem.getTestcases().get(i);
             assertEquals(JudgeStatus.WA, judge.getStatus(), event.toString());

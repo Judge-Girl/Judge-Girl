@@ -56,14 +56,24 @@ class JacksonConfigTest {
         assertEquals(reportView, actualReportView);
     }
 
+
     @Test
-    void testDeserializingVerdictIssuedEvent() throws JsonProcessingException {
-        Verdict verdict = new Verdict(
+    void testCEVerdictIssuedEvent() throws JsonProcessingException {
+        testVerdictIssuedEventUsingObjectMapper(
+                Verdict.compileError("", 100));
+    }
+
+    @Test
+    void testWAVerdictIssuedEvent() throws JsonProcessingException {
+        testVerdictIssuedEventUsingObjectMapper(new Verdict(
                 asList(new Judge("T", JudgeStatus.AC, new ProgramProfile(10, 10, ""),
                                 new Grade(50, 50)),
                         new Judge("T", JudgeStatus.WA, new ProgramProfile(10, 100, ""),
                                 new Grade(0, 50))
-                ), new Date());
+                ), new Date()));
+    }
+
+    private void testVerdictIssuedEventUsingObjectMapper(Verdict verdict) throws JsonProcessingException {
         var event = new VerdictIssuedEvent(1, "p", 10, "s", verdict,
                 now(), new Bag("k-1", "v-l").addEntry("k-2", "v-2").addEntry("k-3", "v-3"));
 
