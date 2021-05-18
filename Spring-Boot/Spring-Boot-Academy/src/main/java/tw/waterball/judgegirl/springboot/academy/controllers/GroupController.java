@@ -88,7 +88,7 @@ public class GroupController {
     }
 
     @PostMapping("/groups/{groupId}/members")
-    public Map<String, List<String>> getGroupMembers(@PathVariable Integer groupId,
+    public Map<String, List<String>> addGroupMembers(@PathVariable Integer groupId,
                                                      @RequestBody String[] mailList) {
         AddGroupMembersByMailListUseCase.Request request = new AddGroupMembersByMailListUseCase.Request(groupId, asList(mailList));
         AddGroupMembersIntoGroupByMailListPresenter presenter = new AddGroupMembersIntoGroupByMailListPresenter();
