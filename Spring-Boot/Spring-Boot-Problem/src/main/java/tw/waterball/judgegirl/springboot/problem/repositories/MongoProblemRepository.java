@@ -15,7 +15,6 @@ package tw.waterball.judgegirl.springboot.problem.repositories;
 
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
-import com.mongodb.client.gridfs.model.GridFSFile;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.mapping.Document;
