@@ -3,6 +3,8 @@ package tw.waterball.judgegirl.primitives.exam;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
+import tw.waterball.judgegirl.primitives.grading.Grade;
+import tw.waterball.judgegirl.primitives.grading.Grading;
 import tw.waterball.judgegirl.primitives.problem.JudgeStatus;
 
 import java.util.Date;
@@ -14,19 +16,19 @@ import java.util.Date;
  */
 @Getter
 @AllArgsConstructor
-public class Record implements Comparable<Record> {
+public class Record implements Comparable<Record>, Grading {
     private final Question.Id questionId;
     private final int studentId;
     private final JudgeStatus status;
     private final long maximumRuntime;
     private final long maximumMemoryUsage;
-    private final int score;
+    private final Grade grade;
     private final Date submissionTime;
 
     @Override
     public int compareTo(@NotNull Record record) {
-        if (score != record.getScore()) {
-            return score - record.getScore();
+        if (getGrade() != record.getGrade()) {
+            return getGrade() - record.getGrade();
         }
         if (status.getOrder() != record.getStatus().getOrder()) {
             return status.getOrder() - record.getStatus().getOrder();
@@ -34,5 +36,15 @@ public class Record implements Comparable<Record> {
         return (maximumRuntime + maximumMemoryUsage) >
                 (record.getMaximumRuntime() + record.getMaximumMemoryUsage()) ?
                 -1 : 1;
+    }
+
+    @Override
+    public int getGrade() {
+        return grade.value();
+    }
+
+    @Override
+    public int getMaxGrade() {
+        return grade.max();
     }
 }

@@ -416,7 +416,8 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
 
         var actualProblem = getProblem(problemId);
         List<Testcase> testcases = actualProblem.getTestcases();
-        assertEquals(problem.getTestcases().size(), testcases.size());
+
+        assertEquals(problem.numOfTestcases(), testcases.size());
         Testcase actualTestCase = findFirst(testcases, tc -> expectedTestcaseGrade == tc.getGrade()).orElseThrow();
         assertTestCaseEquals(expectedTestcase, actualTestCase);
     }
@@ -431,7 +432,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         updateOrAddTestCase(problemId, expectedTestcaseName, expectedTestcase);
 
         List<Testcase> testcases = getProblem(problemId).getTestcases();
-        assertEquals(problem.getTestcases().size() + 1, testcases.size());
+        assertEquals(problem.numOfTestcases() + 1, testcases.size());
         Testcase actualTestcase = findFirst(testcases, testcase -> expectedTestcaseName.equals(testcase.getName())).orElseThrow();
         assertNotNull(actualTestcase.getId());
         assertTestCaseEquals(expectedTestcase, actualTestcase);

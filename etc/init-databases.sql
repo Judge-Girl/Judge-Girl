@@ -4,7 +4,7 @@ USE judgegirl;
 
 /*  Exam Service's schema definition
    If the schema below is modified,
-   then you should also update "Spring-Boot/Spring-Boot-Exam/src/test/resources/schema.sql"
+   then you should also update "Spring-Boot/Spring-Boot-Academy/src/test/resources/schema.sql"
  */
 
 create table if not exists exams
@@ -46,7 +46,9 @@ create table if not exists answers
     submission_id varchar(255) null,
     answer_time   datetime     null,
     primary key (number, exam_id, problem_id, student_id),
-    foreign key (exam_id) references exams (id) on delete cascade
+    foreign key (exam_id) references exams (id) on delete cascade,
+    foreign key (exam_id, problem_id) references questions (exam_id, problem_id) on delete cascade,
+    foreign key (exam_id, student_id) references examinees (exam_id, student_id) on delete cascade
 );
 
 create table if not exists best_records
@@ -56,11 +58,14 @@ create table if not exists best_records
     student_id           int                                                                    not null,
     maximum_memory_usage bigint                                                                 not null,
     maximum_runtime      bigint                                                                 not null,
-    score                int                                                                    not null,
+    grade                int                                                                    not null,
+    max_grade            int                                                                    not null,
     status               enum ('AC', 'TLE', 'MLE', 'WA', 'CE', 'OLE', 'RE', 'PE', 'SYSTEM_ERR') null,
     submission_time      datetime                                                               null,
     primary key (exam_id, problem_id, student_id),
-    foreign key (exam_id) references exams (id) on delete cascade
+    foreign key (exam_id) references exams (id) on delete cascade,
+    foreign key (exam_id, problem_id) references questions (exam_id, problem_id) on delete cascade,
+    foreign key (exam_id, student_id) references examinees (exam_id, student_id) on delete cascade
 );
 
 create table if not exists homework

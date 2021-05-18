@@ -3,6 +3,7 @@ package tw.waterball.judgegirl.springboot.academy.repositories.jpa;
 import lombok.*;
 import tw.waterball.judgegirl.primitives.exam.Question;
 import tw.waterball.judgegirl.primitives.exam.Record;
+import tw.waterball.judgegirl.primitives.grading.Grade;
 import tw.waterball.judgegirl.primitives.problem.JudgeStatus;
 
 import javax.persistence.*;
@@ -22,18 +23,19 @@ public class BestRecordData {
     private JudgeStatus status;
     private long maximumRuntime;
     private long maximumMemoryUsage;
-    private int score;
+    private int grade;
+    private int maxGrade;
     private Date submissionTime;
 
     public Record toEntity() {
         return new Record(new Question.Id(getExamId(), getProblemId()), getStudentId(),
-                status, maximumRuntime, maximumMemoryUsage, score, submissionTime);
+                status, maximumRuntime, maximumMemoryUsage, new Grade(grade, maxGrade), submissionTime);
     }
 
     public static BestRecordData toData(Record value) {
         return new BestRecordData(new Id(new QuestionData.Id(value.getQuestionId()), value.getStudentId()),
                 value.getStatus(), value.getMaximumRuntime(), value.getMaximumMemoryUsage(),
-                value.getScore(), value.getSubmissionTime());
+                value.getGrade(), value.getMaxGrade(), value.getSubmissionTime());
     }
 
     public int getExamId() {

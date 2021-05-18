@@ -57,7 +57,7 @@ public class ExamHome {
                     .quota(question.getQuota())
                     .remainingQuota(remainingQuota)
                     .yourScore(yourScore)
-                    .maxScore(problem.getTotalGrade())
+                    .maxScore(question.getScore())
                     .questionOrder(question.getQuestionOrder())
                     .problemTitle(problem.getTitle());
             if (bestRecord != null) {
@@ -80,7 +80,7 @@ public class ExamHome {
         public Date submissionTime;
 
         public BestRecord(Record record) {
-            this(record.getScore(), record.getStatus(), record.getMaximumRuntime(),
+            this(record.getGrade(), record.getStatus(), record.getMaximumRuntime(),
                     record.getMaximumMemoryUsage(), record.getSubmissionTime());
         }
     }

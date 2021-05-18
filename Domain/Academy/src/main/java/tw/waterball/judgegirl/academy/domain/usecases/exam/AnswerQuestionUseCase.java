@@ -6,6 +6,7 @@ import tw.waterball.judgegirl.academy.domain.repositories.ExamRepository;
 import tw.waterball.judgegirl.academy.domain.usecases.VerdictIssuedEventListener;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
 import tw.waterball.judgegirl.primitives.exam.*;
+import tw.waterball.judgegirl.primitives.grading.Grade;
 import tw.waterball.judgegirl.primitives.submission.Bag;
 import tw.waterball.judgegirl.primitives.submission.SubmissionThrottlingException;
 import tw.waterball.judgegirl.primitives.submission.verdict.Verdict;
@@ -97,11 +98,11 @@ public class AnswerQuestionUseCase implements VerdictIssuedEventListener {
 
     private void updateBestRecord(VerdictIssuedEvent event, int examId) {
         Record record = record(event, examId);
-        Record bestRecord = examRepository.findBestRecordOfQuestion(record.getQuestionId(), event.getStudentId())
+        Record bestRecord = examRepository.findRecordOfQuestion(record.getQuestionId(), event.getStudentId())
                 .map(currentBest -> betterAndNewer(currentBest, record))
                 .orElse(record);
 
-        examRepository.saveBestRecordOfQuestion(bestRecord);
+        examRepository.saveRecordOfQuestion(bestRecord);
     }
 
     private OptionalInt getExamIdFromBag(Bag submissionBag) {
@@ -112,7 +113,7 @@ public class AnswerQuestionUseCase implements VerdictIssuedEventListener {
         Verdict newVerdict = event.getVerdict();
         return new Record(new Question.Id(examId, event.getProblemId()),
                 event.getStudentId(), newVerdict.getSummaryStatus(), newVerdict.getMaximumRuntime(), newVerdict.getMaximumMemoryUsage(),
-                newVerdict.getGrade(), event.getSubmissionTime());
+                new Grade(newVerdict.getGrade(), newVerdict.getMaxGrade()), event.getSubmissionTime());
     }
 
     @Value

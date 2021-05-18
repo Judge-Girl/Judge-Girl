@@ -18,6 +18,7 @@ import lombok.Builder;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import tw.waterball.judgegirl.primitives.grading.Grading;
 import tw.waterball.judgegirl.primitives.submission.verdict.Verdict;
 
 import java.util.Date;
@@ -31,7 +32,7 @@ import java.util.OptionalLong;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class Submission implements Comparable<Submission> {
+public class Submission implements Comparable<Submission>, Grading {
     private String id;
     private int problemId;
     private int studentId;
@@ -158,5 +159,15 @@ public class Submission implements Comparable<Submission> {
 
     public OptionalLong getBagMessageAsLong(String key) {
         return bag.getAsLong(key);
+    }
+
+    @Override
+    public int getGrade() {
+        return mayHaveVerdict().map(Verdict::getGrade).orElse(0);
+    }
+
+    @Override
+    public int getMaxGrade() {
+        return mayHaveVerdict().map(Verdict::getMaxGrade).orElse(0);
     }
 }

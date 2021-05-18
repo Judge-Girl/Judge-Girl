@@ -42,7 +42,9 @@ create table answers
     submission_id varchar(255) null,
     answer_time   datetime     null,
     primary key (number, exam_id, problem_id, student_id),
-    foreign key (exam_id) references exams (id) on delete cascade
+    foreign key (exam_id) references exams (id) on delete cascade,
+    foreign key (exam_id, problem_id) references questions (exam_id, problem_id) on delete cascade,
+    foreign key (exam_id, student_id) references examinees (exam_id, student_id) on delete cascade
 );
 
 create table best_records
@@ -52,11 +54,14 @@ create table best_records
     student_id           int                                                                    not null,
     maximum_memory_usage bigint                                                                 not null,
     maximum_runtime      bigint                                                                 not null,
-    score                int                                                                    not null,
+    grade                int                                                                    not null,
+    max_grade            int                                                                    not null,
     status               enum ('AC', 'TLE', 'MLE', 'WA', 'CE', 'OLE', 'RE', 'PE', 'SYSTEM_ERR') null,
     submission_time      datetime                                                               null,
     primary key (exam_id, problem_id, student_id),
-    foreign key (exam_id) references exams (id) on delete cascade
+    foreign key (exam_id) references exams (id) on delete cascade,
+    foreign key (exam_id, problem_id) references questions (exam_id, problem_id) on delete cascade,
+    foreign key (exam_id, student_id) references examinees (exam_id, student_id) on delete cascade
 );
 
 create table homework

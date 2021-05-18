@@ -25,7 +25,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import static tw.waterball.judgegirl.commons.utils.StringUtils.isNullOrEmpty;
 import static tw.waterball.judgegirl.primitives.time.DateProvider.now;
 
 /**
@@ -151,7 +150,7 @@ public class Verdict implements Comparable<Verdict> {
     }
 
     public boolean isCompileError() {
-        return !isNullOrEmpty(compileErrorMessage);
+        return compileErrorMessage != null;
     }
 
     @Nullable

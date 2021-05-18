@@ -15,6 +15,7 @@ import static java.util.Objects.requireNonNull;
 import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
 import static tw.waterball.judgegirl.commons.utils.JSR380Utils.validate;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.findFirst;
+import static tw.waterball.judgegirl.commons.utils.StreamUtils.sum;
 import static tw.waterball.judgegirl.primitives.time.Duration.during;
 
 @Getter
@@ -71,6 +72,14 @@ public class Exam {
         return getDuration().isOngoing();
     }
 
+    public Question getQuestionById(Question.Id questionId) {
+        return mayHaveQuestion(questionId).orElseThrow(() -> notFound(Question.class).id(questionId));
+    }
+
+    public Optional<Question> mayHaveQuestion(Question.Id questionId) {
+        return findFirst(questions, q -> q.getId().equals(questionId));
+    }
+
     public Optional<Question> getQuestionByProblemId(int problemId) {
         return findFirst(questions, q -> q.getProblemId() == problemId);
     }
@@ -97,6 +106,10 @@ public class Exam {
 
     public void foreachQuestion(Consumer<Question> questionConsumer) {
         questions.forEach(questionConsumer);
+    }
+
+    public int getMaxScore() {
+        return sum(questions, Question::getScore);
     }
 
     public void setName(String name) {
