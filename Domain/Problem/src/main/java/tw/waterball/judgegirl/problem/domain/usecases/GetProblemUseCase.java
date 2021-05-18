@@ -22,6 +22,8 @@ import tw.waterball.judgegirl.problem.domain.repositories.ProblemRepository;
 
 import javax.inject.Named;
 
+import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
+
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
@@ -39,7 +41,7 @@ public class GetProblemUseCase extends BaseProblemUseCase {
 
     private void notFoundIfTheProblemIsInvisible(Request request, Problem problem) {
         if (!request.includeInvisibleProblem && !problem.getVisible()) {
-            throw NotFoundException.notFound(Problem.class).id(request.problemId);
+            throw notFound(Problem.class).id(request.problemId);
         }
     }
 

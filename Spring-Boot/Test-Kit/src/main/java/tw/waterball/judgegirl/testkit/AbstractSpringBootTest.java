@@ -23,10 +23,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import tw.waterball.judgegirl.commons.token.TokenService;
 import tw.waterball.judgegirl.commons.utils.functional.ErrRunnable;
 import tw.waterball.judgegirl.testkit.jupiter.ReplaceUnderscoresWithCamelCasesDisplayNameGenerators;
+import tw.waterball.judgegirl.testkit.semantics.WithHeader;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -97,19 +97,6 @@ public abstract class AbstractSpringBootTest {
 
     protected WithHeader withToken(TokenService.Token token) {
         return request -> request.header("Authorization", bearerWithToken(token.getToken()));
-    }
-
-    @FunctionalInterface
-    public interface WithHeader {
-
-        static WithHeader empty() {
-            return request -> {
-
-            };
-        }
-
-        void header(MockHttpServletRequestBuilder request);
-
     }
 
 
