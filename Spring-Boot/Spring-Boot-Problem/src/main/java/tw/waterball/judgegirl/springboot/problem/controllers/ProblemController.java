@@ -50,7 +50,6 @@ public class ProblemController {
     private final DownloadProvidedCodesUseCase downloadProvidedCodesUseCase;
     private final DownloadTestCaseIOsUseCase downloadTestCaseIOsUseCase;
     private final GetAllTagsUseCase getAllTagsUseCase;
-    private final GetTestCasesUseCase getTestCasesUseCase;
     private final SaveProblemWithTitleUseCase saveProblemWithTitleUseCase;
     private final PatchProblemUseCase patchProblemUseCase;
     private final ArchiveOrDeleteProblemUseCase deleteProblemUseCase;
@@ -99,7 +98,7 @@ public class ProblemController {
     @GetMapping("/{problemId}/testcases")
     public List<Testcase> getTestCases(@PathVariable int problemId) {
         GetTestCasesPresenter presenter = new GetTestCasesPresenter();
-        getTestCasesUseCase.execute(new GetTestCasesUseCase.Request(problemId), presenter);
+        getProblemUseCase.execute(new GetProblemUseCase.Request(problemId), presenter);
         return presenter.present();
     }
 
@@ -191,12 +190,12 @@ class GetProblemsPresenter implements GetProblemsUseCase.Presenter {
     }
 }
 
-class GetTestCasesPresenter implements GetTestCasesUseCase.Presenter {
+class GetTestCasesPresenter implements GetProblemUseCase.Presenter {
     private List<Testcase> testcases;
 
     @Override
-    public void setTestcases(List<Testcase> testcases) {
-        this.testcases = testcases;
+    public void setProblem(Problem problem) {
+        this.testcases = problem.getTestcases();
     }
 
     List<Testcase> present() {

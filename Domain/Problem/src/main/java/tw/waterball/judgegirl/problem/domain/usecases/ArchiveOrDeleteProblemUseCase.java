@@ -5,6 +5,11 @@ import tw.waterball.judgegirl.problem.domain.repositories.ProblemRepository;
 
 import javax.inject.Named;
 
+/**
+ * Archive the problem if it's not been archived, otherwise, delete it.
+ *
+ * @author - c11037at@gmail.com (snowmancc)
+ */
 @Named
 public class ArchiveOrDeleteProblemUseCase extends BaseProblemUseCase {
 

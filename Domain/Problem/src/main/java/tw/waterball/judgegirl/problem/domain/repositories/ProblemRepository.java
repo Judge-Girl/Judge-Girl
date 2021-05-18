@@ -27,6 +27,7 @@ import java.util.Optional;
  * @author - johnny850807@gmail.com (Waterball)
  */
 public interface ProblemRepository {
+    Optional<FileResource> downloadTestCaseIOs(int problemId, String testcaseIOsFileId);
 
     Optional<Problem> findProblemById(int problemId);
 

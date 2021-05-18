@@ -13,6 +13,8 @@
 
 package tw.waterball.judgegirl.springboot.problem.repositories;
 
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -60,6 +62,17 @@ public class MongoProblemRepository implements ProblemRepository {
     public MongoProblemRepository(MongoTemplate mongoTemplate, GridFsTemplate gridFsTemplate) {
         this.mongoTemplate = mongoTemplate;
         this.gridFsTemplate = gridFsTemplate;
+    }
+
+    @Override
+    public Optional<FileResource> downloadTestCaseIOs(int problemId, String testcaseIOsFileId) {
+        return MongoUtils.query(mongoTemplate)
+                .fromDocument(Problem.class)
+                .selectOneField("testcaseIOsFileId")
+                .byId(problemId)
+                .execute()
+                .getField(Problem::getTestcaseIOsFileId)
+                .map(fileId -> downloadFileResourceByFileId(gridFsTemplate, fileId));
     }
 
     @Override
@@ -246,15 +259,10 @@ public class MongoProblemRepository implements ProblemRepository {
     }
 
     @Document("tag")
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class AllTags {
         public List<String> all;
-
-        public AllTags() {
-        }
-
-        public AllTags(List<String> all) {
-            this.all = all;
-        }
     }
 
 }

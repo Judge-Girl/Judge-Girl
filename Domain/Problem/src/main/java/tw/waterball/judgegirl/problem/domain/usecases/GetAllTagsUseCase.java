@@ -23,7 +23,7 @@ import java.util.List;
  */
 @Named
 public class GetAllTagsUseCase {
-    private ProblemRepository problemRepository;
+    private final ProblemRepository problemRepository;
 
     public GetAllTagsUseCase(ProblemRepository problemRepository) {
         this.problemRepository = problemRepository;
