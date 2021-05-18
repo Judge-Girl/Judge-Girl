@@ -33,11 +33,11 @@ public class GetProblemUseCase extends BaseProblemUseCase {
 
     public void execute(Request request, Presenter presenter) throws NotFoundException {
         var problem = findProblem(request.problemId);
-        validateIncludeInvisibleProblem(request, problem);
+        notFoundIfTheProblemIsInvisible(request, problem);
         presenter.setProblem(problem);
     }
 
-    private void validateIncludeInvisibleProblem(Request request, Problem problem) {
+    private void notFoundIfTheProblemIsInvisible(Request request, Problem problem) {
         if (!request.includeInvisibleProblem && !problem.getVisible()) {
             throw NotFoundException.notFound(Problem.class).id(request.problemId);
         }
