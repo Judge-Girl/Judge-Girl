@@ -13,18 +13,9 @@
 
 package tw.waterball.judgegirl.problem.domain.repositories;
 
-import tw.waterball.judgegirl.commons.models.files.FileResource;
-import tw.waterball.judgegirl.primitives.problem.Testcase;
-
-import java.util.List;
-import java.util.Optional;
-
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
 public interface TestCaseRepository {
 
-    List<Testcase> findAllInProblem(int problemId);
-
-    Optional<FileResource> downloadTestCaseIOs(int problemId, String testcaseIOsFileId);
 }

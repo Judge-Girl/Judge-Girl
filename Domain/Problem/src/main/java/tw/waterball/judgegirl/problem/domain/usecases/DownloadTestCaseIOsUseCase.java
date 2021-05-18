@@ -18,7 +18,6 @@ import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
 import tw.waterball.judgegirl.primitives.problem.Problem;
 import tw.waterball.judgegirl.problem.domain.repositories.ProblemRepository;
-import tw.waterball.judgegirl.problem.domain.repositories.TestCaseRepository;
 
 import javax.inject.Named;
 
@@ -27,18 +26,15 @@ import javax.inject.Named;
  */
 @Named
 public class DownloadTestCaseIOsUseCase extends BaseProblemUseCase {
-    private final TestCaseRepository testCaseRepository;
 
-    public DownloadTestCaseIOsUseCase(ProblemRepository problemRepository,
-                                      TestCaseRepository testCaseRepository) {
+    public DownloadTestCaseIOsUseCase(ProblemRepository problemRepository) {
         super(problemRepository);
-        this.testCaseRepository = testCaseRepository;
     }
 
     public FileResource execute(Request request) throws NotFoundException {
         Problem problem = findProblem(request.problemId);
         if (problem.getTestcaseIOsFileId().equals(request.testcaseIOsFileId)) {
-            return testCaseRepository.downloadTestCaseIOs(request.problemId, request.testcaseIOsFileId)
+            return problemRepository.downloadTestCaseIOs(request.problemId, request.testcaseIOsFileId)
                     .orElseThrow(() -> new NotFoundException(request.problemId, "problem"));
         }
         throw new IllegalArgumentException(
