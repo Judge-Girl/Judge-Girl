@@ -63,12 +63,15 @@ public class ProblemController {
     }
 
     @GetMapping
-    public List<ProblemItem> getProblems(@RequestHeader("Authorization") String authorization,
+    public List<ProblemItem> getProblems(@RequestHeader(value = "Authorization", required = false) String authorization,
                                          @RequestParam(value = "tags", required = false) String[] tags,
                                          @RequestParam(value = "page", defaultValue = "0") int page,
                                          @RequestParam(required = false) int[] ids) {
-        var token = tokenService.parseBearerTokenAndValidate(authorization);
-        boolean includeInvisibleProblems = token.isAdmin();
+        boolean includeInvisibleProblems = false;
+        if (nonNull(authorization)) {
+            var token = tokenService.parseBearerTokenAndValidate(authorization);
+            includeInvisibleProblems = token.isAdmin();
+        }
         GetProblemsPresenter presenter = new GetProblemsPresenter();
         if (nonNull(ids)) {
             getProblemsUseCase.execute(new GetProblemsUseCase.Request(includeInvisibleProblems, ids), presenter);
@@ -79,9 +82,15 @@ public class ProblemController {
     }
 
     @GetMapping("/{problemId}")
-    public ProblemView getProblem(@PathVariable int problemId) {
+    public ProblemView getProblem(@RequestHeader(value = "Authorization", required = false) String authorization,
+                                  @PathVariable int problemId) {
+        boolean includeInvisibleProblem = false;
+        if (nonNull(authorization)) {
+            var token = tokenService.parseBearerTokenAndValidate(authorization);
+            includeInvisibleProblem = token.isAdmin();
+        }
         GetProblemPresenter presenter = new GetProblemPresenter();
-        getProblemUseCase.execute(new GetProblemUseCase.Request(problemId), presenter);
+        getProblemUseCase.execute(new GetProblemUseCase.Request(problemId, includeInvisibleProblem), presenter);
         return presenter.present();
     }
 
@@ -90,8 +99,8 @@ public class ProblemController {
     public ResponseEntity<InputStreamResource> downloadZippedProvidedCodes(@PathVariable int problemId,
                                                                            @PathVariable String langEnvName,
                                                                            @PathVariable String providedCodesFileId) {
-        FileResource fileResource = downloadProvidedCodesUseCase.execute(
-                new DownloadProvidedCodesUseCase.Request(problemId, langEnvName, providedCodesFileId));
+        FileResource fileResource = downloadProvidedCodesUseCase
+                .execute(new DownloadProvidedCodesUseCase.Request(problemId, langEnvName, providedCodesFileId));
         return ResponseEntityUtils.respondInputStreamResource(fileResource);
     }
 
