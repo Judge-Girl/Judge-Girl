@@ -367,7 +367,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     void GivenProblems_1_2_3_Saved_WhenGetProblemsByIds_1_2_3_ShouldRespondThat1_2_3() throws Exception {
         saveProblems(1, 2, 3);
 
-        var actualProblems = getProblems(adminToken, 1, 2, 3);
+        var actualProblems = getProblems(withToken(adminToken), 1, 2, 3);
 
         problemsShouldHaveIds(actualProblems, 1, 2, 3);
     }
@@ -376,7 +376,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     void Given_1_ProblemSaved_WhenGetProblemsByIds_1_2_ShouldRespondThat_1() throws Exception {
         saveProblems(1);
 
-        var actualProblems = getProblems(adminToken, 1, 2);
+        var actualProblems = getProblems(withToken(adminToken), 1, 2);
 
         problemsShouldHaveIds(actualProblems, 1);
     }
@@ -473,11 +473,11 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
                 .andExpect(status().isOk()), ProblemView.class);
     }
 
-    private List<ProblemView> getProblems(Token token, Integer... problemIds) throws Exception {
+    private List<ProblemView> getProblems(WithHeader withHeader, Integer... problemIds) throws Exception {
         String ids = String.join(", ", mapToList(problemIds, String::valueOf));
-        return getBody(mockMvc.perform(get(API_PREFIX)
-                .header("Authorization", bearerWithToken(token.getToken()))
-                .queryParam("ids", ids))
+        var request = get(API_PREFIX).queryParam("ids", ids);
+        withHeader.header(request);
+        return getBody(mockMvc.perform(request)
                 .andExpect(status().isOk()), new TypeReference<>() {
         });
     }
@@ -550,7 +550,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    void GiveOneProblemSaved_WhenUploadTwoProvidedCodes_ShouldRespondProvidedCodesFileId() throws Exception {
+    void GivenOneProblemSaved_WhenUploadTwoProvidedCodes_ShouldRespondProvidedCodesFileId() throws Exception {
         Language language = Language.C;
         int problemId = 1;
         saveProblems(problemId);
@@ -569,7 +569,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    void GiveOneProblemSavedWithoutLanguageEnv_WhenUploadTwoProvidedCodes_ShouldRespondProvidedCodesFileId() throws Exception {
+    void GivenOneProblemSavedWithoutLanguageEnv_WhenUploadTwoProvidedCodes_ShouldRespondProvidedCodesFileId() throws Exception {
         Language language = Language.C;
         int problemId = saveProblemWithTitle("problemTitle");
 
@@ -580,17 +580,29 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    void GiveThreeInvisibleProblemsSaved_WhenStudentGetProblemsByIds_ThenShouldRespondEmptyProblems() throws Exception {
+    void GivenOneProblemSaved_WhenArchiveIt_AndThenDeleteIt_ThenProblemProvidedCodesAndTestcaseIOsShouldBeDeleted() throws Exception {
+        int problemId = 1;
+        Problem problem = saveProblemAndGet(problemId);
+
+        archiveOrDeleteProblem(problemId);
+
+        archiveOrDeleteProblem(problemId);
+
+        problemProvidedCodesAndTestcaseIOsShouldBeDeleted(problem);
+    }
+
+    @Test
+    void GivenThreeInvisibleProblemsSaved_WhenStudentGetProblemsByIds_ThenShouldRespondEmptyProblems() throws Exception {
         Integer[] problemIds = {1, 2, 3};
         saveProblems(problemIds);
 
-        var problems = getProblems(student1Token, problemIds);
+        var problems = getProblems(withToken(student1Token), problemIds);
 
         assertTrue(problems.isEmpty());
     }
 
     @Test
-    void GiveThreeInvisibleProblemsSaved_WhenStudentGetProblemsByTagsAndPage_ThenShouldRespondEmptyProblems() throws Exception {
+    void GivenThreeInvisibleProblemsSaved_WhenStudentGetProblemsByTagsAndPage_ThenShouldRespondEmptyProblems() throws Exception {
         String[] tags = {"tag1", "tag2"};
         Integer[] problemIds = {1, 2, 3};
         saveProblems(problemIds);
@@ -601,25 +613,17 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    void GiveThreeInvisibleProblemsSaved_WhenGuestGetProblemsByIds_ThenShouldRespondEmptyProblems() throws Exception {
+    void GivenThreeInvisibleProblemsSaved_WhenGuestGetProblemsByIds_ThenShouldRespondEmptyProblems() throws Exception {
         Integer[] problemIds = {1, 2, 3};
         saveProblems(problemIds);
 
-        var problems = getProblemsByGuest(problemIds);
+        var problems = getProblems(WithHeader.empty(), problemIds);
 
         assertTrue(problems.isEmpty());
     }
 
-    private List<ProblemView> getProblemsByGuest(Integer... problemIds) throws Exception {
-        String ids = String.join(", ", mapToList(problemIds, String::valueOf));
-        return getBody(mockMvc.perform(get(API_PREFIX)
-                .queryParam("ids", ids))
-                .andExpect(status().isOk()), new TypeReference<>() {
-        });
-    }
-
     @Test
-    void GiveOneInvisibleProblemSaved_WhenGuestGetProblem_ThenShouldRespondNotFound() throws Exception {
+    void GivenOneInvisibleProblemSaved_WhenGuestGetProblem_ThenShouldRespondNotFound() throws Exception {
         int problemId = 1;
         saveProblems(problemId);
 
@@ -672,18 +676,6 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     private void problemShouldHaveProvidedCodesId(ProblemView problem, String fileId, Language language) {
         findFirst(problem.languageEnvs, langEnv -> langEnv.getLanguage().equals(language))
                 .ifPresent(langEnv -> assertEquals(fileId, langEnv.getProvidedCodesFileId()));
-    }
-
-    @Test
-    void GivenOneProblemSaved_WhenArchiveIt_AndThenDeleteIt_ThenProblemProvidedCodesAndTestcaseIOsShouldBeDeleted() throws Exception {
-        int problemId = 1;
-        Problem problem = saveProblemAndGet(problemId);
-
-        archiveOrDeleteProblem(problemId);
-
-        archiveOrDeleteProblem(problemId);
-
-        problemProvidedCodesAndTestcaseIOsShouldBeDeleted(problem);
     }
 
     private void problemProvidedCodesAndTestcaseIOsShouldBeDeleted(Problem problem) {

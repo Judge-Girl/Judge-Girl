@@ -23,6 +23,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import tw.waterball.judgegirl.commons.token.TokenService;
 import tw.waterball.judgegirl.commons.utils.functional.ErrRunnable;
 import tw.waterball.judgegirl.testkit.jupiter.ReplaceUnderscoresWithCamelCasesDisplayNameGenerators;
 
@@ -31,6 +33,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static tw.waterball.judgegirl.commons.utils.HttpHeaderUtils.bearerWithToken;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -91,5 +94,23 @@ public abstract class AbstractSpringBootTest {
         TestTransaction.flagForCommit();
         TestTransaction.end();
     }
+
+    protected WithHeader withToken(TokenService.Token token) {
+        return request -> request.header("Authorization", bearerWithToken(token.getToken()));
+    }
+
+    @FunctionalInterface
+    public interface WithHeader {
+
+        static WithHeader empty() {
+            return request -> {
+
+            };
+        }
+
+        void header(MockHttpServletRequestBuilder request);
+
+    }
+
 
 }
