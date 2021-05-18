@@ -39,8 +39,10 @@ import java.io.InputStream;
 import java.util.*;
 
 import static java.lang.String.format;
+import static java.util.Optional.ofNullable;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
+import static org.springframework.data.mongodb.core.query.Update.update;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
 import static tw.waterball.judgegirl.commons.utils.StringUtils.isNullOrEmpty;
 import static tw.waterball.judgegirl.commons.utils.ZipUtils.zipToStream;
@@ -77,7 +79,7 @@ public class MongoProblemRepository implements ProblemRepository {
 
     @Override
     public Optional<Problem> findProblemById(int problemId) {
-        return Optional.ofNullable(mongoTemplate.findById(problemId, ProblemData.class))
+        return ofNullable(mongoTemplate.findById(problemId, ProblemData.class))
                 .map(ProblemData::toEntity);
     }
 
@@ -183,7 +185,6 @@ public class MongoProblemRepository implements ProblemRepository {
     @Override
     public boolean problemExists(int problemId) {
         return mongoTemplate.exists(query(where("_id").is(problemId)), ProblemData.class);
-
     }
 
     @Override
@@ -193,23 +194,39 @@ public class MongoProblemRepository implements ProblemRepository {
     }
 
     @Override
-    public void archiveProblemById(int problemId) {
-        Update update = new Update();
-        Query query = new Query(where("_id").is(problemId));
-        update.set("archived", true);
+    public void archiveProblem(Problem problem) {
+        Update update = update("archived", true);
+        Query query = query(where("_id").is(problem.getId()));
         mongoTemplate.updateFirst(query, update, ProblemData.class);
     }
 
     @Override
-    public void deleteProblemById(int problemId) {
-        Query query = new Query(where("_id").is(problemId));
-        mongoTemplate.remove(query, ProblemData.class);
+    public void deleteProblem(Problem problem) {
+        mongoTemplate.remove(query(where("_id").is(problem.getId())), ProblemData.class);
+        deleteProvidedCodesAndTestcaseIOs(problem);
     }
 
     @Override
     public void deleteAll() {
+        findAll().forEach(this::deleteProvidedCodesAndTestcaseIOs);
         mongoTemplate.dropCollection(ProblemData.class);
     }
+
+    private void deleteProvidedCodesAndTestcaseIOs(Problem problem) {
+        var languageEnvs = problem.getLanguageEnvs();
+
+        List<String> providedCodesFileIds = mapToList(languageEnvs.values(), LanguageEnv::getProvidedCodesFileId);
+        List<String> fileIds = new LinkedList<>(providedCodesFileIds);
+
+        var testcaseIOsFileId = problem.getTestcaseIOsFileId();
+        if (testcaseIOsFileId != null) {
+            fileIds.add(testcaseIOsFileId);
+        }
+        if (!fileIds.isEmpty()) {
+            gridFsTemplate.delete(query(where("_id").in(fileIds)));
+        }
+    }
+
 
     @Override
     public void saveTags(List<String> tagList) {

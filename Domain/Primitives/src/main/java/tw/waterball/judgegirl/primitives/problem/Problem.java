@@ -26,6 +26,7 @@ import javax.validation.constraints.NotNull;
 import java.util.*;
 
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
 import static java.util.Objects.requireNonNullElse;
 import static java.util.Optional.ofNullable;
 import static tw.waterball.judgegirl.primitives.problem.JudgePluginTag.Type.FILTER;
@@ -172,7 +173,7 @@ public class Problem {
     }
 
     public Map<String, LanguageEnv> getLanguageEnvs() {
-        return languageEnvs;
+        return requireNonNullElse(languageEnvs, emptyMap());
     }
 
     public int getTotalGrade() {

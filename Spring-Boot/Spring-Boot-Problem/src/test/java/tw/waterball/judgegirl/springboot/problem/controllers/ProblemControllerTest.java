@@ -20,6 +20,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.AutoConfigureDataMongo;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.gridfs.GridFsResource;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
@@ -49,8 +51,10 @@ import java.util.stream.IntStream;
 import static java.lang.Integer.parseInt;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static tw.waterball.judgegirl.commons.utils.HttpHeaderUtils.bearerWithToken;
@@ -640,6 +644,32 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     private void problemShouldHaveProvidedCodesId(ProblemView problem, String fileId, Language language) {
         findFirst(problem.languageEnvs, langEnv -> langEnv.getLanguage().equals(language))
                 .ifPresent(langEnv -> assertEquals(fileId, langEnv.getProvidedCodesFileId()));
+    }
+
+    @Test
+    void GivenOneProblemSaved_WhenArchiveIt_AndThenDeleteIt_ThenProblemProvidedCodesAndTestcaseIOsShouldBeDeleted() throws Exception {
+        int problemId = 1;
+        Problem problem = saveProblemAndGet(problemId);
+
+        archiveOrDeleteProblem(problemId);
+
+        archiveOrDeleteProblem(problemId);
+
+        problemProvidedCodesAndTestcaseIOsShouldBeDeleted(problem);
+    }
+
+    private void problemProvidedCodesAndTestcaseIOsShouldBeDeleted(Problem problem) {
+        List<String> providedCodes = mapToList(problem.getLanguageEnvs().values(), LanguageEnv::getProvidedCodesFileId);
+        List<String> fileIds = new LinkedList<>(providedCodes);
+        fileIds.add(problem.getTestcaseIOsFileId());
+        fileIds.forEach(fileId-> assertFalse(existsFile(fileId)));
+    }
+
+    private boolean existsFile(String fileId){
+        return ofNullable(gridFsTemplate.findOne(new Query(where("_id").is(fileId))))
+                .map(gridFsTemplate::getResource)
+                .map(GridFsResource::exists)
+                .orElse(false);
     }
 }
 
