@@ -104,12 +104,14 @@ import static tw.waterball.judgegirl.testkit.resultmatchers.ZipResultMatcher.zip
 @ContextConfiguration(classes = {SpringBootSubmissionApplication.class, AbstractSubmissionControllerTest.TestConfig.class})
 public class AbstractSubmissionControllerTest extends AbstractSpringBootTest {
     public static final int ADMIN_ID = 12345;
+    public static final int ADMIN_ID2 = 12348;
     public static final int STUDENT1_ID = 22;
     public static final int STUDENT2_ID = 34;
     protected final String API_PREFIX = "/api/problems/{problemId}/" + Language.C + "/students/{studentId}/submissions";
     protected final Problem problem = ProblemStubs.problemTemplate().build();
     protected final String SUBMISSION_EXCHANGE_NAME = "submissions";
     protected Token ADMIN_TOKEN;
+    protected Token ADMIN_TOKEN2;
     protected Token STUDENT1_TOKEN;
     protected Token STUDENT2_TOKEN;
 
@@ -180,6 +182,7 @@ public class AbstractSubmissionControllerTest extends AbstractSpringBootTest {
         put("int", "1");
         put("long", "1");
         put("string", "h");
+        put("examId", "1");
     }};
 
 
@@ -201,6 +204,7 @@ public class AbstractSubmissionControllerTest extends AbstractSpringBootTest {
     @BeforeEach
     void setup() {
         ADMIN_TOKEN = tokenService.createToken(admin(ADMIN_ID));
+        ADMIN_TOKEN2 = tokenService.createToken(admin(ADMIN_ID2));
         amqpAdmin.declareExchange(new TopicExchange(SUBMISSION_EXCHANGE_NAME));
         STUDENT1_TOKEN = tokenService.createToken(student(STUDENT1_ID));
         STUDENT2_TOKEN = tokenService.createToken(student(STUDENT2_ID));

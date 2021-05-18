@@ -57,17 +57,37 @@ public class SubmitCodeUseCase implements VerdictIssuedEventHandler {
 
         Submission submission = saveSubmissionWithCodes(submission(request), request.fileResources);
 
-        mayDeployJudgerIfNotJudged(request, problem, submission)
+        mayDeployJudgerAndPublishEvent(problem, submission);
+
+        presenter.setSubmission(submission);
+    }
+
+    public void execute(Submission originalSubmission) throws SubmissionThrottlingException {
+        Problem problem = getProblem(originalSubmission.getProblemId());
+
+        Submission submission = saveSubmission(newSubmission(originalSubmission));
+
+        mayDeployJudgerAndPublishEvent(problem, submission);
+    }
+
+    private void mayDeployJudgerAndPublishEvent(Problem problem, Submission submission) {
+        mayDeployJudgerIfNotJudged(problem, submission)
                 .otherwise(eventBus::publish);
 
         eventBus.publish(liveSubmission(submission));
-        presenter.setSubmission(submission);
     }
 
     private Submission submission(SubmitCodeRequest request) {
         Submission submission = new Submission(request.studentId, request.problemId, request.languageEnvName);
         submission.setBag(request.submissionBag);
         return submission;
+    }
+
+    private Submission newSubmission(Submission submission) {
+        Submission newSubmission = new Submission(submission.getStudentId(),
+                submission.getProblemId(), submission.getLanguageEnvName(), submission.getSubmittedCodesFileId());
+        newSubmission.setBag(submission.getBag());
+        return newSubmission;
     }
 
     private void mayThrottleOnRequest(SubmitCodeRequest request) throws SubmissionThrottlingException {
@@ -89,13 +109,20 @@ public class SubmitCodeUseCase implements VerdictIssuedEventHandler {
         return saved;
     }
 
-    private Otherwise<VerdictIssuedEvent> mayDeployJudgerIfNotJudged(SubmitCodeRequest request, Problem problem, Submission submission) {
+    @SneakyThrows
+    private Submission saveSubmission(Submission submission) {
+        Submission saved = submissionRepository.save(submission);
+        log.info("Saved submission: " + submission.getId());
+        return saved;
+    }
+
+    private Otherwise<VerdictIssuedEvent> mayDeployJudgerIfNotJudged(Problem problem, Submission submission) {
         if (submission.isJudged()) {
             Verdict verdict = submission.mayHaveVerdict().orElseThrow();
             return of(new VerdictIssuedEvent(problem.getId(), problem.getTitle(), submission.getStudentId(),
-                    submission.getId(), verdict, submission.getSubmissionTime(), request.submissionBag));
+                    submission.getId(), verdict, submission.getSubmissionTime(), submission.getBag()));
         }
-        judgerDeployer.deployJudger(problem, request.getStudentId(), submission);
+        judgerDeployer.deployJudger(problem, submission.getStudentId(), submission);
 
         log.trace("[Judger Deployed] submissionId=\"{}\"", submission.getId());
         return empty();

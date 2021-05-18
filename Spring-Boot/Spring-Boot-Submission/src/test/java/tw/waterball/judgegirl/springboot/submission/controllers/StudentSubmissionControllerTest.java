@@ -21,6 +21,7 @@ import tw.waterball.judgegirl.primitives.problem.JudgeStatus;
 import tw.waterball.judgegirl.primitives.problem.Language;
 import tw.waterball.judgegirl.primitives.submission.Bag;
 import tw.waterball.judgegirl.primitives.submission.events.LiveSubmissionEvent;
+import tw.waterball.judgegirl.submission.domain.usecases.RejudgeSubmissionsUseCase;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 import tw.waterball.judgegirl.submissionapi.views.VerdictView;
 import tw.waterball.judgegirl.testkit.resultmatchers.ZipResultMatcher;
@@ -37,6 +38,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static tw.waterball.judgegirl.primitives.problem.JudgeStatus.AC;
@@ -259,6 +261,51 @@ public class StudentSubmissionControllerTest extends AbstractSubmissionControlle
     private SubmissionView getBestSubmission(int studentId) throws Exception {
         return getBody(mockMvc.perform(get(API_PREFIX + "/best", problem.getId(), studentId))
                 .andExpect(status().isOk()), SubmissionView.class);
+    }
+
+    @Test
+    void GiveSubmitCodeWithAdminToken_WhenRejudgeThatSubmissionAndGetThatStudentSubmissions_ShouldGetTwoSubmissionWhitTheSameFileId() throws Exception {
+
+        var submission = submitCodeAndGet(ADMIN_ID, ADMIN_TOKEN);
+
+        mockMvc.perform(post("/api/submissions/{submissionId}/judge", submission.getId()))
+                .andExpect(status().isOk());
+
+        var afterRejudgeSubmissions = getSubmissionsInPage(ADMIN_ID, ADMIN_TOKEN, 0);
+        assertEquals(2, afterRejudgeSubmissions.size());
+
+        var submissions1 = afterRejudgeSubmissions.get(0);
+        var submissions2 = afterRejudgeSubmissions.get(1);
+        assertEquals(submissions1.submittedCodesFileId, submissions2.submittedCodesFileId);
+    }
+
+    @Test
+    void GiveSubmit2CodeWithAdmin2Token_WhenRejudgeAllSubmissionsAndRespectivelyGetTwoStudentSubmissions_ShouldGetTwoGroupsSubmissionWhitTheSameFileId() throws Exception {
+
+        var submissionWithCodes1 = submitCodeAndGet(ADMIN_ID, ADMIN_TOKEN, codes1);
+        var submissionWithCodes2 = submitCodeAndGet(ADMIN_ID2, ADMIN_TOKEN2, codes2);
+
+        var request = new RejudgeSubmissionsUseCase.Request();
+        request.setProblemId(problem.getId());
+        mockMvc.perform(post("/api/submissions/judges").param("examId", "1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(toJson(request)))
+                .andExpect(status().isOk());
+
+        var afterRejudgeSubmissions = getSubmissionsInPage(ADMIN_ID, ADMIN_TOKEN, 0);
+        assertEquals(2, afterRejudgeSubmissions.size());
+
+        var submissions1 = afterRejudgeSubmissions.get(0);
+        var submissions2 = afterRejudgeSubmissions.get(1);
+        assertEquals(submissions1.submittedCodesFileId, submissions2.submittedCodesFileId);
+
+
+        var afterRejudgeSubmissions2 = getSubmissionsInPage(ADMIN_ID2, ADMIN_TOKEN2, 0);
+        assertEquals(2, afterRejudgeSubmissions2.size());
+
+        var submissions3 = afterRejudgeSubmissions2.get(0);
+        var submissions4 = afterRejudgeSubmissions2.get(1);
+        assertEquals(submissions3.submittedCodesFileId, submissions4.submittedCodesFileId);
     }
 
 }
