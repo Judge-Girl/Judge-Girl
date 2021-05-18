@@ -42,6 +42,7 @@ import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.springboot.problem.SpringBootProblemApplication;
 import tw.waterball.judgegirl.springboot.profiles.Profiles;
 import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
+import tw.waterball.judgegirl.testkit.semantics.WithHeader;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -50,6 +51,7 @@ import java.util.stream.IntStream;
 
 import static java.lang.Integer.parseInt;
 import static java.util.Arrays.asList;
+import static java.util.Arrays.stream;
 import static java.util.Collections.*;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
@@ -126,7 +128,9 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     @Test
     void GivenProblemSaved_WhenGetProblemById_ShouldRespondThatProblem() throws Exception {
         givenProblemSavedWithProvidedCodesAndTestcaseIOs();
-        mockMvc.perform(get(API_PREFIX + "/{problemId}", problem.getId()))
+
+        mockMvc.perform(get(API_PREFIX + "/{problemId}", problem.getId())
+                .header("Authorization", bearerWithToken(adminToken.getToken())))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().json(toJson(toViewModel(problem))));
@@ -202,14 +206,14 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         List<Problem> problems = givenProblemsSaved(10);
 
         // verify all problems will be found and projected into problem-items
-        assertEquals(mapToList(problems, ProblemItem::fromEntity), requestGetProblems(adminToken));
+        assertEquals(mapToList(problems, ProblemItem::fromEntity), requestGetProblems(withToken(adminToken)));
     }
 
     @Test
     void GivenOneProblemSaved_WhenGetProblemsWithoutPageSpecified_ShouldRespondOnlyThatProblem() throws Exception {
         Problem expectedProblem = givenProblemsSaved(1).get(0);
 
-        assertEquals(ProblemItem.fromEntity(expectedProblem), requestGetProblems(adminToken).get(0));
+        assertEquals(ProblemItem.fromEntity(expectedProblem), requestGetProblems(withToken(adminToken)).get(0));
     }
 
     @Test
@@ -238,12 +242,17 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         }
     }
 
-    private List<ProblemItem> requestGetProblems(Token token) throws Exception {
-        return getBody(mockMvc.perform(get(API_PREFIX)
-                .header("Authorization", bearerWithToken(token.getToken())))
+    private List<ProblemItem> requestGetProblems(WithHeader withHeader) throws Exception {
+        var request = get(API_PREFIX);
+        withHeader.decorateWithHeader(request);
+        return getBody(mockMvc.perform(request)
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON)), new TypeReference<>() {
         });
+    }
+
+    private List<ProblemItem> requestGetProblems() throws Exception {
+        return requestGetProblems(WithHeader.empty());
     }
 
     private List<ProblemItem> requestGetProblemsInPage(Token token, int page) throws Exception {
@@ -364,7 +373,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     void GivenProblems_1_2_3_Saved_WhenGetProblemsByIds_1_2_3_ShouldRespondThat1_2_3() throws Exception {
         saveProblems(1, 2, 3);
 
-        var actualProblems = getProblems(adminToken, 1, 2, 3);
+        var actualProblems = getProblems(withToken(adminToken), 1, 2, 3);
 
         problemsShouldHaveIds(actualProblems, 1, 2, 3);
     }
@@ -373,7 +382,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     void Given_1_ProblemSaved_WhenGetProblemsByIds_1_2_ShouldRespondThat_1() throws Exception {
         saveProblems(1);
 
-        var actualProblems = getProblems(adminToken, 1, 2);
+        var actualProblems = getProblems(withToken(adminToken), 1, 2);
 
         problemsShouldHaveIds(actualProblems, 1);
     }
@@ -397,7 +406,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         givenProblemsSaved(10);
 
         archiveOrDeleteProblem(1);
-        var problems = requestGetProblems(adminToken);
+        var problems = requestGetProblems(withToken(adminToken));
 
         assertTrue(problems.stream().allMatch(problem -> problem.id != 1));
     }
@@ -418,7 +427,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         expectedTestcase.setGrade(expectedTestcaseGrade);
         updateOrAddTestCase(problemId, testCaseId, expectedTestcase);
 
-        var actualProblem = getProblem(problemId);
+        var actualProblem = getProblem(withToken(adminToken), problemId);
         List<Testcase> testcases = actualProblem.getTestcases();
 
         assertEquals(problem.numOfTestcases(), testcases.size());
@@ -435,7 +444,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         Testcase expectedTestcase = new Testcase(expectedTestcaseName, problemId, 100, 300, 300, -100, 500);
         updateOrAddTestCase(problemId, expectedTestcaseName, expectedTestcase);
 
-        List<Testcase> testcases = getProblem(problemId).getTestcases();
+        List<Testcase> testcases = getProblem(withToken(adminToken), problemId).getTestcases();
         assertEquals(problem.numOfTestcases() + 1, testcases.size());
         Testcase actualTestcase = findFirst(testcases, testcase -> expectedTestcaseName.equals(testcase.getName())).orElseThrow();
         assertNotNull(actualTestcase.getId());
@@ -464,32 +473,38 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         actualProblems.forEach(problem -> assertTrue(idsSet.contains(problem.getId())));
     }
 
-    private ProblemView getProblem(int problemId) throws Exception {
-        return getBody(mockMvc.perform(get(API_PREFIX + "/{problemId}", problemId))
-                .andExpect(status().isOk()), ProblemView.class);
+    private ProblemView getProblem(WithHeader withHeader, int problemId) throws Exception {
+        var request = get(API_PREFIX + "/{problemId}", problemId);
+        withHeader.decorateWithHeader(request);
+        return getBody(mockMvc.perform(request).andExpect(status().isOk()), ProblemView.class);
     }
 
-    private List<ProblemView> getProblems(Token token, Integer... problemIds) throws Exception {
+    private ProblemView getProblem(int problemId) throws Exception {
+        return getProblem(WithHeader.empty(), problemId);
+    }
+
+    private List<ProblemView> getProblems(WithHeader withHeader, Integer... problemIds) throws Exception {
         String ids = String.join(", ", mapToList(problemIds, String::valueOf));
-        return getBody(mockMvc.perform(get(API_PREFIX)
-                .header("Authorization", bearerWithToken(token.getToken()))
-                .queryParam("ids", ids))
-                .andExpect(status().isOk()), new TypeReference<>() {
+        var request = get(API_PREFIX).queryParam("ids", ids);
+        withHeader.decorateWithHeader(request);
+        return getBody(mockMvc.perform(request).andExpect(status().isOk()), new TypeReference<>() {
         });
     }
 
+    private List<ProblemView> getProblems(Integer... problemIds) throws Exception {
+        return getProblems(WithHeader.empty(), problemIds);
+    }
+
     private void saveProblems(Integer... problemIds) {
-        Arrays.stream(problemIds).forEach(problemId -> {
-            Problem problem = problemTemplate()
-                    .build();
+        stream(problemIds).forEach(problemId -> {
+            Problem problem = problemTemplate().build();
             problem.setId(problemId);
             byte[] providedCodesZip = ZipUtils.zipFilesFromResources("/stubs/file1.c", "/stubs/file2.c");
 
             byte[] testcaseIOsZip = ZipUtils.zipFilesFromResources("/stubs/in/", "/stubs/out/");
 
-            problemRepository.save(problem,
-                    singletonMap(problem.getLanguageEnv(Language.C), new ByteArrayInputStream(providedCodesZip))
-                    , new ByteArrayInputStream(testcaseIOsZip));
+            problemRepository.save(problem, singletonMap(problem.getLanguageEnv(Language.C),
+                    new ByteArrayInputStream(providedCodesZip)), new ByteArrayInputStream(testcaseIOsZip));
         });
     }
 
@@ -502,7 +517,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
 
         updateLanguageEnv(problemId, languageEnv);
 
-        var problem = getProblem(problemId);
+        var problem = getProblem(withToken(adminToken), problemId);
         ResourceSpec actualResourceSpec = problem.getLanguageEnvs().get(0).getResourceSpec();
         assertEquals(expectResourceSpec, actualResourceSpec);
     }
@@ -517,7 +532,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         languageEnv.setResourceSpec(expectResourceSpec);
         updateLanguageEnv(problemId, languageEnv);
 
-        var problem = getProblem(problemId);
+        var problem = getProblem(withToken(adminToken), problemId);
         List<LanguageEnv> languageEnvs = problem.getLanguageEnvs();
         assertEquals(2, languageEnvs.size());
         LanguageEnv actualLanguageEnv = languageEnvs.get(1);
@@ -548,14 +563,14 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    void GiveOneProblemSaved_WhenUploadTwoProvidedCodes_ShouldRespondProvidedCodesFileId() throws Exception {
+    void GivenOneProblemSaved_WhenUploadTwoProvidedCodes_ShouldRespondProvidedCodesFileId() throws Exception {
         Language language = Language.C;
         int problemId = 1;
         saveProblems(problemId);
 
         String fileId = uploadProvidedCodesAndGetFileId(problemId, language, getTwoProvidedCodes());
 
-        ProblemView problem = getProblem(problemId);
+        ProblemView problem = getProblem(withToken(adminToken), problemId);
         problemShouldHaveProvidedCodesId(problem, fileId, language);
     }
 
@@ -567,28 +582,40 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    void GiveOneProblemSavedWithoutLanguageEnv_WhenUploadTwoProvidedCodes_ShouldRespondProvidedCodesFileId() throws Exception {
+    void GivenOneProblemSavedWithoutLanguageEnv_WhenUploadTwoProvidedCodes_ShouldRespondProvidedCodesFileId() throws Exception {
         Language language = Language.C;
         int problemId = saveProblemWithTitle("problemTitle");
 
         String fileId = uploadProvidedCodesAndGetFileId(problemId, language, getTwoProvidedCodes());
 
-        ProblemView problem = getProblem(problemId);
+        ProblemView problem = getProblem(withToken(adminToken), problemId);
         problemShouldHaveProvidedCodesId(problem, fileId, language);
     }
 
     @Test
-    void GiveThreeInvisibleProblemsSaved_WhenStudentGetProblemsByIds_ThenShouldRespondEmptyProblems() throws Exception {
+    void GivenOneProblemSaved_WhenArchiveIt_AndThenDeleteIt_ThenProblemProvidedCodesAndTestcaseIOsShouldBeDeleted() throws Exception {
+        int problemId = 1;
+        Problem problem = saveProblemAndGet(problemId);
+
+        archiveOrDeleteProblem(problemId);
+
+        archiveOrDeleteProblem(problemId);
+
+        problemProvidedCodesAndTestcaseIOsShouldBeDeleted(problem);
+    }
+
+    @Test
+    void GivenThreeInvisibleProblemsSaved_WhenStudentGetProblemsByIds_ThenShouldRespondEmptyProblems() throws Exception {
         Integer[] problemIds = {1, 2, 3};
         saveProblems(problemIds);
 
-        var problems = getProblems(student1Token, problemIds);
+        var problems = getProblems(withToken(student1Token), problemIds);
 
         assertTrue(problems.isEmpty());
     }
 
     @Test
-    void GiveThreeInvisibleProblemsSaved_WhenStudentGetProblemsByTagsAndPage_ThenShouldRespondEmptyProblems() throws Exception {
+    void GivenThreeInvisibleProblemsSaved_WhenStudentGetProblemsByTagsAndPage_ThenShouldRespondEmptyProblems() throws Exception {
         String[] tags = {"tag1", "tag2"};
         Integer[] problemIds = {1, 2, 3};
         saveProblems(problemIds);
@@ -596,6 +623,25 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         var problems = getProblemsByTagsAndPage(student1Token, 0, tags);
 
         assertTrue(problems.isEmpty());
+    }
+
+    @Test
+    void GivenThreeInvisibleProblemsSaved_WhenGuestGetProblemsByIds_ThenShouldRespondEmptyProblems() throws Exception {
+        Integer[] problemIds = {1, 2, 3};
+        saveProblems(problemIds);
+
+        var problems = getProblems(problemIds);
+
+        assertTrue(problems.isEmpty());
+    }
+
+    @Test
+    void GivenOneInvisibleProblemSaved_WhenGuestGetProblem_ThenShouldRespondNotFound() throws Exception {
+        int problemId = 1;
+        saveProblems(problemId);
+
+        mockMvc.perform(get(API_PREFIX + "/{problemId}", problemId))
+                .andExpect(status().isNotFound());
     }
 
     private List<ProblemView> getProblemsByTagsAndPage(Token token, int page, String... tags) throws Exception {
@@ -607,7 +653,6 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
                 .andExpect(status().isOk()), new TypeReference<>() {
         });
     }
-
 
     private MockMultipartFile[] getTwoProvidedCodes() throws IOException {
         return new MockMultipartFile[]{
@@ -646,26 +691,14 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
                 .ifPresent(langEnv -> assertEquals(fileId, langEnv.getProvidedCodesFileId()));
     }
 
-    @Test
-    void GivenOneProblemSaved_WhenArchiveIt_AndThenDeleteIt_ThenProblemProvidedCodesAndTestcaseIOsShouldBeDeleted() throws Exception {
-        int problemId = 1;
-        Problem problem = saveProblemAndGet(problemId);
-
-        archiveOrDeleteProblem(problemId);
-
-        archiveOrDeleteProblem(problemId);
-
-        problemProvidedCodesAndTestcaseIOsShouldBeDeleted(problem);
-    }
-
     private void problemProvidedCodesAndTestcaseIOsShouldBeDeleted(Problem problem) {
         List<String> providedCodes = mapToList(problem.getLanguageEnvs().values(), LanguageEnv::getProvidedCodesFileId);
         List<String> fileIds = new LinkedList<>(providedCodes);
         fileIds.add(problem.getTestcaseIOsFileId());
-        fileIds.forEach(fileId-> assertFalse(existsFile(fileId)));
+        fileIds.forEach(fileId -> assertFalse(existsFile(fileId)));
     }
 
-    private boolean existsFile(String fileId){
+    private boolean existsFile(String fileId) {
         return ofNullable(gridFsTemplate.findOne(new Query(where("_id").is(fileId))))
                 .map(gridFsTemplate::getResource)
                 .map(GridFsResource::exists)

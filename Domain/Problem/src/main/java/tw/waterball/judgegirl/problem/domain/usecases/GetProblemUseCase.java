@@ -13,12 +13,16 @@
 
 package tw.waterball.judgegirl.problem.domain.usecases;
 
-import lombok.Value;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.primitives.problem.Problem;
 import tw.waterball.judgegirl.problem.domain.repositories.ProblemRepository;
 
 import javax.inject.Named;
+
+import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -30,15 +34,26 @@ public class GetProblemUseCase extends BaseProblemUseCase {
     }
 
     public void execute(Request request, Presenter presenter) throws NotFoundException {
-        presenter.setProblem(findProblem(request.problemId));
+        var problem = findProblem(request.problemId);
+        notFoundIfTheProblemIsInvisible(request, problem);
+        presenter.setProblem(problem);
+    }
+
+    private void notFoundIfTheProblemIsInvisible(Request request, Problem problem) {
+        if (!request.includeInvisibleProblem && !problem.getVisible()) {
+            throw notFound(Problem.class).id(request.problemId);
+        }
     }
 
     public interface Presenter {
         void setProblem(Problem problem);
     }
 
-    @Value
+    @Data
+    @AllArgsConstructor
+    @RequiredArgsConstructor
     public static class Request {
-        public int problemId;
+        public final int problemId;
+        public boolean includeInvisibleProblem;
     }
 }
