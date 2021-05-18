@@ -65,5 +65,4 @@ public interface ProblemRepository {
 
     void saveTags(List<String> tagList);
 
-    boolean existsFile(String fileId);
 }

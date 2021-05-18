@@ -21,7 +21,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
-import org.springframework.data.mongodb.gridfs.GridFsResource;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.stereotype.Component;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
@@ -189,14 +188,6 @@ public class MongoProblemRepository implements ProblemRepository {
     }
 
     @Override
-    public boolean existsFile(String fileId) {
-        return ofNullable(gridFsTemplate.findOne(new Query(where("_id").is(fileId))))
-                .map(gridFsTemplate::getResource)
-                .map(GridFsResource::exists)
-                .orElse(false);
-    }
-
-    @Override
     public List<Problem> findProblemsByIds(int[] problemIds) {
         Integer[] ids = Arrays.stream(problemIds).boxed().toArray(Integer[]::new);
         return mapToList(mongoTemplate.find(query(where("_id").in(ids)), ProblemData.class), ProblemData::toEntity);
@@ -212,22 +203,21 @@ public class MongoProblemRepository implements ProblemRepository {
     @Override
     public void deleteProblem(Problem problem) {
         mongoTemplate.remove(query(where("_id").is(problem.getId())), ProblemData.class);
-        deleteFiles(problem);
+        deleteProvidedCodesAndTestcaseIOs(problem);
     }
 
     @Override
     public void deleteAll() {
-        findAll().forEach(this::deleteFiles);
+        findAll().forEach(this::deleteProvidedCodesAndTestcaseIOs);
         mongoTemplate.dropCollection(ProblemData.class);
     }
 
-    private void deleteFiles(Problem problem) {
-        List<String> fileIds = new LinkedList<>();
+    private void deleteProvidedCodesAndTestcaseIOs(Problem problem) {
         var languageEnvs = problem.getLanguageEnvs();
-        if (languageEnvs != null) {
-            List<String> providedCodesFileIds = mapToList(languageEnvs.values(), LanguageEnv::getProvidedCodesFileId);
-            fileIds.addAll(providedCodesFileIds);
-        }
+
+        List<String> providedCodesFileIds = mapToList(languageEnvs.values(), LanguageEnv::getProvidedCodesFileId);
+        List<String> fileIds = new LinkedList<>(providedCodesFileIds);
+
         var testcaseIOsFileId = problem.getTestcaseIOsFileId();
         if (testcaseIOsFileId != null) {
             fileIds.add(testcaseIOsFileId);
