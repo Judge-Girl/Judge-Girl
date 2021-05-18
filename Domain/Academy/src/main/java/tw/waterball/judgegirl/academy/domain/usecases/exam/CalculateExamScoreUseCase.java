@@ -38,10 +38,6 @@ public class CalculateExamScoreUseCase extends AbstractExamUseCase {
         present(presenter, exam, examineeRecords, averageScore);
     }
 
-    private List<Record> filterRecords(List<Record> records, GetById<Integer, Student> examinees) {
-        return filterToList(records, record -> examinees.get(record.getStudentId()) != null);
-    }
-
     private GetById<Integer, Student> examinees(Exam exam) {
         var idToExaminee = toMap(studentServiceDriver.getStudentsByIds(
                 mapToList(exam.getExaminees(), Examinee::getStudentId)), Student::getId, identity());

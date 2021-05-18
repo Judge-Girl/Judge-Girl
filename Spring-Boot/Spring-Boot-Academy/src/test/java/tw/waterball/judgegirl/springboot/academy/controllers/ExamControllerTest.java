@@ -25,6 +25,7 @@ import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.springboot.academy.SpringBootAcademyApplication;
 import tw.waterball.judgegirl.springboot.academy.amqp.VerdictIssuedEventHandler;
 import tw.waterball.judgegirl.springboot.academy.view.*;
+import tw.waterball.judgegirl.springboot.academy.view.TranscriptView.ExamineeRecord;
 import tw.waterball.judgegirl.springboot.profiles.Profiles;
 import tw.waterball.judgegirl.studentapi.clients.FakeStudentServiceDriver;
 import tw.waterball.judgegirl.submissionapi.clients.SubmissionServiceDriver;
@@ -59,6 +60,7 @@ import static tw.waterball.judgegirl.primitives.exam.Question.NO_QUOTA_LIMITATIO
 import static tw.waterball.judgegirl.primitives.stubs.ProblemStubs.problemTemplate;
 import static tw.waterball.judgegirl.primitives.stubs.SubmissionStubBuilder.randomizedSubmission;
 import static tw.waterball.judgegirl.primitives.stubs.SubmissionStubBuilder.submission;
+import static tw.waterball.judgegirl.primitives.time.DateProvider.now;
 import static tw.waterball.judgegirl.primitives.time.Duration.during;
 import static tw.waterball.judgegirl.problemapi.views.ProblemView.toEntity;
 import static tw.waterball.judgegirl.problemapi.views.ProblemView.toViewModel;
@@ -135,7 +137,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
 
     private void mockSubmissionServiceDriver() {
         when(submissionServiceDriver.submit(any()))
-                .thenReturn(new SubmissionView(SUBMISSION_ID, STUDENT_A_ID, PROBLEM_ID, LANG_ENV, null, "fileId", new Date()));
+                .thenReturn(new SubmissionView(SUBMISSION_ID, STUDENT_A_ID, PROBLEM_ID, LANG_ENV, null, "fileId", now()));
     }
 
     @AfterEach
@@ -148,7 +150,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
     @Test
     void WhenCreateExamWithEndTimeAfterStartTime_ShouldSucceed() throws Exception {
         String name = "test-contest", description = "problem statement";
-        Date startTime = new Date(), endTime = new Date();
+        Date startTime = now(), endTime = now();
         Exam exam = new Exam(name, during(startTime, endTime), description);
 
         createExam(exam)
@@ -162,9 +164,9 @@ class ExamControllerTest extends AbstractSpringBootTest {
 
     @Test
     void WhenUpdateExamWithExistingExamId_ShouldSucceed() throws Exception {
-        Date firstTime = new Date();
+        Date firstTime = now();
         ExamView examView = createExamAndGet(firstTime, firstTime, "examTitle");
-        Date secondTime = new Date();
+        Date secondTime = now();
         updateExam(new UpdateExamUseCase.Request(examView.getId(), "new name", secondTime, secondTime, "new problem statement"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("id").value(examView.getId()))
@@ -176,9 +178,9 @@ class ExamControllerTest extends AbstractSpringBootTest {
 
     @Test
     void WhenUpdateExamWithNonExistingExamId_ShouldRespondNotFound() throws Exception {
-        Date firstTime = new Date();
+        Date firstTime = now();
         ExamView examView = createExamAndGet(firstTime, firstTime, "examTitle");
-        Date secondTime = new Date();
+        Date secondTime = now();
         updateExam(new UpdateExamUseCase.Request(examView.getId() + 1, "new name", secondTime, secondTime, "new problem statement"))
                 .andExpect(status().isNotFound());
     }
@@ -187,7 +189,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
             "When add the two groups as examinees, Then the examinees of the exam should be (A,B,C).")
     @Test
     void testAddTwoGroupsOfExamineesFrom() throws Exception {
-        var exam = createExamAndGet(new Date(), new Date(), "Exam");
+        var exam = createExamAndGet(now(), now(), "Exam");
         Group G1 = givenGroupWithMembers("G1", STUDENT_A_ID);
         Group G2 = givenGroupWithMembers("G2", STUDENT_B_ID, STUDENT_C_ID);
 
@@ -203,7 +205,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
 
     @Test
     void WhenAddExaminees_A_B_Z_ShouldSucceedAndRespondErrorEmailList_Z() throws Exception {
-        var exam = createExamAndGet(new Date(), new Date(), "Exam");
+        var exam = createExamAndGet(now(), now(), "Exam");
 
         List<String> errorEmails = getBody(
                 addExaminees(exam.id, STUDENT_A_EMAIL, STUDENT_B_EMAIL, "studentZ@example.com")
@@ -225,7 +227,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
 
     @Test
     void GivenExaminees_A_B_C_WhenDeleteExaminees_A_C_ShouldOnlyRemainBInExam() throws Exception {
-        var exam = createExamAndGet(new Date(), new Date(), "Exam");
+        var exam = createExamAndGet(now(), now(), "Exam");
         addExaminees(exam.id, STUDENT_A_EMAIL, STUDENT_B_EMAIL, "studentC@example.com")
                 .andExpect(status().isOk());
 
@@ -290,7 +292,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
 
     @Test
     void GivenOneExam_WhenCreateQuestionForExistingExam_ShouldRespondTheQuestionAndQuestionShouldBeAddedIntoExam() throws Exception {
-        ExamView examView = createExamAndGet(new Date(), new Date(), "sample-exam");
+        ExamView examView = createExamAndGet(now(), now(), "sample-exam");
         createQuestion(new CreateQuestionUseCase.Request(examView.getId(), PROBLEM_ID, 5, 100, 1))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("examId").value(examView.id))
@@ -310,7 +312,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
 
     @Test
     void WhenCreateQuestionForNonExistingProblem_ShouldRespondNotFound() throws Exception {
-        var exam = createExamAndGet(new Date(), new Date(), "sample-exam");
+        var exam = createExamAndGet(now(), now(), "sample-exam");
         createQuestion(new CreateQuestionUseCase.Request(exam.getId(), NONEXISTING_PROBLEM_ID, 5, 100, 1))
                 .andExpect(status().isNotFound());
     }
@@ -318,7 +320,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
     @Test
     @Transactional
     void GivenOneExamAndOneQuestionCreated_WhenUpdateTheQuestion_ShouldSucceed() throws Exception {
-        var exam = createExamAndGet(new Date(), new Date(), "sample-exam");
+        var exam = createExamAndGet(now(), now(), "sample-exam");
         createQuestion(new CreateQuestionUseCase.Request(exam.getId(), 2, 5, 100, 1));
 
         anotherTransaction(() ->
@@ -336,7 +338,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
 
     @Test
     void GivenOneExamAndOneQuestionCreated_WhenDeleteTheQuestion_ShouldSucceed() throws Exception {
-        ExamView examView = createExamAndGet(new Date(), new Date(), "sample-exam");
+        ExamView examView = createExamAndGet(now(), now(), "sample-exam");
         createQuestion(new CreateQuestionUseCase.Request(examView.getId(), 2, 5, 100, 1));
         deleteQuestion(examView.getId(), PROBLEM_ID)
                 .andExpect(status().isOk());
@@ -345,7 +347,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
 
     @Test
     void WhenDeleteQuestionWithNonExistingExam_ShouldRespondNotFound() throws Exception {
-        ExamView examView = createExamAndGet(new Date(), new Date(), "sample-exam");
+        ExamView examView = createExamAndGet(now(), now(), "sample-exam");
         createQuestion(new CreateQuestionUseCase.Request(examView.getId(), 2, 5, 100, 1));
         deleteQuestion(NONEXISTING_EXAM_ID, PROBLEM_ID)
                 .andExpect(status().isNotFound());
@@ -353,7 +355,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
 
     @Test
     void WhenDeleteQuestionWithNonExistingProblem_ShouldRespondNotFound() throws Exception {
-        ExamView examView = createExamAndGet(new Date(), new Date(), "sample-exam");
+        ExamView examView = createExamAndGet(now(), now(), "sample-exam");
         createQuestion(new CreateQuestionUseCase.Request(examView.getId(), 2, 5, 100, 1));
         deleteQuestion(examView.getId(), NONEXISTING_PROBLEM_ID)
                 .andExpect(status().isNotFound());
@@ -422,7 +424,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
 
     @Test
     void testGetExamById() throws Exception {
-        var exam = createExamAndGet(new Date(), new Date(), "exam");
+        var exam = createExamAndGet(now(), now(), "exam");
         var q1 = createQuestionAndGet(new CreateQuestionUseCase.Request(exam.id, PROBLEM_ID, 3, 50, 1));
         var q2 = createQuestionAndGet(new CreateQuestionUseCase.Request(exam.id, ANOTHER_PROBLEM_ID, 3, 50, 2));
         exam.questions.add(q1);
@@ -570,7 +572,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
 
     @Test
     void GivenOneExamCreated_WhenDeleteTheExam_ShouldSucceed() throws Exception {
-        var exam = createExamAndGet(new Date(), new Date(), "exam");
+        var exam = createExamAndGet(now(), now(), "exam");
 
         deleteExam(exam.id);
 
@@ -587,7 +589,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
     @Test
     void testProduceExamTranscript() throws Exception {
         Integer[] studentIds = {STUDENT_A_ID, STUDENT_B_ID, STUDENT_C_ID, STUDENT_D_ID};
-        var exam = createExamAndGet(new Date(), oneSecondAfter(), "Exam");
+        var exam = createExamAndGet(now(), oneSecondAfter(), "Exam");
         var q1 = createQuestionAndGet(new CreateQuestionUseCase.Request(exam.id, PROBLEM_ID, 1, 50, 0)).toEntity();
         var q2 = createQuestionAndGet(new CreateQuestionUseCase.Request(exam.id, ANOTHER_PROBLEM_ID, 1, 50, 1)).toEntity();
         givenStudentsParticipatingExam(studentIds, exam);
@@ -608,13 +610,9 @@ class ExamControllerTest extends AbstractSpringBootTest {
         int scoreB1 = q1.calculateScore(sB1), scoreB2 = q2.calculateScore(sB2);
         int scoreC1 = q1.calculateScore(sC1), scoreC2 = q2.calculateScore(sC2);
 
-        assertEquals(q1.getScore() + q2.getScore(), transcript.getMaxScore());
-        assertEquals(scoreA1 + scoreA2, examineeRecordA.totalScore);
-        assertEqualsIgnoreOrder(asList(scoreA1, scoreA2), examineeRecordA.questionScores);
-        assertEquals(scoreB1 + scoreB2, examineeRecordB.totalScore);
-        assertEqualsIgnoreOrder(asList(scoreB1, scoreB2), examineeRecordB.questionScores);
-        assertEquals(scoreC1 + scoreC2, examineeRecordC.totalScore);
-        assertEqualsIgnoreOrder(asList(scoreC1, scoreC2), examineeRecordC.questionScores);
+        examineeShouldHaveScores(examineeRecordA, scoreA1, scoreA2);
+        examineeShouldHaveScores(examineeRecordB, scoreB1, scoreB2);
+        examineeShouldHaveScores(examineeRecordC, scoreC1, scoreC2);
         assertFalse(transcript.examineeRecords.containsKey(STUDENT_D_EMAIL),
                 "Student D doesn't participate the exam, should not include hos record.");
 
@@ -622,6 +620,11 @@ class ExamControllerTest extends AbstractSpringBootTest {
         assertEquals(average((scoreA1 + scoreA2), (scoreB1 + scoreB2), (scoreC1 + scoreC2)),
                 transcript.getAverageScore());
         assertEquals(q1.getScore() + q2.getScore(), transcript.getMaxScore());
+    }
+
+    void examineeShouldHaveScores(ExamineeRecord examineeRecord, Integer... scores) {
+        assertEquals(sum(scores), examineeRecord.getTotalScore());
+        assertEqualsIgnoreOrder(asList(scores), examineeRecord.questionScores);
     }
 
     void assertQuestionEquals(QuestionView expectedQuestion, ExamOverview.QuestionItem actualQuestion, ProblemView problem) {
@@ -751,7 +754,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
     }
 
     private List<ExamView> givenOngoingExams(String... names) throws Exception {
-        return givenExams(new Date(), afterCurrentTime(1, HOURS), names);
+        return givenExams(now(), afterCurrentTime(1, HOURS), names);
     }
 
     private List<ExamView> givenUpcomingExams(String... names) throws Exception {

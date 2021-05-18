@@ -131,7 +131,7 @@ public abstract class AbstractJudgerTest {
         Verdict verdict = event.getVerdict();
         for (int i = 0; i < problem.numOfTestcases(); i++) {
             Judge judge = verdict.getJudges().get(i);
-            Testcase testCase = problem.getTestcases().get(i);
+            Testcase testCase = problem.getTestcase(i);
             assertEquals(JudgeStatus.AC, judge.getStatus(), event.toString());
             assertEquals(testCase.getGrade(), judge.getGrade());
             assertEquals(testCase.getName(), judge.getTestcaseName());
@@ -161,7 +161,7 @@ public abstract class AbstractJudgerTest {
         Verdict verdict = event.getVerdict();
         for (int i = 0; i < problem.numOfTestcases(); i++) {
             Judge judge = verdict.getJudges().get(i);
-            Testcase testCase = problem.getTestcases().get(i);
+            Testcase testCase = problem.getTestcase(i);
             assertEquals(JudgeStatus.TLE, judge.getStatus(), event.toString());
             assertEquals(0, judge.getGrade());
             assertEquals(testCase.getName(), judge.getTestcaseName());
@@ -179,7 +179,7 @@ public abstract class AbstractJudgerTest {
         Verdict verdict = event.getVerdict();
         for (int i = 0; i < problem.numOfTestcases(); i++) {
             Judge judge = verdict.getJudges().get(i);
-            Testcase testCase = problem.getTestcases().get(i);
+            Testcase testCase = problem.getTestcase(i);
             assertEquals(JudgeStatus.WA, judge.getStatus(), event.toString());
             assertEquals(0, judge.getGrade());
             assertEquals(testCase.getName(), judge.getTestcaseName());

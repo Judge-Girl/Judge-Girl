@@ -83,21 +83,17 @@ public abstract class StreamUtils {
 
     public static <T, L, R> List<T> zipOneToMany(L left, List<R> right,
                                                  BiFunction<L, R, T> zipAndMap) {
-        return right.stream()
-                .map(r -> zipAndMap.apply(left, r))
-                .collect(toList());
+        return mapToList(right, r -> zipAndMap.apply(left, r));
+    }
+
+    public static <T, L, R> List<T> zipToList(Collection<Map.Entry<L, R>> entrySet,
+                                              BiFunction<L, R, T> zipAndMap) {
+        return mapToList(entrySet, entry -> zipAndMap.apply(entry.getKey(), entry.getValue()));
     }
 
     public static <T, L, R> List<T> zipToList(Map<L, R> map,
                                               BiFunction<L, R, T> zipAndMap) {
         return zipToList(map.entrySet(), zipAndMap);
-    }
-
-    public static <T, L, R> List<T> zipToList(Collection<Map.Entry<L, R>> entrySet,
-                                              BiFunction<L, R, T> zipAndMap) {
-        return entrySet.stream()
-                .map(entry -> zipAndMap.apply(entry.getKey(), entry.getValue()))
-                .collect(toList());
     }
 
     public static <T, L, R> List<T> zipToList(List<L> left, List<R> right,
@@ -121,11 +117,15 @@ public abstract class StreamUtils {
     }
 
     public static double average(Integer... nums) {
-        return Arrays.stream(nums).mapToInt(Integer::intValue).average().orElse(0);
+        return stream(nums).mapToInt(Integer::intValue).average().orElse(0);
     }
 
     public static <T> double average(Collection<T> collection, ToIntFunction<T> mapper) {
         return collection.stream().mapToInt(mapper).average().orElse(0);
+    }
+
+    public static int sum(Integer[] array) {
+        return stream(array).mapToInt(Integer::intValue).sum();
     }
 
     public static int sum(Collection<Integer> collection) {

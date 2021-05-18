@@ -134,7 +134,7 @@ public class SubmissionStubBuilder extends Submission {
                 i -> NORMAL_STATUSES_NO_CE[random.nextInt(NORMAL_STATUSES_NO_CE.length)]));
 
         List<Judge> judges = generate(problem.numOfTestcases(),
-                i -> new Judge(problem.getTestcases().get(i),
+                i -> new Judge(problem.getTestcase(i),
                         statuses.get(i), new ProgramProfile(10, 10,
                         statuses.get(i) == RE ? "Error" : ""),
                         statuses.get(i) == AC ? problem.getTestcase(i).getGrade() : 0));
