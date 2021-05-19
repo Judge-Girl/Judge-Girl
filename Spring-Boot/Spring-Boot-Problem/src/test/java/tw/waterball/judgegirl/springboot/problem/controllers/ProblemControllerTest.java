@@ -688,7 +688,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
 
 
     private List<ProblemView> getProblemsByTagsAndPage(Token token, int page, String... tags) throws Exception {
-        String tagsSplitByCommas = String.join(", ", tags);
+        String tagsSplitByCommas = String.join(",", tags);
         return getBody(mockMvc.perform(get(API_PREFIX)
                 .header("Authorization", bearerWithToken(token.getToken()))
                 .queryParam("tags", tagsSplitByCommas)
