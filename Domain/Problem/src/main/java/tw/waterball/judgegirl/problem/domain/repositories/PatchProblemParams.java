@@ -7,6 +7,7 @@ import tw.waterball.judgegirl.primitives.problem.LanguageEnv;
 import tw.waterball.judgegirl.primitives.problem.Testcase;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 @Builder
@@ -23,6 +24,10 @@ public class PatchProblemParams {
     private final LanguageEnv languageEnv;
 
     private final Testcase testcase;
+
+    private final boolean visible;
+    @Nullable
+    private final List<String> tags;
 
     public Optional<String> getTitle() {
         return Optional.ofNullable(title);
@@ -48,4 +53,11 @@ public class PatchProblemParams {
         return Optional.ofNullable(testcase);
     }
 
+    public Optional<List<String>> getTags() {
+        return Optional.ofNullable(tags);
+    }
+
+    public Optional<Boolean> isVisible() {
+        return Optional.of(visible);
+    }
 }

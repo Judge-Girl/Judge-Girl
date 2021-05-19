@@ -659,6 +659,35 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
                 .andExpect(status().isNotFound());
     }
 
+    @Test
+    void GivenOneProblemSavedAndPatchProblemWithNewTags_WhenQueryTheSameProblem_ShouldHaveNewTags() throws Exception {
+        Problem savedProblem = givenOneProblemSaved();
+        List<String> newTags = asList("newTagA", "newTagB");
+
+        savedProblem.setTags(newTags);
+        PatchProblemUseCase.Request request = PatchProblemUseCase.Request.builder().tags(newTags).build();
+        patchProblem(request);
+
+        Problem actualProblem = problemRepository.findProblemById(savedProblem.getId())
+                .orElseThrow();
+        assertEquals(newTags, actualProblem.getTags());
+    }
+
+    @Test
+    void GivenOneProblemSavedAndPatchProblemBeVisible_WhenQueryTheSameProblem_ShouldBeVisible() throws Exception {
+        Problem savedProblem = givenOneProblemSaved();
+
+        savedProblem.setVisible(true);
+        PatchProblemUseCase.Request request = PatchProblemUseCase.Request.builder().visible(true).build();
+        patchProblem(request);
+
+        Problem actualProblem = problemRepository.findProblemById(savedProblem.getId())
+                .orElseThrow();
+
+        assertEquals(savedProblem.getVisible(), actualProblem.getVisible());
+    }
+
+
     private List<ProblemView> getProblemsByTagsAndPage(Token token, int page, String... tags) throws Exception {
         String tagsSplitByCommas = String.join(", ", tags);
         return getBody(mockMvc.perform(get(API_PREFIX)
