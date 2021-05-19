@@ -40,7 +40,9 @@ public class ExamOverviewPresenter implements GetExamOverviewUseCase.Presenter {
     }
 
     private List<ExamOverview.QuestionItem> aggregateQuestionOverviews() {
-        return zipToList(exam.getQuestions(), problems,
+        return zipToList(problems,
+                problem -> exam.getQuestionByProblemId(problem.getId())
+                        .orElseThrow(() -> new IllegalStateException("Can't find the corresponding problemId in the exam")),
                 ExamOverview.QuestionItem::toViewModel);
     }
 

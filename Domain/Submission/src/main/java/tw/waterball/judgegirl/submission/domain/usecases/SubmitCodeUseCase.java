@@ -32,6 +32,7 @@ import tw.waterball.judgegirl.submission.domain.repositories.SubmissionRepositor
 import javax.inject.Named;
 import java.util.List;
 
+import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
 import static tw.waterball.judgegirl.commons.utils.functional.Otherwise.empty;
 import static tw.waterball.judgegirl.commons.utils.functional.Otherwise.of;
 
@@ -45,7 +46,7 @@ public class SubmitCodeUseCase {
     private final ThrottleSubmissionUseCase throttleSubmissionUseCase;
     private final SubmissionRepository submissionRepository;
     private final JudgerDeployer judgerDeployer;
-    private final ProblemServiceDriver problemServiceDriver;
+    private final ProblemServiceDriver problemService;
     private final EventBus eventBus;
 
     public void execute(SubmitCodeRequest request, SubmissionPresenter presenter) throws SubmissionThrottlingException {
@@ -74,8 +75,9 @@ public class SubmitCodeUseCase {
     }
 
     private Problem getProblem(int problemId) {
-        ProblemView problemView = problemServiceDriver.getProblem(problemId);
-        return ProblemView.toEntity(problemView);
+        return problemService.getProblem(problemId)
+                .map(ProblemView::toEntity)
+                .orElseThrow(() -> notFound(Problem.class).id(problemId));
     }
 
     @SneakyThrows

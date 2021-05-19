@@ -49,6 +49,7 @@ import tw.waterball.judgegirl.primitives.submission.SubmissionThrottling;
 import tw.waterball.judgegirl.primitives.submission.report.Report;
 import tw.waterball.judgegirl.primitives.submission.verdict.VerdictIssuedEvent;
 import tw.waterball.judgegirl.problemapi.clients.ProblemServiceDriver;
+import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.springboot.profiles.Profiles;
 import tw.waterball.judgegirl.springboot.submission.SpringBootSubmissionApplication;
 import tw.waterball.judgegirl.springboot.submission.handler.VerdictIssuedEventHandler;
@@ -73,6 +74,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static java.util.Optional.of;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.verify;
@@ -160,14 +162,14 @@ public class AbstractSubmissionControllerTest extends AbstractSpringBootTest {
     // For submission
     protected final MockMultipartFile[] codes1 = {
             new MockMultipartFile(SUBMIT_CODE_MULTIPART_KEY_NAME, "func1.c", "text/plain",
-                    "int plus(int a, int b) {return a + b;}".getBytes()),
+                    "int plus(int a, int b) {return a + b;}" .getBytes()),
             new MockMultipartFile(SUBMIT_CODE_MULTIPART_KEY_NAME, "func2.c", "text/plain",
-                    "int minus(int a, int b) {return a - b;}".getBytes())};
+                    "int minus(int a, int b) {return a - b;}" .getBytes())};
     protected final MockMultipartFile[] codes2 = {
             new MockMultipartFile(SUBMIT_CODE_MULTIPART_KEY_NAME, "func1.c", "text/plain",
-                    "int plus(int a, int b) { /*different content*/ return a + b;}".getBytes()),
+                    "int plus(int a, int b) { /*different content*/ return a + b;}" .getBytes()),
             new MockMultipartFile(SUBMIT_CODE_MULTIPART_KEY_NAME, "func2.c", "text/plain",
-                    "int minus(int a, int b) {return a - b; /*different content*/}".getBytes())};
+                    "int minus(int a, int b) {return a - b; /*different content*/}" .getBytes())};
 
     protected final Report stubReport = ProblemStubs.compositeReport();
 
@@ -204,8 +206,8 @@ public class AbstractSubmissionControllerTest extends AbstractSpringBootTest {
     }
 
     private void mockGetProblemById() {
-        when(problemServiceDriver.getProblem(problem.getId())).thenReturn(
-                toViewModel(problem));
+        when(problemServiceDriver.getProblem(problem.getId()))
+                .thenReturn(of(problem).map(ProblemView::toViewModel));
     }
 
     @AfterEach
