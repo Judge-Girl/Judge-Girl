@@ -25,7 +25,7 @@ public class PatchProblemParams {
 
     private final Testcase testcase;
 
-    private final boolean visible;
+    private final Boolean visible;
     @Nullable
     private final List<String> tags;
 
@@ -57,7 +57,7 @@ public class PatchProblemParams {
         return Optional.ofNullable(tags);
     }
 
-    public Optional<Boolean> isVisible() {
+    public Optional<Boolean> getVisible() {
         return Optional.of(visible);
     }
 }

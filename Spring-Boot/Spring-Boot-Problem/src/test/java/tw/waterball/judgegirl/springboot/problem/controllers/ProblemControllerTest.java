@@ -660,10 +660,10 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    void GivenOneProblemSavedAndPatchProblemWithNewTags_WhenQueryTheSameProblem_ShouldHaveNewTags() throws Exception {
+    void GivenOneProblemSaved_WhenPatchTheProblemWithNewTags_ShouldHaveUpdatedNewTags() throws Exception {
         Problem savedProblem = givenOneProblemSaved();
-        List<String> newTags = asList("newTagA", "newTagB");
 
+        List<String> newTags = asList("newTagA", "newTagB");
         savedProblem.setTags(newTags);
         PatchProblemUseCase.Request request = PatchProblemUseCase.Request.builder().tags(newTags).build();
         patchProblem(request);
@@ -674,7 +674,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    void GivenOneProblemSavedAndPatchProblemBeVisible_WhenQueryTheSameProblem_ShouldBeVisible() throws Exception {
+    void GivenOneProblemSaved_WhenPatchTheProblemBeVisible_ShouldBeUpdateVisible() throws Exception {
         Problem savedProblem = givenOneProblemSaved();
 
         savedProblem.setVisible(true);
@@ -683,7 +683,6 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
 
         Problem actualProblem = problemRepository.findProblemById(savedProblem.getId())
                 .orElseThrow();
-
         assertEquals(savedProblem.getVisible(), actualProblem.getVisible());
     }
 

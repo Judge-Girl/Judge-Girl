@@ -175,7 +175,7 @@ public class MongoProblemRepository implements ProblemRepository {
         params.getFilterPluginTags().ifPresent(tags -> update.set("filterPluginTags", tags));
         params.getLanguageEnv().ifPresent(languageEnv -> update.set("languageEnvs." + languageEnv.getLanguage(), languageEnv));
         params.getTags().ifPresent(tags -> update.set("tags",tags));
-        params.isVisible().ifPresent(visible -> update.set("visible",visible));
+        params.getVisible().ifPresent(visible -> update.set("visible",visible));
 
         params.getTestcase().ifPresent(tc -> update.set("testcases." + tc.getId(), tc));
 

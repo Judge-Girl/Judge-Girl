@@ -56,7 +56,7 @@ public class PatchProblemUseCase extends BaseProblemUseCase {
         public Collection<JudgePluginTag> filterPluginTags;
         public LanguageEnv languageEnv;
         public Testcase testcase;
-        public boolean visible;
+        public Boolean visible;
         public List<String> tags;
 
     }
