@@ -58,6 +58,6 @@ public class PatchProblemParams {
     }
 
     public Optional<Boolean> getVisible() {
-        return Optional.of(visible);
+        return Optional.ofNullable(visible);
     }
 }
