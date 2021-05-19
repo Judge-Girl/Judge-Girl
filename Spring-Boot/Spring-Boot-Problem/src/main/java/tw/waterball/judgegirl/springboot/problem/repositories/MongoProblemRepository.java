@@ -16,6 +16,7 @@ package tw.waterball.judgegirl.springboot.problem.repositories;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -151,9 +152,7 @@ public class MongoProblemRepository implements ProblemRepository {
 
     @Override
     public int saveProblemWithTitleAndGetId(String title) {
-        long problemsCount = mongoTemplate.count(
-                query(where("title").exists(true)), ProblemData.class);
-        int id = (int) (OFFSET_NEW_PROBLEM_ID + problemsCount + 1);
+        int id = autoIncrementId();
         Problem problem = Problem.builder()
                 .id(id)
                 .title(title)
@@ -163,6 +162,15 @@ public class MongoProblemRepository implements ProblemRepository {
         log.info("New problem with title {} has been saved with id={}.",
                 saved.getTitle(), saved.getId());
         return id;
+    }
+
+    private int autoIncrementId() {
+        int lastProblemId = ofNullable(mongoTemplate.findOne(
+                new Query().with(Sort.by(Sort.Direction.DESC, "_id")).limit(1),
+                ProblemData.class))
+                .map(ProblemData::getId)
+                .orElse(0);
+        return Math.max(OFFSET_NEW_PROBLEM_ID, lastProblemId + 1);
     }
 
     @Override

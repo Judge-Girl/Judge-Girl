@@ -50,7 +50,7 @@ services:
   problem-service:
     build: Spring-Boot/Spring-Boot-Problem
     environment:
-      spring.profiles.active: prod,mongo
+      spring.profiles.active: prod,mongo,redis
       MONGO_HOST: "${MONGO_HOST}"
     labels:
       - "traefik.enable=true"

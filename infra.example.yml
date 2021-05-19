@@ -42,5 +42,9 @@ services:
       RABBITMQ_DEFAULT_VHOST: /judge-girl
     ports:
       - 5672:5672
-
-
+  redis:
+    image: redis
+    restart: always
+    ports:
+      - 6379:6379
+    command: redis-server --requirepass PLACEHOLDER
