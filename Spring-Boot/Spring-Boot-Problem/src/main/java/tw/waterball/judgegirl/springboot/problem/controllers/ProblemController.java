@@ -67,11 +67,8 @@ public class ProblemController {
                                          @RequestParam(value = "tags", required = false) String[] tags,
                                          @RequestParam(value = "page", defaultValue = "0") int page,
                                          @RequestParam(required = false) int[] ids) {
-        boolean includeInvisibleProblems = false;
-        if (nonNull(authorization)) {
-            var token = tokenService.parseBearerTokenAndValidate(authorization);
-            includeInvisibleProblems = token.isAdmin();
-        }
+        var token = tokenService.parseBearerTokenAndValidate(authorization);
+        boolean includeInvisibleProblems = token.isAdmin();
         GetProblemsPresenter presenter = new GetProblemsPresenter();
         if (nonNull(ids)) {
             getProblemsUseCase.execute(new GetProblemsUseCase.Request(includeInvisibleProblems, ids), presenter);
@@ -84,24 +81,11 @@ public class ProblemController {
     @GetMapping("/{problemId}")
     public ProblemView getProblem(@RequestHeader(value = "Authorization", required = false) String authorization,
                                   @PathVariable int problemId) {
-        boolean includeInvisibleProblem = false;
-        if (nonNull(authorization)) {
-            var token = tokenService.parseBearerTokenAndValidate(authorization);
-            includeInvisibleProblem = token.isAdmin();
-        }
+        var token = tokenService.parseBearerTokenAndValidate(authorization);
+        boolean includeInvisibleProblem = token.isAdmin();
         GetProblemPresenter presenter = new GetProblemPresenter();
         getProblemUseCase.execute(new GetProblemUseCase.Request(problemId, includeInvisibleProblem), presenter);
         return presenter.present();
-    }
-
-    @GetMapping(value = "/{problemId}/{langEnvName}/providedCodes/{providedCodesFileId}",
-            produces = "application/zip")
-    public ResponseEntity<InputStreamResource> downloadZippedProvidedCodes(@PathVariable int problemId,
-                                                                           @PathVariable String langEnvName,
-                                                                           @PathVariable String providedCodesFileId) {
-        FileResource fileResource = downloadProvidedCodesUseCase
-                .execute(new DownloadProvidedCodesUseCase.Request(problemId, langEnvName, providedCodesFileId));
-        return ResponseEntityUtils.respondInputStreamResource(fileResource);
     }
 
     @GetMapping("/{problemId}/testcases")
@@ -111,65 +95,99 @@ public class ProblemController {
         return presenter.present();
     }
 
+    @GetMapping(value = "/{problemId}/{langEnvName}/providedCodes/{providedCodesFileId}",
+            produces = "application/zip")
+    public ResponseEntity<InputStreamResource> downloadZippedProvidedCodes(@RequestHeader(value = "Authorization") String authorization,
+                                                                           @PathVariable int problemId,
+                                                                           @PathVariable String langEnvName,
+                                                                           @PathVariable String providedCodesFileId) {
+        return tokenService.returnIfAdmin(authorization, token -> {
+            FileResource fileResource = downloadProvidedCodesUseCase
+                    .execute(new DownloadProvidedCodesUseCase.Request(problemId, langEnvName, providedCodesFileId));
+            return ResponseEntityUtils.respondInputStreamResource(fileResource);
+        });
+    }
+
     @GetMapping(value = "/{problemId}/testcaseIOs/{testcaseIOsFileId}",
             produces = "application/zip")
-    public ResponseEntity<InputStreamResource> downloadZippedTestCaseInputs(@PathVariable int problemId,
+    public ResponseEntity<InputStreamResource> downloadZippedTestCaseInputs(@RequestHeader(value = "Authorization") String authorization,
+                                                                            @PathVariable int problemId,
                                                                             @PathVariable String testcaseIOsFileId) {
-        FileResource fileResource = downloadTestCaseIOsUseCase
-                .execute(new DownloadTestCaseIOsUseCase.Request(problemId, testcaseIOsFileId));
-        return ResponseEntityUtils.respondInputStreamResource(fileResource);
+        return tokenService.returnIfAdmin(authorization, token -> {
+            FileResource fileResource = downloadTestCaseIOsUseCase
+                    .execute(new DownloadTestCaseIOsUseCase.Request(problemId, testcaseIOsFileId));
+            return ResponseEntityUtils.respondInputStreamResource(fileResource);
+        });
     }
 
     @PostMapping(consumes = "text/plain")
-    public int saveProblemWithTitleAndGetId(@RequestBody String title) {
-        return saveProblemWithTitleUseCase.execute(title);
+    public int saveProblemWithTitleAndGetId(@RequestHeader(value = "Authorization") String authorization,
+                                            @RequestBody String title) {
+        return tokenService.returnIfAdmin(authorization, token ->
+                saveProblemWithTitleUseCase.execute(title));
     }
 
     @PatchMapping("/{problemId}")
-    public void patchProblem(@PathVariable int problemId,
+    public void patchProblem(@RequestHeader(value = "Authorization") String authorization,
+                             @PathVariable int problemId,
                              @RequestBody PatchProblemUseCase.Request request) {
-        patchProblemUseCase.execute(request);
+        request.problemId = problemId;
+        tokenService.ifAdminToken(authorization,
+                token -> patchProblemUseCase.execute(request));
     }
 
     @DeleteMapping("/{problemId}")
-    public void archiveOrDeleteProblem(@PathVariable int problemId) {
-        deleteProblemUseCase.execute(problemId);
+    public void archiveOrDeleteProblem(@RequestHeader(value = "Authorization") String authorization,
+                                       @PathVariable int problemId) {
+        tokenService.ifAdminToken(authorization,
+                token -> deleteProblemUseCase.execute(problemId));
     }
 
-
     @PutMapping("/{problemId}/langEnv/{langEnv}")
-    public void updateLanguageEnv(@PathVariable int problemId,
-                                  @RequestBody LanguageEnv languageEnv) {
-        PatchProblemUseCase.Request request = PatchProblemUseCase.Request.builder().problemId(problemId)
-                .languageEnv(languageEnv).build();
-        patchProblemUseCase.execute(request);
+    public void updateLanguageEnv(@RequestHeader(value = "Authorization") String authorization,
+                                  @PathVariable int problemId,
+                                  @PathVariable String langEnv,
+                                  @RequestBody LanguageEnv newLangEnv) {
+        if (!newLangEnv.getName().equals(langEnv)) {
+            throw new IllegalArgumentException("LangEnv does not match.");
+        }
+        tokenService.ifAdminToken(authorization, token -> {
+            PatchProblemUseCase.Request request = PatchProblemUseCase.Request.builder().problemId(problemId)
+                    .languageEnv(newLangEnv).build();
+            patchProblemUseCase.execute(request);
+        });
     }
 
     @PutMapping("/{problemId}/{langEnvName}/providedCodes")
-    public String uploadProvidedCodes(@PathVariable int problemId,
+    public String uploadProvidedCodes(@RequestHeader(value = "Authorization") String authorization,
+                                      @PathVariable int problemId,
                                       @PathVariable String langEnvName,
                                       @RequestParam(PROVIDED_CODE_MULTIPART_KEY_NAME) MultipartFile[] providedCodes) {
-        UploadProvidedCodeUseCase.Request request =
-                new UploadProvidedCodeUseCase.Request(problemId, Language.valueOf(langEnvName), convertMultipartFilesToFileResources(providedCodes));
-        UploadProvidedCodesPresenter presenter = new UploadProvidedCodesPresenter();
-        presenter.setLanguage(Language.valueOf(langEnvName));
-        uploadProvidedCodeUseCase.execute(request, presenter);
-        return presenter.present();
+        return tokenService.returnIfAdmin(authorization, token -> {
+            UploadProvidedCodeUseCase.Request request =
+                    new UploadProvidedCodeUseCase.Request(problemId, Language.valueOf(langEnvName), convertMultipartFilesToFileResources(providedCodes));
+            UploadProvidedCodesPresenter presenter = new UploadProvidedCodesPresenter();
+            presenter.setLanguage(Language.valueOf(langEnvName));
+            uploadProvidedCodeUseCase.execute(request, presenter);
+            return presenter.present();
+        });
     }
 
     @PutMapping("/{problemId}/testcases/{testcaseId}")
-    public void updateOrAddTestcase(@PathVariable int problemId,
+    public void updateOrAddTestcase(@RequestHeader(value = "Authorization") String authorization,
+                                    @PathVariable int problemId,
                                     @PathVariable String testcaseId,
                                     @RequestBody Testcase testcase) {
-        testcase.setId(testcaseId);
-        testcase.setProblemId(problemId);
-        PatchProblemUseCase.Request request = PatchProblemUseCase.Request.builder()
-                .problemId(problemId)
-                .testcase(testcase).build();
+        tokenService.ifAdminToken(authorization, token -> {
+            testcase.setId(testcaseId);
+            testcase.setProblemId(problemId);
+            PatchProblemUseCase.Request request = PatchProblemUseCase.Request.builder()
+                    .problemId(problemId)
+                    .testcase(testcase).build();
 
-        patchProblemUseCase.execute(request);
+            patchProblemUseCase.execute(request);
+        });
     }
-
 }
 
 class GetProblemPresenter implements GetProblemUseCase.Presenter {

@@ -51,6 +51,9 @@ public class JwtTokenService implements TokenService {
 
     @Override
     public Token parseAndValidate(String token) throws TokenInvalidException {
+        if (token == null) {
+            return Token.ofGuest();
+        }
         Jws<Claims> jwt;
         try {
             jwt = Jwts.parserBuilder()

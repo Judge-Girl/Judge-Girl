@@ -39,6 +39,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.util.MultiValueMap;
 import tw.waterball.judgegirl.commons.token.TokenService;
+import tw.waterball.judgegirl.commons.token.TokenService.Token;
 import tw.waterball.judgegirl.primitives.problem.JudgeStatus;
 import tw.waterball.judgegirl.primitives.problem.Language;
 import tw.waterball.judgegirl.primitives.problem.Problem;
@@ -70,7 +71,6 @@ import tw.waterball.judgegirl.testkit.semantics.Spec;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -106,9 +106,9 @@ public class AbstractSubmissionControllerTest extends AbstractSpringBootTest {
     protected final String API_PREFIX = "/api/problems/{problemId}/" + Language.C + "/students/{studentId}/submissions";
     protected final Problem problem = ProblemStubs.problemTemplate().build();
     protected final String SUBMISSION_EXCHANGE_NAME = "submissions";
-    protected String ADMIN_TOKEN;
-    protected String STUDENT1_TOKEN;
-    protected String STUDENT2_TOKEN;
+    protected Token ADMIN_TOKEN;
+    protected Token STUDENT1_TOKEN;
+    protected Token STUDENT2_TOKEN;
 
     @Value("${spring.rabbitmq.username}")
     String amqpUsername;
@@ -198,10 +198,10 @@ public class AbstractSubmissionControllerTest extends AbstractSpringBootTest {
 
     @BeforeEach
     void setup() {
-        ADMIN_TOKEN = tokenService.createToken(admin(ADMIN_ID)).toString();
+        ADMIN_TOKEN = tokenService.createToken(admin(ADMIN_ID));
         amqpAdmin.declareExchange(new TopicExchange(SUBMISSION_EXCHANGE_NAME));
-        STUDENT1_TOKEN = tokenService.createToken(student(STUDENT1_ID)).toString();
-        STUDENT2_TOKEN = tokenService.createToken(student(STUDENT2_ID)).toString();
+        STUDENT1_TOKEN = tokenService.createToken(student(STUDENT1_ID));
+        STUDENT2_TOKEN = tokenService.createToken(student(STUDENT2_ID));
         mockGetProblemById();
     }
 
@@ -306,16 +306,17 @@ public class AbstractSubmissionControllerTest extends AbstractSpringBootTest {
         }
     }
 
-
-    protected ResultActions requestGetSubmission(int studentId, String studentToken) throws Exception {
-        return requestWithToken(() -> get(API_PREFIX, problem.getId(), studentId), studentToken)
+    protected ResultActions requestGetSubmission(int studentId, Token studentToken) throws Exception {
+        return mockMvc.perform(withToken(studentToken,
+                get(API_PREFIX, problem.getId(), studentId)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
 
-    protected ResultActions requestDownloadSubmittedCodes(int studentId, String studentToken, String submissionId, String submittedCodesFile) throws Exception {
-        return requestWithToken(() -> get(API_PREFIX + "/{submissionId}/submittedCodes/{submittedCodesFileId}",
-                problem.getId(), studentId, submissionId, submittedCodesFile), studentToken)
+    protected ResultActions requestDownloadSubmittedCodes(int studentId, Token studentToken, String submissionId, String submittedCodesFile) throws Exception {
+        return mockMvc.perform(withToken(studentToken,
+                get(API_PREFIX + "/{submissionId}/submittedCodes/{submittedCodesFileId}",
+                        problem.getId(), studentId, submissionId, submittedCodesFile)))
                 .andExpect(status().isOk())
                 .andExpect(zip().content(codes1));
     }
@@ -324,11 +325,11 @@ public class AbstractSubmissionControllerTest extends AbstractSpringBootTest {
         submissionRepository.save(submission);
     }
 
-    protected SubmissionView submitCodeAndGet(int studentId, String token) throws Exception {
+    protected SubmissionView submitCodeAndGet(int studentId, Token token) throws Exception {
         return submitCodeAndGet(studentId, token, codes1);
     }
 
-    protected SubmissionView submitCodeAndGet(int studentId, String token, MockMultipartFile... files) throws Exception {
+    protected SubmissionView submitCodeAndGet(int studentId, Token token, MockMultipartFile... files) throws Exception {
         return getBody(submitCode(studentId, token, files)
                 .andExpect(status().isAccepted())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -339,9 +340,9 @@ public class AbstractSubmissionControllerTest extends AbstractSpringBootTest {
                 .andExpect(jsonPath("submissionTime").exists()), SubmissionView.class);
     }
 
-    protected ResultActions submitCode(int studentId, String token, MockMultipartFile... files) throws Exception {
-        return requestWithToken(() ->
-                multipartRequestWithSubmittedCodes(studentId, files), token);
+    protected ResultActions submitCode(int studentId, Token token, MockMultipartFile... files) throws Exception {
+        return mockMvc.perform(withToken(token,
+                multipartRequestWithSubmittedCodes(studentId, files)));
     }
 
     protected MockHttpServletRequestBuilder multipartRequestWithSubmittedCodes(int studentId, MockMultipartFile... files) {
@@ -356,25 +357,21 @@ public class AbstractSubmissionControllerTest extends AbstractSpringBootTest {
         return addingHeaders;
     }
 
-    protected List<SubmissionView> getSubmissionsWithBagQuery(int studentId, String studentToken, MultiValueMap<String, String> bagQueryParameters) throws Exception {
-        return getBody(requestWithToken(() -> get(API_PREFIX,
-                problem.getId(), studentId).queryParams(bagQueryParameters), studentToken).andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON)), new TypeReference<>() {
-        });
-    }
-
-    protected List<SubmissionView> getSubmissionsInPage(int studentId, String studentToken, int page) throws Exception {
-        return getBody(requestWithToken(() -> get(API_PREFIX, problem.getId(), studentId)
-                .queryParam("page", String.valueOf(page)), studentToken)
+    protected List<SubmissionView> getSubmissionsWithBagQuery(int studentId, Token studentToken, MultiValueMap<String, String> bagQueryParameters) throws Exception {
+        return getBody(mockMvc.perform(withToken(studentToken,
+                get(API_PREFIX, problem.getId(), studentId).queryParams(bagQueryParameters)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON)), new TypeReference<>() {
         });
     }
 
-    protected ResultActions requestWithToken(Supplier<MockHttpServletRequestBuilder> requestBuilderSupplier,
-                                             String token) throws Exception {
-        return mockMvc.perform(requestBuilderSupplier.get()
-                .header("Authorization", "bearer " + token));
+    protected List<SubmissionView> getSubmissionsInPage(int studentId, Token studentToken, int page) throws Exception {
+        return getBody(mockMvc.perform(withToken(studentToken,
+                get(API_PREFIX, problem.getId(), studentId)
+                        .queryParam("page", String.valueOf(page))))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON)), new TypeReference<>() {
+        });
     }
 
 }

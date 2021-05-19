@@ -14,6 +14,6 @@ public interface WithHeader {
         };
     }
 
-    void decorateWithHeader(MockHttpServletRequestBuilder request);
+    void decorate(MockHttpServletRequestBuilder request);
 
 }
