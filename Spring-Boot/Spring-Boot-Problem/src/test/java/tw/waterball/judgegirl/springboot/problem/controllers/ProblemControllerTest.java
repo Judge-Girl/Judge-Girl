@@ -674,7 +674,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    void GivenOneProblemSaved_WhenPatchTheProblemBeVisible_ShouldBeUpdateVisible() throws Exception {
+    void GivenOneProblemSaved_WhenPatchTheProblemToBeVisible_ThenProblemShouldBeUpdatedVisible() throws Exception {
         Problem savedProblem = givenOneProblemSaved();
 
         savedProblem.setVisible(true);
