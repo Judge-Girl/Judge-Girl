@@ -18,12 +18,14 @@ import tw.waterball.judgegirl.commons.models.files.FileResource;
 import tw.waterball.judgegirl.primitives.problem.LanguageEnv;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
 
+import java.util.Optional;
+
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
 public interface ProblemServiceDriver {
 
-    ProblemView getProblem(int problemId) throws NotFoundException;
+    Optional<ProblemView> getProblem(int problemId);
 
     default FileResource downloadProvidedCodes(int problemId, LanguageEnv languageEnv) throws NotFoundException {
         return downloadProvidedCodes(problemId, languageEnv.getName(), languageEnv.getProvidedCodesFileId());

@@ -42,7 +42,7 @@ public class ExamOverview {
         public int questionOrder;
         public String problemTitle;
 
-        public static QuestionItem toViewModel(Question question, Problem problem) {
+        public static QuestionItem toViewModel(Problem problem, Question question) {
             return QuestionItem.builder()
                     .examId(question.getExamId())
                     .problemId(problem.getId())

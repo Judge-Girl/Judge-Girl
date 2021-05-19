@@ -54,6 +54,7 @@ import java.util.stream.Collectors;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static java.util.Objects.requireNonNull;
+import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
 
 /**
  * TODO: some drunk codes that ruins my perfectionism, require some talents to refactor it!
@@ -97,7 +98,9 @@ public class CCJudger extends PluginExtendedJudger {
 
     @Override
     protected Problem findProblemById(int problemId) {
-        var problem = ProblemView.toEntity(problemServiceDriver.getProblem(problemId));
+        var problem = problemServiceDriver.getProblem(problemId)
+                .map(ProblemView::toEntity)
+                .orElseThrow(() -> notFound(Problem.class).id(problemId));
         logger.info(problem);
         return problem;
     }

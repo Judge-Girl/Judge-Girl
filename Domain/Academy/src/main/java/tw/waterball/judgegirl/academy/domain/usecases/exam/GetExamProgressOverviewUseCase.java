@@ -7,13 +7,13 @@ import tw.waterball.judgegirl.primitives.exam.Question;
 import tw.waterball.judgegirl.primitives.exam.Record;
 import tw.waterball.judgegirl.primitives.problem.Problem;
 import tw.waterball.judgegirl.problemapi.clients.ProblemServiceDriver;
+import tw.waterball.judgegirl.problemapi.views.ProblemView;
 
 import javax.inject.Named;
 import javax.validation.Valid;
 import java.util.Optional;
 
 import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
-import static tw.waterball.judgegirl.problemapi.views.ProblemView.toEntity;
 
 @Named
 @AllArgsConstructor
@@ -26,17 +26,17 @@ public class GetExamProgressOverviewUseCase {
         Exam exam = findExam(request);
         presenter.showExam(exam);
 
-        exam.foreachQuestion(question -> {
-            Problem problem = findProblem(question);
-            presenter.showQuestion(question, problem);
-            showRemainingQuotaOfQuestion(presenter, studentId, question);
-            findBestRecord(studentId, question)
-                    .ifPresentOrElse(record -> {
-                        int yourScore = question.calculateScore(record);
-                        presenter.showBestRecordOfQuestion(record);
-                        presenter.showYourScoreOfQuestion(question, yourScore);
-                    }, () -> presenter.showYourScoreOfQuestion(question, 0));
-        });
+        exam.foreachQuestion(question -> findProblem(question)
+                .ifPresent(problem -> {
+                    presenter.showQuestion(question, problem);
+                    showRemainingQuotaOfQuestion(presenter, studentId, question);
+                    findBestRecord(studentId, question)
+                            .ifPresentOrElse(record -> {
+                                int yourScore = question.calculateScore(record);
+                                presenter.showBestRecordOfQuestion(record);
+                                presenter.showYourScoreOfQuestion(question, yourScore);
+                            }, () -> presenter.showYourScoreOfQuestion(question, 0));
+                }));
     }
 
     private Exam findExam(Request request) {
@@ -44,8 +44,9 @@ public class GetExamProgressOverviewUseCase {
                 .orElseThrow(() -> notFound(Exam.class).id(request.examId));
     }
 
-    private Problem findProblem(Question question) {
-        return toEntity(problemService.getProblem(question.getId().getProblemId()));
+    private Optional<Problem> findProblem(Question question) {
+        return problemService.getProblem(question.getId().getProblemId())
+                .map(ProblemView::toEntity);
     }
 
     private Optional<Record> findBestRecord(int studentId, @Valid Question question) {

@@ -18,6 +18,7 @@ import tw.waterball.judgegirl.primitives.submission.verdict.ProgramProfile;
 import tw.waterball.judgegirl.primitives.submission.verdict.Verdict;
 import tw.waterball.judgegirl.primitives.submission.verdict.VerdictIssuedEvent;
 import tw.waterball.judgegirl.problemapi.clients.ProblemServiceDriver;
+import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.submissionapi.clients.SubmissionServiceDriver;
 import tw.waterball.judgegirl.submissionapi.clients.VerdictPublisher;
 
@@ -30,10 +31,10 @@ import java.nio.file.Paths;
 
 import static java.io.File.createTempFile;
 import static java.lang.String.format;
+import static java.util.Optional.of;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static tw.waterball.judgegirl.commons.utils.ZipUtils.zipDirectoryContents;
-import static tw.waterball.judgegirl.problemapi.views.ProblemView.toViewModel;
 import static tw.waterball.judgegirl.submissionapi.views.SubmissionView.toViewModel;
 
 /**
@@ -196,9 +197,10 @@ public abstract class AbstractJudgerTest {
     }
 
     private void mockServiceDrivers(JudgeStatus judgeStatus) throws IOException {
-        when(submissionServiceDriver.getSubmission(
-                problemId, studentId, submission.getId())).thenReturn(toViewModel(submission));
-        when(problemServiceDriver.getProblem(problem.getId())).thenReturn(toViewModel(problem));
+        when(submissionServiceDriver.getSubmission(problemId, studentId, submission.getId()))
+                .thenReturn(toViewModel(submission));
+        when(problemServiceDriver.getProblem(problem.getId()))
+                .thenReturn(of(problem).map(ProblemView::toViewModel));
 
         mockDownloadRequests(judgeStatus);
     }

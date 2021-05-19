@@ -6,11 +6,12 @@ import tw.waterball.judgegirl.primitives.exam.Exam;
 import tw.waterball.judgegirl.primitives.exam.Question;
 import tw.waterball.judgegirl.primitives.problem.Problem;
 import tw.waterball.judgegirl.problemapi.clients.ProblemServiceDriver;
+import tw.waterball.judgegirl.problemapi.views.ProblemView;
 
 import javax.inject.Named;
+import java.util.Optional;
 
 import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
-import static tw.waterball.judgegirl.problemapi.views.ProblemView.toEntity;
 
 @Named
 @AllArgsConstructor
@@ -21,11 +22,8 @@ public class GetExamOverviewUseCase {
     public void execute(int examId, Presenter presenter) {
         Exam exam = findExam(examId);
         presenter.showExam(exam);
-
-        exam.foreachQuestion(question -> {
-            Problem problem = findProblem(question);
-            presenter.showQuestion(question, problem);
-        });
+        exam.foreachQuestion(question -> findProblem(question)
+                .ifPresent(problem -> presenter.showQuestion(question, problem)));
     }
 
     private Exam findExam(int examId) {
@@ -33,8 +31,9 @@ public class GetExamOverviewUseCase {
                 .orElseThrow(() -> notFound(Exam.class).id(examId));
     }
 
-    private Problem findProblem(Question question) {
-        return toEntity(problemService.getProblem(question.getId().getProblemId()));
+    private Optional<Problem> findProblem(Question question) {
+        return problemService.getProblem(question.getId().getProblemId())
+                .map(ProblemView::toEntity);
     }
 
     public interface Presenter {

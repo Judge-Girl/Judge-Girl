@@ -103,6 +103,11 @@ public abstract class StreamUtils {
                 .collect(toList());
     }
 
+    public static <T, L, R> List<T> zipToList(List<L> left, Function<L, R> mapper,
+                                              BiFunction<L, R, T> zipAndMap) {
+        return mapToList(left, l -> zipAndMap.apply(l, mapper.apply(l)));
+    }
+
     public static <T> Optional<T> findFirst(Collection<T> collection, Predicate<T> predicate) {
         return collection.stream().filter(predicate).findFirst();
     }

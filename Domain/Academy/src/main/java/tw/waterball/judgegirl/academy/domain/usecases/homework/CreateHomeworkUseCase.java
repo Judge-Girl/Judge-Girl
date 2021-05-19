@@ -2,16 +2,14 @@ package tw.waterball.judgegirl.academy.domain.usecases.homework;
 
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
-import tw.waterball.judgegirl.primitives.Homework;
 import tw.waterball.judgegirl.academy.domain.repositories.HomeworkRepository;
+import tw.waterball.judgegirl.primitives.Homework;
 import tw.waterball.judgegirl.problemapi.clients.ProblemServiceDriver;
 
 import javax.inject.Named;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.isNotFound;
 
 /**
  * @author - wally55077@gmail.com
@@ -36,7 +34,7 @@ public class CreateHomeworkUseCase {
     }
 
     private boolean isProblemExists(int problemId) {
-        return !isNotFound(() -> problemServiceDriver.getProblem(problemId));
+        return problemServiceDriver.getProblem(problemId).isPresent();
     }
 
     public interface Presenter {
