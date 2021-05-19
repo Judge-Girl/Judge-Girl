@@ -1,3 +1,4 @@
 application.yml
 application-mongo.yml
 application-mysql.yml
+application-redis.yml
