@@ -67,9 +67,9 @@ public class ExamHomePresenter implements GetExamProgressOverviewUseCase.Present
 
     private List<QuestionItem> aggregateQuestionOverviews() {
         var bestRecordsMap = toMap(bestRecords, Record::getQuestionId, identity());
-        return zipToList(exam.getQuestions(), problems,
-                (q, p) -> QuestionItem.toViewModel(q, p,
-                        remainingQuotaMap.get(q.getId()), yourScoreMap.get(q.getId()), bestRecordsMap.get(q.getId())));
+        return zipToList(problems, exam.getQuestions(),
+                (p, q) -> QuestionItem.toViewModel(q, p, remainingQuotaMap.get(q.getId()),
+                        yourScoreMap.get(q.getId()), bestRecordsMap.get(q.getId())));
     }
 
 }
