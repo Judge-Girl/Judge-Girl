@@ -26,5 +26,6 @@ public interface Profiles {
     String PROD = "prod";
     String DEV = "dev";
     String JWT = "jwt";
+    String REDIS = "redis";
 }
 

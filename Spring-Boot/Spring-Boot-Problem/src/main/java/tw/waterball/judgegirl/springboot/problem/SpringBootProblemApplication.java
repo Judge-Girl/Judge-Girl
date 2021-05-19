@@ -23,5 +23,4 @@ public class SpringBootProblemApplication {
         SpringApplication.run(SpringBootProblemApplication.class, args);
     }
 
-
 }
