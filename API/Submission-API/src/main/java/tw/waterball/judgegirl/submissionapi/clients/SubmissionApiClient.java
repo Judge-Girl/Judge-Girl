@@ -146,26 +146,26 @@ public class SubmissionApiClient extends BaseRetrofitAPI implements SubmissionSe
                                     @Part List<MultipartBody.Part> submittedCodes);
 
         @GET("/api/problems/{problemId}/{langEnvName}/students/{studentId}/submissions/{submissionId}")
-        Call<SubmissionView> getSubmission(@Header("Authorization") String bearerToken,
+        Call<SubmissionView> getSubmission(@Header("Authorization") String authorization,
                                            @Path("problemId") int problemId,
                                            @Path("langEnvName") String langEnvName,
                                            @Path("studentId") int studentId,
                                            @Path("submissionId") String submissionId);
 
         @GET("/api/submissions/best")
-        Call<SubmissionView> findBestRecord(@Header("Authorization") String bearerToken,
+        Call<SubmissionView> findBestRecord(@Header("Authorization") String authorization,
                                             @Body String submissionIdSplitByCommas);
 
 
         @GET("/api/problems/{problemId}/{langEnvName}/students/{studentId}/submissions")
-        Call<List<SubmissionView>> getSubmissions(@Header("Authorization") String bearerToken,
+        Call<List<SubmissionView>> getSubmissions(@Header("Authorization") String authorization,
                                                   @Path("problemId") int problemId,
                                                   @Path("langEnvName") String langEnvName,
                                                   @Path("studentId") int studentId,
                                                   @QueryMap Map<String, String> bagQueryParameters);
 
         @GET("/api/problems/{problemId}/{langEnvName}/students/{studentId}/submissions/{submissionId}/submittedCodes/{submittedCodesFileId}")
-        Call<ResponseBody> getSubmittedCodes(@Header("Authorization") String bearerToken,
+        Call<ResponseBody> getSubmittedCodes(@Header("Authorization") String authorization,
                                              @Path("problemId") int problemId,
                                              @Path("langEnvName") String langEnvName,
                                              @Path("studentId") int studentId,

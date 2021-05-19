@@ -44,7 +44,7 @@ import static tw.waterball.judgegirl.submissionapi.clients.SubmissionApiClient.S
 @RestController
 @AllArgsConstructor
 @RequestMapping("/api/problems/{problemId}/{langEnvName}/students/{studentId}/submissions")
-public class SubmissionController {
+public class StudentSubmissionController {
     private final TokenService tokenService;
     private final SubmitCodeUseCase submitCodeUseCase;
     private final GetSubmissionUseCase getSubmissionUseCase;
@@ -52,19 +52,15 @@ public class SubmissionController {
     private final DownloadSubmittedCodesUseCase downloadSubmittedCodesUseCase;
     private final GetBestSubmissionUseCase getBestSubmissionUseCase;
 
-    @GetMapping("/health")
-    public String health(@PathVariable String langEnvName, @PathVariable int problemId, @PathVariable int studentId) {
-        return String.format("OK (problemId=%d, langEnv=%s, studentId=%d)", problemId, langEnvName, studentId);
-    }
 
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    ResponseEntity<SubmissionView> submit(@RequestHeader("Authorization") String bearerToken,
+    ResponseEntity<SubmissionView> submit(@RequestHeader("Authorization") String authorization,
                                           @PathVariable int problemId,
                                           @PathVariable String langEnvName,
                                           @PathVariable int studentId,
                                           @RequestHeader HttpHeaders headers,
                                           @RequestParam(SUBMIT_CODE_MULTIPART_KEY_NAME) MultipartFile[] submittedCodes) {
-        return tokenService.returnIfTokenValid(studentId, bearerToken, token -> {
+        return tokenService.returnIfTokenValid(studentId, authorization, token -> {
             boolean throttling = !token.isAdmin();
             Bag bag = getBagFromHeaders(token, headers);
             SubmitCodeRequest request = convertToSubmitCodeRequest(problemId, langEnvName, studentId, submittedCodes, bag, throttling);
@@ -99,14 +95,13 @@ public class SubmissionController {
                 convertMultipartFilesToFileResources(submittedCodes), bag);
     }
 
-
     @GetMapping(value = "/{submissionId}")
-    SubmissionView getSubmission(@RequestHeader("Authorization") String bearerToken,
+    SubmissionView getSubmission(@RequestHeader("Authorization") String authorization,
                                  @PathVariable int problemId,
                                  @PathVariable String langEnvName,
                                  @PathVariable int studentId,
                                  @PathVariable String submissionId) {
-        return tokenService.returnIfTokenValid(studentId, bearerToken,
+        return tokenService.returnIfTokenValid(studentId, authorization,
                 token -> {
                     SubmissionPresenter presenter = new SubmissionPresenter();
                     getSubmissionUseCase.execute(
@@ -116,14 +111,14 @@ public class SubmissionController {
     }
 
     @GetMapping
-    List<SubmissionView> getSubmissions(@RequestHeader("Authorization") String bearerToken,
+    List<SubmissionView> getSubmissions(@RequestHeader("Authorization") String authorization,
                                         @RequestParam(value = "page", required = false) Integer page,
                                         @PathVariable int problemId,
                                         @PathVariable String langEnvName,
                                         @PathVariable int studentId,
                                         @RequestParam Map<String, String> bagQueryParameters) {
         bagQueryParameters.remove("page"); // only non-reserved keywords will be accepted by the bag-query filter
-        return tokenService.returnIfTokenValid(studentId, bearerToken, token -> {
+        return tokenService.returnIfTokenValid(studentId, authorization, token -> {
             GetSubmissionsPresenter presenter = new GetSubmissionsPresenter();
             getSubmissionsUseCase.execute(new SubmissionQueryParams(page, problemId, langEnvName, studentId, bagQueryParameters), presenter);
             return presenter.present();
@@ -132,16 +127,16 @@ public class SubmissionController {
 
     @GetMapping(value = "/{submissionId}/submittedCodes/{submittedCodesFileId}",
             produces = "application/zip")
-    ResponseEntity<InputStreamResource> downloadZippedSubmittedCodes(@RequestHeader("Authorization") String bearerToken,
+    ResponseEntity<InputStreamResource> downloadZippedSubmittedCodes(@RequestHeader("Authorization") String authorization,
                                                                      @PathVariable int problemId,
                                                                      @PathVariable String langEnvName,
                                                                      @PathVariable int studentId,
                                                                      @PathVariable String submissionId,
                                                                      @PathVariable String submittedCodesFileId) {
-        return tokenService.returnIfTokenValid(studentId, bearerToken,
+        return tokenService.returnIfTokenValid(studentId, authorization,
                 token -> respondInputStreamResource(
                         downloadSubmittedCodesUseCase.execute(new DownloadSubmittedCodesUseCase.Request(
-                                studentId, langEnvName, submissionId, submittedCodesFileId)
+                                problemId, studentId, langEnvName, submissionId, submittedCodesFileId)
                         )));
     }
 

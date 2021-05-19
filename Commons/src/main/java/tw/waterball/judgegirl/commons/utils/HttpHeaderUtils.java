@@ -13,6 +13,7 @@
 
 package tw.waterball.judgegirl.commons.utils;
 
+import org.jetbrains.annotations.Nullable;
 import tw.waterball.judgegirl.commons.exceptions.InvalidAuthorizationBearerException;
 
 /**
@@ -24,7 +25,11 @@ public class HttpHeaderUtils {
         return "Bearer " + token;
     }
 
-    public static String parseBearerToken(String bearer) {
+    @Nullable
+    public static String parseBearerToken(@Nullable String bearer) {
+        if (bearer == null) {
+            return null;
+        }
         bearer = bearer.trim();
         String[] split = bearer.split("\\s+");
         if (split.length != 2 || !split[0].equalsIgnoreCase("bearer")) {

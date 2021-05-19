@@ -23,6 +23,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import tw.waterball.judgegirl.commons.token.TokenService;
 import tw.waterball.judgegirl.commons.utils.functional.ErrRunnable;
 import tw.waterball.judgegirl.testkit.jupiter.ReplaceUnderscoresWithCamelCasesDisplayNameGenerators;
@@ -93,6 +94,12 @@ public abstract class AbstractSpringBootTest {
         anotherTransaction.run();
         TestTransaction.flagForCommit();
         TestTransaction.end();
+    }
+
+
+    protected MockHttpServletRequestBuilder withToken(TokenService.Token token, MockHttpServletRequestBuilder builder) {
+        withToken(token).decorate(builder);
+        return builder;
     }
 
     protected WithHeader withToken(TokenService.Token token) {

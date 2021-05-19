@@ -77,7 +77,8 @@ public class SampleSubmissionControllerTest extends AbstractSubmissionController
     }
 
     private void upgradeSubmissionToSample(String submissionId) throws Exception {
-        mockMvc.perform(post(SUBMISSION_PATH + "/{submissionId}/sample", submissionId))
+        mockMvc.perform(withToken(ADMIN_TOKEN,
+                post(SUBMISSION_PATH + "/{submissionId}/sample", submissionId)))
                 .andExpect(status().isOk());
     }
 
@@ -88,7 +89,8 @@ public class SampleSubmissionControllerTest extends AbstractSubmissionController
     }
 
     private void downgradeSampleBackToSubmission(String submissionId) throws Exception {
-        mockMvc.perform(delete(SUBMISSION_PATH + "/{submissionId}/sample", submissionId))
+        mockMvc.perform(withToken(ADMIN_TOKEN,
+                delete(SUBMISSION_PATH + "/{submissionId}/sample", submissionId)))
                 .andExpect(status().isOk());
     }
 

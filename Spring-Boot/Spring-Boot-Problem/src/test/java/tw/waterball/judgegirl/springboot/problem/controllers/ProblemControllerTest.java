@@ -117,8 +117,14 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         givenProblemSavedWithProvidedCodesAndTestcaseIOs();
 
         LanguageEnv languageEnv = problem.getLanguageEnv(Language.C);
-        mockMvc.perform(get(API_PREFIX + "/{problemId}/{languageEnv}/providedCodes/{providedCodesFileId}",
-                problem.getId(), languageEnv.getName(), languageEnv.getProvidedCodesFileId()))
+
+        downloadProvidedCodes(languageEnv);
+    }
+
+    private void downloadProvidedCodes(LanguageEnv languageEnv) throws Exception {
+        mockMvc.perform(withToken(adminToken,
+                get(API_PREFIX + "/{problemId}/{languageEnv}/providedCodes/{providedCodesFileId}",
+                        problem.getId(), languageEnv.getName(), languageEnv.getProvidedCodesFileId())))
                 .andExpect(status().isOk())
                 .andExpect(header().longValue("Content-Length", providedCodesZip.length))
                 .andExpect(content().contentType("application/zip"))
@@ -140,8 +146,13 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     void GivenProblemSaved_DownloadZippedTestCaseIOsShouldSucceed() throws Exception {
         givenProblemSavedWithProvidedCodesAndTestcaseIOs();
 
-        mockMvc.perform(get(API_PREFIX + "/{problemId}/testcaseIOs/{testcaseIOsFileId}",
-                problem.getId(), problem.getTestcaseIOsFileId()))
+        downloadTestcaseIOs();
+    }
+
+    private void downloadTestcaseIOs() throws Exception {
+        mockMvc.perform(withToken(adminToken,
+                get(API_PREFIX + "/{problemId}/testcaseIOs/{testcaseIOsFileId}",
+                        problem.getId(), problem.getTestcaseIOsFileId())))
                 .andExpect(status().isOk())
                 .andExpect(header().longValue("Content-Length", testcaseIOsZip.length))
                 .andExpect(content().contentType("application/zip"))
@@ -244,7 +255,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
 
     private List<ProblemItem> requestGetProblems(WithHeader withHeader) throws Exception {
         var request = get(API_PREFIX);
-        withHeader.decorateWithHeader(request);
+        withHeader.decorate(request);
         return getBody(mockMvc.perform(request)
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON)), new TypeReference<>() {
@@ -284,8 +295,9 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
 
     private int saveProblemWithTitle(String title) throws Exception {
         return parseInt(getContentAsString(
-                mockMvc.perform(post(API_PREFIX)
-                        .contentType(MediaType.TEXT_PLAIN_VALUE).content(title))
+                mockMvc.perform(withToken(adminToken,
+                        post(API_PREFIX)
+                                .contentType(MediaType.TEXT_PLAIN_VALUE).content(title)))
                         .andExpect(status().isOk())));
     }
 
@@ -357,11 +369,11 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         assertEquals(queryPluginFilterTags, filterPluginTags);
     }
 
-
     private void patchProblem(PatchProblemUseCase.Request request) throws Exception {
-        mockMvc.perform(patch(API_PREFIX + "/{problemId}", problem.getId())
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .content(objectMapper.writeValueAsString(request)))
+        mockMvc.perform(withToken(adminToken,
+                patch(API_PREFIX + "/{problemId}", request.problemId)
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .content(objectMapper.writeValueAsString(request))))
                 .andExpect(status().isOk());
     }
 
@@ -412,7 +424,8 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     }
 
     private void archiveOrDeleteProblem(int problemId) throws Exception {
-        mockMvc.perform(delete(API_PREFIX + "/{problemId}", problemId))
+        mockMvc.perform(withToken(adminToken,
+                delete(API_PREFIX + "/{problemId}", problemId)))
                 .andExpect(status().isOk());
     }
 
@@ -462,9 +475,10 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     }
 
     private void updateOrAddTestCase(int problemId, String testCaseName, Testcase testcase) throws Exception {
-        mockMvc.perform(put(API_PREFIX + "/{problemId}/testcases/{testcaseName}", problemId, testCaseName)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(toJson(testcase)))
+        mockMvc.perform(withToken(adminToken,
+                put(API_PREFIX + "/{problemId}/testcases/{testcaseName}", problemId, testCaseName)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(toJson(testcase))))
                 .andExpect(status().isOk());
     }
 
@@ -475,7 +489,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
 
     private ProblemView getProblem(WithHeader withHeader, int problemId) throws Exception {
         var request = get(API_PREFIX + "/{problemId}", problemId);
-        withHeader.decorateWithHeader(request);
+        withHeader.decorate(request);
         return getBody(mockMvc.perform(request).andExpect(status().isOk()), ProblemView.class);
     }
 
@@ -486,7 +500,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     private List<ProblemView> getProblems(WithHeader withHeader, Integer... problemIds) throws Exception {
         String ids = String.join(", ", mapToList(problemIds, String::valueOf));
         var request = get(API_PREFIX).queryParam("ids", ids);
-        withHeader.decorateWithHeader(request);
+        withHeader.decorate(request);
         return getBody(mockMvc.perform(request).andExpect(status().isOk()), new TypeReference<>() {
         });
     }
@@ -550,10 +564,11 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     }
 
     private void updateLanguageEnv(Integer problemId, LanguageEnv languageEnv) throws Exception {
-        mockMvc.perform(put(API_PREFIX + "/{problemId}/langEnv/{langEnv}",
-                problemId, languageEnv.getLanguage())
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .content(toJson(languageEnv)))
+        mockMvc.perform(withToken(adminToken,
+                put(API_PREFIX + "/{problemId}/langEnv/{langEnv}",
+                        problemId, languageEnv.getLanguage())
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .content(toJson(languageEnv))))
                 .andExpect(status().isOk());
     }
 
@@ -683,7 +698,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         for (MockMultipartFile file : files) {
             call = call.file(file);
         }
-        return call;
+        return withToken(adminToken, call);
     }
 
     private void problemShouldHaveProvidedCodesId(ProblemView problem, String fileId, Language language) {

@@ -43,7 +43,7 @@ import static tw.waterball.judgegirl.submissionapi.views.VerdictView.toViewModel
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
-public class SubmissionControllerTest extends AbstractSubmissionControllerTest {
+public class StudentSubmissionControllerTest extends AbstractSubmissionControllerTest {
 
     @Test
     void testSubmitAndThenDownload() throws Exception {
@@ -91,46 +91,52 @@ public class SubmissionControllerTest extends AbstractSubmissionControllerTest {
         SubmissionView submissionView = submitCodeAndGet(STUDENT1_ID, STUDENT1_TOKEN);
 
         // verify get submissions
-        requestWithToken(() -> get(API_PREFIX, problem.getId(), STUDENT1_ID), ADMIN_TOKEN)
+        mockMvc.perform(withToken(ADMIN_TOKEN,
+                get(API_PREFIX, problem.getId(), STUDENT1_ID)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().json(toJson(singletonList(submissionView))));
 
         // verify download submitted codes
-        requestWithToken(() -> get(API_PREFIX + "/{submissionId}/submittedCodes/{submittedCodesFileId}",
-                problem.getId(), STUDENT1_ID, submissionView.getId(), submissionView.submittedCodesFileId), ADMIN_TOKEN)
+        mockMvc.perform(withToken(ADMIN_TOKEN,
+                get(API_PREFIX + "/{submissionId}/submittedCodes/{submittedCodesFileId}",
+                        problem.getId(), STUDENT1_ID, submissionView.getId(), submissionView.submittedCodesFileId)))
                 .andExpect(status().isOk())
                 .andExpect(ZipResultMatcher.zip().content(codes1));
     }
 
     @Test
     void WhenGetStudent1SubmissionsWithStudent2Token_ShouldBeForbidden() throws Exception {
-        requestWithToken(() -> get(API_PREFIX, problem.getId(), STUDENT1_ID), STUDENT2_TOKEN)
+        mockMvc.perform(withToken(STUDENT2_TOKEN,
+                get(API_PREFIX, problem.getId(), STUDENT1_ID)))
                 .andExpect(status().isForbidden());
     }
 
     @Test
     void GivenStudent1Submission_WhenGetThatSubmissionUsingStudent2Token_ShouldRespondForbidden() throws Exception {
         SubmissionView submissionView = submitCodeAndGet(STUDENT1_ID, STUDENT1_TOKEN);
-        requestWithToken(() -> get(API_PREFIX + "/{submissionId}",
-                problem.getId(), STUDENT1_ID, submissionView.getId()), STUDENT2_TOKEN)
+        mockMvc.perform(withToken(STUDENT2_TOKEN,
+                get(API_PREFIX + "/{submissionId}",
+                        problem.getId(), STUDENT1_ID, submissionView.getId())))
                 .andExpect(status().isForbidden());
     }
 
     @Test
     void GivenStudent1Submission_WhenGetThatSubmissionUnderStudent2_ShouldRespondNotFound() throws Exception {
         SubmissionView submissionView = submitCodeAndGet(STUDENT1_ID, STUDENT1_TOKEN);
-        requestWithToken(() -> get(API_PREFIX + "/{submissionId}",
-                problem.getId(), STUDENT2_ID, submissionView.getId()), STUDENT2_TOKEN)
+        mockMvc.perform(withToken(STUDENT2_TOKEN,
+                get(API_PREFIX + "/{submissionId}",
+                        problem.getId(), STUDENT2_ID, submissionView.getId())))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     void GivenStudent1Submission_WhenDownloadItsSubmittedCodesUnderStudent2_ShouldRespondNotFound() throws Exception {
         SubmissionView submissionView = submitCodeAndGet(STUDENT1_ID, STUDENT1_TOKEN);
-        requestWithToken(() -> get(API_PREFIX + "/{submissionId}/submittedCodes/{submittedCodesFileId}",
-                problem.getId(), STUDENT2_ID, submissionView.getId(),
-                submissionView.submittedCodesFileId), STUDENT2_TOKEN)
+        mockMvc.perform(withToken(STUDENT2_TOKEN,
+                get(API_PREFIX + "/{submissionId}/submittedCodes/{submittedCodesFileId}",
+                        problem.getId(), STUDENT2_ID, submissionView.getId(),
+                        submissionView.submittedCodesFileId)))
                 .andExpect(status().isNotFound());
     }
 
@@ -138,8 +144,9 @@ public class SubmissionControllerTest extends AbstractSubmissionControllerTest {
     void GivenStudent1Submission_WhenDownloadItsSubmittedCodeUsingStudent2Token_ShouldBeForbidden() throws Exception {
         SubmissionView submissionView = submitCodeAndGet(STUDENT1_ID, STUDENT1_TOKEN);
 
-        requestWithToken(() -> get(API_PREFIX + "/{submissionId}/submittedCodes/{submittedCodesFileId}",
-                problem.getId(), STUDENT1_ID, submissionView.getId(), submissionView.submittedCodesFileId), STUDENT2_TOKEN)
+        mockMvc.perform(withToken(STUDENT2_TOKEN,
+                get(API_PREFIX + "/{submissionId}/submittedCodes/{submittedCodesFileId}",
+                        problem.getId(), STUDENT1_ID, submissionView.getId(), submissionView.submittedCodesFileId)))
                 .andExpect(status().isForbidden());
     }
 

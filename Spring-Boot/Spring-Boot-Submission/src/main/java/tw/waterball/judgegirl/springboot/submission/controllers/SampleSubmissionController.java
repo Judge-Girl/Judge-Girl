@@ -2,6 +2,7 @@ package tw.waterball.judgegirl.springboot.submission.controllers;
 
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import tw.waterball.judgegirl.commons.token.TokenService;
 import tw.waterball.judgegirl.primitives.submission.Submission;
 import tw.waterball.judgegirl.submission.domain.usecases.sample.DowngradeSampleBackToSubmissionUseCase;
 import tw.waterball.judgegirl.submission.domain.usecases.sample.GetSamplesUseCase;
@@ -20,15 +21,10 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 @RequestMapping("/api")
 public class SampleSubmissionController {
-
+    private final TokenService tokenService;
     private final UpgradeSubmissionToSampleUseCase upgradeSubmissionToSampleUseCase;
     private final GetSamplesUseCase getSamplesUseCase;
     private final DowngradeSampleBackToSubmissionUseCase downgradeSampleBackToSubmissionUseCase;
-
-    @PostMapping("/submissions/{submissionId}/sample")
-    public void upgradeSubmissionToSample(@PathVariable String submissionId) {
-        upgradeSubmissionToSampleUseCase.execute(submissionId);
-    }
 
     @GetMapping("/problems/{problemId}/samples")
     public List<SubmissionView> getSamples(@PathVariable int problemId) {
@@ -37,9 +33,18 @@ public class SampleSubmissionController {
         return presenter.present();
     }
 
+    @PostMapping("/submissions/{submissionId}/sample")
+    public void upgradeSubmissionToSample(@RequestHeader(value = "Authorization") String authorization,
+                                          @PathVariable String submissionId) {
+        tokenService.ifAdminToken(authorization,
+                token -> upgradeSubmissionToSampleUseCase.execute(submissionId));
+    }
+
     @DeleteMapping("/submissions/{submissionId}/sample")
-    public void downgradeSampleBackToSubmission(@PathVariable String submissionId) {
-        downgradeSampleBackToSubmissionUseCase.execute(submissionId);
+    public void downgradeSampleBackToSubmission(@RequestHeader(value = "Authorization") String authorization,
+                                                @PathVariable String submissionId) {
+        tokenService.ifAdminToken(authorization, token ->
+                downgradeSampleBackToSubmissionUseCase.execute(submissionId));
     }
 
 }

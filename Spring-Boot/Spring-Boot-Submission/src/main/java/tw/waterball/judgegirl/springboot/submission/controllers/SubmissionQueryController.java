@@ -3,10 +3,7 @@ package tw.waterball.judgegirl.springboot.submission.controllers;
 import lombok.AllArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import tw.waterball.judgegirl.submission.domain.usecases.FindBestRecordUseCase;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 
@@ -21,6 +18,11 @@ import static org.springframework.http.ResponseEntity.ok;
 @RestController
 public class SubmissionQueryController {
     private final FindBestRecordUseCase findBestRecordUseCase;
+
+    @GetMapping("/health")
+    public String health() {
+        return "OK";
+    }
 
     @PostMapping(value = "/best", consumes = MediaType.TEXT_PLAIN_VALUE)
     public ResponseEntity<SubmissionView> findBestRecord(@RequestBody String submissionIdsSplitByCommas) {

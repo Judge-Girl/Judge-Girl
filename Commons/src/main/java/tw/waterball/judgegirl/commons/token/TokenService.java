@@ -15,6 +15,7 @@ package tw.waterball.judgegirl.commons.token;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.jetbrains.annotations.Nullable;
 import tw.waterball.judgegirl.commons.exceptions.ForbiddenAccessException;
 import tw.waterball.judgegirl.commons.utils.HttpHeaderUtils;
 
@@ -34,7 +35,25 @@ public interface TokenService {
 
     Token renewToken(String token) throws TokenInvalidException;
 
-    Token parseAndValidate(String token) throws TokenInvalidException;
+    Token parseAndValidate(@Nullable String token) throws TokenInvalidException;
+
+    default <T> T returnIfAdmin(String authorization, Function<Token, T> tokenFunction) {
+        TokenService.Token token = parseBearerTokenAndValidate(authorization);
+        if (token.isAdmin()) {
+            return tokenFunction.apply(token);
+        } else {
+            throw new ForbiddenAccessException(format("Student(id=%d) cannot access privileged resources.", token.getStudentId()));
+        }
+    }
+
+    default void ifAdminToken(String authorization, Consumer<Token> tokenConsumer) {
+        TokenService.Token token = parseBearerTokenAndValidate(authorization);
+        if (token.isAdmin()) {
+            tokenConsumer.accept(token);
+        } else {
+            throw new TokenInvalidException("Admin-Only.");
+        }
+    }
 
     default <T> T returnIfTokenValid(int ownerStudentId, String authorization, Function<Token, T> tokenFunction) {
         TokenService.Token token = parseBearerTokenAndValidate(authorization);
@@ -63,10 +82,12 @@ public interface TokenService {
     @Getter
     @Setter
     class Token extends TokenService.Identity {
+        @Nullable
         private String token;
+        @Nullable
         private Date expiration;
 
-        public Token(boolean isAdmin, int studentId, String token, Date expiration) {
+        public Token(boolean isAdmin, int studentId, @Nullable String token, @Nullable Date expiration) {
             super(isAdmin, studentId);
             this.token = token;
             this.expiration = expiration;
@@ -80,6 +101,11 @@ public interface TokenService {
             return new Token(true, studentId, token, expiration);
         }
 
+        public static Token ofGuest() {
+            return new Token(false, Identity.GUEST_STUDENT_ID, null, null);
+        }
+
+        @Nullable
         @Override
         public String toString() {
             return token;
@@ -89,6 +115,7 @@ public interface TokenService {
     class Identity {
         public static final String KEY_STUDENT_ID = "studentId";
         public static final String KEY_IS_ADMIN = "isAdmin";
+        private static final int GUEST_STUDENT_ID = Integer.MIN_VALUE;
         private final int studentId;
         private final boolean isAdmin;
 
@@ -105,10 +132,16 @@ public interface TokenService {
             return new Identity(true, studentId);
         }
 
+        public static Identity guest() {
+            return new Identity(false, GUEST_STUDENT_ID);
+        }
+
         public Map<String, Object> getClaimMap() {
             Map<String, Object> claim = new HashMap<>();
             claim.put(KEY_IS_ADMIN, isAdmin);
-            claim.put(KEY_STUDENT_ID, studentId);
+            if (studentId != GUEST_STUDENT_ID) {
+                claim.put(KEY_STUDENT_ID, studentId);
+            }
             return claim;
         }
 
