@@ -169,6 +169,13 @@ public class MongoProblemRepository implements ProblemRepository {
         mongoTemplate.dropCollection(ProblemData.class);
     }
 
+    @Override
+    public void deleteTestcaseById(int problemId, String testcaseId) {
+        Query query = query(where("_id").is(problemId));
+        Update update = new Update().unset("testcases." + testcaseId);
+        mongoTemplate.updateFirst(query, update, ProblemData.class);
+    }
+
     private void deleteProvidedCodesAndTestcaseIOs(Problem problem) {
         var languageEnvs = problem.getLanguageEnvs();
 

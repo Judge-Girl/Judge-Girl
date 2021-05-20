@@ -429,6 +429,20 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
+    void GivenProblemSaved_WhenDeleteTestcase_ThenShouldDeleteSuccessfully() throws Exception {
+        int problemId = 1;
+        saveProblems(problemId);
+        var problem = getProblem(problemId);
+
+        var expectDeletedTestcase = problem.getTestcases().get(0);
+        deleteTestCase(problem.getId(), expectDeletedTestcase.getId());
+
+        var actualTestcases = getProblem(problemId).getTestcases();
+        assertEquals(problem.getTestcases().size() - 1, actualTestcases.size());
+        assertTrue(findFirst(actualTestcases, testcaseView -> testcaseView.id.equals(expectDeletedTestcase.id)).isEmpty());
+    }
+
+    @Test
     void GivenOneProblemSaved_WhenUploadTwoProvidedCodes_ShouldRespondProvidedCodesFileId_AndIoFiles() throws Exception {
         Language language = Language.C;
         int problemId = 1;
@@ -550,6 +564,22 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
 
         var actualProblem = getProblem(problemId);
         assertFalse(actualProblem.isArchived());
+    }
+
+    private void deleteTestCase(int problemId, String testCaseId) throws Exception {
+        mockMvc.perform(delete(API_PREFIX + "/{problemId}/testcases/{testcaseId}", problemId, testCaseId)
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    private void assertTestCaseEquals(TestcaseView expectedTestcase, TestcaseView actualTestCase) {
+        assertEquals(expectedTestcase.getName(), actualTestCase.getName());
+        assertEquals(expectedTestcase.getProblemId(), actualTestCase.getProblemId());
+        assertEquals(expectedTestcase.getTimeLimit(), actualTestCase.getTimeLimit());
+        assertEquals(expectedTestcase.getMemoryLimit(), actualTestCase.getMemoryLimit());
+        assertEquals(expectedTestcase.getOutputLimit(), actualTestCase.getOutputLimit());
+        assertEquals(expectedTestcase.getThreadNumberLimit(), actualTestCase.getThreadNumberLimit());
+        assertEquals(expectedTestcase.getGrade(), actualTestCase.getGrade());
     }
 
     private void downloadProvidedCodesShouldRespondContent(int problemId, String languageEnv, String providedCodesFileId,
