@@ -26,6 +26,9 @@
     <artifactId>test-kit</artifactId>
     <name>Test Kit</name>
 
+    <properties>
+        <testcontainers.version>1.15.3</testcontainers.version>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>commons-io</groupId>
@@ -39,6 +42,16 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers</artifactId>
+            <version>${testcontainers.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${testcontainers.version}</version>
         </dependency>
     </dependencies>
 

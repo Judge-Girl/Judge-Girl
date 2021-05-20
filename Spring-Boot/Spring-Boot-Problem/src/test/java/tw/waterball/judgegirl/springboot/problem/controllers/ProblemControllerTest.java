@@ -19,15 +19,25 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.AutoConfigureDataMongo;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.gridfs.GridFsResource;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
+import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 import tw.waterball.judgegirl.commons.token.TokenService;
 import tw.waterball.judgegirl.commons.token.TokenService.Identity;
 import tw.waterball.judgegirl.commons.token.TokenService.Token;
@@ -43,6 +53,7 @@ import tw.waterball.judgegirl.problem.domain.usecases.PatchProblemUseCase.Testca
 import tw.waterball.judgegirl.problemapi.views.*;
 import tw.waterball.judgegirl.springboot.problem.SpringBootProblemApplication;
 import tw.waterball.judgegirl.springboot.profiles.Profiles;
+import tw.waterball.judgegirl.springboot.profiles.productions.Redis;
 import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
 import tw.waterball.judgegirl.testkit.semantics.WithHeader;
 
@@ -78,14 +89,21 @@ import static tw.waterball.judgegirl.problemapi.views.ProblemItem.toProblemItem;
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
-@ActiveProfiles({Profiles.JWT, Profiles.EMBEDDED_MONGO})
+@Testcontainers
+@ActiveProfiles({Profiles.JWT, Profiles.EMBEDDED_MONGO, Profiles.REDIS})
 @AutoConfigureDataMongo
-@ContextConfiguration(classes = SpringBootProblemApplication.class)
+@ContextConfiguration(classes = {SpringBootProblemApplication.class, ProblemControllerTest.RedisConfig.class})
 public class ProblemControllerTest extends AbstractSpringBootTest {
 
+    public static final String REDIS_IMAGE_NAME = "redis";
+    public static final int REDIS_PORT = 6379;
     public static final int ADMIN_ID = 12345;
     public static final int STUDENT1_ID = 22;
     public static final String API_PREFIX = "/api/problems";
+
+    @Container
+    public static GenericContainer<?> REDIS = new GenericContainer<>(
+            DockerImageName.parse(REDIS_IMAGE_NAME)).withExposedPorts(REDIS_PORT);
 
     @Autowired
     GridFsTemplate gridFsTemplate;
@@ -98,6 +116,21 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     private byte[] testcaseIOsZip;
     private Token adminToken;
     private Token student1Token;
+
+    @Redis
+    @Configuration
+    public static class RedisConfig {
+
+        @Bean
+        @Primary
+        public RedisConnectionFactory testRedisConnectionFactory() {
+            String address = REDIS.getHost();
+            int port = REDIS.getMappedPort(REDIS_PORT);
+            var redisConfig = new RedisStandaloneConfiguration(address, port);
+            return new LettuceConnectionFactory(redisConfig);
+        }
+
+    }
 
     @BeforeEach
     void setup() {

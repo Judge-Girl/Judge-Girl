@@ -22,10 +22,8 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import java.util.*;
 
-import static java.util.Collections.emptyList;
-import static java.util.Collections.emptyMap;
 import static java.util.Objects.requireNonNull;
-import static java.util.Objects.requireNonNullElse;
+import static java.util.Objects.requireNonNullElseGet;
 import static java.util.Optional.ofNullable;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.findFirst;
 import static tw.waterball.judgegirl.commons.utils.ValidationUtils.shouldHaveLength;
@@ -126,7 +124,7 @@ public class Problem {
     }
 
     public Collection<JudgePluginTag> getFilterPluginTags() {
-        return filterPluginTags;
+        return filterPluginTags = requireNonNullElseGet(filterPluginTags, HashSet::new);
     }
 
     public void setFilterPluginTags(Collection<JudgePluginTag> filterPluginTags) {
@@ -134,7 +132,7 @@ public class Problem {
     }
 
     public List<String> getTags() {
-        return requireNonNullElse(tags, emptyList());
+        return tags = requireNonNullElseGet(tags, LinkedList::new);
     }
 
     public void setTags(List<String> tags) {
@@ -144,7 +142,7 @@ public class Problem {
 
     public void addTag(String tag) {
         shouldHaveLength(1, 50, "tag", tag);
-        tags.add(tag);
+        getTags().add(tag);
     }
 
     public boolean getVisible() {
@@ -179,10 +177,7 @@ public class Problem {
     }
 
     public void putLanguageEnv(LanguageEnv languageEnv) {
-        if (languageEnvs == null) {
-            languageEnvs = new HashMap<>();
-        }
-        languageEnvs.put(languageEnv.getName(), languageEnv);
+        getLanguageEnvs().put(languageEnv.getName(), languageEnv);
     }
 
     public Optional<LanguageEnv> mayHaveLanguageEnv(Language language) {
@@ -190,18 +185,15 @@ public class Problem {
     }
 
     public LanguageEnv getLanguageEnv(Language language) {
-        if (languageEnvs == null) {
-            return null;
-        }
-        return languageEnvs.get(language.toString());
+        return getLanguageEnv(language.toString());
     }
 
     public LanguageEnv getLanguageEnv(String name) {
-        return languageEnvs.get(name);
+        return getLanguageEnvs().get(name);
     }
 
     public Map<String, LanguageEnv> getLanguageEnvs() {
-        return requireNonNullElse(languageEnvs, emptyMap());
+        return languageEnvs = requireNonNullElseGet(languageEnvs, HashMap::new);
     }
 
     public int getTotalGrade() {
@@ -227,9 +219,6 @@ public class Problem {
     }
 
     public List<Testcase> getTestcases() {
-        if (testcases == null) {
-            testcases = new LinkedList<>();
-        }
-        return testcases;
+        return testcases = requireNonNullElseGet(testcases, LinkedList::new);
     }
 }
