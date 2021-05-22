@@ -19,21 +19,23 @@ import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.HostConfig;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 import tw.waterball.judgegirl.judgerapi.env.JudgerEnvVariables;
 import tw.waterball.judgegirl.primitives.problem.Problem;
 import tw.waterball.judgegirl.primitives.submission.Submission;
 import tw.waterball.judgegirl.springboot.configs.properties.JudgeGirlAmqpProps;
 import tw.waterball.judgegirl.springboot.configs.properties.JudgeGirlJudgerProps;
 import tw.waterball.judgegirl.springboot.configs.properties.ServiceProps;
+import tw.waterball.judgegirl.springboot.submission.configs.DockerDeployerAutoConfiguration;
 import tw.waterball.judgegirl.submission.deployer.JudgerDeployer;
 
-import javax.annotation.PostConstruct;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
@@ -42,29 +44,26 @@ import static java.util.Collections.singletonList;
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
+@ConditionalOnProperty(name = "judge-girl.judger.strategy",
+        havingValue = DockerDeployerAutoConfiguration.STRATEGY)
+@Component
 public class DockerJudgerDeployer implements JudgerDeployer {
     private static final Logger logger = LogManager.getLogger(DockerJudgerDeployer.class);
-    private final int dockerRemovalIntervalInMs;
     private final String jwtSecret;
     private final DockerClient dockerClient;
-    private final ScheduledExecutorService scheduler;
     private final ServiceProps.ProblemService problemServiceInstance;
     private final ServiceProps.SubmissionService submissionServiceInstance;
     private final JudgeGirlAmqpProps amqpProps;
     private final JudgeGirlJudgerProps judgerProps;
 
-    public DockerJudgerDeployer(int dockerRemovalIntervalInMs,
-                                String jwtSecret,
+    public DockerJudgerDeployer(@Value("${jwt.secret}") String jwtSecret,
                                 DockerClient dockerClient,
-                                ScheduledExecutorService scheduler,
                                 ServiceProps.ProblemService problemServiceInstance,
                                 ServiceProps.SubmissionService submissionServiceInstance,
                                 JudgeGirlAmqpProps amqpProps,
                                 JudgeGirlJudgerProps judgerProps) {
-        this.dockerRemovalIntervalInMs = dockerRemovalIntervalInMs;
         this.jwtSecret = jwtSecret;
         this.dockerClient = dockerClient;
-        this.scheduler = scheduler;
         this.problemServiceInstance = problemServiceInstance;
         this.submissionServiceInstance = submissionServiceInstance;
         this.amqpProps = amqpProps;
@@ -103,12 +102,7 @@ public class DockerJudgerDeployer implements JudgerDeployer {
         dockerClient.startContainerCmd(containerId).exec();
     }
 
-    @PostConstruct
-    public void startJudgerAutoRemoval() {
-        scheduler.scheduleAtFixedRate(this::removeAllExitedJudgerContainers,
-                5000, dockerRemovalIntervalInMs, TimeUnit.MILLISECONDS);
-    }
-
+    @Scheduled(initialDelay = 5000, fixedDelayString = "${judge-girl.judger.docker.dockerRemovalIntervalInMs}")
     private void removeAllExitedJudgerContainers() {
         List<Container> containers = dockerClient.listContainersCmd()
                 .withAncestorFilter(singletonList(judgerProps.getImage().getName()))
