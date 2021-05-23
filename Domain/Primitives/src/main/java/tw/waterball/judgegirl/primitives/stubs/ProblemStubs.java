@@ -66,4 +66,13 @@ public class ProblemStubs {
         compositeReport.addReport(new Report("C", () -> singletonMap("C-1", 1)));
         return compositeReport;
     }
+
+    public static LanguageEnv.LanguageEnvBuilder languageEnvTemplate(Language language) {
+        return LanguageEnv.builder()
+                .language(language)
+                .compilation(new Compilation("Script"))
+                .resourceSpec(new ResourceSpec(2, 0))
+                .submittedCodeSpec(new SubmittedCodeSpec(language, "a"))
+                .providedCodesFileId("providedCodesFileId");
+    }
 }

@@ -44,9 +44,11 @@ import static java.util.Optional.ofNullable;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
 import static org.springframework.data.mongodb.core.query.Update.update;
+import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
 import static tw.waterball.judgegirl.commons.utils.StringUtils.isNullOrEmpty;
 import static tw.waterball.judgegirl.commons.utils.ZipUtils.zipToStream;
+import static tw.waterball.judgegirl.springboot.problem.repositories.data.LanguageEnvData.toData;
 import static tw.waterball.judgegirl.springboot.problem.repositories.data.ProblemData.toData;
 import static tw.waterball.judgegirl.springboot.utils.MongoUtils.downloadFileResourceByFileId;
 
@@ -70,11 +72,11 @@ public class MongoProblemRepository implements ProblemRepository {
     @Override
     public Optional<FileResource> downloadTestCaseIOs(int problemId, String testcaseIOsFileId) {
         return MongoUtils.query(mongoTemplate)
-                .fromDocument(Problem.class)
+                .fromDocument(ProblemData.class)
                 .selectOneField("testcaseIOsFileId")
                 .byId(problemId)
                 .execute()
-                .getField(Problem::getTestcaseIOsFileId)
+                .getField(ProblemData::getTestcaseIOsFileId)
                 .map(fileId -> downloadFileResourceByFileId(gridFsTemplate, fileId));
     }
 
@@ -147,21 +149,10 @@ public class MongoProblemRepository implements ProblemRepository {
 
     @Override
     public Problem save(Problem problem) {
+        if (problem.getId() == null) {
+            problem.setId(autoIncrementId());
+        }
         return mongoTemplate.save(toData(problem)).toEntity();
-    }
-
-    @Override
-    public int saveProblemWithTitleAndGetId(String title) {
-        int id = autoIncrementId();
-        Problem problem = Problem.builder()
-                .id(id)
-                .title(title)
-                .visible(false)
-                .build();
-        Problem saved = mongoTemplate.save(toData(problem)).toEntity();
-        log.info("New problem with title {} has been saved with id={}.",
-                saved.getTitle(), saved.getId());
-        return id;
     }
 
     private int autoIncrementId() {
@@ -199,7 +190,7 @@ public class MongoProblemRepository implements ProblemRepository {
 
     @Override
     public List<Problem> findProblemsByIds(int[] problemIds) {
-        Integer[] ids = Arrays.stream(problemIds).boxed().toArray(Integer[]::new);
+        Object[] ids = Arrays.stream(problemIds).boxed().toArray(Object[]::new);
         return mapToList(mongoTemplate.find(query(where("_id").in(ids)), ProblemData.class), ProblemData::toEntity);
     }
 
@@ -255,33 +246,26 @@ public class MongoProblemRepository implements ProblemRepository {
         return gridFsTemplate.store(zip, fileName).toString();
     }
 
-    // TODO: Transaction: Operations in `updateProvidedCodesFileIdInProblem` should be atomic
     private void updateProvidedCodesFileIdInProblem(Problem problem, Language language, String fileId) {
-        problem.mayHaveLanguageEnv(language)
-                .ifPresentOrElse(langEnv -> {
-                    removeFileIdIfExists(langEnv.getProvidedCodesFileId());
-                    langEnv.setProvidedCodesFileId(fileId);
-                    updateLanguageEnv(problem.getId(), langEnv, language);
-                }, () -> {
-                    LanguageEnv langEnv = LanguageEnv.builder()
-                            .language(language)
-                            .providedCodesFileId(fileId)
-                            .build();
-                    problem.addLanguageEnv(langEnv);
-                    updateLanguageEnv(problem.getId(), langEnv, language);
-                });
+        var langEnv = problem.mayHaveLanguageEnv(language)
+                .orElseThrow(() -> notFound(LanguageEnv.class).identifiedBy("language", language));
+
+        // TODO: Transaction: Operations in `updateProvidedCodesFileIdInProblem` should be atomic
+        removeFileIfFileIdExists(langEnv.getProvidedCodesFileId());
+        langEnv.setProvidedCodesFileId(fileId);
+        updateLanguageEnv(problem.getId(), langEnv);
     }
 
-    private void removeFileIdIfExists(String fileId) {
+    private void removeFileIfFileIdExists(String fileId) {
         if (isNullOrEmpty(fileId)) {
             gridFsTemplate.delete(new Query(where("_id").is(fileId)));
         }
     }
 
-    private void updateLanguageEnv(int problemId, LanguageEnv langEnv, Language language) {
+    private void updateLanguageEnv(int problemId, LanguageEnv langEnv) {
         Update update = new Update();
         Query query = new Query(where("_id").is(problemId));
-        update.set("languageEnvs." + language, langEnv);
+        update.set("languageEnvs." + langEnv.getLanguage(), toData(langEnv));
         mongoTemplate.upsert(query, update, ProblemData.class);
     }
 

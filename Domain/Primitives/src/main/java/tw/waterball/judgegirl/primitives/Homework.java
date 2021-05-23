@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import tw.waterball.judgegirl.commons.utils.JSR380Utils;
+import tw.waterball.judgegirl.commons.utils.ValidationUtils;
 
 import javax.validation.constraints.NotBlank;
 import java.util.List;
@@ -31,7 +31,7 @@ public class Homework {
     }
 
     public void validate() {
-        JSR380Utils.validate(this);
+        ValidationUtils.validate(this);
     }
 
 }

@@ -2,7 +2,7 @@ package tw.waterball.judgegirl.primitives.exam;
 
 import lombok.*;
 import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
-import tw.waterball.judgegirl.commons.utils.JSR380Utils;
+import tw.waterball.judgegirl.commons.utils.ValidationUtils;
 import tw.waterball.judgegirl.primitives.Student;
 
 import javax.validation.constraints.NotBlank;
@@ -45,7 +45,7 @@ public class Group {
     }
 
     public void validate() {
-        JSR380Utils.validate(this);
+        ValidationUtils.validate(this);
     }
 
     public void addMember(MemberId memberId) {

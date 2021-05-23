@@ -42,6 +42,14 @@ public abstract class StreamUtils {
                 }).collect(toList());
     }
 
+    public static <T extends Comparable<T>> List<T> sortToList(Collection<T> collection) {
+        return collection.stream().sorted().collect(toList());
+    }
+
+    public static <T> List<T> sortToList(Collection<T> collection, Comparator<T> comparator) {
+        return collection.stream().sorted(comparator).collect(toList());
+    }
+
     public static <T, R> List<T> mapToList(R[] array, ErrFunction<R, T> mapping) {
         return mapToList(asList(array), mapping);
     }

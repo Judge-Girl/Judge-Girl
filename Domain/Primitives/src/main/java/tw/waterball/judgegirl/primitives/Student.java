@@ -14,7 +14,7 @@
 package tw.waterball.judgegirl.primitives;
 
 import lombok.*;
-import tw.waterball.judgegirl.commons.utils.JSR380Utils;
+import tw.waterball.judgegirl.commons.utils.ValidationUtils;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
@@ -68,6 +68,6 @@ public class Student {
     }
 
     public void validate() {
-        JSR380Utils.validate(this);
+        ValidationUtils.validate(this);
     }
 }

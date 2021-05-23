@@ -8,11 +8,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
-import tw.waterball.judgegirl.primitives.problem.JudgePluginTag;
-import tw.waterball.judgegirl.primitives.submission.verdict.VerdictIssuer;
 import tw.waterball.judgegirl.plugins.api.*;
 import tw.waterball.judgegirl.plugins.impl.match.AllMatchPolicyPlugin;
 import tw.waterball.judgegirl.plugins.impl.match.RegexMatchPolicyPlugin;
+import tw.waterball.judgegirl.primitives.problem.JudgePluginTag;
+import tw.waterball.judgegirl.primitives.submission.verdict.VerdictIssuer;
+import tw.waterball.judgegirl.problemapi.views.JudgePluginTagView;
 import tw.waterball.judgegirl.springboot.problem.SpringBootProblemApplication;
 import tw.waterball.judgegirl.springboot.profiles.Profiles;
 import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
@@ -22,6 +23,7 @@ import java.util.List;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
+import static tw.waterball.judgegirl.problemapi.views.JudgePluginTagView.toViewModel;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -56,18 +58,18 @@ public class PluginControllerTest extends AbstractSpringBootTest {
         tagsShouldContain(getJudgePluginTags(JudgePluginTag.Type.FILTER), FILTER_PLUGIN);
     }
 
-    private void tagsShouldContain(List<JudgePluginTag> actualTags, JudgeGirlPlugin... expectedPlugins) {
+    private void tagsShouldContain(List<JudgePluginTagView> actualTags, JudgeGirlPlugin... expectedPlugins) {
         assertEqualsIgnoreOrder(actualTags,
-                mapToList(expectedPlugins, JudgeGirlPlugin::getTag));
+                mapToList(expectedPlugins, plugin -> toViewModel(plugin.getTag())));
     }
 
-    private List<JudgePluginTag> getJudgePluginTags(JudgePluginTag.Type type) throws Exception {
+    private List<JudgePluginTagView> getJudgePluginTags(JudgePluginTag.Type type) throws Exception {
         return getBody(mockMvc.perform(get("/api/plugins").queryParam("type", type.toString()))
                 .andExpect(status().isOk()), new TypeReference<>() {
         });
     }
 
-    private List<JudgePluginTag> getAllJudgePluginTags() throws Exception {
+    private List<JudgePluginTagView> getAllJudgePluginTags() throws Exception {
         return getBody(mockMvc.perform(get("/api/plugins"))
                 .andExpect(status().isOk()), new TypeReference<>() {
         });

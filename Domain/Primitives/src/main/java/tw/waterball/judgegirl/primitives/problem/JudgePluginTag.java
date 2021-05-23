@@ -13,21 +13,34 @@
 
 package tw.waterball.judgegirl.primitives.problem;
 
-import lombok.*;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+
+import javax.validation.constraints.Size;
+
+import static tw.waterball.judgegirl.commons.utils.ValidationUtils.validate;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
-@NoArgsConstructor
-@AllArgsConstructor
 @EqualsAndHashCode
 @Getter
-@Setter
 public class JudgePluginTag {
-    private Type type;
-    private String group;
-    private String name;
-    private String version;
+    private final Type type;
+    @Size(min = 1, max = 100)
+    private final String group;
+    @Size(min = 1, max = 100)
+    private final String name;
+    @Size(min = 1, max = 100)
+    private final String version;
+
+    public JudgePluginTag(Type type, String group, String name, String version) {
+        this.type = type;
+        this.group = group;
+        this.name = name;
+        this.version = version;
+        validate(this);
+    }
 
     @Override
     public String toString() {

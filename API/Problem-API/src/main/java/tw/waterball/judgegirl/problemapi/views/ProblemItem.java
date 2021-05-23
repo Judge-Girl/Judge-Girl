@@ -31,7 +31,7 @@ public class ProblemItem {
     public String title;
     public List<String> tags;
 
-    public static ProblemItem fromEntity(Problem problem) {
+    public static ProblemItem toProblemItem(Problem problem) {
         return new ProblemItem(problem.getId(), problem.getTitle(), problem.getTags());
     }
 }

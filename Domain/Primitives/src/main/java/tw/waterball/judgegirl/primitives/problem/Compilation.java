@@ -13,20 +13,33 @@
 
 package tw.waterball.judgegirl.primitives.problem;
 
-import lombok.*;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 
-import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
-@NoArgsConstructor
-@AllArgsConstructor
 @EqualsAndHashCode
-@ToString
 @Getter
-@Setter
 public class Compilation {
-    @NotBlank
-    private String script;
+    @Size(max = 500)
+    private final String script;
+
+    public Compilation(String script) {
+        this.script = script;
+        if (script.isEmpty()) {
+            throw new IllegalStateException("The content compilation script should not be empty.");
+        }
+        if (script.length() > 500) {
+            throw new IllegalStateException("The content length of the compilation script should not be greater than 500.");
+        }
+    }
+
+    @Override
+    public String toString() {
+        return script;
+    }
+
 }

@@ -21,11 +21,11 @@ import org.springframework.web.multipart.MultipartFile;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
 import tw.waterball.judgegirl.commons.token.TokenService;
 import tw.waterball.judgegirl.primitives.problem.Language;
-import tw.waterball.judgegirl.primitives.problem.LanguageEnv;
 import tw.waterball.judgegirl.primitives.problem.Problem;
 import tw.waterball.judgegirl.primitives.problem.Testcase;
 import tw.waterball.judgegirl.problem.domain.repositories.ProblemQueryParams;
 import tw.waterball.judgegirl.problem.domain.usecases.*;
+import tw.waterball.judgegirl.problem.domain.usecases.PatchProblemUseCase.LanguageEnvUpsert;
 import tw.waterball.judgegirl.problemapi.views.ProblemItem;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.springboot.utils.ResponseEntityUtils;
@@ -147,13 +147,13 @@ public class ProblemController {
     public void updateLanguageEnv(@RequestHeader(value = "Authorization") String authorization,
                                   @PathVariable int problemId,
                                   @PathVariable String langEnv,
-                                  @RequestBody LanguageEnv newLangEnv) {
-        if (!newLangEnv.getName().equals(langEnv)) {
+                                  @RequestBody LanguageEnvUpsert languageEnvUpsert) {
+        if (!languageEnvUpsert.getName().equals(langEnv)) {
             throw new IllegalArgumentException("LangEnv does not match.");
         }
         tokenService.ifAdminToken(authorization, token -> {
             PatchProblemUseCase.Request request = PatchProblemUseCase.Request.builder().problemId(problemId)
-                    .languageEnv(newLangEnv).build();
+                    .languageEnv(languageEnvUpsert).build();
             patchProblemUseCase.execute(request);
         });
     }
@@ -174,10 +174,10 @@ public class ProblemController {
     }
 
     @PutMapping("/{problemId}/testcases/{testcaseId}")
-    public void updateOrAddTestcase(@RequestHeader(value = "Authorization") String authorization,
-                                    @PathVariable int problemId,
-                                    @PathVariable String testcaseId,
-                                    @RequestBody Testcase testcase) {
+    public void upsertTestcase(@RequestHeader(value = "Authorization") String authorization,
+                               @PathVariable int problemId,
+                               @PathVariable String testcaseId,
+                               @RequestBody PatchProblemUseCase.TestcaseUpsert testcase) {
         tokenService.ifAdminToken(authorization, token -> {
             testcase.setId(testcaseId);
             testcase.setProblemId(problemId);
@@ -188,6 +188,7 @@ public class ProblemController {
             patchProblemUseCase.execute(request);
         });
     }
+
 }
 
 class GetProblemPresenter implements GetProblemUseCase.Presenter {
@@ -213,7 +214,7 @@ class GetProblemsPresenter implements GetProblemsUseCase.Presenter {
     }
 
     List<ProblemItem> present() {
-        return mapToList(problems, ProblemItem::fromEntity);
+        return mapToList(problems, ProblemItem::toProblemItem);
     }
 }
 

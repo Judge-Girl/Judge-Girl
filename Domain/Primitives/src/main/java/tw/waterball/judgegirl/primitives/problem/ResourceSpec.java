@@ -13,18 +13,31 @@
 
 package tw.waterball.judgegirl.primitives.problem;
 
-import lombok.*;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import org.hibernate.validator.constraints.Range;
+
+import static tw.waterball.judgegirl.commons.utils.ValidationUtils.validate;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
-@NoArgsConstructor
-@AllArgsConstructor
 @EqualsAndHashCode
-@ToString
 @Getter
-@Setter
 public class ResourceSpec {
-    private float cpu;
-    private float gpu;
+    @Range(min = 0, max = 10)
+    private final float cpu;
+    @Range(min = 0, max = 8)
+    private final float gpu;
+
+    public ResourceSpec(float cpu, float gpu) {
+        this.cpu = cpu;
+        this.gpu = gpu;
+        validate(this);
+    }
+
+    @Override
+    public String toString() {
+        return String.format("(CPU: %f, GPU: %f)", cpu, gpu);
+    }
 }

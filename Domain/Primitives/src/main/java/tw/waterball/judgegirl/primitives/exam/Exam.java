@@ -13,9 +13,9 @@ import java.util.function.Consumer;
 
 import static java.util.Objects.requireNonNull;
 import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
-import static tw.waterball.judgegirl.commons.utils.JSR380Utils.validate;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.findFirst;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.sum;
+import static tw.waterball.judgegirl.commons.utils.ValidationUtils.validate;
 import static tw.waterball.judgegirl.primitives.time.Duration.during;
 
 @Getter

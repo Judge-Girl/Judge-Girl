@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import tw.waterball.judgegirl.plugins.api.JudgeGirlPluginLocator;
 import tw.waterball.judgegirl.primitives.problem.JudgePluginTag;
+import tw.waterball.judgegirl.problemapi.views.JudgePluginTagView;
 
 import java.util.List;
 import java.util.function.Predicate;
@@ -21,10 +22,12 @@ public class PluginController {
     private final JudgeGirlPluginLocator pluginLocator;
 
     @GetMapping
-    public List<JudgePluginTag> getJudgePluginTags(@RequestParam(required = false) String type) {
+    public List<JudgePluginTagView> getJudgePluginTags(@RequestParam(required = false) String type) {
         Predicate<JudgePluginTag> predicate = type == null ? tag -> true :
                 tag -> tag.getType().toString().equalsIgnoreCase(type);
         return pluginLocator.getAll().stream()
-                .filter(predicate).collect(toList());
+                .filter(predicate)
+                .map(JudgePluginTagView::toViewModel)
+                .collect(toList());
     }
 }

@@ -14,7 +14,6 @@
 package tw.waterball.judgegirl.primitives.problem;
 
 import org.junit.jupiter.api.Test;
-import tw.waterball.judgegirl.commons.utils.JSR380Utils.EntityInvalidException;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -22,38 +21,37 @@ class TestcaseValidationTest {
 
     @Test
     public void testShouldBeValid() {
-        Testcase testcase = new Testcase("name", 0, 3, 3, 3, -1, 50);
-        testcase.validate();
+        new Testcase("name", 0, 3, 3, 3, -1, 50);
     }
 
     @Test
     public void givenZeroTimeLimit_ShouldBeInvalid() {
-        Testcase testcase = new Testcase("name", 0, 0, 3, 3, -1, 50);
-        assertThrows(EntityInvalidException.class, testcase::validate);
+        assertThrows(RuntimeException.class,
+                () -> new Testcase("name", 0, 0, 3, 3, -1, 50));
     }
 
     @Test
     public void givenZeroMemoryLimit_ShouldBeInvalid() {
-        Testcase testcase = new Testcase("name", 0, 3, 0, 3, -1, 50);
-        assertThrows(EntityInvalidException.class, testcase::validate);
+        assertThrows(RuntimeException.class,
+                () -> new Testcase("name", 0, 3, 0, 3, -1, 50));
     }
 
     @Test
     public void givenZeroOutputLimit_ShouldBeInvalid() {
-        Testcase testcase = new Testcase("name", 0, -1, 3, 0, -1, 50);
-        assertThrows(EntityInvalidException.class, testcase::validate);
+        assertThrows(RuntimeException.class,
+                () -> new Testcase("name", 0, -1, 3, 0, -1, 50));
     }
 
     @Test
     public void givenZeroThreadLimit_ShouldBeInvalid() {
-        Testcase testcase = new Testcase("name", 0, 3, -1, 3, 0, 50);
-        assertThrows(EntityInvalidException.class, testcase::validate);
+        assertThrows(RuntimeException.class,
+                () -> new Testcase("name", 0, 3, -1, 3, 0, 50));
     }
 
     @Test
     public void givenNegativeGrade_ShouldBeInvalid() {
-        Testcase testcase = new Testcase("name", 0, 3, -1, 3, 3, -1);
-        assertThrows(EntityInvalidException.class, testcase::validate);
+        assertThrows(RuntimeException.class,
+                () -> new Testcase("name", 0, 3, -1, 3, 3, -1));
     }
 
 }
