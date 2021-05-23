@@ -25,6 +25,7 @@ services:
       spring.profiles.active: prod,mysql,amqp
       MYSQL_HOST: "${MYSQL_HOST}"
       RABBIT_HOST: "${RABBIT_HOST}"
+      REDIS_HOST: "${REDIS_HOST}"
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.student-service.rule=PathPrefix(`/broker`) || PathPrefix(`/api/students`) || PathPrefix(`/api/admins`)"
@@ -39,6 +40,7 @@ services:
       spring.profiles.active: prod,amqp,mysql
       MYSQL_HOST: "${MYSQL_HOST}"
       RABBIT_HOST: "${RABBIT_HOST}"
+      REDIS_HOST: "${REDIS_HOST}"
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.academy-service.rule=PathPrefix(`/api/exams`) || PathPrefix(`/api/students/{studentId:[0-9]+}/exams`) || PathPrefix(`/api/homework`) || PathPrefix(`/api/members`) || PathPrefix(`/api/groups`)"
@@ -52,6 +54,7 @@ services:
     environment:
       spring.profiles.active: prod,mongo,redis
       MONGO_HOST: "${MONGO_HOST}"
+      REDIS_HOST: "${REDIS_HOST}"
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.problem-service.rule=PathPrefix(`/api/problems`) || PathPrefix(`/api/plugins`)"
@@ -66,6 +69,7 @@ services:
       spring.profiles.active: prod,mongo,amqp
       MONGO_HOST: "${MONGO_HOST}"
       RABBIT_HOST: "${RABBIT_HOST}"
+      REDIS_HOST: "${REDIS_HOST}"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock # docker-in-docker for running judger
     command: "/bin/sh -c 'until nc -z -v -w30 ${RABBIT_HOST} 5672; do echo Waiting for RabbitMQ...; sleep 1; done && java -jar /app.jar'"
