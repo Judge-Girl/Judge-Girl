@@ -1,11 +1,12 @@
 package tw.waterball.judgegirl.springboot.problem.repositories;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
-import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.data.redis.core.RedisTemplate;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
+import tw.waterball.judgegirl.commons.utils.functional.GetById;
 import tw.waterball.judgegirl.primitives.problem.Language;
 import tw.waterball.judgegirl.primitives.problem.LanguageEnv;
 import tw.waterball.judgegirl.primitives.problem.Problem;
@@ -14,15 +15,15 @@ import tw.waterball.judgegirl.problem.domain.repositories.ProblemQueryParams;
 import tw.waterball.judgegirl.problem.domain.repositories.ProblemRepository;
 
 import java.io.InputStream;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.time.Duration;
+import java.util.*;
+
+import static java.lang.Boolean.TRUE;
+import static java.util.Optional.ofNullable;
 
 /**
  * @author - wally55077@gmail.com
  */
-@CacheConfig
 @AllArgsConstructor
 public class CacheProblemRepository implements ProblemRepository {
 
@@ -38,7 +39,7 @@ public class CacheProblemRepository implements ProblemRepository {
 
     @Override
     public Optional<Problem> findProblemById(int problemId) {
-        return problemRepository.findProblemById(problemId);
+        return cacheProblemById(problemId, problemRepository::findProblemById);
     }
 
     @Override
@@ -79,11 +80,13 @@ public class CacheProblemRepository implements ProblemRepository {
 
     @Override
     public void patchProblem(int problemId, PatchProblemParams params) {
+        invalidateProblemCache(problemId);
         problemRepository.patchProblem(problemId, params);
     }
 
     @Override
     public void updateProblemWithProvidedCodes(Problem problem, Language language, List<FileResource> providedCodes) {
+        invalidateProblemCache(problem.getId());
         problemRepository.updateProblemWithProvidedCodes(problem, language, providedCodes);
     }
 
@@ -99,20 +102,23 @@ public class CacheProblemRepository implements ProblemRepository {
 
     @Override
     public void archiveProblem(Problem problem) {
+        invalidateProblemCache(problem.getId());
         problemRepository.archiveProblem(problem);
     }
 
     @Override
     public void deleteProblem(Problem problem) {
+        invalidateProblemCache(problem.getId());
         problemRepository.deleteProblem(problem);
+    }
+
+    private void invalidateProblemCache(int problemId) {
+        redisTemplate.delete(getProblemKey(problemId));
     }
 
     @Override
     public void deleteAll() {
-        Collection<String> keys = redisTemplate.keys(PROBLEMS_PREFIX + ":*");
-        if (keys != null) {
-            redisTemplate.delete(keys);
-        }
+        redisTemplate.delete(getCacheProblemKeys());
         problemRepository.deleteAll();
     }
 
@@ -120,4 +126,49 @@ public class CacheProblemRepository implements ProblemRepository {
     public void saveTags(List<String> tagList) {
         problemRepository.saveTags(tagList);
     }
+
+    private Optional<Problem> cacheProblemById(int problemId, GetById<Integer, Optional<Problem>> getActualProblemById) {
+        var problemKey = getProblemKey(problemId);
+        if (TRUE.equals(redisTemplate.hasKey(problemKey))) {
+            return findProblemInCacheOrElse(problemId, getActualProblemById);
+        } else {
+            return getProblemFromDataBase(problemId, getActualProblemById);
+        }
+    }
+
+    private Optional<Problem> findProblemInCacheOrElse(int problemId, GetById<Integer, Optional<Problem>> getActualProblemById) {
+        var problemKey = getProblemKey(problemId);
+        try {
+            return ofNullable(mapper.readValue(redisTemplate.opsForValue().get(problemKey), Problem.class));
+        } catch (JsonProcessingException je) {
+            redisTemplate.delete(problemKey);
+            return getProblemFromDataBase(problemId, getActualProblemById);
+        }
+    }
+
+    private Optional<Problem> getProblemFromDataBase(int problemId, GetById<Integer, Optional<Problem>> getActualProblemById) {
+        Optional<Problem> problemOptional = getActualProblemById.get(problemId);
+        problemOptional.ifPresent(this::cacheProblem);
+        return problemOptional;
+    }
+
+    private void cacheProblem(Problem problem) {
+        try {
+            String problemKey = getProblemKey(problem.getId());
+            redisTemplate.opsForValue()
+                    .set(problemKey, mapper.writeValueAsString(problem), Duration.ofDays(1));
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private Collection<String> getCacheProblemKeys() {
+        return ofNullable(redisTemplate.keys(PROBLEMS_PREFIX + ":*"))
+                .orElseGet(Collections::emptySet);
+    }
+
+    private String getProblemKey(int problemId) {
+        return String.format("%s:%d", PROBLEMS_PREFIX, problemId);
+    }
+
 }
