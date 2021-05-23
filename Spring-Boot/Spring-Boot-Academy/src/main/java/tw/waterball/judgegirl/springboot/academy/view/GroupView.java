@@ -1,20 +1,18 @@
-package tw.waterball.judgegirl.studentapi.clients.view;
+package tw.waterball.judgegirl.springboot.academy.view;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import tw.waterball.judgegirl.primitives.exam.Group;
 
 /**
  * @author - wally55077@gmail.com
  */
-@Builder
-@ToString
-@EqualsAndHashCode
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class GroupView {
-
     public int id;
-
     public String name;
 
     public static GroupView toViewModel(Group group) {

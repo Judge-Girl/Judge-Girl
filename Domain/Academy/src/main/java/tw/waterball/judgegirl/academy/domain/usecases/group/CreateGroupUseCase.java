@@ -2,9 +2,9 @@ package tw.waterball.judgegirl.academy.domain.usecases.group;
 
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
-import tw.waterball.judgegirl.primitives.exam.Group;
 import tw.waterball.judgegirl.academy.domain.exceptions.DuplicateGroupNameException;
 import tw.waterball.judgegirl.academy.domain.repositories.GroupRepository;
+import tw.waterball.judgegirl.primitives.exam.Group;
 
 import javax.inject.Named;
 
@@ -21,12 +21,11 @@ public class CreateGroupUseCase extends AbstractGroupUseCase {
 
     public void execute(Request request, Presenter presenter) throws DuplicateGroupNameException {
         Group group = new Group(request.name);
-        validateGroup(group);
+        groupNameShouldBeDistinct(group);
         presenter.showGroup(groupRepository.save(group));
     }
 
-    private void validateGroup(Group group) throws DuplicateGroupNameException {
-        group.validate();
+    private void groupNameShouldBeDistinct(Group group) throws DuplicateGroupNameException {
         if (groupRepository.existsByName(group.getName())) {
             throw new DuplicateGroupNameException();
         }

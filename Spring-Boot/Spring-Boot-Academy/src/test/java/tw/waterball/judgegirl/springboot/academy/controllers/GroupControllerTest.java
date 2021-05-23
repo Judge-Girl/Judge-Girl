@@ -15,9 +15,9 @@ import tw.waterball.judgegirl.academy.domain.usecases.group.CreateGroupUseCase;
 import tw.waterball.judgegirl.primitives.Student;
 import tw.waterball.judgegirl.primitives.exam.Group;
 import tw.waterball.judgegirl.springboot.academy.SpringBootAcademyApplication;
+import tw.waterball.judgegirl.springboot.academy.view.GroupView;
 import tw.waterball.judgegirl.springboot.profiles.Profiles;
 import tw.waterball.judgegirl.studentapi.clients.FakeStudentServiceDriver;
-import tw.waterball.judgegirl.studentapi.clients.view.GroupView;
 import tw.waterball.judgegirl.studentapi.clients.view.StudentView;
 import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
 

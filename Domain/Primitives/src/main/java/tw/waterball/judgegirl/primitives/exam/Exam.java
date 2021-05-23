@@ -140,7 +140,11 @@ public class Exam {
         setDuration(during(getStartTime(), endTime));
     }
 
-    public Optional<Examinee> getExaminee(Examinee.Id examineeId) {
-        return findFirst(getExaminees(), examinee -> examinee.getId().equals(examineeId));
+    public boolean hasExaminee(int studentId) {
+        return getExaminee(studentId).isPresent();
+    }
+
+    public Optional<Examinee> getExaminee(int studentId) {
+        return findFirst(getExaminees(), examinee -> examinee.getId().getStudentId() == studentId);
     }
 }

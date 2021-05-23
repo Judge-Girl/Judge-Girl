@@ -34,14 +34,14 @@ public class SampleSubmissionController {
     }
 
     @PostMapping("/submissions/{submissionId}/sample")
-    public void upgradeSubmissionToSample(@RequestHeader(value = "Authorization") String authorization,
+    public void upgradeSubmissionToSample(@RequestHeader("Authorization") String authorization,
                                           @PathVariable String submissionId) {
         tokenService.ifAdminToken(authorization,
                 token -> upgradeSubmissionToSampleUseCase.execute(submissionId));
     }
 
     @DeleteMapping("/submissions/{submissionId}/sample")
-    public void downgradeSampleBackToSubmission(@RequestHeader(value = "Authorization") String authorization,
+    public void downgradeSampleBackToSubmission(@RequestHeader("Authorization") String authorization,
                                                 @PathVariable String submissionId) {
         tokenService.ifAdminToken(authorization, token ->
                 downgradeSampleBackToSubmissionUseCase.execute(submissionId));

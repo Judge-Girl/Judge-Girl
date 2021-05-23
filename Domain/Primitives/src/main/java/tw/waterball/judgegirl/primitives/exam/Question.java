@@ -8,8 +8,6 @@ import javax.validation.constraints.PositiveOrZero;
 
 import static tw.waterball.judgegirl.commons.utils.ValidationUtils.validate;
 
-@AllArgsConstructor
-@NoArgsConstructor
 @Getter
 @Setter
 public class Question {
@@ -24,6 +22,11 @@ public class Question {
 
     @PositiveOrZero
     private int questionOrder;
+
+
+    public Question(Id questionId, int quota, int score, int questionOrder) {
+        this(questionId.examId, questionId.problemId, quota, score, questionOrder);
+    }
 
     public Question(int examId, int problemId, int quota, int score, int questionOrder) {
         this.id = new Id(examId, problemId);

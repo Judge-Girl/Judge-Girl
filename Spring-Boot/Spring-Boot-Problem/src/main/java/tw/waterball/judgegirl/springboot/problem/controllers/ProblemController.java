@@ -97,7 +97,7 @@ public class ProblemController {
 
     @GetMapping(value = "/{problemId}/{langEnvName}/providedCodes/{providedCodesFileId}",
             produces = "application/zip")
-    public ResponseEntity<InputStreamResource> downloadZippedProvidedCodes(@RequestHeader(value = "Authorization") String authorization,
+    public ResponseEntity<InputStreamResource> downloadZippedProvidedCodes(@RequestHeader("Authorization") String authorization,
                                                                            @PathVariable int problemId,
                                                                            @PathVariable String langEnvName,
                                                                            @PathVariable String providedCodesFileId) {
@@ -110,7 +110,7 @@ public class ProblemController {
 
     @GetMapping(value = "/{problemId}/testcaseIOs/{testcaseIOsFileId}",
             produces = "application/zip")
-    public ResponseEntity<InputStreamResource> downloadZippedTestCaseInputs(@RequestHeader(value = "Authorization") String authorization,
+    public ResponseEntity<InputStreamResource> downloadZippedTestCaseInputs(@RequestHeader("Authorization") String authorization,
                                                                             @PathVariable int problemId,
                                                                             @PathVariable String testcaseIOsFileId) {
         return tokenService.returnIfAdmin(authorization, token -> {
@@ -121,14 +121,14 @@ public class ProblemController {
     }
 
     @PostMapping(consumes = "text/plain")
-    public int saveProblemWithTitleAndGetId(@RequestHeader(value = "Authorization") String authorization,
+    public int saveProblemWithTitleAndGetId(@RequestHeader("Authorization") String authorization,
                                             @RequestBody String title) {
         return tokenService.returnIfAdmin(authorization, token ->
                 saveProblemWithTitleUseCase.execute(title));
     }
 
     @PatchMapping("/{problemId}")
-    public void patchProblem(@RequestHeader(value = "Authorization") String authorization,
+    public void patchProblem(@RequestHeader("Authorization") String authorization,
                              @PathVariable int problemId,
                              @RequestBody PatchProblemUseCase.Request request) {
         request.problemId = problemId;
@@ -137,14 +137,14 @@ public class ProblemController {
     }
 
     @DeleteMapping("/{problemId}")
-    public void archiveOrDeleteProblem(@RequestHeader(value = "Authorization") String authorization,
+    public void archiveOrDeleteProblem(@RequestHeader("Authorization") String authorization,
                                        @PathVariable int problemId) {
         tokenService.ifAdminToken(authorization,
                 token -> deleteProblemUseCase.execute(problemId));
     }
 
     @PutMapping("/{problemId}/langEnv/{langEnv}")
-    public void updateLanguageEnv(@RequestHeader(value = "Authorization") String authorization,
+    public void updateLanguageEnv(@RequestHeader("Authorization") String authorization,
                                   @PathVariable int problemId,
                                   @PathVariable String langEnv,
                                   @RequestBody LanguageEnvUpsert languageEnvUpsert) {
@@ -159,7 +159,7 @@ public class ProblemController {
     }
 
     @PutMapping("/{problemId}/{langEnvName}/providedCodes")
-    public String uploadProvidedCodes(@RequestHeader(value = "Authorization") String authorization,
+    public String uploadProvidedCodes(@RequestHeader("Authorization") String authorization,
                                       @PathVariable int problemId,
                                       @PathVariable String langEnvName,
                                       @RequestParam(PROVIDED_CODE_MULTIPART_KEY_NAME) MultipartFile[] providedCodes) {
@@ -174,7 +174,7 @@ public class ProblemController {
     }
 
     @PutMapping("/{problemId}/testcases/{testcaseId}")
-    public void upsertTestcase(@RequestHeader(value = "Authorization") String authorization,
+    public void upsertTestcase(@RequestHeader("Authorization") String authorization,
                                @PathVariable int problemId,
                                @PathVariable String testcaseId,
                                @RequestBody PatchProblemUseCase.TestcaseUpsert testcase) {

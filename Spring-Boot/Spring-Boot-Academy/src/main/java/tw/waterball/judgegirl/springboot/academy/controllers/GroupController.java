@@ -1,16 +1,17 @@
 package tw.waterball.judgegirl.springboot.academy.controllers;
 
 import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import tw.waterball.judgegirl.academy.domain.usecases.group.*;
 import tw.waterball.judgegirl.primitives.Student;
 import tw.waterball.judgegirl.primitives.exam.Group;
-import tw.waterball.judgegirl.studentapi.clients.view.GroupView;
+import tw.waterball.judgegirl.springboot.academy.view.GroupView;
 import tw.waterball.judgegirl.studentapi.clients.view.StudentView;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import static java.util.Arrays.asList;
@@ -88,8 +89,9 @@ public class GroupController {
     }
 
     @PostMapping("/groups/{groupId}/members")
-    public Map<String, List<String>> addGroupMembers(@PathVariable Integer groupId,
-                                                     @RequestBody String[] mailList) {
+    public AddGroupMembersIntoGroupByMailListPresenter.View addGroupMembers(
+            @PathVariable Integer groupId,
+            @RequestBody String[] mailList) {
         AddGroupMembersByMailListUseCase.Request request = new AddGroupMembersByMailListUseCase.Request(groupId, asList(mailList));
         AddGroupMembersIntoGroupByMailListPresenter presenter = new AddGroupMembersIntoGroupByMailListPresenter();
         addGroupMembersByMailListUseCase.execute(request, presenter);
@@ -187,7 +189,14 @@ class AddGroupMembersIntoGroupByMailListPresenter implements AddGroupMembersByMa
         this.errorEmailList = errorEmailList;
     }
 
-    public Map<String, List<String>> present() {
-        return Collections.singletonMap("errorList", errorEmailList);
+    public View present() {
+        return new View(errorEmailList);
+    }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class View {
+        public List<String> errorList;
     }
 }
