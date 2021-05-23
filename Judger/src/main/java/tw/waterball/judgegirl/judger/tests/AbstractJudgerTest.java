@@ -73,7 +73,6 @@ public abstract class AbstractJudgerTest {
         problem.setOutputMatchPolicyPluginTag(AllMatchPolicyPlugin.TAG);
         problem.setTestcaseIOsFileId("testcaseIOsFileId");
         problem.getLanguageEnvs().values().forEach(languageEnv -> languageEnv.setProvidedCodesFileId("providedCodesFileId"));
-        problem.validate();
         problemId = problem.getId();
         submission = new Submission(studentId, problem.getId(), CURRENTLY_ONLY_SUPPORT_C.toString(), "fileId");
 
@@ -224,7 +223,8 @@ public abstract class AbstractJudgerTest {
     private void mockDownloadProvidedCodes() throws IOException {
         String providedCodesHomePath = format(providedCodesHomeFormat, problem.getId());
         byte[] zippedProvidedCodesBytes = zipDirectory(providedCodesHomePath);
-        when(problemServiceDriver.downloadProvidedCodes(problem.getId(), problem.getLanguageEnv(CURRENTLY_ONLY_SUPPORT_C)))
+        var languageEnv = problem.getLanguageEnv(CURRENTLY_ONLY_SUPPORT_C);
+        when(problemServiceDriver.downloadProvidedCodes(problem.getId(), languageEnv.getName(), languageEnv.getProvidedCodesFileId()))
                 .thenReturn(new FileResource(providedCodesHomePath, zippedProvidedCodesBytes.length,
                         new ByteArrayInputStream(zippedProvidedCodesBytes)));
     }

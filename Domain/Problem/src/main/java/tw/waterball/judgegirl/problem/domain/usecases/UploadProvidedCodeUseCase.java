@@ -35,6 +35,8 @@ public class UploadProvidedCodeUseCase extends BaseProblemUseCase {
 
     public void execute(Request request, Presenter presenter) {
         Problem problem = findProblem(request.problemId);
+        problem.mayHaveLanguageEnv(request.language)
+                .orElseThrow(() -> new IllegalStateException("The languageEnv must be saved before its providedCodes are uploaded."));
         problemRepository.updateProblemWithProvidedCodes(problem, request.language, request.providedCodes);
         presenter.showResult(problem);
     }

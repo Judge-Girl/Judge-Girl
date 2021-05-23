@@ -13,13 +13,17 @@
 
 package tw.waterball.judgegirl.primitives.problem;
 
-import lombok.*;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Singular;
+import org.jetbrains.annotations.Nullable;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.LinkedList;
 import java.util.List;
+
+import static java.util.Objects.requireNonNullElseGet;
+import static tw.waterball.judgegirl.commons.utils.ValidationUtils.validate;
 
 /**
  * An environment for each language support.
@@ -28,28 +32,42 @@ import java.util.List;
  */
 @Builder
 @Getter
-@NoArgsConstructor
-@AllArgsConstructor
 public class LanguageEnv {
     @NotNull
-    private Language language;
+    private final Language language;
 
-    @Valid
+    @NotNull
     private Compilation compilation;
 
-    @Valid
     @NotNull
     private ResourceSpec resourceSpec;
 
     @NotNull
     @Singular
-    private List<@Valid SubmittedCodeSpec> submittedCodeSpecs;
+    private List<SubmittedCodeSpec> submittedCodeSpecs;
 
-    @NotBlank
+    @Nullable
     private String providedCodesFileId;
 
-    public LanguageEnv(@NotNull Language language) {
+    public LanguageEnv(Language language,
+                       Compilation compilation,
+                       ResourceSpec resourceSpec,
+                       List<SubmittedCodeSpec> submittedCodeSpecs) {
+        this(language, compilation, resourceSpec, submittedCodeSpecs, null);
+    }
+
+    public LanguageEnv(Language language,
+                       Compilation compilation,
+                       ResourceSpec resourceSpec,
+                       List<SubmittedCodeSpec> submittedCodeSpecs,
+                       @Nullable String providedCodesFileId) {
         this.language = language;
+        this.compilation = compilation;
+        this.resourceSpec = resourceSpec;
+        this.submittedCodeSpecs = submittedCodeSpecs;
+        this.providedCodesFileId = providedCodesFileId;
+        validateProvidedCodesFileId(providedCodesFileId);
+        validate(this);
     }
 
     public boolean isCompiledLanguage() {
@@ -60,13 +78,17 @@ public class LanguageEnv {
         return language.toString();
     }
 
-    @Override
-    public String toString() {
-        return getName();
+    public void setProvidedCodesFileId(@Nullable String providedCodesFileId) {
+        validateProvidedCodesFileId(providedCodesFileId);
+        this.providedCodesFileId = providedCodesFileId;
     }
 
-    public void setProvidedCodesFileId(String providedCodesFileId) {
-        this.providedCodesFileId = providedCodesFileId;
+    private void validateProvidedCodesFileId(String providedCodesFileId) {
+        if (providedCodesFileId != null &&
+                (providedCodesFileId.isEmpty() ||
+                        providedCodesFileId.length() > 300)) {
+            throw new IllegalStateException("The providedCodesFileId's length must be > 0 and <= 300");
+        }
     }
 
     public void setResourceSpec(ResourceSpec resourceSpec) {
@@ -74,16 +96,15 @@ public class LanguageEnv {
     }
 
     public void setCompilationScript(String compilationScript) {
-        if (compilation == null) {
-            compilation = new Compilation();
-        }
-        this.compilation.setScript(compilationScript);
+        this.compilation = new Compilation(compilationScript);
     }
 
     public List<SubmittedCodeSpec> getSubmittedCodeSpecs() {
-        if (submittedCodeSpecs == null) {
-            submittedCodeSpecs = new LinkedList<>();
-        }
-        return submittedCodeSpecs;
+        return submittedCodeSpecs = requireNonNullElseGet(submittedCodeSpecs, LinkedList::new);
+    }
+
+    @Override
+    public String toString() {
+        return getName();
     }
 }

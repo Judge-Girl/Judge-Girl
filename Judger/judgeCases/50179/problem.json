@@ -1,8 +1,9 @@
 {
   "id": 50179,
   "title": "Split a file into many files",
-  "languageEnvs": {
-    "C": {
+  "languageEnvs": [
+    {
+      "name": "C",
       "language": "C",
       "compilation": {
         "script": "gcc -O2 -std=c99 a.c"
@@ -17,10 +18,9 @@
           "fileName": "a.c"
         }
       ],
-      "name": "C",
       "compiledLanguage": true
     }
-  },
+  ],
   "tags": [
     "FILE I/O"
   ],

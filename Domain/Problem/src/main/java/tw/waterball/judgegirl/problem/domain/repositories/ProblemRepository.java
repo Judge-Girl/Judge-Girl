@@ -46,9 +46,7 @@ public interface ProblemRepository {
     Problem save(Problem problem, Map<LanguageEnv, InputStream> providedCodesZipMap, InputStream testcaseIOsZip);
 
     Problem save(Problem problem);
-
-    int saveProblemWithTitleAndGetId(String title);
-
+    
     void patchProblem(int problemId, PatchProblemParams params);
 
     void updateProblemWithProvidedCodes(Problem problem, Language language, List<FileResource> providedCodes);

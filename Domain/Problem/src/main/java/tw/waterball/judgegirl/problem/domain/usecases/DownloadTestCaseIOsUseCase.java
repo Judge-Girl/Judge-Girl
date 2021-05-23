@@ -21,6 +21,8 @@ import tw.waterball.judgegirl.problem.domain.repositories.ProblemRepository;
 
 import javax.inject.Named;
 
+import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
+
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
@@ -35,7 +37,7 @@ public class DownloadTestCaseIOsUseCase extends BaseProblemUseCase {
         Problem problem = findProblem(request.problemId);
         if (problem.getTestcaseIOsFileId().equals(request.testcaseIOsFileId)) {
             return problemRepository.downloadTestCaseIOs(request.problemId, request.testcaseIOsFileId)
-                    .orElseThrow(() -> new NotFoundException(request.problemId, "problem"));
+                    .orElseThrow(() -> notFound(Problem.class).id(request.problemId));
         }
         throw new IllegalArgumentException(
                 String.format("Invalid testcase IO's file id: %s.", request.testcaseIOsFileId));

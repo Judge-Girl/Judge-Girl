@@ -15,7 +15,6 @@ package tw.waterball.judgegirl.problemapi.clients;
 
 import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
-import tw.waterball.judgegirl.primitives.problem.LanguageEnv;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
 
 import java.util.Optional;
@@ -26,10 +25,6 @@ import java.util.Optional;
 public interface ProblemServiceDriver {
 
     Optional<ProblemView> getProblem(int problemId);
-
-    default FileResource downloadProvidedCodes(int problemId, LanguageEnv languageEnv) throws NotFoundException {
-        return downloadProvidedCodes(problemId, languageEnv.getName(), languageEnv.getProvidedCodesFileId());
-    }
 
     FileResource downloadProvidedCodes(int problemId, String languageEnvName, String providedCodesFileId) throws NotFoundException;
 

@@ -13,21 +13,33 @@
 
 package tw.waterball.judgegirl.primitives.problem;
 
-import lombok.*;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.ToString;
 import org.apache.commons.io.FilenameUtils;
+
+import javax.validation.constraints.Size;
+
+import static tw.waterball.judgegirl.commons.utils.ValidationUtils.validate;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
 @EqualsAndHashCode
 @ToString
-@NoArgsConstructor
-@AllArgsConstructor
 @Getter
-@Setter
 public class SubmittedCodeSpec {
-    private Language format;
-    private String fileName;
+    @NonNull
+    private final Language format;
+    @Size(min = 1, max = 80)
+    private final String fileName;
+
+    public SubmittedCodeSpec(Language format, String fileName) {
+        this.format = format;
+        this.fileName = fileName;
+        validate(this);
+    }
 
     public String getFileExtension() {
         return FilenameUtils.getExtension(fileName);

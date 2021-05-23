@@ -14,10 +14,19 @@
 package tw.waterball.judgegirl.commons.utils;
 
 
+import static java.util.stream.IntStream.range;
+
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
 public class StringUtils {
+    
+    public static String generateStringOfLength(char c, int length) {
+        return range(0, length)
+                .mapToObj(i -> String.valueOf(c))
+                .reduce((p, n) -> p + n).orElseThrow();
+    }
+
     public static String capitalize(String text) {
         if (text == null || text.length() == 0) {
             return text;

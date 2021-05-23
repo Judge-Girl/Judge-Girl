@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import tw.waterball.judgegirl.api.exceptions.ApiRequestFailedException;
 import tw.waterball.judgegirl.commons.exceptions.ForbiddenAccessException;
 import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
+import tw.waterball.judgegirl.commons.token.TokenInvalidException;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -51,6 +52,16 @@ public class CommonExceptionAdvices {
             log.error("[Illegal] {\"message\": \"{}\"}", err.getMessage());
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(err.getMessage());
+    }
+
+    @ExceptionHandler({TokenInvalidException.class})
+    public ResponseEntity<?> handleTokenInvalidException(TokenInvalidException err) {
+        if (log.isDebugEnabled()) {
+            log.error("[Token Invalid]", err);
+        } else {
+            log.error("[Token Invalid] {\"message\": \"{}\"}", err.getMessage());
+        }
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token Invalid");
     }
 
     @ExceptionHandler({ForbiddenAccessException.class})

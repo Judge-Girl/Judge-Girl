@@ -16,17 +16,17 @@ package tw.waterball.judgegirl.problemapi.views;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import tw.waterball.judgegirl.primitives.problem.JudgePluginTag;
-import tw.waterball.judgegirl.primitives.problem.LanguageEnv;
+import tw.waterball.judgegirl.primitives.problem.Language;
 import tw.waterball.judgegirl.primitives.problem.Problem;
-import tw.waterball.judgegirl.primitives.problem.Testcase;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 import static java.util.Collections.emptyList;
 import static java.util.Objects.requireNonNullElse;
+import static tw.waterball.judgegirl.commons.utils.StreamUtils.findFirst;
+import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -38,27 +38,31 @@ public class ProblemView {
     public Integer id;
     public String title;
     public String description;
-    public List<LanguageEnv> languageEnvs;
-    public JudgePluginTag judgeMatchPolicyPluginTag;
-    public Collection<JudgePluginTag> judgeFilterPluginTags;
+    public List<LanguageEnvView> languageEnvs;
+    public JudgePluginTagView judgeMatchPolicyPluginTag;
+    public Collection<JudgePluginTagView> judgeFilterPluginTags;
     public List<String> tags;
     public String testcaseIOsFileId;
-    public List<Testcase> testcases;
+    public List<TestcaseView> testcases;
     public int totalGrade;
     public boolean visible;
     public boolean archived;
+
+    public Optional<LanguageEnvView> getLanguageEnv(Language language) {
+        return findFirst(languageEnvs, env -> env.getLanguage() == language);
+    }
 
     public static ProblemView toViewModel(Problem problem) {
         return new ProblemView(
                 problem.getId(),
                 problem.getTitle(),
                 problem.getDescription(),
-                new ArrayList<>(problem.getLanguageEnvs().values()),
-                problem.getOutputMatchPolicyPluginTag(),
-                problem.getFilterPluginTags(),
+                mapToList(problem.getLanguageEnvs().values(), LanguageEnvView::toViewModel),
+                JudgePluginTagView.toViewModel(problem.getOutputMatchPolicyPluginTag()),
+                mapToList(problem.getFilterPluginTags(), JudgePluginTagView::toViewModel),
                 problem.getTags(),
                 problem.getTestcaseIOsFileId(),
-                problem.getTestcases(),
+                mapToList(problem.getTestcases(), TestcaseView::toViewModel),
                 problem.getTotalGrade(),
                 problem.getVisible(),
                 problem.isArchived()
@@ -70,15 +74,17 @@ public class ProblemView {
                 .id(view.getId())
                 .title(view.getTitle())
                 .description(view.description)
-                .outputMatchPolicyPluginTag(view.judgeMatchPolicyPluginTag)
+                .outputMatchPolicyPluginTag(view.judgeMatchPolicyPluginTag.toValue())
                 .tags(requireNonNullElse(view.tags, emptyList()))
-                .testcases(view.testcases)
+                .testcases(mapToList(view.testcases, TestcaseView::toValue))
                 .testcaseIOsFileId(view.testcaseIOsFileId)
-                .filterPluginTags(requireNonNullElse(view.judgeFilterPluginTags, emptyList()))
                 .archived(view.archived);
-        for (LanguageEnv languageEnv : view.languageEnvs) {
-            builder.languageEnv(languageEnv.getName(), languageEnv);
+        if (view.judgeFilterPluginTags != null) {
+            builder.filterPluginTags(mapToList(view.judgeFilterPluginTags, JudgePluginTagView::toValue));
         }
+        view.languageEnvs.stream()
+                .map(LanguageEnvView::toValue)
+                .forEach(languageEnv -> builder.languageEnv(languageEnv.getName(), languageEnv));
         return builder.build();
     }
 }

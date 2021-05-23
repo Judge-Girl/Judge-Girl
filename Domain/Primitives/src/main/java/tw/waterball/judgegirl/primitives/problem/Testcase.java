@@ -13,41 +13,42 @@
 
 package tw.waterball.judgegirl.primitives.problem;
 
-import lombok.*;
-import tw.waterball.judgegirl.commons.utils.JSR380Utils;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.ToString;
 import tw.waterball.judgegirl.primitives.problem.validators.PositiveOrNegativeOne;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.PositiveOrZero;
 
+import static tw.waterball.judgegirl.commons.utils.ValidationUtils.validate;
+
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
-@NoArgsConstructor
 @AllArgsConstructor
 @Getter
-@Setter
 @ToString
 public class Testcase {
 
     private String id;
     @NotBlank
-    private String name;
+    private final String name;
     @PositiveOrZero
-    private int problemId;
+    private final int problemId;
     @PositiveOrNegativeOne
-    private int timeLimit;
+    private final int timeLimit;
     @PositiveOrNegativeOne
-    private long memoryLimit;
+    private final long memoryLimit;
     @PositiveOrNegativeOne
-    private long outputLimit;
+    private final long outputLimit;
     @PositiveOrNegativeOne
-    private int threadNumberLimit;
+    private final int threadNumberLimit;
     @PositiveOrZero
-    private int grade;
+    private final int grade;
 
     public Testcase(String name, int problemId, int timeLimit, long memoryLimit,
-            long outputLimit, int threadNumberLimit, int grade) {
+                    long outputLimit, int threadNumberLimit, int grade) {
         this.name = name;
         this.problemId = problemId;
         this.timeLimit = timeLimit;
@@ -55,9 +56,7 @@ public class Testcase {
         this.outputLimit = outputLimit;
         this.threadNumberLimit = threadNumberLimit;
         this.grade = grade;
+        validate(this);
     }
 
-    public void validate() {
-        JSR380Utils.validate(this);
-    }
 }

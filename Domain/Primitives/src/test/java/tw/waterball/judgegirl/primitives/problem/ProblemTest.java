@@ -14,38 +14,57 @@
 package tw.waterball.judgegirl.primitives.problem;
 
 import org.junit.jupiter.api.Test;
-import tw.waterball.judgegirl.primitives.stubs.ProblemStubs;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static tw.waterball.judgegirl.commons.utils.StringUtils.generateStringOfLength;
+import static tw.waterball.judgegirl.primitives.stubs.ProblemStubs.problemTemplate;
 
 class ProblemTest {
 
     @Test
     void GivenValidProblem_WhenValidate_ShouldPass() {
-        Problem problem = ProblemStubs.problemTemplate().build();
-        problem.validate();
+        problemTemplate().build();
     }
 
     @Test
     void GivenProblemWithMatchPolicyPluginTagOfSourceCodeFilterType_WhenValidate_ShouldThrow() {
-        Problem problem = ProblemStubs.problemTemplate()
-                .outputMatchPolicyPluginTag(new JudgePluginTag(
-                        JudgePluginTag.Type.FILTER,
-                        "group", "name", "1.0"
-                )).build();
-
-        assertThrows(RuntimeException.class, problem::validate);
+        assertThrows(RuntimeException.class,
+                () -> problemTemplate()
+                        .outputMatchPolicyPluginTag(new JudgePluginTag(
+                                JudgePluginTag.Type.FILTER,
+                                "group", "name", "1.0"
+                        )).build());
     }
 
 
     @Test
     void GivenProblemWithCodeInspectionOfOutputMatchType_WhenValidate_ShouldThrow() {
-        Problem problem = ProblemStubs.problemTemplate()
-                .filterPluginTag(new JudgePluginTag(
-                        JudgePluginTag.Type.OUTPUT_MATCH_POLICY,
-                        "group", "name", "1.0"
-                )).build();
-
-        assertThrows(RuntimeException.class, problem::validate);
+        assertThrows(RuntimeException.class,
+                () -> problemTemplate()
+                        .filterPluginTag(new JudgePluginTag(
+                                JudgePluginTag.Type.OUTPUT_MATCH_POLICY,
+                                "group", "name", "1.0"
+                        )).build());
     }
+
+    @Test
+    void LongTitleWithLength100ShouldBeInvalid() {
+        assertThrows(RuntimeException.class,
+                () -> problemTemplate()
+                        .title(generateStringOfLength('x', 100)).build());
+    }
+
+    @Test
+    void EmptyTitleShouldBeInvalid() {
+        assertThrows(RuntimeException.class,
+                () -> problemTemplate().title("").build());
+    }
+
+    @Test
+    void LongDescriptionWithLength3001ShouldBeInvalid() {
+        assertThrows(RuntimeException.class,
+                () -> problemTemplate()
+                        .description(generateStringOfLength('x', 3001)).build());
+    }
+
 }

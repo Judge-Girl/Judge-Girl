@@ -15,11 +15,15 @@ package tw.waterball.judgegirl.judger.tests;
 
 import lombok.SneakyThrows;
 import org.apache.commons.io.IOUtils;
+import tw.waterball.judgegirl.plugins.impl.match.AllMatchPolicyPlugin;
 import tw.waterball.judgegirl.primitives.problem.Problem;
+import tw.waterball.judgegirl.problemapi.views.ProblemView;
 
 import java.io.FileInputStream;
 import java.nio.charset.StandardCharsets;
 
+import static tw.waterball.judgegirl.problemapi.views.JudgePluginTagView.toViewModel;
+import static tw.waterball.judgegirl.problemapi.views.ProblemView.toEntity;
 import static tw.waterball.judgegirl.springboot.configs.JacksonConfig.OBJECT_MAPPER;
 
 @SuppressWarnings("SameParameterValue")
@@ -28,9 +32,10 @@ public class SplitFileIntoFilesTest extends AbstractJudgerTest {
     @Override
     protected Problem getProblem() {
         var problem = OBJECT_MAPPER.readValue(
-                new FileInputStream(problemHomePath + "/50179/problem.json"), Problem.class);
+                new FileInputStream(problemHomePath + "/50179/problem.json"), ProblemView.class);
         problem.setDescription(IOUtils.toString(new FileInputStream(problemHomePath + "/50179/description.md"), StandardCharsets.UTF_8));
-        return problem;
+        problem.setJudgeMatchPolicyPluginTag(toViewModel(AllMatchPolicyPlugin.TAG));
+        return toEntity(problem);
     }
 
 }

@@ -23,8 +23,16 @@ import java.util.stream.Collectors;
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
-public class JSR380Utils {
+public class ValidationUtils {
     private static final ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+
+    public static String shouldHaveLength(int min, int max, String attributeName, String text) {
+        int length = text.length();
+        if (length < min || length > max) {
+            throw new IllegalStateException(String.format("The length of %s should be within the range [%d, %d]", attributeName, min, max));
+        }
+        return text;
+    }
 
     public static boolean isValid(Object object) {
         return getViolations(object).isEmpty();

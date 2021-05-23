@@ -14,7 +14,6 @@ package tw.waterball.judgegirl.springboot.problem.controllers;
 
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,12 +32,15 @@ import tw.waterball.judgegirl.commons.token.TokenService;
 import tw.waterball.judgegirl.commons.token.TokenService.Identity;
 import tw.waterball.judgegirl.commons.token.TokenService.Token;
 import tw.waterball.judgegirl.commons.utils.ResourceUtils;
-import tw.waterball.judgegirl.commons.utils.ZipUtils;
-import tw.waterball.judgegirl.primitives.problem.*;
+import tw.waterball.judgegirl.primitives.problem.JudgePluginTag;
+import tw.waterball.judgegirl.primitives.problem.Language;
+import tw.waterball.judgegirl.primitives.problem.LanguageEnv;
+import tw.waterball.judgegirl.primitives.problem.Problem;
 import tw.waterball.judgegirl.problem.domain.repositories.ProblemRepository;
 import tw.waterball.judgegirl.problem.domain.usecases.PatchProblemUseCase;
-import tw.waterball.judgegirl.problemapi.views.ProblemItem;
-import tw.waterball.judgegirl.problemapi.views.ProblemView;
+import tw.waterball.judgegirl.problem.domain.usecases.PatchProblemUseCase.LanguageEnvUpsert;
+import tw.waterball.judgegirl.problem.domain.usecases.PatchProblemUseCase.TestcaseUpsert;
+import tw.waterball.judgegirl.problemapi.views.*;
 import tw.waterball.judgegirl.springboot.problem.SpringBootProblemApplication;
 import tw.waterball.judgegirl.springboot.profiles.Profiles;
 import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
@@ -47,24 +49,31 @@ import tw.waterball.judgegirl.testkit.semantics.WithHeader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.IntStream;
+import java.util.function.Consumer;
 
 import static java.lang.Integer.parseInt;
+import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static java.util.Collections.*;
+import static java.util.Comparator.comparing;
 import static java.util.Optional.ofNullable;
+import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.IntStream.range;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static tw.waterball.judgegirl.commons.utils.HttpHeaderUtils.bearerWithToken;
-import static tw.waterball.judgegirl.commons.utils.StreamUtils.findFirst;
-import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
+import static tw.waterball.judgegirl.commons.utils.StreamUtils.*;
+import static tw.waterball.judgegirl.commons.utils.ZipUtils.zipFilesFromResources;
+import static tw.waterball.judgegirl.primitives.problem.JudgePluginTag.Type.OUTPUT_MATCH_POLICY;
+import static tw.waterball.judgegirl.primitives.stubs.ProblemStubs.languageEnvTemplate;
 import static tw.waterball.judgegirl.primitives.stubs.ProblemStubs.problemTemplate;
+import static tw.waterball.judgegirl.problem.domain.usecases.PatchProblemUseCase.TestcaseUpsert.upsert;
 import static tw.waterball.judgegirl.problem.domain.usecases.UploadProvidedCodeUseCase.PROVIDED_CODE_MULTIPART_KEY_NAME;
-import static tw.waterball.judgegirl.problemapi.views.ProblemView.toViewModel;
+import static tw.waterball.judgegirl.problemapi.views.ProblemItem.toProblemItem;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -85,7 +94,6 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     @Autowired
     TokenService tokenService;
 
-    private Problem problem;
     private byte[] providedCodesZip;
     private byte[] testcaseIOsZip;
     private Token adminToken;
@@ -93,7 +101,6 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
 
     @BeforeEach
     void setup() {
-        problem = problemTemplate().build();
         adminToken = tokenService.createToken(Identity.admin(ADMIN_ID));
         student1Token = tokenService.createToken(Identity.student(STUDENT1_ID));
     }
@@ -103,28 +110,19 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         problemRepository.deleteAll();
     }
 
-    private void givenProblemSavedWithProvidedCodesAndTestcaseIOs() {
-        providedCodesZip = ZipUtils.zipFilesFromResources("/stubs/file1.c", "/stubs/file2.c");
-        testcaseIOsZip = ZipUtils.zipFilesFromResources("/stubs/in/", "/stubs/out/");
-
-        this.problem = problemRepository.save(problem,
-                singletonMap(problem.getLanguageEnv(Language.C), new ByteArrayInputStream(providedCodesZip)),
-                new ByteArrayInputStream(testcaseIOsZip));
-    }
-
     @Test
-    void GivenProblemSaved_DownloadZippedProvidedCodesShouldSucceed() throws Exception {
-        givenProblemSavedWithProvidedCodesAndTestcaseIOs();
+    void GivenProblemSavedWithProvidedCodesAndTestcaseIOs_WhenDownloadProvidedCodes_ShouldSucceed() throws Exception {
+        var problem = givenProblemSavedWithProvidedCodesAndTestcaseIOs();
 
         LanguageEnv languageEnv = problem.getLanguageEnv(Language.C);
 
-        downloadProvidedCodes(languageEnv);
+        downloadProvidedCodes(problem.getId(), languageEnv);
     }
 
-    private void downloadProvidedCodes(LanguageEnv languageEnv) throws Exception {
+    private void downloadProvidedCodes(int problemId, LanguageEnv languageEnv) throws Exception {
         mockMvc.perform(withToken(adminToken,
                 get(API_PREFIX + "/{problemId}/{languageEnv}/providedCodes/{providedCodesFileId}",
-                        problem.getId(), languageEnv.getName(), languageEnv.getProvidedCodesFileId())))
+                        problemId, languageEnv.getName(), languageEnv.getProvidedCodesFileId())))
                 .andExpect(status().isOk())
                 .andExpect(header().longValue("Content-Length", providedCodesZip.length))
                 .andExpect(content().contentType("application/zip"))
@@ -133,23 +131,22 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
 
     @Test
     void GivenProblemSaved_WhenGetProblemById_ShouldRespondThatProblem() throws Exception {
-        givenProblemSavedWithProvidedCodesAndTestcaseIOs();
+        Problem problem = givenOneProblemSaved();
 
-        mockMvc.perform(get(API_PREFIX + "/{problemId}", problem.getId())
-                .header("Authorization", bearerWithToken(adminToken.getToken())))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().json(toJson(toViewModel(problem))));
+        var actualProblem = getProblem(withToken(adminToken), problem.getId());
+
+        assertProblemEquals(toViewModel(problem), actualProblem);
     }
+
 
     @Test
     void GivenProblemSaved_DownloadZippedTestCaseIOsShouldSucceed() throws Exception {
-        givenProblemSavedWithProvidedCodesAndTestcaseIOs();
+        var problem = givenProblemSavedWithProvidedCodesAndTestcaseIOs();
 
-        downloadTestcaseIOs();
+        downloadTestcaseIOs(problem);
     }
 
-    private void downloadTestcaseIOs() throws Exception {
+    private void downloadTestcaseIOs(Problem problem) throws Exception {
         mockMvc.perform(withToken(adminToken,
                 get(API_PREFIX + "/{problemId}/testcaseIOs/{testcaseIOsFileId}",
                         problem.getId(), problem.getTestcaseIOsFileId())))
@@ -169,7 +166,6 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
                 .andExpect(content().json(toJson(tags)));
     }
 
-    @NotNull
     private List<String> givenTagsSaved(String... tags) {
         List<String> tagList = asList(tags);
         problemRepository.saveTags(tagList);
@@ -177,58 +173,44 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    void GivenTaggedProblemsSaved_WhenGetProblemsThatMatchToTags_ShouldRespondThoseProblemItems() throws Exception {
-        ProblemItem targetProblem1 = ProblemItem.fromEntity(
+    void GivenTaggedProblemsSaved_WhenGetProblemsThatMatchToTheTags_ShouldRespondThoseProblemItems() throws Exception {
+        ProblemItem targetProblem1 = toProblemItem(
                 givenProblemWithTags(1, "tag1", "tag2"));
-        ProblemItem targetProblem2 = ProblemItem.fromEntity(
+        ProblemItem targetProblem2 = toProblemItem(
                 givenProblemWithTags(2, "tag1", "tag2"));
 
-        verifyFindProblemsByTagsWithExpectedList(adminToken, asList("tag1", "tag2"), asList(targetProblem1, targetProblem2));
-        verifyFindProblemsByTagsWithExpectedList(adminToken, singletonList("tag1"), asList(targetProblem1, targetProblem2));
-        verifyFindProblemsByTagsWithExpectedList(adminToken, singletonList("tag2"), asList(targetProblem1, targetProblem2));
+        filterProblemsWithTagsShouldContain(adminToken, asList("tag1", "tag2"), asList(targetProblem1, targetProblem2));
+        filterProblemsWithTagsShouldContain(adminToken, singletonList("tag1"), asList(targetProblem1, targetProblem2));
+        filterProblemsWithTagsShouldContain(adminToken, singletonList("tag2"), asList(targetProblem1, targetProblem2));
     }
 
     @Test
-    void GivenTaggedProblemsSaved_WhenGetProblemsToDontMatchToTags_ShouldRespondEmptyArray() throws Exception {
-        ProblemItem.fromEntity(givenProblemWithTags(1, "tag1", "tag2"));
-        ProblemItem.fromEntity(givenProblemWithTags(2, "tag1", "tag2"));
+    void GivenTaggedProblemsSaved_WhenGetProblemsThatDontMatchToTags_ShouldRespondEmptyArray() throws Exception {
+        toProblemItem(givenProblemWithTags(1, "tag1", "tag2"));
+        toProblemItem(givenProblemWithTags(2, "tag1", "tag2"));
 
-        verifyFindProblemsByTagsWithExpectedList(adminToken, asList("tag1", "tag2", "tag3"), emptyList());
-        verifyFindProblemsByTagsWithExpectedList(adminToken, singletonList("Non-existent-tag"), emptyList());
+        filterProblemsWithTagsShouldContain(adminToken, asList("tag1", "tag2", "tag3"), emptyList());
+        filterProblemsWithTagsShouldContain(adminToken, singletonList("Non-existent-tag"), emptyList());
     }
 
-    private Problem givenProblemWithTags(int id, String... tags) {
-        Problem targetProblem = problemTemplate().id(id).tags(asList(tags)).build();
-        return problemRepository.save(targetProblem);
-    }
-
-    private void verifyFindProblemsByTagsWithExpectedList(Token token, List<String> tags, List<ProblemItem> problemItems) throws Exception {
-        String tagsSplitByCommas = String.join(", ", tags);
-        mockMvc.perform(get(API_PREFIX)
-                .header("Authorization", bearerWithToken(token.getToken()))
-                .queryParam("tags", tagsSplitByCommas))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().json(objectMapper.writeValueAsString(problemItems)));
-    }
 
     @Test
-    void GivenProblemsSaved_WhenGetAllProblems_ShouldRespondAll() throws Exception {
+    void Given10ProblemsSaved_WhenGetAllProblems_ShouldRespondAll10Problems() throws Exception {
         List<Problem> problems = givenProblemsSaved(10);
 
-        // verify all problems will be found and projected into problem-items
-        assertEquals(mapToList(problems, ProblemItem::fromEntity), requestGetProblems(withToken(adminToken)));
+        assertEquals(mapToList(problems, ProblemItem::toProblemItem),
+                getProblemItems(withToken(adminToken)));
     }
 
     @Test
     void GivenOneProblemSaved_WhenGetProblemsWithoutPageSpecified_ShouldRespondOnlyThatProblem() throws Exception {
-        Problem expectedProblem = givenProblemsSaved(1).get(0);
+        Problem expectedProblem = givenOneProblemSaved();
 
-        assertEquals(ProblemItem.fromEntity(expectedProblem), requestGetProblems(withToken(adminToken)).get(0));
+        assertEquals(toProblemItem(expectedProblem), getProblemItems(withToken(adminToken)).get(0));
     }
 
     @Test
-    void GivenManyProblemsSaved_WhenGetProblemsInPage_ShouldRespondOnlyThoseProblemsInThatPage() throws Exception {
+    void testProblemsPagination() throws Exception {
         List<Problem> expectedProblems = givenProblemsSaved(200);
 
         // Strict pagination testing
@@ -238,7 +220,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         List<ProblemItem> actualProblemItems;
 
         do {
-            actualProblemItems = requestGetProblemsInPage(adminToken, page);
+            actualProblemItems = getProblemItemsInPage(adminToken, page);
             actualAllProblemItems.addAll(actualProblemItems);
 
             assertTrue(actualProblemItems.stream().noneMatch(actualProblemItemsInPreviousPage::contains),
@@ -253,136 +235,118 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         }
     }
 
-    private List<ProblemItem> requestGetProblems(WithHeader withHeader) throws Exception {
-        var request = get(API_PREFIX);
-        withHeader.decorate(request);
-        return getBody(mockMvc.perform(request)
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON)), new TypeReference<>() {
-        });
-    }
-
-    private List<ProblemItem> requestGetProblems() throws Exception {
-        return requestGetProblems(WithHeader.empty());
-    }
-
-    private List<ProblemItem> requestGetProblemsInPage(Token token, int page) throws Exception {
-        return getBody(mockMvc.perform(get(API_PREFIX)
-                .header("Authorization", bearerWithToken(token.getToken()))
-                .queryParam("page", String.valueOf(page)))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON)), new TypeReference<>() {
-        });
-    }
-
-    private List<Problem> givenProblemsSaved(int count) {
-        Random random = new Random();
-        var problems = IntStream.range(0, count).mapToObj((id) ->
-                problemTemplate().id(id)
-                        .title(String.valueOf(random.nextInt())).build())
-                .collect(toList());
-        problems.forEach(problemRepository::save);
-        return problems;
-    }
-
     @Test
-    void WhenSaveProblemWithTitle_ProblemShouldBeSavedAndRespondItsId() throws Exception {
-        String randomTitle = UUID.randomUUID().toString();
+    void WhenSaveProblemWithTitle_ProblemShouldBeSavedAndItsIdShouldBeResponded() throws Exception {
+        String randomTitle = randomUUID().toString();
         int id = saveProblemWithTitle(randomTitle);
 
-        assertEquals(randomTitle, problemRepository.findProblemById(id).orElseThrow().getTitle());
-    }
-
-    private int saveProblemWithTitle(String title) throws Exception {
-        return parseInt(getContentAsString(
-                mockMvc.perform(withToken(adminToken,
-                        post(API_PREFIX)
-                                .contentType(MediaType.TEXT_PLAIN_VALUE).content(title)))
-                        .andExpect(status().isOk())));
+        assertEquals(randomTitle, getProblem(withToken(adminToken), id).getTitle());
     }
 
     @Test
-    void GivenOneProblemSavedAndPatchProblemWithNewTitle_WhenQueryTheSameProblem_ShouldHaveNewTitle() throws Exception {
-        Problem savedProblem = givenOneProblemSaved();
-        String newTitle = UUID.randomUUID().toString();
+    void GivenOneProblemSaved_WhenPatchProblemWithNewTitle_TheProblemShouldHaveNewTitle() throws Exception {
+        Problem expectedProblem = givenOneProblemSaved();
+        String newTitle = randomUUID().toString();
 
-        savedProblem.setTitle(newTitle);
-        PatchProblemUseCase.Request request = PatchProblemUseCase.Request.builder().title(newTitle).build();
-        patchProblem(request);
+        expectedProblem.setTitle(newTitle);
+        patchProblem(patch -> patch.title(newTitle));
 
-        Problem actualProblem = problemRepository.findProblemById(savedProblem.getId())
-                .orElseThrow();
-        assertEquals(newTitle, actualProblem.getTitle());
+        var actualProblem = getProblem(withToken(adminToken), expectedProblem.getId());
+        assertProblemEquals(toViewModel(expectedProblem), actualProblem);
     }
 
     @Test
-    void GivenOneProblemSavedAndPatchProblemWithDescription_WhenQueryById_ShouldHaveNewDescription() throws Exception {
-        Problem savedProblem = givenOneProblemSaved();
-        String newDescription = UUID.randomUUID().toString();
+    void GivenOneProblemSaved_WhenPatchProblemWithDescription_TheProblemShouldHaveNewDescription() throws Exception {
+        Problem expectedProblem = givenOneProblemSaved();
+        String newDescription = randomUUID().toString();
 
-        savedProblem.setDescription(newDescription);
-        PatchProblemUseCase.Request request = PatchProblemUseCase.Request.builder().description(newDescription).build();
-        patchProblem(request);
+        expectedProblem.setDescription(newDescription);
+        patchProblem(patch -> patch.description(newDescription));
 
-        Problem actualProblem = problemRepository.findProblemById(savedProblem.getId()).orElseThrow();
-        assertEquals(newDescription, actualProblem.getDescription());
+        var actualProblem = getProblem(withToken(adminToken), expectedProblem.getId());
+        assertProblemEquals(toViewModel(expectedProblem), actualProblem);
     }
 
     @Test
-    void GivenOneProblemSavedAndPatchProblemWithPluginMatchTags_WhenQueryById_ShouldHaveNewTags() throws Exception {
-        Problem savedProblem = givenOneProblemSaved();
-        JudgePluginTag pluginMatchTag = new JudgePluginTag();
-        pluginMatchTag.setGroup("Judge Girl");
-        pluginMatchTag.setName("Test");
-        pluginMatchTag.setVersion("1.0");
-        pluginMatchTag.setType(JudgePluginTag.Type.OUTPUT_MATCH_POLICY);
+    void GivenOneProblemSaved_WhenPatchProblemWithMatchPluginTag_TheProblemShouldHaveNewMatchPluginTag() throws Exception {
+        Problem expectedProblem = givenOneProblemSaved();
+        JudgePluginTag pluginMatchTag = new JudgePluginTag(OUTPUT_MATCH_POLICY, "Judge Girl", "Test", "1.0");
 
-        savedProblem.setOutputMatchPolicyPluginTag(pluginMatchTag);
-        PatchProblemUseCase.Request request = PatchProblemUseCase.Request.builder().matchPolicyPluginTag(pluginMatchTag).build();
-        patchProblem(request);
+        expectedProblem.setOutputMatchPolicyPluginTag(pluginMatchTag);
+        patchProblem(patch -> patch.matchPolicyPluginTag(new PatchProblemUseCase.JudgePluginTagItem(pluginMatchTag)));
 
-        Problem actualProblem = problemRepository.findProblemById(savedProblem.getId()).orElseThrow();
-        JudgePluginTag actualPluginMatchTag = actualProblem.getOutputMatchPolicyPluginTag();
-        assertEquals(pluginMatchTag, actualPluginMatchTag);
+        var actualProblem = getProblem(withToken(adminToken), expectedProblem.getId());
+        assertProblemEquals(toViewModel(expectedProblem), actualProblem);
     }
 
     @Test
-    void GivenOneProblemSavedAndPatchProblemWithPluginFilterTags_WhenQueryById_ShouldHaveNewTags() throws Exception {
-        Problem savedProblem = givenOneProblemSaved();
-        Set<JudgePluginTag> filterPluginTags = new HashSet<>();
-        final int COUNT_FILTER = 10;
-        for (int i = 1; i <= COUNT_FILTER; ++i) {
-            JudgePluginTag filterPluginTag = new JudgePluginTag();
-            filterPluginTag.setGroup("Judge Girl");
-            filterPluginTag.setName(String.format("Test %d", i));
-            filterPluginTag.setVersion(String.format("%d.0", i));
-            filterPluginTag.setType(JudgePluginTag.Type.FILTER);
-            filterPluginTags.add(filterPluginTag);
-        }
+    void GivenOneProblemSaved_WhenPatchProblemWithFilterPluginTags_TheProblemShouldHaveNewFilterPluginTags() throws Exception {
+        Problem expectedProblem = givenOneProblemSaved();
+        var filterPluginTags = new HashSet<>(
+                generate(10, i -> new JudgePluginTag(
+                        JudgePluginTag.Type.FILTER, "Judge Girl", format("Test %d", i), format("%d.0", i)))
+        );
 
-        savedProblem.setFilterPluginTags(filterPluginTags);
-        PatchProblemUseCase.Request request = PatchProblemUseCase.Request.builder().filterPluginTags(filterPluginTags).build();
-        patchProblem(request);
+        expectedProblem.setFilterPluginTags(filterPluginTags);
+        patchProblem(patch -> patch.filterPluginTags(mapToList(filterPluginTags, PatchProblemUseCase.JudgePluginTagItem::new)));
 
-        Problem actualProblem = problemRepository.findProblemById(savedProblem.getId()).orElseThrow();
-        Set<JudgePluginTag> queryPluginFilterTags = new HashSet<>(actualProblem.getFilterPluginTags());
-        assertEquals(queryPluginFilterTags, filterPluginTags);
-    }
-
-    private void patchProblem(PatchProblemUseCase.Request request) throws Exception {
-        mockMvc.perform(withToken(adminToken,
-                patch(API_PREFIX + "/{problemId}", request.problemId)
-                        .contentType(MediaType.APPLICATION_JSON_VALUE)
-                        .content(objectMapper.writeValueAsString(request))))
-                .andExpect(status().isOk());
-    }
-
-    private Problem givenOneProblemSaved() {
-        return givenProblemsSaved(1).get(0);
+        var actualProblem = getProblem(withToken(adminToken), expectedProblem.getId());
+        assertProblemEquals(toViewModel(expectedProblem), actualProblem);
     }
 
     @Test
-    void GivenProblems_1_2_3_Saved_WhenGetProblemsByIds_1_2_3_ShouldRespondThat1_2_3() throws Exception {
+    void GivenOneProblemSaved_WhenPatchTheProblemWithNewTags_ShouldHaveUpdatedNewTags() throws Exception {
+        Problem expectedProblem = givenOneProblemSaved();
+
+        List<String> newTags = asList("newTagA", "newTagB");
+        expectedProblem.setTags(newTags);
+        patchProblem(patch -> patch.tags(newTags));
+
+        var actualProblem = getProblem(withToken(adminToken), expectedProblem.getId());
+        assertProblemEquals(toViewModel(expectedProblem), actualProblem);
+    }
+
+    @Test
+    void GivenOneProblemSaved_WhenPatchTheProblemToBeVisible_ThenProblemShouldBeUpdatedVisible() throws Exception {
+        Problem expectedProblem = givenOneProblemSaved();
+
+        expectedProblem.setVisible(true);
+        patchProblem(patch -> patch.visible(true));
+
+        var actualProblem = getProblem(withToken(adminToken), expectedProblem.getId());
+        assertProblemEquals(toViewModel(expectedProblem), actualProblem);
+    }
+
+    @Test
+    void GivenProblemSaved_WhenUpdateTestcase_ThenShouldUpdateSuccessfully() throws Exception {
+        int problemId = 1;
+        Problem expectedProblem = saveProblem(problemId);
+
+        var expectedTestcaseUpdate =
+                upsert(expectedProblem.getTestcases().get(0), tc -> tc.setGrade(100));
+        expectedProblem.upsertTestcase(expectedTestcaseUpdate.toValue());
+        upsertTestCase(problemId, expectedTestcaseUpdate);
+
+        var actualProblem = getProblem(withToken(adminToken), problemId);
+        assertProblemEquals(toViewModel(expectedProblem), actualProblem);
+    }
+
+    @Test
+    void GivenProblemSaved_WhenAddNewTestcase_ThenShouldAddSuccessfully() throws Exception {
+        int problemId = 1;
+        Problem expectedProblem = saveProblem(problemId);
+
+        var expectedTestcaseName = "123456";
+        TestcaseUpsert testcaseUpsert = new TestcaseUpsert(expectedTestcaseName, problemId, 100, 300, 300, -1, 500);
+        expectedProblem.upsertTestcase(testcaseUpsert.toValue());
+        upsertTestCase(problemId, testcaseUpsert);
+
+        var actualProblem = getProblem(withToken(adminToken), problemId);
+        assertProblemEquals(toViewModel(expectedProblem), actualProblem);
+    }
+
+    @Test
+    void GivenProblems_1_2_3_Saved_WhenGetProblemsByIds_1_2_3_ShouldRespondProblems1_2_3() throws Exception {
         saveProblems(1, 2, 3);
 
         var actualProblems = getProblems(withToken(adminToken), 1, 2, 3);
@@ -391,7 +355,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    void Given_1_ProblemSaved_WhenGetProblemsByIds_1_2_ShouldRespondThat_1() throws Exception {
+    void Given_1_ProbplemSaved_WhenGetProblemsByIds_1_2_ShouldOnlyRespondTheProblem_1() throws Exception {
         saveProblems(1);
 
         var actualProblems = getProblems(withToken(adminToken), 1, 2);
@@ -400,7 +364,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    void GivenOneProblemSaved_WhenArchiveIt_ItShouldSucceed_AndThenDeleteIt_ThenItShouldBeDeletedAndCantBeFound() throws Exception {
+    void GivenOneProblemSaved_WhenArchiveIt_ShouldSucceed_AndThenDeleteIt_ThenItShouldBeDeletedAndCantBeFound() throws Exception {
         int problemId = 1;
         saveProblems(problemId);
 
@@ -418,163 +382,40 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         givenProblemsSaved(10);
 
         archiveOrDeleteProblem(1);
-        var problems = requestGetProblems(withToken(adminToken));
+        var problems = getProblemItems(withToken(adminToken));
 
         assertTrue(problems.stream().allMatch(problem -> problem.id != 1));
-    }
-
-    private void archiveOrDeleteProblem(int problemId) throws Exception {
-        mockMvc.perform(withToken(adminToken,
-                delete(API_PREFIX + "/{problemId}", problemId)))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    void GivenProblemSaved_WhenUpdateTestcase_ThenShouldUpdateSuccessfully() throws Exception {
-        int problemId = 1;
-        Problem problem = saveProblemAndGet(problemId);
-
-        Testcase expectedTestcase = problem.getTestcases().get(0);
-        String testCaseId = expectedTestcase.getId();
-        int expectedTestcaseGrade = 100;
-        expectedTestcase.setGrade(expectedTestcaseGrade);
-        updateOrAddTestCase(problemId, testCaseId, expectedTestcase);
-
-        var actualProblem = getProblem(withToken(adminToken), problemId);
-        List<Testcase> testcases = actualProblem.getTestcases();
-
-        assertEquals(problem.numOfTestcases(), testcases.size());
-        Testcase actualTestCase = findFirst(testcases, tc -> expectedTestcaseGrade == tc.getGrade()).orElseThrow();
-        assertTestCaseEquals(expectedTestcase, actualTestCase);
-    }
-
-    @Test
-    void GivenProblemSaved_WhenAddNewTestcase_ThenShouldAddSuccessfully() throws Exception {
-        int problemId = 1;
-        Problem problem = saveProblemAndGet(problemId);
-
-        var expectedTestcaseName = "123456";
-        Testcase expectedTestcase = new Testcase(expectedTestcaseName, problemId, 100, 300, 300, -100, 500);
-        updateOrAddTestCase(problemId, expectedTestcaseName, expectedTestcase);
-
-        List<Testcase> testcases = getProblem(withToken(adminToken), problemId).getTestcases();
-        assertEquals(problem.numOfTestcases() + 1, testcases.size());
-        Testcase actualTestcase = findFirst(testcases, testcase -> expectedTestcaseName.equals(testcase.getName())).orElseThrow();
-        assertNotNull(actualTestcase.getId());
-        assertTestCaseEquals(expectedTestcase, actualTestcase);
-    }
-
-    private void assertTestCaseEquals(Testcase expectedTestcase, Testcase actualTestCase) {
-        assertEquals(expectedTestcase.getName(), actualTestCase.getName());
-        assertEquals(expectedTestcase.getProblemId(), actualTestCase.getProblemId());
-        assertEquals(expectedTestcase.getTimeLimit(), actualTestCase.getTimeLimit());
-        assertEquals(expectedTestcase.getMemoryLimit(), actualTestCase.getMemoryLimit());
-        assertEquals(expectedTestcase.getOutputLimit(), actualTestCase.getOutputLimit());
-        assertEquals(expectedTestcase.getThreadNumberLimit(), actualTestCase.getThreadNumberLimit());
-        assertEquals(expectedTestcase.getGrade(), actualTestCase.getGrade());
-    }
-
-    private void updateOrAddTestCase(int problemId, String testCaseName, Testcase testcase) throws Exception {
-        mockMvc.perform(withToken(adminToken,
-                put(API_PREFIX + "/{problemId}/testcases/{testcaseName}", problemId, testCaseName)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(toJson(testcase))))
-                .andExpect(status().isOk());
-    }
-
-    private void problemsShouldHaveIds(List<ProblemView> actualProblems, Integer... problemIds) {
-        Set<Integer> idsSet = Set.of(problemIds);
-        actualProblems.forEach(problem -> assertTrue(idsSet.contains(problem.getId())));
-    }
-
-    private ProblemView getProblem(WithHeader withHeader, int problemId) throws Exception {
-        var request = get(API_PREFIX + "/{problemId}", problemId);
-        withHeader.decorate(request);
-        return getBody(mockMvc.perform(request).andExpect(status().isOk()), ProblemView.class);
-    }
-
-    private ProblemView getProblem(int problemId) throws Exception {
-        return getProblem(WithHeader.empty(), problemId);
-    }
-
-    private List<ProblemView> getProblems(WithHeader withHeader, Integer... problemIds) throws Exception {
-        String ids = String.join(", ", mapToList(problemIds, String::valueOf));
-        var request = get(API_PREFIX).queryParam("ids", ids);
-        withHeader.decorate(request);
-        return getBody(mockMvc.perform(request).andExpect(status().isOk()), new TypeReference<>() {
-        });
-    }
-
-    private List<ProblemView> getProblems(Integer... problemIds) throws Exception {
-        return getProblems(WithHeader.empty(), problemIds);
-    }
-
-    private void saveProblems(Integer... problemIds) {
-        stream(problemIds).forEach(problemId -> {
-            Problem problem = problemTemplate().build();
-            problem.setId(problemId);
-            byte[] providedCodesZip = ZipUtils.zipFilesFromResources("/stubs/file1.c", "/stubs/file2.c");
-
-            byte[] testcaseIOsZip = ZipUtils.zipFilesFromResources("/stubs/in/", "/stubs/out/");
-
-            problemRepository.save(problem, singletonMap(problem.getLanguageEnv(Language.C),
-                    new ByteArrayInputStream(providedCodesZip)), new ByteArrayInputStream(testcaseIOsZip));
-        });
     }
 
     @Test
     void GivenOneProblemWithLangEnvC_WhenUpdateTheLangEnvC_ThenCShouldBeUpdated() throws Exception {
         int problemId = 1;
-        LanguageEnv languageEnv = saveProblemAndGet(problemId).getLanguageEnv(Language.C);
-        ResourceSpec expectResourceSpec = new ResourceSpec(9999, 9999);
-        languageEnv.setResourceSpec(expectResourceSpec);
+        Problem problem = saveProblem(problemId);
+        LanguageEnv languageEnv = problem.getLanguageEnv(Language.C);
 
-        updateLanguageEnv(problemId, languageEnv);
+        var langEnvUpdate = upsertLanguageEnv(languageEnv, update -> update.setResourceSpecCpu(8));
+        upsertLanguageEnv(problemId, langEnvUpdate);
 
-        var problem = getProblem(withToken(adminToken), problemId);
-        ResourceSpec actualResourceSpec = problem.getLanguageEnvs().get(0).getResourceSpec();
-        assertEquals(expectResourceSpec, actualResourceSpec);
+        var actualProblem = getProblem(withToken(adminToken), problemId);
+        var actualLangEnv = actualProblem.getLanguageEnvs().get(0);
+        var expectedLangEnv = langEnvUpdate.toValue();
+        expectedLangEnv.setProvidedCodesFileId(languageEnv.getProvidedCodesFileId());
+        assertEquals(toViewModel(expectedLangEnv), actualLangEnv);
     }
 
     @Test
-    void GivenOneProblemWithLangEnv_C_WhenPatchProblemWithJAVA_ThenProblemShouldHaveJAVA() throws Exception {
+    void GivenOneProblemWithLangEnvC_WhenUploadProblemWithNewJavaEnv_ThenProblemShouldHaveJavaEnv() throws Exception {
         int problemId = 1;
         saveProblems(problemId);
 
-        LanguageEnv languageEnv = createLanguageEnv(Language.JAVA);
-        ResourceSpec expectResourceSpec = new ResourceSpec(9999, 9999);
-        languageEnv.setResourceSpec(expectResourceSpec);
-        updateLanguageEnv(problemId, languageEnv);
+        var newJavaEnvUpdate = upsertLanguageEnv(Language.JAVA);
+        upsertLanguageEnv(problemId, newJavaEnvUpdate);
 
         var problem = getProblem(withToken(adminToken), problemId);
-        List<LanguageEnv> languageEnvs = problem.getLanguageEnvs();
+        var languageEnvs = problem.getLanguageEnvs();
         assertEquals(2, languageEnvs.size());
-        LanguageEnv actualLanguageEnv = languageEnvs.get(1);
-        assertEquals(expectResourceSpec, actualLanguageEnv.getResourceSpec());
-    }
-
-    private LanguageEnv createLanguageEnv(Language language) {
-        return LanguageEnv.builder()
-                .language(language)
-                .compilation(new Compilation("script"))
-                .resourceSpec(new ResourceSpec(0.5f, 0))
-                .submittedCodeSpec(new SubmittedCodeSpec(language, "main." + language.getFileExtension()))
-                .providedCodesFileId("providedCodesFileId")
-                .build();
-    }
-
-    private void updateLanguageEnv(Integer problemId, LanguageEnv languageEnv) throws Exception {
-        mockMvc.perform(withToken(adminToken,
-                put(API_PREFIX + "/{problemId}/langEnv/{langEnv}",
-                        problemId, languageEnv.getLanguage())
-                        .contentType(MediaType.APPLICATION_JSON_VALUE)
-                        .content(toJson(languageEnv))))
-                .andExpect(status().isOk());
-    }
-
-    private Problem saveProblemAndGet(int problemId) {
-        saveProblems(problemId);
-        return problemRepository.findProblemById(problemId).orElseThrow();
+        var actualJavaEnv = problem.getLanguageEnv(Language.JAVA).orElseThrow();
+        assertEquals(toViewModel(newJavaEnvUpdate.toValue()), actualJavaEnv);
     }
 
     @Test
@@ -585,7 +426,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
 
         String fileId = uploadProvidedCodesAndGetFileId(problemId, language, getTwoProvidedCodes());
 
-        ProblemView problem = getProblem(withToken(adminToken), problemId);
+        var problem = getProblem(withToken(adminToken), problemId);
         problemShouldHaveProvidedCodesId(problem, fileId, language);
     }
 
@@ -597,20 +438,18 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    void GivenOneProblemSavedWithoutLanguageEnv_WhenUploadTwoProvidedCodes_ShouldRespondProvidedCodesFileId() throws Exception {
+    void GivenOneProblemSavedWithoutLanguageEnv_WhenUploadProvidedCodes_ShouldRespondBadRequest() throws Exception {
         Language language = Language.C;
         int problemId = saveProblemWithTitle("problemTitle");
 
-        String fileId = uploadProvidedCodesAndGetFileId(problemId, language, getTwoProvidedCodes());
-
-        ProblemView problem = getProblem(withToken(adminToken), problemId);
-        problemShouldHaveProvidedCodesId(problem, fileId, language);
+        uploadProvidedCodes(problemId, language, getTwoProvidedCodes())
+                .andExpect(status().isBadRequest());
     }
 
     @Test
     void GivenOneProblemSaved_WhenArchiveIt_AndThenDeleteIt_ThenProblemProvidedCodesAndTestcaseIOsShouldBeDeleted() throws Exception {
         int problemId = 1;
-        Problem problem = saveProblemAndGet(problemId);
+        Problem problem = saveProblem(problemId);
 
         archiveOrDeleteProblem(problemId);
 
@@ -659,31 +498,170 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
                 .andExpect(status().isNotFound());
     }
 
-    @Test
-    void GivenOneProblemSaved_WhenPatchTheProblemWithNewTags_ShouldHaveUpdatedNewTags() throws Exception {
-        Problem savedProblem = givenOneProblemSaved();
-
-        List<String> newTags = asList("newTagA", "newTagB");
-        savedProblem.setTags(newTags);
-        PatchProblemUseCase.Request request = PatchProblemUseCase.Request.builder().tags(newTags).build();
-        patchProblem(request);
-
-        Problem actualProblem = problemRepository.findProblemById(savedProblem.getId())
-                .orElseThrow();
-        assertEquals(newTags, actualProblem.getTags());
+    private void archiveOrDeleteProblem(int problemId) throws Exception {
+        mockMvc.perform(withToken(adminToken,
+                delete(API_PREFIX + "/{problemId}", problemId)))
+                .andExpect(status().isOk());
     }
 
-    @Test
-    void GivenOneProblemSaved_WhenPatchTheProblemToBeVisible_ThenProblemShouldBeUpdatedVisible() throws Exception {
-        Problem savedProblem = givenOneProblemSaved();
+    private void patchProblem(Consumer<PatchProblemUseCase.Request.RequestBuilder> patching) throws Exception {
+        var requestBuilder = PatchProblemUseCase.Request.builder();
+        patching.accept(requestBuilder);
+        patchProblem(requestBuilder.build());
+    }
 
-        savedProblem.setVisible(true);
-        PatchProblemUseCase.Request request = PatchProblemUseCase.Request.builder().visible(true).build();
-        patchProblem(request);
+    private void patchProblem(PatchProblemUseCase.Request request) throws Exception {
+        mockMvc.perform(withToken(adminToken,
+                patch(API_PREFIX + "/{problemId}", request.problemId)
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .content(objectMapper.writeValueAsString(request))))
+                .andExpect(status().isOk());
+    }
 
-        Problem actualProblem = problemRepository.findProblemById(savedProblem.getId())
-                .orElseThrow();
-        assertEquals(savedProblem.getVisible(), actualProblem.getVisible());
+    private Problem givenOneProblemSaved() {
+        return givenProblemsSaved(1).get(0);
+    }
+
+
+    private void upsertTestCase(int problemId, TestcaseUpsert testcaseUpsert) throws Exception {
+        mockMvc.perform(withToken(adminToken,
+                put(API_PREFIX + "/{problemId}/testcases/{testcaseId}",
+                        problemId, testcaseUpsert.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(toJson(testcaseUpsert))))
+                .andExpect(status().isOk());
+    }
+
+    private void problemsShouldHaveIds(List<ProblemView> actualProblems, Integer... problemIds) {
+        Set<Integer> idsSet = Set.of(problemIds);
+        actualProblems.forEach(problem -> assertTrue(idsSet.contains(problem.getId())));
+    }
+
+    private ProblemView getProblem(WithHeader withHeader, int problemId) throws Exception {
+        var request = get(API_PREFIX + "/{problemId}", problemId);
+        withHeader.decorate(request);
+        return getBody(mockMvc.perform(request).andExpect(status().isOk()), ProblemView.class);
+    }
+
+    private List<ProblemView> getProblems(WithHeader withHeader, Integer... problemIds) throws Exception {
+        String ids = String.join(", ", mapToList(problemIds, String::valueOf));
+        var request = get(API_PREFIX).queryParam("ids", ids);
+        withHeader.decorate(request);
+        return getBody(mockMvc.perform(request).andExpect(status().isOk()), new TypeReference<>() {
+        });
+    }
+
+    private List<ProblemView> getProblems(Integer... problemIds) throws Exception {
+        return getProblems(WithHeader.empty(), problemIds);
+    }
+
+    private void saveProblems(Integer... problemIds) {
+        stream(problemIds).forEach(problemId -> {
+            Problem problem = problemTemplate().id(problemId).build();
+            byte[] providedCodesZip = zipFilesFromResources("/stubs/file1.c", "/stubs/file2.c");
+            byte[] testcaseIOsZip = zipFilesFromResources("/stubs/in/", "/stubs/out/");
+            problemRepository.save(problem, singletonMap(problem.getLanguageEnv(Language.C),
+                    new ByteArrayInputStream(providedCodesZip)), new ByteArrayInputStream(testcaseIOsZip));
+        });
+    }
+
+    private void assertProblemEquals(ProblemView expect, ProblemView actual) {
+        expect.judgeFilterPluginTags = sortToList(expect.judgeFilterPluginTags, comparing(JudgePluginTagView::toString));
+        actual.judgeFilterPluginTags = sortToList(actual.judgeFilterPluginTags, comparing(JudgePluginTagView::toString));
+        expect.testcases = sortToList(expect.testcases, comparing(TestcaseView::getId));
+        actual.testcases = sortToList(actual.testcases, comparing(TestcaseView::getId));
+        expect.tags = sortToList(expect.tags);
+        actual.tags = sortToList(actual.tags);
+        expect.languageEnvs = sortToList(expect.languageEnvs, comparing(LanguageEnvView::getLanguage));
+        actual.languageEnvs = sortToList(actual.languageEnvs, comparing(LanguageEnvView::getLanguage));
+        assertEquals(expect, actual);
+    }
+
+    private LanguageEnvUpsert upsertLanguageEnv(Language language) {
+        return LanguageEnvUpsert.fromLangEnv(languageEnvTemplate(language).build());
+    }
+
+    private LanguageEnvUpsert upsertLanguageEnv(LanguageEnv languageEnv, Consumer<LanguageEnvUpsert> update) {
+        return LanguageEnvUpsert.upsert(languageEnv, update);
+    }
+
+    private LanguageEnvUpsert upsertLanguageEnv(Language language, Consumer<LanguageEnvUpsert> update) {
+        return LanguageEnvUpsert.upsert(languageEnvTemplate(language).build(), update);
+    }
+
+    private void upsertLanguageEnv(Integer problemId, LanguageEnvUpsert languageEnv) throws Exception {
+        mockMvc.perform(withToken(adminToken,
+                put(API_PREFIX + "/{problemId}/langEnv/{langEnv}",
+                        problemId, languageEnv.getLanguage())
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .content(toJson(languageEnv))))
+                .andExpect(status().isOk());
+    }
+
+    private Problem saveProblem(int problemId) {
+        saveProblems(problemId);
+        return problemRepository.findProblemById(problemId).orElseThrow();
+    }
+
+    private int saveProblemWithTitle(String title) throws Exception {
+        return parseInt(getContentAsString(
+                mockMvc.perform(withToken(adminToken,
+                        post(API_PREFIX)
+                                .contentType(MediaType.TEXT_PLAIN_VALUE).content(title)))
+                        .andExpect(status().isOk())));
+    }
+
+    private Problem givenProblemSavedWithProvidedCodesAndTestcaseIOs() {
+        providedCodesZip = zipFilesFromResources("/stubs/file1.c", "/stubs/file2.c");
+        testcaseIOsZip = zipFilesFromResources("/stubs/in/", "/stubs/out/");
+
+        Problem problem = problemTemplate().build();
+        return problemRepository.save(problem,
+                singletonMap(problem.getLanguageEnv(Language.C), new ByteArrayInputStream(providedCodesZip)),
+                new ByteArrayInputStream(testcaseIOsZip));
+    }
+
+    private List<ProblemItem> getProblemItems(WithHeader withHeader) throws Exception {
+        var request = get(API_PREFIX);
+        withHeader.decorate(request);
+        return getBody(mockMvc.perform(request)
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON)), new TypeReference<>() {
+        });
+    }
+
+    private List<ProblemItem> getProblemItemsInPage(Token token, int page) throws Exception {
+        return getBody(mockMvc.perform(withToken(token, get(API_PREFIX)
+                .queryParam("page", String.valueOf(page))))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON)), new TypeReference<>() {
+        });
+    }
+
+    private List<Problem> givenProblemsSaved(int count) {
+        Random random = new Random();
+        var problems = range(0, count)
+                .mapToObj((id) ->
+                        problemTemplate().id(id)
+                                .title(String.valueOf(random.nextInt())).build())
+                .collect(toList());
+        problems.forEach(problemRepository::save);
+        return problems;
+    }
+
+    private Problem givenProblemWithTags(int problemId, String... tags) {
+        Problem targetProblem = problemTemplate().id(problemId).tags(asList(tags)).build();
+        return problemRepository.save(targetProblem);
+    }
+
+    private void filterProblemsWithTagsShouldContain(Token token, List<String> tags, List<ProblemItem> problemItems) throws Exception {
+        String tagsSplitByCommas = String.join(", ", tags);
+        mockMvc.perform(get(API_PREFIX)
+                .header("Authorization", bearerWithToken(token.getToken()))
+                .queryParam("tags", tagsSplitByCommas))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().json(objectMapper.writeValueAsString(problemItems)));
     }
 
 
@@ -706,13 +684,13 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         };
     }
 
+    private ResultActions uploadProvidedCodes(int problemId, Language language, MockMultipartFile[] files) throws Exception {
+        return mockMvc.perform(multipartRequestWithProvidedCodes(problemId, language, files));
+    }
+
     private String uploadProvidedCodesAndGetFileId(int problemId, Language language, MockMultipartFile... files) throws Exception {
         return getContentAsString(uploadProvidedCodes(problemId, language, files)
                 .andExpect(status().isOk()));
-    }
-
-    private ResultActions uploadProvidedCodes(int problemId, Language language, MockMultipartFile[] files) throws Exception {
-        return mockMvc.perform(multipartRequestWithProvidedCodes(problemId, language, files));
     }
 
     private MockHttpServletRequestBuilder multipartRequestWithProvidedCodes(int problemId, Language language, MockMultipartFile... files) {
@@ -747,5 +725,14 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
                 .map(GridFsResource::exists)
                 .orElse(false);
     }
+
+    private ProblemView toViewModel(Problem problem) {
+        return ProblemView.toViewModel(problem);
+    }
+
+    private LanguageEnvView toViewModel(LanguageEnv languageEnv) {
+        return LanguageEnvView.toViewModel(languageEnv);
+    }
+
 }
 

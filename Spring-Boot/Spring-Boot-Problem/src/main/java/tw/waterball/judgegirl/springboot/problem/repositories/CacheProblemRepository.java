@@ -78,11 +78,6 @@ public class CacheProblemRepository implements ProblemRepository {
     }
 
     @Override
-    public int saveProblemWithTitleAndGetId(String title) {
-        return problemRepository.saveProblemWithTitleAndGetId(title);
-    }
-
-    @Override
     public void patchProblem(int problemId, PatchProblemParams params) {
         problemRepository.patchProblem(problemId, params);
     }

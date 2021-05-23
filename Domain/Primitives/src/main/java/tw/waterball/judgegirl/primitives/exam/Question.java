@@ -6,7 +6,7 @@ import tw.waterball.judgegirl.primitives.grading.Grading;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
 
-import static tw.waterball.judgegirl.commons.utils.JSR380Utils.validate;
+import static tw.waterball.judgegirl.commons.utils.ValidationUtils.validate;
 
 @AllArgsConstructor
 @NoArgsConstructor
