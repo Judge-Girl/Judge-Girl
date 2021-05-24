@@ -32,6 +32,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.IntStream.range;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -69,7 +70,7 @@ public class HomeworkControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    public void GivenThreeProblemsCreated_WhenCreateHomeworkThatIncludesManyProblems_ShouldCreateSuccessfully() throws Exception {
+    public void GivenThreeProblemsCreated_WhenCreateHomeworkThatIncludesManyProblems_ShouldCreateSuccessfully() {
         Integer[] problemIds = {0, 1, 2};
         createProblems(problemIds);
 
@@ -82,7 +83,7 @@ public class HomeworkControllerTest extends AbstractSpringBootTest {
             "When create homework to include two problem by ids [0, 1, 2] " +
             "Should respond [0, 1]")
     @Test
-    public void testAddProblemsIntoHomeworkByNonExistingProblemIdAndTwoCreatedProblemIds() throws Exception {
+    public void testAddProblemsIntoHomeworkByNonExistingProblemIdAndTwoCreatedProblemIds() {
         createProblems(0, 1);
 
         Integer[] problemIds = {0, 1, 2};
@@ -141,7 +142,7 @@ public class HomeworkControllerTest extends AbstractSpringBootTest {
         homeworkProgressShouldIncludeTwoBestRecords(homework, homeworkProgress, bestRecord1, bestRecord2);
     }
 
-    private HomeworkView createHomeworkConsistsOfProblems(Integer... problemIds) throws Exception {
+    private HomeworkView createHomeworkConsistsOfProblems(Integer... problemIds) {
         createProblems(problemIds);
         return createHomeworkAndGet(HOMEWORK_NAME, problemIds);
     }
@@ -167,41 +168,45 @@ public class HomeworkControllerTest extends AbstractSpringBootTest {
         }
     }
 
+    private List<HomeworkView> createHomeworkListAndGet(int homeworkCount) {
+        return range(0, homeworkCount)
+                .mapToObj(i -> createHomeworkAndGet(HOMEWORK_NAME + i))
+                .collect(toList());
+    }
+
     @SneakyThrows
     private HomeworkView createHomeworkAndGet(String homeworkName, Integer... problemIds) {
         return getBody(createHomework(homeworkName, problemIds), HomeworkView.class);
     }
 
-    private List<HomeworkView> createHomeworkListAndGet(int count)  {
-        return range(0, count)
-                .mapToObj(i -> createHomeworkAndGet(HOMEWORK_NAME + i))
-                .collect(toList());
-    }
-
     private ResultActions createHomework(String homeworkName, Integer... problemIds) throws Exception {
         CreateHomeworkUseCase.Request request = new CreateHomeworkUseCase.Request(homeworkName, Arrays.asList(problemIds));
-        return mockMvc.perform(post(HOMEWORK_PATH)
+        return mockMvc.perform(withAdminToken(post(HOMEWORK_PATH))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(request)))
                 .andExpect(status().isOk());
     }
 
     private ResultActions getHomework(int homeworkId) throws Exception {
-        return mockMvc.perform(get(HOMEWORK_PATH + "/{homeworkId}", homeworkId));
+        return mockMvc.perform(withAdminToken(
+                get(HOMEWORK_PATH + "/{homeworkId}", homeworkId)));
     }
 
     private List<HomeworkView> getAllHomework() throws Exception {
-        return getBody(mockMvc.perform(get(HOMEWORK_PATH)).andExpect(status().isOk()), new TypeReference<>() {
+        return getBody(mockMvc.perform(
+                withAdminToken(get(HOMEWORK_PATH)))
+                .andExpect(status().isOk()), new TypeReference<>() {
         });
     }
 
-    private ResultActions deleteHomework(int homeworkId) throws Exception {
-        return mockMvc.perform(delete(HOMEWORK_PATH + "/{homeworkId}", homeworkId))
+    private void deleteHomework(int homeworkId) throws Exception {
+        mockMvc.perform(withAdminToken(
+                delete(HOMEWORK_PATH + "/{homeworkId}", homeworkId)))
                 .andExpect(status().isOk());
     }
 
     private void createProblems(Integer... problemIds) {
-        Arrays.stream(problemIds)
+        stream(problemIds)
                 .map(this::createProblem)
                 .forEach(problemServiceDriver::addProblemView);
     }
@@ -223,7 +228,8 @@ public class HomeworkControllerTest extends AbstractSpringBootTest {
     }
 
     private HomeworkProgress getHomeworkProgress(int studentId, int homeworkId) throws Exception {
-        return getBody(mockMvc.perform(get(HOMEWORK_PROGRESS_PATH, studentId, homeworkId))
+        return getBody(mockMvc.perform(
+                withAdminToken(get(HOMEWORK_PROGRESS_PATH, studentId, homeworkId)))
                 .andExpect(status().isOk()), HomeworkProgress.class);
     }
 

@@ -1,17 +1,20 @@
 package tw.waterball.judgegirl.primitives.exam;
 
-import lombok.*;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
+import org.jetbrains.annotations.Nullable;
 import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
-import tw.waterball.judgegirl.commons.utils.ValidationUtils;
 import tw.waterball.judgegirl.primitives.Student;
 
-import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
+import static tw.waterball.judgegirl.commons.utils.ValidationUtils.validate;
 
 /**
  * @author - wally55077@gmail.com
@@ -19,33 +22,33 @@ import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
 @Setter
 @Getter
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class Group {
 
     private Integer id;
 
-    @NotBlank
+    @Size(min = 1, max = 100)
     private String name;
 
-    private Set<MemberId> memberIds = new HashSet<>();
+    @Size(max = 10000)
+    private Set<MemberId> memberIds;
 
     public Group(String name) {
-        this.name = name;
+        this(null, name, new HashSet<>());
     }
 
     public Group(int id, String name) {
-        this(name);
-        this.id = id;
+        this(id, name, new HashSet<>());
     }
 
     public Group(String name, Set<MemberId> memberIds) {
-        this.name = name;
-        this.memberIds = memberIds;
+        this(null, name, memberIds);
     }
 
-    public void validate() {
-        ValidationUtils.validate(this);
+    public Group(@Nullable Integer id, String name, Set<MemberId> memberIds) {
+        this.id = id;
+        this.name = name;
+        this.memberIds = memberIds;
+        validate(this);
     }
 
     public void addMember(MemberId memberId) {

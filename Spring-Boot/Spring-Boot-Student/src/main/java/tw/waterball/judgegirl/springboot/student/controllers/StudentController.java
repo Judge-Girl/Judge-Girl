@@ -67,7 +67,7 @@ public class StudentController {
 
     @GetMapping("{studentId}")
     public StudentView getStudentById(@PathVariable Integer studentId, @RequestHeader("Authorization") String authorization) {
-        return tokenService.returnIfTokenValid(studentId, authorization,
+        return tokenService.returnIfGranted(studentId, authorization,
                 token -> {
                     GetStudentByIdsPresenter presenter = new GetStudentByIdsPresenter();
                     getStudentUseCase.execute(studentId, presenter);

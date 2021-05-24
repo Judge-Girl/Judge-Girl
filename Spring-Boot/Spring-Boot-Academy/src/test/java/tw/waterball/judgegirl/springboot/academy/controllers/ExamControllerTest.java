@@ -1,6 +1,7 @@
 package tw.waterball.judgegirl.springboot.academy.controllers;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import lombok.SneakyThrows;
 import org.h2.tools.Server;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,7 @@ import tw.waterball.judgegirl.academy.domain.repositories.ExamFilter;
 import tw.waterball.judgegirl.academy.domain.repositories.ExamRepository;
 import tw.waterball.judgegirl.academy.domain.repositories.GroupRepository;
 import tw.waterball.judgegirl.academy.domain.usecases.exam.*;
+import tw.waterball.judgegirl.commons.token.TokenService;
 import tw.waterball.judgegirl.primitives.Student;
 import tw.waterball.judgegirl.primitives.exam.*;
 import tw.waterball.judgegirl.primitives.problem.Language;
@@ -20,6 +22,7 @@ import tw.waterball.judgegirl.primitives.problem.Problem;
 import tw.waterball.judgegirl.primitives.submission.Bag;
 import tw.waterball.judgegirl.primitives.submission.Submission;
 import tw.waterball.judgegirl.primitives.submission.verdict.VerdictIssuedEvent;
+import tw.waterball.judgegirl.primitives.time.Duration;
 import tw.waterball.judgegirl.problemapi.clients.FakeProblemServiceDriver;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.springboot.academy.SpringBootAcademyApplication;
@@ -35,7 +38,6 @@ import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
 
 import javax.transaction.Transactional;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -46,7 +48,6 @@ import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static java.util.UUID.randomUUID;
 import static java.util.concurrent.TimeUnit.HOURS;
-import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -87,6 +88,13 @@ class ExamControllerTest extends AbstractSpringBootTest {
     public static final String STUDENT_C_EMAIL = "studentC@example.com";
     public static final String STUDENT_D_EMAIL = "studentD@example.com";
 
+    public static final Duration CLOSED_DURATION = during(beforeCurrentTime(2, HOURS), beforeCurrentTime(1, HOURS));
+    public static final Duration ONGOING_DURATION = during(now(), afterCurrentTime(1, HOURS));
+    public static final Duration UPCOMING_DURATION = during(afterCurrentTime(1, HOURS),
+            afterCurrentTime(2, HOURS));
+
+    @Autowired
+    TokenService tokenService;
     @Autowired
     ExamRepository examRepository;
     @Autowired
@@ -109,6 +117,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
     private ProblemView anotherProblem;
 
     private final MockMultipartFile[] mockFiles = codes(SUBMIT_CODE_MULTIPART_KEY_NAME, 2);
+
 
     @BeforeEach
     void setup() {
@@ -241,7 +250,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
     @DisplayName("Given Student participates Exams A, B, C, D (only B, D are upcoming) " +
             "When get student's upcoming exams, Should respond B D")
     @Test
-    void testFilterUpcomingStudentExams() throws Exception {
+    void testFilterUpcomingStudentExams() {
         givenStudentParticipatingExams(STUDENT_A_ID,
                 givenOngoingExams("A", "C"),
                 givenUpcomingExams("B", "D"));
@@ -253,7 +262,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
     @DisplayName("Given Student participates Exams A, B, C, D, E, F, G (only B, F, G are closed) " +
             "When get student's closed exams with skip=1, size=2, Should respond F, G")
     @Test
-    void testFilterClosedStudentExamsWithPaging() throws Exception {
+    void testFilterClosedStudentExamsWithPaging() {
         givenStudentParticipatingExams(STUDENT_A_ID,
                 givenOngoingExams("A", "C", "D", "E"),
                 givenClosedExams("B", "F", "G"));
@@ -266,7 +275,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
     @DisplayName("Given Student participates Exams A, B, C, D, E, F, G, " +
             "When get all student's exams with skip=1, size=4, Should respond B, C, D, E, F")
     @Test
-    void testGetAllStudentsExams() throws Exception {
+    void testGetAllStudentsExams() {
         givenStudentParticipatingExams(
                 STUDENT_A_ID,
                 givenOngoingExams("A", "B", "C"),
@@ -281,7 +290,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
     @DisplayName("Given Student participates Exams A, B, C, D, E, F, G (only A, B, C, D are ongoing) " +
             "When get student's ongoing exams with skip=1, size=500000, Should respond B, C, D")
     @Test
-    void testFilterOngoingStudentExamsWithPaging() throws Exception {
+    void testFilterOngoingStudentExamsWithPaging() {
         givenStudentParticipatingExams(STUDENT_A_ID,
                 givenClosedExams("E", "F", "G"),
                 givenOngoingExams("A", "B", "C", "D"));
@@ -423,8 +432,8 @@ class ExamControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    void testGetExamById() throws Exception {
-        var exam = createExamAndGet(now(), now(), "exam");
+    void testGetExamById() {
+        var exam = createExamAndGet(ONGOING_DURATION, "exam");
         var q1 = createQuestionAndGet(new CreateQuestionUseCase.Request(exam.id, PROBLEM_ID, 3, 50, 1));
         var q2 = createQuestionAndGet(new CreateQuestionUseCase.Request(exam.id, ANOTHER_PROBLEM_ID, 3, 50, 2));
         exam.questions.add(q1);
@@ -464,7 +473,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    void WheneverReceiveNewVerdict_ShouldUpdateBestRecordOfAQuestion() throws Exception {
+    void WheneverReceiveNewVerdict_ShouldUpdateBestRecordOfAQuestion() {
         var exam = createExamAndGet(beforeCurrentTime(1, HOURS), afterCurrentTime(1, HOURS), "A");
         givenStudentParticipatingExam(STUDENT_A_ID, exam);
         createQuestion(new CreateQuestionUseCase.Request(exam.id, PROBLEM_ID, NO_QUOTA_LIMITATION, 100, 1));
@@ -529,7 +538,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    void testGetExamOverview() throws Exception {
+    void testGetExamOverview() {
         final int QUOTA = 5;
         Date start = beforeCurrentTime(1, HOURS), end = afterCurrentTime(1, HOURS);
         ExamView exam = createExamAndGet(start, end, "exam");
@@ -554,7 +563,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
     @DisplayName("Give 8 students participating a ongoing exam, one question in the exam with submission quota = 3, " +
             "When 8 students answer that question 4 times at the same time, all should succeed in the first 3 times and fail in the 4th time.")
     @Test
-    void testAnswerQuestionConcurrentlyWithSubmissionQuotas() throws Exception {
+    void testAnswerQuestionConcurrentlyWithSubmissionQuotas() {
         int SUBMISSION_QUOTA = 3;
         Integer[] studentIds = {333, 555, 5, 6, 7, 22, 56, 44};
         ExamView exam = createExamAndGet(beforeCurrentTime(1, HOURS), afterCurrentTime(1, HOURS), "A");
@@ -563,7 +572,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
 
         atTheSameTime(studentIds, studentId -> {
             for (int i = 0; i < 3; i++) {
-                AnswerView answer = getBody(answerQuestion(studentId, exam).andExpect(status().isOk()), AnswerView.class);
+                var answer = answerQuestionAndGet(exam, studentId);
                 shouldHaveSavedAnswer(answer);
             }
             answerQuestion(studentId, exam).andExpect(status().is4xxClientError());
@@ -571,7 +580,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    void GivenOneExamCreated_WhenDeleteTheExam_ShouldSucceed() throws Exception {
+    void GivenOneExamCreated_WhenDeleteTheExam_ShouldSucceed() {
         var exam = createExamAndGet(now(), now(), "exam");
 
         deleteExam(exam.id);
@@ -587,7 +596,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
 
     // TODO: drunk code, need to be improved
     @Test
-    void testProduceExamTranscript() throws Exception {
+    void testProduceExamTranscript() {
         Integer[] studentIds = {STUDENT_A_ID, STUDENT_B_ID, STUDENT_C_ID, STUDENT_D_ID};
         var exam = createExamAndGet(now(), oneSecondAfter(), "Exam");
         var q1 = createQuestionAndGet(new CreateQuestionUseCase.Request(exam.id, PROBLEM_ID, 1, 50, 0)).toEntity();
@@ -600,8 +609,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
         var sC1 = publishVerdictAndAwait(problem, exam, submission(randomUUID().toString()).CE(problem.totalGrade).build(STUDENT_C_ID, PROBLEM_ID, CURRENTLY_ONLY_SUPPORT_C));
         var sC2 = publishVerdictAndAwait(anotherProblem, exam, randomizedSubmission(toEntity(anotherProblem), STUDENT_C_ID, 1));
 
-        var transcript = getBody(mockMvc.perform(get("/api/exams/{examId}/transcript", exam.getId()))
-                .andExpect(status().isOk()), TranscriptView.class);
+        var transcript = createExamTranscript(exam);
 
         var examineeRecordA = transcript.examineeRecords.get(STUDENT_A_EMAIL);
         var examineeRecordB = transcript.examineeRecords.get(STUDENT_B_EMAIL);
@@ -622,6 +630,27 @@ class ExamControllerTest extends AbstractSpringBootTest {
         assertEquals(q1.getScore() + q2.getScore(), transcript.getMaxScore());
     }
 
+    @SneakyThrows
+    private TranscriptView createExamTranscript(ExamView exam) {
+        return getBody(mockMvc.perform(withAdminToken(
+                get("/api/exams/{examId}/transcript", exam.getId())))
+                .andExpect(status().isOk()), TranscriptView.class);
+    }
+
+    @SneakyThrows
+    AnswerView answerQuestionAndGet(ExamView exam, Integer studentId) {
+        return getBody(answerQuestion(studentId, exam).andExpect(status().isOk()), AnswerView.class);
+    }
+
+    @SneakyThrows
+    ResultActions answerQuestion(int studentId, ExamView exam) {
+        return mockMvc.perform(withAdminToken(
+                multipart("/api/exams/{examId}/problems/{problemId}/{langEnvName}/students/{studentId}/answers",
+                        exam.getId(), problem.getId(), LANG_ENV, studentId)
+                        .file(mockFiles[0])
+                        .file(mockFiles[1])));
+    }
+
     void examineeShouldHaveScores(ExamineeRecord examineeRecord, Integer... scores) {
         assertEquals(sum(scores), examineeRecord.getTotalScore());
         assertEqualsIgnoreOrder(asList(scores), examineeRecord.questionScores);
@@ -637,14 +666,16 @@ class ExamControllerTest extends AbstractSpringBootTest {
     }
 
     private void addGroupsOfExaminees(ExamView exam, Group... groups) throws Exception {
-        mockMvc.perform(post("/api/exams/{examId}/groups", exam.getId())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(toJson(new AddGroupOfExamineesUseCase.Request(exam.getId(), mapToList(groups, Group::getName)))))
+        mockMvc.perform(withAdminToken(
+                post("/api/exams/{examId}/groups", exam.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(toJson(new AddGroupOfExamineesUseCase.Request(exam.getId(), mapToList(groups, Group::getName))))))
                 .andExpect(status().isOk());
     }
 
     private List<Student> getExaminees(ExamView exam) throws Exception {
-        return getBody(mockMvc.perform(get("/api/exams/{examId}/students", exam.id))
+        return getBody(mockMvc.perform(withAdminToken(
+                get("/api/exams/{examId}/students", exam.id)))
                 .andExpect(status().isOk()), new TypeReference<>() {
         });
     }
@@ -691,14 +722,6 @@ class ExamControllerTest extends AbstractSpringBootTest {
                         () -> fail("The answer is not saved."));
     }
 
-    private ResultActions answerQuestion(int studentId, ExamView exam) throws Exception {
-        return mockMvc.perform(multipart("/api/exams/{examId}/problems/{problemId}/{langEnvName}/students/{studentId}/answers",
-                exam.getId(), problem.getId(), LANG_ENV, studentId)
-                .file(mockFiles[0])
-                .file(mockFiles[1]));
-    }
-
-
     private void shouldRespondExams(List<ExamView> actualExams, String... expectedNames) {
         assertEquals(expectedNames.length, actualExams.size());
         for (int i = 0; i < actualExams.size(); i++) {
@@ -707,17 +730,25 @@ class ExamControllerTest extends AbstractSpringBootTest {
     }
 
     private List<ExamView> getExamsWithPaging(ExamFilter.Status status, int skip, int size) throws Exception {
-        return getBody(mockMvc.perform(get("/api/exams?status={status}&&skip={skip}&&size={size}", status, skip, size)), new TypeReference<>() {
+        return getBody(mockMvc.perform(
+                withAdminToken(get("/api/exams")
+                        .queryParam("status", String.valueOf(status))
+                        .queryParam("skip", String.valueOf(skip))
+                        .queryParam("size", String.valueOf(size)))), new TypeReference<>() {
         });
     }
 
     private List<ExamView> getExamsWithPaging(int skip, int size) throws Exception {
-        return getBody(mockMvc.perform(get("/api/exams?skip={skip}&&size={size}", skip, size)), new TypeReference<>() {
+        return getBody(mockMvc.perform(
+                withAdminToken(get("/api/exams")
+                        .queryParam("skip", String.valueOf(skip))
+                        .queryParam("size", String.valueOf(size)))), new TypeReference<>() {
         });
     }
 
     private List<ExamView> getAllExams() throws Exception {
-        return getBody(mockMvc.perform(get("/api/exams")), new TypeReference<>() {
+        return getBody(mockMvc.perform(withAdminToken(
+                get("/api/exams"))), new TypeReference<>() {
         });
     }
 
@@ -741,117 +772,146 @@ class ExamControllerTest extends AbstractSpringBootTest {
     }
 
     @SafeVarargs
-    private void givenStudentParticipatingExams(int studentId, List<ExamView>... exams) {
-        List<ExamView> allExams = stream(exams).flatMap(List::stream).collect(toList());
-        for (ExamView exam : allExams) {
-            createExaminee(studentId, exam.id);
-        }
+    private void givenStudentParticipatingExams(int studentId, List<ExamView>... examLists) {
+        flatMapToList(examLists, List::stream)
+                .forEach(exam -> addExaminee(exam.id, studentId));
     }
 
-    private List<ExamView> givenClosedExams(String... names) throws Exception {
-        return givenExams(beforeCurrentTime(2, HOURS),
-                beforeCurrentTime(1, HOURS), names);
+    private List<ExamView> givenClosedExams(String... names) {
+        return givenExams(CLOSED_DURATION, names);
     }
 
-    private List<ExamView> givenOngoingExams(String... names) throws Exception {
-        return givenExams(now(), afterCurrentTime(1, HOURS), names);
+    private List<ExamView> givenOngoingExams(String... names) {
+        return givenExams(ONGOING_DURATION, names);
     }
 
-    private List<ExamView> givenUpcomingExams(String... names) throws Exception {
-        return givenExams(afterCurrentTime(1, HOURS),
-                afterCurrentTime(2, HOURS), names);
+    private List<ExamView> givenUpcomingExams(String... names) {
+        return givenExams(UPCOMING_DURATION, names);
     }
 
-    private List<ExamView> givenExams(Date startTime, Date endTime, String... names) throws Exception {
-        List<ExamView> exams = new ArrayList<>(names.length);
-        for (String name : names) {
-            exams.add(createExamAndGet(startTime, endTime, name));
-        }
-        return exams;
+    private List<ExamView> givenExams(Duration duration, String... names) {
+        return mapToList(names, name -> createExamAndGet(duration, name));
     }
 
-    private ExamView createExamAndGet(Date startTime, Date endTime, String name) throws Exception {
-        return getBody(createExam(new Exam(name, during(startTime, endTime), "description"))
+    private ExamView createExamAndGet(Date startTime, Date endTime, String name) {
+        return createExamAndGet(during(startTime, endTime), name);
+    }
+
+    @SneakyThrows
+    private ExamView createExamAndGet(Duration duration, String name) {
+        return getBody(createExam(new Exam(name, duration, "description"))
                 .andExpect(status().isOk()), ExamView.class);
     }
 
-    private ResultActions createExam(Exam exam) throws Exception {
-        return mockMvc.perform(post("/api/exams")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(toJson(new CreateExamUseCase.Request(exam.getName(), exam.getStartTime(), exam.getEndTime(), exam.getDescription()))));
+    @SneakyThrows
+    private ResultActions createExam(Exam exam) {
+        return mockMvc.perform(withAdminToken(
+                post("/api/exams")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(toJson(new CreateExamUseCase.Request(
+                                exam.getName(), exam.getStartTime(), exam.getEndTime(), exam.getDescription())))));
     }
 
-    private ResultActions updateExam(UpdateExamUseCase.Request request) throws Exception {
-        return mockMvc.perform(put("/api/exams/{examId}", request.getExamId())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(toJson(request)));
+    @SneakyThrows
+    private ResultActions updateExam(UpdateExamUseCase.Request request) {
+        return mockMvc.perform(withAdminToken(
+                put("/api/exams/{examId}", request.getExamId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(toJson(request))));
     }
 
-    private List<ExamView> getStudentExams(int studentId, ExamFilter.Status status, int skip, int size) throws Exception {
-        return getBody(mockMvc.perform(get("/api/students/{studentId}/exams?status={status}&&skip={skip}&&size={size}", studentId, status, skip, size))
+    @SneakyThrows
+    private List<ExamView> getStudentExams(int studentId, ExamFilter.Status status, int skip, int size) {
+        return getBody(mockMvc.perform(
+                withStudentToken(studentId, get("/api/students/{studentId}/exams", studentId)
+                        .queryParam("status", String.valueOf(status))
+                        .queryParam("skip", String.valueOf(skip))
+                        .queryParam("size", String.valueOf(size))))
                 .andExpect(status().isOk()), new TypeReference<>() {
         });
     }
 
-    private List<ExamView> getStudentExams(int studentId, ExamFilter.Status status) throws Exception {
-        return getBody(mockMvc.perform(get("/api/students/{studentId}/exams?status=" + status, studentId))
+    @SneakyThrows
+    private List<ExamView> getStudentExams(int studentId, ExamFilter.Status status) {
+        return getBody(mockMvc.perform(
+                withStudentToken(studentId, get("/api/students/{studentId}/exams", studentId)
+                        .queryParam("status", String.valueOf(status))))
                 .andExpect(status().isOk()), new TypeReference<>() {
         });
     }
 
-    private ExamView getExamById(int examId) throws Exception {
-        return getBody(mockMvc.perform(get("/api/exams/{examId}",
-                examId)).andExpect(status().isOk()), ExamView.class);
+    @SneakyThrows
+    private ExamView getExamById(int examId) {
+        return getBody(mockMvc.perform(withAdminToken(
+                get("/api/exams/{examId}", examId)))
+                .andExpect(status().isOk()), ExamView.class);
     }
 
-    private ExamHome getExamProgressOverview(int examId) throws Exception {
-        return getBody(mockMvc.perform(get("/api/exams/{examId}/students/{studentId}/overview",
-                examId, STUDENT_A_ID)).andExpect(status().isOk()), ExamHome.class);
+    @SneakyThrows
+    private ExamHome getExamProgressOverview(int examId) {
+        return getBody(mockMvc.perform(
+                withStudentToken(STUDENT_A_ID,
+                        get("/api/exams/{examId}/students/{studentId}/overview", examId, STUDENT_A_ID)))
+                .andExpect(status().isOk()), ExamHome.class);
     }
 
-    private ExamOverview getExamOverview(int examId) throws Exception {
-        return getBody(mockMvc.perform(get("/api/exams/{examId}/overview",
-                examId)).andExpect(status().isOk()), ExamOverview.class);
+    @SneakyThrows
+    private ExamOverview getExamOverview(int examId) {
+        return getBody(mockMvc.perform(withAdminToken(
+                get("/api/exams/{examId}/overview", examId)))
+                .andExpect(status().isOk()), ExamOverview.class);
     }
 
-    private void createExaminee(int studentId, int examId) {
+    private void addExaminee(int examId, int studentId) {
         examRepository.addExaminee(examId, studentId);
     }
 
-    private ResultActions addExaminees(int examId, String... emails) throws Exception {
-        return mockMvc.perform(post("/api/exams/{examId}/students", examId)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(toJson(emails)));
+    @SneakyThrows
+    private ResultActions addExaminees(int examId, String... emails) {
+        return mockMvc.perform(withAdminToken(
+                post("/api/exams/{examId}/students", examId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(toJson(emails))));
     }
 
-    private ResultActions deleteExaminees(int examId, String... emails) throws Exception {
-        return mockMvc.perform(delete("/api/exams/{examId}/students", examId)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(toJson(emails)));
+    @SneakyThrows
+    private ResultActions deleteExaminees(int examId, String... emails) {
+        return mockMvc.perform(withAdminToken(
+                delete("/api/exams/{examId}/students", examId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(toJson(emails))));
     }
 
-    private ResultActions createQuestion(CreateQuestionUseCase.Request request) throws Exception {
-        return mockMvc.perform(post("/api/exams/{examId}/problems/{problemId}", request.getExamId(), request.getProblemId())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(toJson(request)));
+    @SneakyThrows
+    private ResultActions createQuestion(CreateQuestionUseCase.Request request) {
+        return mockMvc.perform(withAdminToken(
+                post("/api/exams/{examId}/problems/{problemId}", request.getExamId(), request.getProblemId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(toJson(request))));
     }
 
-    private QuestionView createQuestionAndGet(CreateQuestionUseCase.Request question) throws Exception {
+    @SneakyThrows
+    private QuestionView createQuestionAndGet(CreateQuestionUseCase.Request question) {
         return getBody(createQuestion(question)
                 .andExpect(status().isOk()), QuestionView.class);
     }
 
-    private ResultActions updateQuestion(UpdateQuestionUseCase.Request request) throws Exception {
-        return mockMvc.perform(put("/api/exams/{examId}/problems/{problemId}", request.examId, request.problemId)
-                .contentType(MediaType.APPLICATION_JSON).content(toJson(request)));
+    @SneakyThrows
+    private ResultActions updateQuestion(UpdateQuestionUseCase.Request request) {
+        return mockMvc.perform(withAdminToken(
+                put("/api/exams/{examId}/problems/{problemId}", request.examId, request.problemId)
+                        .contentType(MediaType.APPLICATION_JSON).content(toJson(request))));
     }
 
-    private ResultActions deleteQuestion(int examId, int problemId) throws Exception {
-        return mockMvc.perform(delete("/api/exams/{examId}/problems/{problemId}", examId, problemId));
+    @SneakyThrows
+    private ResultActions deleteQuestion(int examId, int problemId) {
+        return mockMvc.perform(withAdminToken(
+                delete("/api/exams/{examId}/problems/{problemId}", examId, problemId)));
     }
 
-    private void deleteExam(int examId) throws Exception {
-        mockMvc.perform(delete("/api/exams/{examId}", examId))
+    @SneakyThrows
+    private void deleteExam(int examId) {
+        mockMvc.perform(withAdminToken(delete("/api/exams/{examId}", examId)))
                 .andExpect(status().isOk());
     }
 

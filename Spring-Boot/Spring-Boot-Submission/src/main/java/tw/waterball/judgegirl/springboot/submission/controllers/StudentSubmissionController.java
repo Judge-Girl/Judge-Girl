@@ -60,7 +60,7 @@ public class StudentSubmissionController {
                                           @PathVariable int studentId,
                                           @RequestHeader HttpHeaders headers,
                                           @RequestParam(SUBMIT_CODE_MULTIPART_KEY_NAME) MultipartFile[] submittedCodes) {
-        return tokenService.returnIfTokenValid(studentId, authorization, token -> {
+        return tokenService.returnIfGranted(studentId, authorization, token -> {
             boolean throttling = !token.isAdmin();
             Bag bag = getBagFromHeaders(token, headers);
             SubmitCodeRequest request = convertToSubmitCodeRequest(problemId, langEnvName, studentId, submittedCodes, bag, throttling);
@@ -101,7 +101,7 @@ public class StudentSubmissionController {
                                  @PathVariable String langEnvName,
                                  @PathVariable int studentId,
                                  @PathVariable String submissionId) {
-        return tokenService.returnIfTokenValid(studentId, authorization,
+        return tokenService.returnIfGranted(studentId, authorization,
                 token -> {
                     SubmissionPresenter presenter = new SubmissionPresenter();
                     getSubmissionUseCase.execute(
@@ -118,7 +118,7 @@ public class StudentSubmissionController {
                                         @PathVariable int studentId,
                                         @RequestParam Map<String, String> bagQueryParameters) {
         bagQueryParameters.remove("page"); // only non-reserved keywords will be accepted by the bag-query filter
-        return tokenService.returnIfTokenValid(studentId, authorization, token -> {
+        return tokenService.returnIfGranted(studentId, authorization, token -> {
             GetSubmissionsPresenter presenter = new GetSubmissionsPresenter();
             getSubmissionsUseCase.execute(new SubmissionQueryParams(page, problemId, langEnvName, studentId, bagQueryParameters), presenter);
             return presenter.present();
@@ -133,7 +133,7 @@ public class StudentSubmissionController {
                                                                      @PathVariable int studentId,
                                                                      @PathVariable String submissionId,
                                                                      @PathVariable String submittedCodesFileId) {
-        return tokenService.returnIfTokenValid(studentId, authorization,
+        return tokenService.returnIfGranted(studentId, authorization,
                 token -> respondInputStreamResource(
                         downloadSubmittedCodesUseCase.execute(new DownloadSubmittedCodesUseCase.Request(
                                 problemId, studentId, langEnvName, submissionId, submittedCodesFileId)

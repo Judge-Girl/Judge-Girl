@@ -55,7 +55,7 @@ public interface TokenService {
         }
     }
 
-    default <T> T returnIfTokenValid(int ownerStudentId, String authorization, Function<Token, T> tokenFunction) {
+    default <T> T returnIfGranted(int ownerStudentId, String authorization, Function<Token, T> tokenFunction) {
         TokenService.Token token = parseBearerTokenAndValidate(authorization);
         if (token.canAccessStudent(ownerStudentId)) {
             return tokenFunction.apply(token);

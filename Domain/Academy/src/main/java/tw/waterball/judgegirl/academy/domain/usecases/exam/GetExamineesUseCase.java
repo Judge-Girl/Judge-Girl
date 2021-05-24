@@ -1,10 +1,13 @@
 package tw.waterball.judgegirl.academy.domain.usecases.exam;
 
 import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import tw.waterball.judgegirl.academy.domain.repositories.ExamRepository;
 import tw.waterball.judgegirl.primitives.Student;
 import tw.waterball.judgegirl.primitives.exam.Exam;
 import tw.waterball.judgegirl.primitives.exam.Examinee;
-import tw.waterball.judgegirl.academy.domain.repositories.ExamRepository;
+import tw.waterball.judgegirl.primitives.exam.ExamineeOnlyOperationException;
 import tw.waterball.judgegirl.studentapi.clients.StudentServiceDriver;
 
 import javax.inject.Named;
@@ -22,10 +25,17 @@ public class GetExamineesUseCase {
     private final ExamRepository examRepository;
     private final StudentServiceDriver studentServiceDriver;
 
-    public void execute(int examId, Presenter presenter) throws IllegalStateException {
-        Exam exam = findExam(examId);
+    public void execute(Request request, Presenter presenter) throws ExamineeOnlyOperationException {
+        Exam exam = findExam(request.examId);
+        onlyExamineeCanAccessTheExam(request, exam);
         List<Student> examinees = findExaminees(exam);
         presenter.showExaminees(examinees);
+    }
+
+    private void onlyExamineeCanAccessTheExam(Request request, Exam exam) {
+        if (request.isOnlyExamineeCanAccess() && !exam.hasExaminee(request.studentId)) {
+            throw new ExamineeOnlyOperationException();
+        }
     }
 
     private List<Student> findExaminees(Exam exam) {
@@ -38,5 +48,14 @@ public class GetExamineesUseCase {
 
     public interface Presenter {
         void showExaminees(List<Student> examinees);
+    }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class Request {
+        private int examId;
+        private boolean onlyExamineeCanAccess;
+        private int studentId;
     }
 }
