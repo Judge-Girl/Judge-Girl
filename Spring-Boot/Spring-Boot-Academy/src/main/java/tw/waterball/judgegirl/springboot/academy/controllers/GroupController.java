@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Set;
 
 import static java.util.Arrays.asList;
-import static java.util.stream.Collectors.toList;
+import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
 
 /**
  * @author - wally55077@gmail.com
@@ -172,7 +172,7 @@ class GetAllGroupsPresenter implements GetAllGroupsUseCase.Presenter {
     }
 
     public List<GroupView> present() {
-        return groups.stream().map(GroupView::toViewModel).collect(toList());
+        return mapToList(groups, GroupView::toViewModel);
     }
 
 }
@@ -187,7 +187,7 @@ class GetGroupMembersPresenter implements GetGroupMembersUseCase.Presenter {
     }
 
     public List<StudentView> present() {
-        return members.stream().map(StudentView::toViewModel).collect(toList());
+        return mapToList(members, StudentView::toViewModel);
     }
 }
 
@@ -201,7 +201,7 @@ class GetOwnGroupsPresenter implements GetOwnGroupsUseCase.Presenter {
     }
 
     public List<GroupView> present() {
-        return groups.stream().map(GroupView::toViewModel).collect(toList());
+        return mapToList(groups, GroupView::toViewModel);
     }
 }
 
