@@ -14,13 +14,10 @@
 package tw.waterball.judgegirl.springboot.submission.configs;
 
 import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.command.DockerCmdExecFactory;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientConfig;
 import com.github.dockerjava.core.DockerClientImpl;
-import com.github.dockerjava.jaxrs.JerseyDockerCmdExecFactory;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import com.github.dockerjava.okhttp.OkHttpDockerCmdExecFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -35,23 +32,18 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling
 public class DockerDeployerAutoConfiguration {
     public static final String STRATEGY = "docker";
-    private static final Logger logger = LogManager.getLogger();
 
     @Bean
     public DockerClientConfig dockerClientConfig() {
         return DefaultDockerClientConfig.createDefaultConfigBuilder().build();
     }
 
-    @Bean
-    public DockerCmdExecFactory dockerCmdExecFactory() {
-        return new JerseyDockerCmdExecFactory();
-    }
 
     @Bean
-    public DockerClient dockerClient(DockerClientConfig config,
-                                     DockerCmdExecFactory dockerCmdExecFactory) {
+    @SuppressWarnings("deprecation")
+    public DockerClient dockerClient(DockerClientConfig config) {
         return DockerClientImpl.getInstance(config)
-                .withDockerCmdExecFactory(dockerCmdExecFactory);
+                .withDockerCmdExecFactory(new OkHttpDockerCmdExecFactory());
     }
 
 
