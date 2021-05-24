@@ -28,7 +28,6 @@ import tw.waterball.judgegirl.commons.models.files.FileResource;
 import tw.waterball.judgegirl.primitives.problem.Language;
 import tw.waterball.judgegirl.primitives.problem.LanguageEnv;
 import tw.waterball.judgegirl.primitives.problem.Problem;
-import tw.waterball.judgegirl.problem.domain.repositories.PatchProblemParams;
 import tw.waterball.judgegirl.problem.domain.repositories.ProblemQueryParams;
 import tw.waterball.judgegirl.problem.domain.repositories.ProblemRepository;
 import tw.waterball.judgegirl.springboot.problem.repositories.data.ProblemData;
@@ -162,25 +161,6 @@ public class MongoProblemRepository implements ProblemRepository {
                 .map(ProblemData::getId)
                 .orElse(0);
         return Math.max(OFFSET_NEW_PROBLEM_ID, lastProblemId + 1);
-    }
-
-    @Override
-    public void patchProblem(int problemId, PatchProblemParams params) {
-        Update update = new Update();
-        Query query = new Query(where("_id").is(problemId));
-        params.getTitle().ifPresent(title -> update.set("title", title));
-        params.getDescription().ifPresent(des -> update.set("description", des));
-        params.getMatchPolicyPluginTag().ifPresent(tag -> update.set("outputMatchPolicyPluginTag", tag));
-        params.getFilterPluginTags().ifPresent(tags -> update.set("filterPluginTags", tags));
-        params.getLanguageEnv().ifPresent(languageEnv -> update.set("languageEnvs." + languageEnv.getLanguage(), languageEnv));
-        params.getTags().ifPresent(tags -> update.set("tags", tags));
-        params.getVisible().ifPresent(visible -> update.set("visible", visible));
-
-        params.getTestcase().ifPresent(tc -> update.set("testcases." + tc.getId(), tc));
-
-        if (!update.getUpdateObject().isEmpty()) {
-            mongoTemplate.upsert(query, update, ProblemData.class);
-        }
     }
 
     @Override
