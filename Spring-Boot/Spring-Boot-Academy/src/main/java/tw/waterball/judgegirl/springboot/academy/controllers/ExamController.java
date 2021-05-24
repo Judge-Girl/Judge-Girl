@@ -9,6 +9,7 @@ import tw.waterball.judgegirl.academy.domain.repositories.ExamFilter;
 import tw.waterball.judgegirl.academy.domain.usecases.exam.*;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
 import tw.waterball.judgegirl.commons.token.TokenService;
+import tw.waterball.judgegirl.commons.token.TokenService.Token;
 import tw.waterball.judgegirl.primitives.Student;
 import tw.waterball.judgegirl.primitives.exam.Answer;
 import tw.waterball.judgegirl.primitives.exam.Exam;
@@ -114,7 +115,7 @@ public class ExamController {
     public void deleteQuestion(@RequestHeader("Authorization") String authorization,
                                @PathVariable int examId, @PathVariable int problemId) {
         tokenService.ifAdminToken(authorization, token ->
-                deleteQuestionUseCase.execute(new DeleteQuestionUseCase.Request(examId, problemId));
+                deleteQuestionUseCase.execute(new DeleteQuestionUseCase.Request(examId, problemId)));
     }
 
     @PostMapping("/exams/{examId}/students")
@@ -131,43 +132,56 @@ public class ExamController {
     }
 
     @PostMapping("/exams/{examId}/groups")
-    public void addGroupsOfExaminees(@PathVariable int examId,
+    public void addGroupsOfExaminees(@RequestHeader("Authorization") String authorization,
+                                     @PathVariable int examId,
                                      @RequestBody AddGroupOfExamineesUseCase.Request request) {
-        request.examId = examId;
-        addGroupOfExamineesUseCase.execute(request);
+        tokenService.ifAdminToken(authorization, token -> {
+            request.examId = examId;
+            addGroupOfExamineesUseCase.execute(request);
+        });
     }
 
     @DeleteMapping("/exams/{examId}/students")
-    public void deleteExaminees(@PathVariable int examId, @RequestBody List<String> emails) {
-        DeleteExamineesUseCase.Request request = new DeleteExamineesUseCase.Request();
-        request.emails = emails;
-        request.examId = examId;
-        deleteExamineesUseCase.execute(request);
+    public void deleteExaminees(@RequestHeader("Authorization") String authorization,
+                                @PathVariable int examId, @RequestBody List<String> emails) {
+        tokenService.ifAdminToken(authorization, token -> {
+            DeleteExamineesUseCase.Request request = new DeleteExamineesUseCase.Request();
+            request.emails = emails;
+            request.examId = examId;
+            deleteExamineesUseCase.execute(request);
+        });
     }
 
     @DeleteMapping("/exams/{examId}")
-    public void deleteExam(@PathVariable int examId) {
-        deleteExamUseCase.execute(examId);
+    public void deleteExam(@RequestHeader("Authorization") String authorization,
+                           @PathVariable int examId) {
+        tokenService.ifAdminToken(authorization, token -> deleteExamUseCase.execute(examId));
     }
 
     @GetMapping("/exams/{examId}/overview")
-    public ExamOverview getExamOverview(@PathVariable int examId) {
-        ExamOverviewPresenter presenter = new ExamOverviewPresenter();
-        getExamOverviewUseCase.execute(examId, presenter);
-        return presenter.present();
+    public ExamOverview getExamOverview(@RequestHeader("Authorization") String authorization,
+                                        @PathVariable int examId) {
+        return tokenService.returnIfAdmin(authorization, token -> {
+            ExamOverviewPresenter presenter = new ExamOverviewPresenter();
+            getExamOverviewUseCase.execute(examId, presenter);
+            return presenter.present();
+        });
     }
 
     @GetMapping("/exams/{examId}/transcript")
-    public TranscriptView createTranscript(@PathVariable int examId) {
-        ExamTranscriptPresenter presenter = new ExamTranscriptPresenter();
-        calculateExamScoreUseCase.execute(examId, presenter);
-        return presenter.present();
+    public TranscriptView createTranscript(@RequestHeader("Authorization") String authorization,
+                                           @PathVariable int examId) {
+        return tokenService.returnIfAdmin(authorization, token -> {
+            ExamTranscriptPresenter presenter = new ExamTranscriptPresenter();
+            calculateExamScoreUseCase.execute(examId, presenter);
+            return presenter.present();
+        });
     }
 
     @GetMapping("/exams/{examId}")
     public ExamView getExamById(@RequestHeader("Authorization") String authorization,
                                 @PathVariable int examId) {
-        TokenService.Token token = tokenService.parseBearerTokenAndValidate(authorization);
+        Token token = tokenService.parseBearerTokenAndValidate(authorization);
         getExamUseCase.execute(new GetExamUseCase.Request(examId, token.getStudentId()), examPresenter);
         return examPresenter.present();
     }
@@ -175,7 +189,7 @@ public class ExamController {
     @GetMapping("/exams/{examId}/students")
     public List<StudentView> getExaminees(@RequestHeader("Authorization") String authorization,
                                           @PathVariable int examId) {
-        TokenService.Token token = tokenService.parseBearerTokenAndValidate(authorization);
+        Token token = tokenService.parseBearerTokenAndValidate(authorization);
         ExamineesPresenter presenter = new ExamineesPresenter();
         getExamineesUseCase.execute(new GetExamineesUseCase.Request(examId, token.getStudentId()), presenter);
         return presenter.present();
