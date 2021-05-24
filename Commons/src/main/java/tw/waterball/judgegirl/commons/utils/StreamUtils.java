@@ -31,6 +31,16 @@ import static java.util.stream.IntStream.range;
  * @author - johnny850807@gmail.com (Waterball)
  */
 public abstract class StreamUtils {
+    public static <T, R> List<T> flatMapToList(R[] array, ErrFunction<? super R, ? extends Stream<? extends T>> flatMapping) {
+        return stream(array).flatMap(r -> {
+            try {
+                return flatMapping.apply(r);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }).collect(toList());
+    }
+
     public static <T, R> List<T> flatMapToList(Collection<R> collection, ErrFunction<? super R, ? extends Stream<? extends T>> flatMapping) {
         return collection.stream()
                 .flatMap(r -> {

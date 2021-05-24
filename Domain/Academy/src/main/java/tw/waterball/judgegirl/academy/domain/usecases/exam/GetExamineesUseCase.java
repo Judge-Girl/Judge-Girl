@@ -4,10 +4,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import tw.waterball.judgegirl.academy.domain.repositories.ExamRepository;
-import tw.waterball.judgegirl.commons.exceptions.ForbiddenAccessException;
 import tw.waterball.judgegirl.primitives.Student;
 import tw.waterball.judgegirl.primitives.exam.Exam;
 import tw.waterball.judgegirl.primitives.exam.Examinee;
+import tw.waterball.judgegirl.primitives.exam.ExamineeOnlyOperationException;
 import tw.waterball.judgegirl.studentapi.clients.StudentServiceDriver;
 
 import javax.inject.Named;
@@ -25,7 +25,7 @@ public class GetExamineesUseCase {
     private final ExamRepository examRepository;
     private final StudentServiceDriver studentServiceDriver;
 
-    public void execute(Request request, Presenter presenter) throws IllegalStateException {
+    public void execute(Request request, Presenter presenter) throws ExamineeOnlyOperationException {
         Exam exam = findExam(request.examId);
         onlyExamineeCanAccessTheExam(request, exam);
         List<Student> examinees = findExaminees(exam);
@@ -33,8 +33,8 @@ public class GetExamineesUseCase {
     }
 
     private void onlyExamineeCanAccessTheExam(Request request, Exam exam) {
-        if (!exam.hasExaminee(request.studentId)) {
-            throw new ForbiddenAccessException("Cannot access the exam.");
+        if (request.isOnlyExamineeCanAccess() && !exam.hasExaminee(request.studentId)) {
+            throw new ExamineeOnlyOperationException();
         }
     }
 
@@ -55,6 +55,7 @@ public class GetExamineesUseCase {
     @NoArgsConstructor
     public static class Request {
         private int examId;
+        private boolean onlyExamineeCanAccess;
         private int studentId;
     }
 }

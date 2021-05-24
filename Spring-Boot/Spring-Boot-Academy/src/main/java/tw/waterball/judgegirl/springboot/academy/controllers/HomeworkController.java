@@ -3,6 +3,7 @@ package tw.waterball.judgegirl.springboot.academy.controllers;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import tw.waterball.judgegirl.academy.domain.usecases.homework.*;
+import tw.waterball.judgegirl.commons.token.TokenService;
 import tw.waterball.judgegirl.primitives.Homework;
 import tw.waterball.judgegirl.springboot.academy.view.HomeworkProgress;
 import tw.waterball.judgegirl.springboot.academy.view.HomeworkView;
@@ -21,7 +22,7 @@ import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
 @AllArgsConstructor
 @RequestMapping("/api")
 public class HomeworkController {
-
+    private final TokenService tokenService;
     private final CreateHomeworkUseCase createHomeworkUseCase;
     private final GetHomeworkUseCase getHomeworkUseCase;
     private final GetHomeworkProgressUseCase getHomeworkProgressUseCase;
@@ -29,37 +30,50 @@ public class HomeworkController {
     private final DeleteHomeworkUseCase deleteHomeworkUseCase;
 
     @PostMapping("/homework")
-    public HomeworkView createHomework(@RequestBody CreateHomeworkUseCase.Request request) {
-        CreateHomeworkPresenter presenter = new CreateHomeworkPresenter();
-        createHomeworkUseCase.execute(request, presenter);
-        return presenter.present();
+    public HomeworkView createHomework(@RequestHeader("Authorization") String authorization,
+                                       @RequestBody CreateHomeworkUseCase.Request request) {
+        return tokenService.returnIfAdmin(authorization, token -> {
+            CreateHomeworkPresenter presenter = new CreateHomeworkPresenter();
+            createHomeworkUseCase.execute(request, presenter);
+            return presenter.present();
+        });
     }
 
     @GetMapping("/homework/{homeworkId}")
-    public HomeworkView getHomework(@PathVariable int homeworkId) {
-        GetHomeworkPresenter presenter = new GetHomeworkPresenter();
-        getHomeworkUseCase.execute(homeworkId, presenter);
-        return presenter.present();
+    public HomeworkView getHomework(@RequestHeader("Authorization") String authorization,
+                                    @PathVariable int homeworkId) {
+        return tokenService.returnIfAdmin(authorization, token -> {
+            GetHomeworkPresenter presenter = new GetHomeworkPresenter();
+            getHomeworkUseCase.execute(homeworkId, presenter);
+            return presenter.present();
+        });
     }
 
     @GetMapping("/homework")
-    public List<HomeworkView> getAllHomework() {
-        GetAllHomeworkPresenter presenter = new GetAllHomeworkPresenter();
-        getAllHomeworkUseCase.execute(presenter);
-        return presenter.present();
+    public List<HomeworkView> getAllHomework(@RequestHeader("Authorization") String authorization) {
+        return tokenService.returnIfAdmin(authorization, token -> {
+            GetAllHomeworkPresenter presenter = new GetAllHomeworkPresenter();
+            getAllHomeworkUseCase.execute(presenter);
+            return presenter.present();
+        });
     }
 
     @DeleteMapping("/homework/{homeworkId}")
-    public void deleteHomework(@PathVariable int homeworkId) {
-        deleteHomeworkUseCase.execute(homeworkId);
+    public void deleteHomework(@RequestHeader("Authorization") String authorization,
+                               @PathVariable int homeworkId) {
+        tokenService.ifAdminToken(authorization,
+                (token) -> deleteHomeworkUseCase.execute(homeworkId));
     }
 
     @GetMapping("/students/{studentId}/homework/{homeworkId}/progress")
-    public HomeworkProgress getHomeworkProgress(@PathVariable int studentId,
+    public HomeworkProgress getHomeworkProgress(@RequestHeader("Authorization") String authorization,
+                                                @PathVariable int studentId,
                                                 @PathVariable int homeworkId) {
-        GetHomeworkProgressPresenter presenter = new GetHomeworkProgressPresenter();
-        getHomeworkProgressUseCase.execute(new GetHomeworkProgressUseCase.Request(studentId, homeworkId), presenter);
-        return presenter.present();
+        return tokenService.returnIfAdmin(authorization, token -> {
+            GetHomeworkProgressPresenter presenter = new GetHomeworkProgressPresenter();
+            getHomeworkProgressUseCase.execute(new GetHomeworkProgressUseCase.Request(studentId, homeworkId), presenter);
+            return presenter.present();
+        });
     }
 
 }

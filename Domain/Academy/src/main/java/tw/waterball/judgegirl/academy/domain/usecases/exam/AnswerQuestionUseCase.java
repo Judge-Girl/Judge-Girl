@@ -39,20 +39,20 @@ public class AnswerQuestionUseCase implements VerdictIssuedEventListener {
         Exam exam = findExam(request.examId);
         Question question = findQuestion(request, exam);
 
-        studentMustParticipateExam(request);
+        onlyExamineeCanAnswerQuestion(request);
         examMustHaveBeenStarted(exam);
-        answerCountMustNotExceedQuota(request, question);
+        answerCountMustNotExceedSubmissionQuota(request, question);
 
-        SubmissionView submissionView = submissionService.submit(submitCodeRequest(request));
-        Answer answer = answer(request, question, submissionView, answerTime);
+        var submission = submissionService.submit(submitCodeRequest(request));
+        Answer answer = answer(request, question, submission, answerTime);
         answer = examRepository.saveAnswer(answer);
 
         presenter.showAnswer(answer);
     }
 
-    private void studentMustParticipateExam(Request request) throws YouAreNotAnExamineeException {
+    private void onlyExamineeCanAnswerQuestion(Request request) throws ExamineeOnlyOperationException {
         if (!examRepository.isExaminee(request.studentId, request.examId)) {
-            throw new YouAreNotAnExamineeException();
+            throw new ExamineeOnlyOperationException();
         }
     }
 
@@ -62,7 +62,7 @@ public class AnswerQuestionUseCase implements VerdictIssuedEventListener {
         }
     }
 
-    private void answerCountMustNotExceedQuota(Request request, Question question) throws NoSubmissionQuotaException {
+    private void answerCountMustNotExceedSubmissionQuota(Request request, Question question) throws NoSubmissionQuotaException {
         int answerCount = examRepository.countAnswersInQuestion(question.getId(), request.studentId);
         if (answerCount >= question.getQuota()) {
             throw new NoSubmissionQuotaException();
@@ -96,6 +96,10 @@ public class AnswerQuestionUseCase implements VerdictIssuedEventListener {
                 .ifPresent(examId -> updateBestRecord(event, examId));
     }
 
+    private OptionalInt getExamIdFromBag(Bag submissionBag) {
+        return submissionBag.getAsInteger(BAG_KEY_EXAM_ID);
+    }
+
     private void updateBestRecord(VerdictIssuedEvent event, int examId) {
         Record record = record(event, examId);
         Record bestRecord = examRepository.findRecordOfQuestion(record.getQuestionId(), event.getStudentId())
@@ -103,10 +107,6 @@ public class AnswerQuestionUseCase implements VerdictIssuedEventListener {
                 .orElse(record);
 
         examRepository.saveRecordOfQuestion(bestRecord);
-    }
-
-    private OptionalInt getExamIdFromBag(Bag submissionBag) {
-        return submissionBag.getAsInteger(BAG_KEY_EXAM_ID);
     }
 
     private Record record(VerdictIssuedEvent event, int examId) {

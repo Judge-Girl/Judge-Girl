@@ -34,6 +34,8 @@ import java.util.HashSet;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static tw.waterball.judgegirl.commons.token.TokenService.Identity.admin;
+import static tw.waterball.judgegirl.commons.token.TokenService.Identity.student;
 import static tw.waterball.judgegirl.commons.utils.HttpHeaderUtils.bearerWithToken;
 
 /**
@@ -49,6 +51,9 @@ public abstract class AbstractSpringBootTest {
 
     @Autowired
     protected ObjectMapper objectMapper;
+
+    @Autowired
+    protected TokenService tokenService;
 
     @SneakyThrows
     public String toJson(Object obj) {
@@ -95,7 +100,16 @@ public abstract class AbstractSpringBootTest {
         TestTransaction.flagForCommit();
         TestTransaction.end();
     }
+    
+    protected MockHttpServletRequestBuilder withAdminToken(MockHttpServletRequestBuilder builder) {
+        withToken(tokenService.createToken(admin(Integer.MAX_VALUE))).decorate(builder);
+        return builder;
+    }
 
+    protected MockHttpServletRequestBuilder withStudentToken(int studentId, MockHttpServletRequestBuilder builder) {
+        withToken(tokenService.createToken(student(studentId))).decorate(builder);
+        return builder;
+    }
 
     protected MockHttpServletRequestBuilder withToken(TokenService.Token token, MockHttpServletRequestBuilder builder) {
         withToken(token).decorate(builder);

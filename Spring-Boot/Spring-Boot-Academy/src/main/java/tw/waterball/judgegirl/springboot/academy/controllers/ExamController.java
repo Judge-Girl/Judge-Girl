@@ -13,8 +13,8 @@ import tw.waterball.judgegirl.commons.token.TokenService.Token;
 import tw.waterball.judgegirl.primitives.Student;
 import tw.waterball.judgegirl.primitives.exam.Answer;
 import tw.waterball.judgegirl.primitives.exam.Exam;
+import tw.waterball.judgegirl.primitives.exam.ExamineeOnlyOperationException;
 import tw.waterball.judgegirl.primitives.exam.Question;
-import tw.waterball.judgegirl.primitives.exam.YouAreNotAnExamineeException;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.springboot.academy.presenters.ExamHomePresenter;
 import tw.waterball.judgegirl.springboot.academy.presenters.ExamOverviewPresenter;
@@ -178,11 +178,14 @@ public class ExamController {
         });
     }
 
+    // Student-accessible APIs
+
     @GetMapping("/exams/{examId}")
     public ExamView getExamById(@RequestHeader("Authorization") String authorization,
                                 @PathVariable int examId) {
         Token token = tokenService.parseBearerTokenAndValidate(authorization);
-        getExamUseCase.execute(new GetExamUseCase.Request(examId, token.getStudentId()), examPresenter);
+        getExamUseCase.execute(new GetExamUseCase.Request(examId,
+                !token.isAdmin(), token.getStudentId()), examPresenter);
         return examPresenter.present();
     }
 
@@ -191,7 +194,8 @@ public class ExamController {
                                           @PathVariable int examId) {
         Token token = tokenService.parseBearerTokenAndValidate(authorization);
         ExamineesPresenter presenter = new ExamineesPresenter();
-        getExamineesUseCase.execute(new GetExamineesUseCase.Request(examId, token.getStudentId()), presenter);
+        getExamineesUseCase.execute(new GetExamineesUseCase.Request(examId,
+                !token.isAdmin(), token.getStudentId()), presenter);
         return presenter.present();
     }
 
@@ -227,17 +231,20 @@ public class ExamController {
     }
 
     @GetMapping("/exams/{examId}/students/{studentId}/overview")
-    public ExamHome getExamProgressOverview(@PathVariable int examId,
+    public ExamHome getExamProgressOverview(@RequestHeader("Authorization") String authorization,
+                                            @PathVariable int examId,
                                             @PathVariable int studentId) {
-        ExamHomePresenter presenter = new ExamHomePresenter();
-        getExamProgressOverviewUseCase.execute(new GetExamProgressOverviewUseCase.Request(examId, studentId), presenter);
-        return presenter.present();
+        return tokenService.returnIfGranted(studentId, authorization, token -> {
+            ExamHomePresenter presenter = new ExamHomePresenter();
+            getExamProgressOverviewUseCase.execute(
+                    new GetExamProgressOverviewUseCase.Request(examId, studentId), presenter);
+            return presenter.present();
+        });
     }
 
-
     @ResponseStatus(HttpStatus.FORBIDDEN)
-    @ExceptionHandler({YouAreNotAnExamineeException.class})
-    public void handleYouAreNotAnExamineeException() {
+    @ExceptionHandler({ExamineeOnlyOperationException.class})
+    public void handleExamineeOnlyOperationException() {
     }
 }
 
