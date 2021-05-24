@@ -62,7 +62,7 @@ public class HomeworkController {
     public void deleteHomework(@RequestHeader("Authorization") String authorization,
                                @PathVariable int homeworkId) {
         tokenService.ifAdminToken(authorization,
-                (token) -> deleteHomeworkUseCase.execute(homeworkId));
+                token -> deleteHomeworkUseCase.execute(homeworkId));
     }
 
     @GetMapping("/students/{studentId}/homework/{homeworkId}/progress")
