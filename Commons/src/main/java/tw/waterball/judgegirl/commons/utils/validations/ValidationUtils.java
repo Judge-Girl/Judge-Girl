@@ -11,7 +11,7 @@
  *   limitations under the License.
  */
 
-package tw.waterball.judgegirl.commons.utils;
+package tw.waterball.judgegirl.commons.utils.validations;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;

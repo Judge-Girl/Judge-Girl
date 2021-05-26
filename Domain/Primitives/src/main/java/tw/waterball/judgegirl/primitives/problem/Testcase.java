@@ -13,26 +13,30 @@
 
 package tw.waterball.judgegirl.primitives.problem;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;
+import tw.waterball.judgegirl.commons.utils.validations.EnglishLetterOrDigitOrDash;
 import tw.waterball.judgegirl.primitives.problem.validators.PositiveOrNegativeOne;
 
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.PositiveOrZero;
+import javax.validation.constraints.Size;
+import java.util.Optional;
 
-import static tw.waterball.judgegirl.commons.utils.ValidationUtils.validate;
+import static java.util.Optional.ofNullable;
+import static tw.waterball.judgegirl.commons.utils.validations.ValidationUtils.validate;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
-@AllArgsConstructor
 @Getter
 @ToString
 public class Testcase {
 
-    private String id;
-    @NotBlank
+    @Size(min = 1, max = 200)
+    @EnglishLetterOrDigitOrDash
+    private final String id;
+    @Size(min = 1, max = 50)
+    @EnglishLetterOrDigitOrDash
     private final String name;
     @PositiveOrZero
     private final int problemId;
@@ -46,9 +50,22 @@ public class Testcase {
     private final int threadNumberLimit;
     @PositiveOrZero
     private final int grade;
+    private TestcaseIO testcaseIO;
 
     public Testcase(String name, int problemId, int timeLimit, long memoryLimit,
                     long outputLimit, int threadNumberLimit, int grade) {
+        this(name, name, problemId, timeLimit, memoryLimit, outputLimit, threadNumberLimit, grade, null);
+    }
+
+
+    public Testcase(String id, String name, int problemId, int timeLimit, long memoryLimit,
+                    long outputLimit, int threadNumberLimit, int grade) {
+        this(id, name, problemId, timeLimit, memoryLimit, outputLimit, threadNumberLimit, grade, null);
+    }
+
+    public Testcase(String id, String name, int problemId, int timeLimit, long memoryLimit,
+                    long outputLimit, int threadNumberLimit, int grade, TestcaseIO testcaseIO) {
+        this.id = id;
         this.name = name;
         this.problemId = problemId;
         this.timeLimit = timeLimit;
@@ -56,7 +73,15 @@ public class Testcase {
         this.outputLimit = outputLimit;
         this.threadNumberLimit = threadNumberLimit;
         this.grade = grade;
+        this.testcaseIO = testcaseIO;
         validate(this);
     }
 
+    public Optional<TestcaseIO> getTestcaseIO() {
+        return ofNullable(testcaseIO);
+    }
+
+    public void setTestcaseIO(TestcaseIO testcaseIO) {
+        this.testcaseIO = testcaseIO;
+    }
 }

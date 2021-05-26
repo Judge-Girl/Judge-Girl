@@ -95,12 +95,16 @@ public class PatchProblemUseCase extends BaseProblemUseCase {
         }
 
         public static TestcaseUpsert upsert(Testcase testcase, Consumer<TestcaseUpsert> updating) {
-            TestcaseUpsert testcaseUpsert = new TestcaseUpsert(testcase.getId(), testcase.getName(),
+            TestcaseUpsert testcaseUpsert = fromTestcase(testcase);
+            updating.accept(testcaseUpsert);
+            return testcaseUpsert;
+        }
+
+        public static TestcaseUpsert fromTestcase(Testcase testcase) {
+            return new TestcaseUpsert(testcase.getId(), testcase.getName(),
                     testcase.getProblemId(), testcase.getTimeLimit(),
                     testcase.getMemoryLimit(), testcase.getOutputLimit(),
                     testcase.getThreadNumberLimit(), testcase.getGrade());
-            updating.accept(testcaseUpsert);
-            return testcaseUpsert;
         }
 
         public Testcase toValue() {

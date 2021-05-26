@@ -17,6 +17,7 @@ import tw.waterball.judgegirl.commons.models.files.FileResource;
 import tw.waterball.judgegirl.primitives.problem.Language;
 import tw.waterball.judgegirl.primitives.problem.LanguageEnv;
 import tw.waterball.judgegirl.primitives.problem.Problem;
+import tw.waterball.judgegirl.primitives.problem.TestcaseIO;
 
 import java.io.InputStream;
 import java.util.List;
@@ -27,7 +28,7 @@ import java.util.Optional;
  * @author - johnny850807@gmail.com (Waterball)
  */
 public interface ProblemRepository {
-    Optional<FileResource> downloadTestCaseIOs(int problemId, String testcaseIOsFileId);
+    Optional<FileResource> downloadTestCaseIOs(int problemId, String testcaseId);
 
     Optional<Problem> findProblemById(int problemId);
 
@@ -43,11 +44,9 @@ public interface ProblemRepository {
 
     List<String> getTags();
 
-    Problem save(Problem problem, Map<LanguageEnv, InputStream> providedCodesZipMap, InputStream testcaseIOsZip);
+    Problem save(Problem problem, Map<LanguageEnv, InputStream> providedCodesZipMap);
 
     Problem save(Problem problem);
-
-    void updateProblemWithProvidedCodes(Problem problem, Language language, List<FileResource> providedCodes);
 
     boolean problemExists(int problemId);
 
@@ -61,4 +60,7 @@ public interface ProblemRepository {
 
     void saveTags(List<String> tagList);
 
+    void uploadProvidedCodes(Problem problem, Language language, List<FileResource> providedCodes);
+
+    Problem uploadTestcaseIO(Problem problem, TestcaseIO.Files ioFiles);
 }

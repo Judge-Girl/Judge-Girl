@@ -23,7 +23,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static java.util.Objects.requireNonNullElseGet;
-import static tw.waterball.judgegirl.commons.utils.ValidationUtils.validate;
+import static tw.waterball.judgegirl.commons.utils.validations.ValidationUtils.validate;
 
 /**
  * An environment for each language support.

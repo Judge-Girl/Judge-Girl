@@ -15,7 +15,7 @@ import static java.util.Objects.requireNonNull;
 import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.findFirst;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.sum;
-import static tw.waterball.judgegirl.commons.utils.ValidationUtils.validate;
+import static tw.waterball.judgegirl.commons.utils.validations.ValidationUtils.validate;
 import static tw.waterball.judgegirl.primitives.time.Duration.during;
 
 @Getter
@@ -140,6 +140,7 @@ public class Exam {
         setDuration(during(getStartTime(), endTime));
     }
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean hasExaminee(int studentId) {
         return getExaminee(studentId).isPresent();
     }

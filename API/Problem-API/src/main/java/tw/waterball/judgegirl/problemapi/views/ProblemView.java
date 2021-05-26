@@ -42,7 +42,6 @@ public class ProblemView {
     public JudgePluginTagView judgeMatchPolicyPluginTag;
     public Collection<JudgePluginTagView> judgeFilterPluginTags;
     public List<String> tags;
-    public String testcaseIOsFileId;
     public List<TestcaseView> testcases;
     public int totalGrade;
     public boolean visible;
@@ -61,7 +60,6 @@ public class ProblemView {
                 JudgePluginTagView.toViewModel(problem.getOutputMatchPolicyPluginTag()),
                 mapToList(problem.getFilterPluginTags(), JudgePluginTagView::toViewModel),
                 problem.getTags(),
-                problem.getTestcaseIOsFileId(),
                 mapToList(problem.getTestcases(), TestcaseView::toViewModel),
                 problem.getTotalGrade(),
                 problem.getVisible(),
@@ -77,7 +75,6 @@ public class ProblemView {
                 .outputMatchPolicyPluginTag(view.judgeMatchPolicyPluginTag.toValue())
                 .tags(requireNonNullElse(view.tags, emptyList()))
                 .testcases(mapToList(view.testcases, TestcaseView::toValue))
-                .testcaseIOsFileId(view.testcaseIOsFileId)
                 .archived(view.archived);
         if (view.judgeFilterPluginTags != null) {
             builder.filterPluginTags(mapToList(view.judgeFilterPluginTags, JudgePluginTagView::toValue));

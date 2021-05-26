@@ -21,7 +21,7 @@ import org.apache.commons.io.FilenameUtils;
 
 import javax.validation.constraints.Size;
 
-import static tw.waterball.judgegirl.commons.utils.ValidationUtils.validate;
+import static tw.waterball.judgegirl.commons.utils.validations.ValidationUtils.validate;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)

@@ -9,6 +9,7 @@ import tw.waterball.judgegirl.commons.utils.functional.GetById;
 import tw.waterball.judgegirl.primitives.problem.Language;
 import tw.waterball.judgegirl.primitives.problem.LanguageEnv;
 import tw.waterball.judgegirl.primitives.problem.Problem;
+import tw.waterball.judgegirl.primitives.problem.TestcaseIO;
 import tw.waterball.judgegirl.problem.domain.repositories.ProblemQueryParams;
 import tw.waterball.judgegirl.problem.domain.repositories.ProblemRepository;
 import tw.waterball.judgegirl.springboot.problem.repositories.data.ProblemData;
@@ -33,8 +34,8 @@ public class CacheProblemRepository implements ProblemRepository {
     private final ProblemRepository problemRepository;
 
     @Override
-    public Optional<FileResource> downloadTestCaseIOs(int problemId, String testcaseIOsFileId) {
-        return problemRepository.downloadTestCaseIOs(problemId, testcaseIOsFileId);
+    public Optional<FileResource> downloadTestCaseIOs(int problemId, String testcaseId) {
+        return problemRepository.downloadTestCaseIOs(problemId, testcaseId);
     }
 
     @Override
@@ -68,8 +69,8 @@ public class CacheProblemRepository implements ProblemRepository {
     }
 
     @Override
-    public Problem save(Problem problem, Map<LanguageEnv, InputStream> providedCodesZipMap, InputStream testcaseIOsZip) {
-        return cacheProblem(problemRepository.save(problem, providedCodesZipMap, testcaseIOsZip));
+    public Problem save(Problem problem, Map<LanguageEnv, InputStream> providedCodesZipMap) {
+        return cacheProblem(problemRepository.save(problem, providedCodesZipMap));
     }
 
     @Override
@@ -78,9 +79,15 @@ public class CacheProblemRepository implements ProblemRepository {
     }
 
     @Override
-    public void updateProblemWithProvidedCodes(Problem problem, Language language, List<FileResource> providedCodes) {
+    public void uploadProvidedCodes(Problem problem, Language language, List<FileResource> providedCodes) {
         invalidateProblemCache(problem.getId());
-        problemRepository.updateProblemWithProvidedCodes(problem, language, providedCodes);
+        problemRepository.uploadProvidedCodes(problem, language, providedCodes);
+    }
+
+    @Override
+    public Problem uploadTestcaseIO(Problem problem, TestcaseIO.Files ioFiles) {
+        invalidateProblemCache(problem.getId());
+        return problemRepository.uploadTestcaseIO(problem, ioFiles);
     }
 
     @Override

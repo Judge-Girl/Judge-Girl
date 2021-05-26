@@ -27,7 +27,6 @@ import java.util.List;
  */
 @Named
 public class UploadProvidedCodeUseCase extends BaseProblemUseCase {
-    public static final String PROVIDED_CODE_MULTIPART_KEY_NAME = "providedCodes";
 
     public UploadProvidedCodeUseCase(ProblemRepository problemRepository) {
         super(problemRepository);
@@ -37,7 +36,7 @@ public class UploadProvidedCodeUseCase extends BaseProblemUseCase {
         Problem problem = findProblem(request.problemId);
         problem.mayHaveLanguageEnv(request.language)
                 .orElseThrow(() -> new IllegalStateException("The languageEnv must be saved before its providedCodes are uploaded."));
-        problemRepository.updateProblemWithProvidedCodes(problem, request.language, request.providedCodes);
+        problemRepository.uploadProvidedCodes(problem, request.language, request.providedCodes);
         presenter.showResult(problem);
     }
 

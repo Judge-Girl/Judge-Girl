@@ -14,6 +14,7 @@
 package tw.waterball.judgegirl.springboot.problem.controllers;
 
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,6 +24,7 @@ import tw.waterball.judgegirl.commons.token.TokenService;
 import tw.waterball.judgegirl.primitives.problem.Language;
 import tw.waterball.judgegirl.primitives.problem.Problem;
 import tw.waterball.judgegirl.primitives.problem.Testcase;
+import tw.waterball.judgegirl.primitives.problem.TestcaseIO;
 import tw.waterball.judgegirl.problem.domain.repositories.ProblemQueryParams;
 import tw.waterball.judgegirl.problem.domain.usecases.*;
 import tw.waterball.judgegirl.problem.domain.usecases.PatchProblemUseCase.LanguageEnvUpsert;
@@ -30,11 +32,12 @@ import tw.waterball.judgegirl.problemapi.views.ProblemItem;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.springboot.utils.ResponseEntityUtils;
 
+import java.util.HashSet;
 import java.util.List;
 
 import static java.util.Objects.nonNull;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
-import static tw.waterball.judgegirl.problem.domain.usecases.UploadProvidedCodeUseCase.PROVIDED_CODE_MULTIPART_KEY_NAME;
+import static tw.waterball.judgegirl.springboot.utils.MultipartFileUtils.convertMultipartFileToFileResource;
 import static tw.waterball.judgegirl.springboot.utils.MultipartFileUtils.convertMultipartFilesToFileResources;
 
 /**
@@ -45,6 +48,11 @@ import static tw.waterball.judgegirl.springboot.utils.MultipartFileUtils.convert
 @RequestMapping(value = "/api/problems")
 @AllArgsConstructor
 public class ProblemController {
+    public static final String TESTCASE_IN_FILES_MULTIPART_KEY_NAME = "testcaseIOs.inFiles";
+    public static final String TESTCASE_OUT_FILES_MULTIPART_KEY_NAME = "testcaseIOs.outFiles";
+    public static final String TESTCASE_STDIN_MULTIPART_KEY_NAME = "stdIn";
+    public static final String TESTCASE_STDOUT_MULTIPART_KEY_NAME = "stdOut";
+    public static final String PROVIDED_CODE_MULTIPART_KEY_NAME = "providedCodes";
     private final GetProblemUseCase getProblemUseCase;
     private final GetProblemsUseCase getProblemsUseCase;
     private final DownloadProvidedCodesUseCase downloadProvidedCodesUseCase;
@@ -54,6 +62,7 @@ public class ProblemController {
     private final PatchProblemUseCase patchProblemUseCase;
     private final ArchiveOrDeleteProblemUseCase deleteProblemUseCase;
     private final UploadProvidedCodeUseCase uploadProvidedCodeUseCase;
+    private final UploadTestcaseIOUseCase uploadTestcaseIOUseCase;
     private final TokenService tokenService;
 
 
@@ -69,7 +78,7 @@ public class ProblemController {
                                          @RequestParam(required = false) int[] ids) {
         var token = tokenService.parseBearerTokenAndValidate(authorization);
         boolean includeInvisibleProblems = token.isAdmin();
-        GetProblemsPresenter presenter = new GetProblemsPresenter();
+        var presenter = new GetProblemsPresenter();
         if (nonNull(ids)) {
             getProblemsUseCase.execute(new GetProblemsUseCase.Request(includeInvisibleProblems, ids), presenter);
         } else {
@@ -83,24 +92,24 @@ public class ProblemController {
                                   @PathVariable int problemId) {
         var token = tokenService.parseBearerTokenAndValidate(authorization);
         boolean includeInvisibleProblem = token.isAdmin();
-        GetProblemPresenter presenter = new GetProblemPresenter();
+        var presenter = new GetProblemPresenter();
         getProblemUseCase.execute(new GetProblemUseCase.Request(problemId, includeInvisibleProblem), presenter);
         return presenter.present();
     }
 
     @GetMapping("/{problemId}/testcases")
     public List<Testcase> getTestCases(@PathVariable int problemId) {
-        GetTestCasesPresenter presenter = new GetTestCasesPresenter();
+        var presenter = new GetTestCasesPresenter();
         getProblemUseCase.execute(new GetProblemUseCase.Request(problemId), presenter);
         return presenter.present();
     }
 
     @GetMapping(value = "/{problemId}/{langEnvName}/providedCodes/{providedCodesFileId}",
             produces = "application/zip")
-    public ResponseEntity<InputStreamResource> downloadZippedProvidedCodes(@RequestHeader("Authorization") String authorization,
-                                                                           @PathVariable int problemId,
-                                                                           @PathVariable String langEnvName,
-                                                                           @PathVariable String providedCodesFileId) {
+    public ResponseEntity<InputStreamResource> downloadProvidedCodes(@RequestHeader("Authorization") String authorization,
+                                                                     @PathVariable int problemId,
+                                                                     @PathVariable String langEnvName,
+                                                                     @PathVariable String providedCodesFileId) {
         return tokenService.returnIfAdmin(authorization, token -> {
             FileResource fileResource = downloadProvidedCodesUseCase
                     .execute(new DownloadProvidedCodesUseCase.Request(problemId, langEnvName, providedCodesFileId));
@@ -108,14 +117,14 @@ public class ProblemController {
         });
     }
 
-    @GetMapping(value = "/{problemId}/testcaseIOs/{testcaseIOsFileId}",
+    @GetMapping(value = "/{problemId}/testcases/{testcaseId}",
             produces = "application/zip")
-    public ResponseEntity<InputStreamResource> downloadZippedTestCaseInputs(@RequestHeader("Authorization") String authorization,
-                                                                            @PathVariable int problemId,
-                                                                            @PathVariable String testcaseIOsFileId) {
+    public ResponseEntity<InputStreamResource> downloadTestCaseIOs(@RequestHeader("Authorization") String authorization,
+                                                                   @PathVariable int problemId,
+                                                                   @PathVariable String testcaseId) {
         return tokenService.returnIfAdmin(authorization, token -> {
             FileResource fileResource = downloadTestCaseIOsUseCase
-                    .execute(new DownloadTestCaseIOsUseCase.Request(problemId, testcaseIOsFileId));
+                    .execute(new DownloadTestCaseIOsUseCase.Request(problemId, testcaseId));
             return ResponseEntityUtils.respondInputStreamResource(fileResource);
         });
     }
@@ -164,13 +173,39 @@ public class ProblemController {
                                       @PathVariable String langEnvName,
                                       @RequestParam(PROVIDED_CODE_MULTIPART_KEY_NAME) MultipartFile[] providedCodes) {
         return tokenService.returnIfAdmin(authorization, token -> {
-            UploadProvidedCodeUseCase.Request request =
-                    new UploadProvidedCodeUseCase.Request(problemId, Language.valueOf(langEnvName), convertMultipartFilesToFileResources(providedCodes));
-            UploadProvidedCodesPresenter presenter = new UploadProvidedCodesPresenter();
+            var request = new UploadProvidedCodeUseCase.Request(problemId, Language.valueOf(langEnvName),
+                    convertMultipartFilesToFileResources(providedCodes));
+            var presenter = new UploadProvidedCodesPresenter();
             presenter.setLanguage(Language.valueOf(langEnvName));
             uploadProvidedCodeUseCase.execute(request, presenter);
             return presenter.present();
         });
+    }
+
+    @PutMapping("/{problemId}/testcases/{testcaseId}/io")
+    public String uploadTestcaseIO(@RequestHeader("Authorization") String authorization,
+                                   @PathVariable int problemId,
+                                   @PathVariable String testcaseId,
+                                   @RequestParam(TESTCASE_STDIN_MULTIPART_KEY_NAME) MultipartFile stdIn,
+                                   @RequestParam(TESTCASE_STDOUT_MULTIPART_KEY_NAME) MultipartFile stdOut,
+                                   @RequestParam(TESTCASE_IN_FILES_MULTIPART_KEY_NAME) MultipartFile[] inFiles,
+                                   @RequestParam(TESTCASE_OUT_FILES_MULTIPART_KEY_NAME) MultipartFile[] outFiles) {
+        return tokenService.returnIfAdmin(authorization, token -> {
+            var presenter = new UploadTestcaseIoPresenter(testcaseId);
+            uploadTestcaseIOUseCase.execute(new UploadTestcaseIOUseCase.Request(
+                    problemId, collectToTestcaseIOFiles(testcaseId, stdIn, stdOut, inFiles, outFiles)
+            ), presenter);
+            return presenter.present();
+        });
+    }
+
+    private TestcaseIO.Files collectToTestcaseIOFiles(String testcaseId, MultipartFile stdIn, MultipartFile stdOut,
+                                                      MultipartFile[] inFiles, MultipartFile[] outFiles) {
+        return new TestcaseIO.Files(testcaseId,
+                convertMultipartFileToFileResource(stdIn),
+                convertMultipartFileToFileResource(stdOut),
+                new HashSet<>(convertMultipartFilesToFileResources(inFiles)),
+                new HashSet<>(convertMultipartFilesToFileResources(outFiles)));
     }
 
     @PutMapping("/{problemId}/testcases/{testcaseId}")
@@ -246,5 +281,23 @@ class UploadProvidedCodesPresenter implements UploadProvidedCodeUseCase.Presente
 
     String present() {
         return problem.getLanguageEnv(language).getProvidedCodesFileId();
+    }
+}
+
+@RequiredArgsConstructor
+class UploadTestcaseIoPresenter implements UploadTestcaseIOUseCase.Presenter {
+    private Problem problem;
+    private final String testcaseId;
+
+    @Override
+    public void showResult(Problem problem) {
+        this.problem = problem;
+    }
+
+    String present() {
+        return problem.getTestcaseById(testcaseId)
+                .orElseThrow(() -> new RuntimeException("Presentation error."))
+                .getTestcaseIO().orElseThrow(() -> new RuntimeException("Presentation error."))
+                .getId();
     }
 }

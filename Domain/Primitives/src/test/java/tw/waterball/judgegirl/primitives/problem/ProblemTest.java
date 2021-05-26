@@ -15,8 +15,9 @@ package tw.waterball.judgegirl.primitives.problem;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static tw.waterball.judgegirl.commons.utils.StringUtils.generateStringOfLength;
+import static tw.waterball.judgegirl.primitives.stubs.ProblemStubs.PROBLEM_ID;
 import static tw.waterball.judgegirl.primitives.stubs.ProblemStubs.problemTemplate;
 
 class ProblemTest {
@@ -65,6 +66,29 @@ class ProblemTest {
         assertThrows(RuntimeException.class,
                 () -> problemTemplate()
                         .description(generateStringOfLength('x', 3001)).build());
+    }
+
+    @Test
+    void add5TestcasesWithDistinctNamesAndGrade20_ShouldSucceed_AndHaveTotalGrade100() {
+        Problem problem = problemTemplate().build();
+
+        for (int i = 0; i < 5; i++) {
+            final String name = String.valueOf(i);
+            assertDoesNotThrow(() -> problem.upsertTestcase(
+                    new Testcase(name, PROBLEM_ID, 100, 100, 100,
+                            -1, 20)));
+        }
+        assertEquals(100, problem.getTotalGrade());
+    }
+
+    @Test
+    void upsertTestcaseWithDuplicateNameShouldFail() {
+        Problem problem = problemTemplate()
+                .testcase(new Testcase("1", "A", PROBLEM_ID, 1, 1, 1, 1, 50))
+                .build();
+
+        assertThrows(RuntimeException.class,
+                () -> problem.upsertTestcase(new Testcase("2", "A", PROBLEM_ID, 100, 100, 100, -1, 50)));
     }
 
 }

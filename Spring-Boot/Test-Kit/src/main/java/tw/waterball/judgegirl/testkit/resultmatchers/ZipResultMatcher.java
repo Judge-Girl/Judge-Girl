@@ -34,7 +34,7 @@ import static org.springframework.test.util.AssertionErrors.assertTrue;
  * @author - johnny850807@gmail.com (Waterball)
  */
 public class ZipResultMatcher implements ResultMatcher {
-    private Map<String, MultipartFile> fileNameToFileMap = new HashMap<>();
+    private final Map<String, MultipartFile> fileNameToFileMap = new HashMap<>();
 
     private ZipResultMatcher() {
     }

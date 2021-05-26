@@ -29,21 +29,16 @@ import static tw.waterball.judgegirl.primitives.problem.Language.C;
  */
 public class ProblemStubs {
     @SuppressWarnings("WeakerAccess")
-    public static final int ID = 1;
-
-    public static ProblemBuilder problemTemplate() {
-        return problemTemplate(3, 20, 30, 50);
-    }
+    public static final int PROBLEM_ID = 1;
 
     public static ProblemBuilder problemTemplate(int... testcaseGrades) {
         var builder = Problem.builder()
-                .id(ID)
+                .id(PROBLEM_ID)
                 .title("Title")
                 .description("# Title \n ```\n Code \n ```")
                 .outputMatchPolicyPluginTag(new JudgePluginTag(
                         OUTPUT_MATCH_POLICY, "group", "name", "1.0"))
                 .tag("tag1").tag("tag2")
-                .testcaseIOsFileId("testcaseIOsFileId")
                 .languageEnv(C.toString(),
                         LanguageEnv.builder()
                                 .language(C)
@@ -53,7 +48,7 @@ public class ProblemStubs {
                                 .providedCodesFileId("providedCodesFileId")
                                 .build());
         for (int i = 0; i < testcaseGrades.length; i++) {
-            builder.testcase(new Testcase(UUID.randomUUID().toString(), String.valueOf(i), ID,
+            builder.testcase(new Testcase(UUID.randomUUID().toString(), String.valueOf(i), PROBLEM_ID,
                     5, 5, 5000, 1, testcaseGrades[i]));
         }
         return builder;

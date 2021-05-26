@@ -4,6 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import tw.waterball.judgegirl.primitives.problem.Testcase;
+import tw.waterball.judgegirl.primitives.problem.TestcaseIO;
+
+import java.util.Set;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -20,8 +23,14 @@ public class TestcaseView {
     public long outputLimit;
     public int threadNumberLimit;
     public int grade;
+    public String ioFileId;
+    public String stdIn;
+    public String stdOut;
+    public Set<String> inputFiles;
+    public Set<String> outputFiles;
 
     public static TestcaseView toViewModel(Testcase testcase) {
+        var io = testcase.getTestcaseIO();
         return new TestcaseView(
                 testcase.getId(),
                 testcase.getName(),
@@ -30,10 +39,16 @@ public class TestcaseView {
                 testcase.getMemoryLimit(),
                 testcase.getOutputLimit(),
                 testcase.getThreadNumberLimit(),
-                testcase.getGrade());
+                testcase.getGrade(),
+                io.map(TestcaseIO::getId).orElse(null),
+                io.map(TestcaseIO::getStdIn).orElse(null),
+                io.map(TestcaseIO::getStdOut).orElse(null),
+                io.map(TestcaseIO::getInputFiles).orElse(null),
+                io.map(TestcaseIO::getOutputFiles).orElse(null));
     }
 
     public Testcase toValue() {
-        return new Testcase(id, name, problemId, timeLimit, memoryLimit, outputLimit, threadNumberLimit, grade);
+        return new Testcase(id, name, problemId, timeLimit, memoryLimit, outputLimit, threadNumberLimit, grade,
+                new TestcaseIO(ioFileId, id, stdIn, stdOut, inputFiles, outputFiles));
     }
 }

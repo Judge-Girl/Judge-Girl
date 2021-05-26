@@ -15,19 +15,18 @@ package tw.waterball.judgegirl.primitives.problem;
 
 import lombok.Builder;
 import lombok.Singular;
-import org.jetbrains.annotations.Nullable;
 import tw.waterball.judgegirl.primitives.problem.validators.JudgePluginTagConstraint;
 
-import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import java.util.*;
 
+import static java.util.Collections.*;
 import static java.util.Objects.requireNonNull;
 import static java.util.Objects.requireNonNullElseGet;
 import static java.util.Optional.ofNullable;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.findFirst;
-import static tw.waterball.judgegirl.commons.utils.ValidationUtils.shouldHaveLength;
-import static tw.waterball.judgegirl.commons.utils.ValidationUtils.validate;
+import static tw.waterball.judgegirl.commons.utils.validations.ValidationUtils.shouldHaveLength;
+import static tw.waterball.judgegirl.commons.utils.validations.ValidationUtils.validate;
 import static tw.waterball.judgegirl.primitives.problem.JudgePluginTag.Type.FILTER;
 import static tw.waterball.judgegirl.primitives.problem.JudgePluginTag.Type.OUTPUT_MATCH_POLICY;
 
@@ -57,11 +56,10 @@ public class Problem {
     private List<@NotBlank String> tags;
 
     @Singular
-    private List<@Valid Testcase> testcases;
+    private List<Testcase> testcases;
 
     private boolean visible;
     private boolean archived;
-    private String testcaseIOsFileId;
 
     public Problem(Integer id, String title, String description,
                    Map<String, LanguageEnv> languageEnvs,
@@ -69,27 +67,16 @@ public class Problem {
                    Set<JudgePluginTag> filterPluginTags,
                    List<String> tags, List<Testcase> testcases, boolean visible,
                    boolean archived) {
-        this(id, title, description, languageEnvs, outputMatchPolicyPluginTag,
-                filterPluginTags, tags, testcases, visible, archived, null);
-    }
-
-    public Problem(Integer id, String title, String description,
-                   Map<String, LanguageEnv> languageEnvs,
-                   JudgePluginTag outputMatchPolicyPluginTag,
-                   Set<JudgePluginTag> filterPluginTags,
-                   List<String> tags, List<Testcase> testcases, boolean visible,
-                   boolean archived, @Nullable String testcaseIOsFileId) {
         this.id = id;
         setTitle(title);
         setDescription(description);
-        this.languageEnvs = requireNonNull(languageEnvs);
+        this.languageEnvs = new HashMap<>(languageEnvs);
         this.outputMatchPolicyPluginTag = requireNonNull(outputMatchPolicyPluginTag);
-        this.filterPluginTags = requireNonNull(filterPluginTags);
-        setTags(tags);
-        this.testcases = requireNonNull(testcases);
+        this.filterPluginTags = new HashSet<>(filterPluginTags);
+        setTags(new ArrayList<>(tags));
+        this.testcases = new ArrayList<>(testcases);
         this.visible = visible;
         this.archived = archived;
-        setTestcaseIOsFileId(testcaseIOsFileId);
         validate(this);
     }
 
@@ -124,7 +111,8 @@ public class Problem {
     }
 
     public Collection<JudgePluginTag> getFilterPluginTags() {
-        return filterPluginTags = requireNonNullElseGet(filterPluginTags, HashSet::new);
+        filterPluginTags = requireNonNullElseGet(filterPluginTags, HashSet::new);
+        return unmodifiableSet(filterPluginTags);
     }
 
     public void setFilterPluginTags(Collection<JudgePluginTag> filterPluginTags) {
@@ -153,17 +141,6 @@ public class Problem {
         this.visible = visible;
     }
 
-    public String getTestcaseIOsFileId() {
-        return testcaseIOsFileId;
-    }
-
-    public void setTestcaseIOsFileId(@Nullable String testcaseIOsFileId) {
-        if (testcaseIOsFileId != null) {
-            shouldHaveLength(0, 200, testcaseIOsFileId, "testcaseIOsFileId");
-            this.testcaseIOsFileId = testcaseIOsFileId;
-        }
-    }
-
     public void setOutputMatchPolicyPluginTag(JudgePluginTag outputMatchPolicyPluginTag) {
         this.outputMatchPolicyPluginTag = outputMatchPolicyPluginTag;
     }
@@ -177,7 +154,7 @@ public class Problem {
     }
 
     public void putLanguageEnv(LanguageEnv languageEnv) {
-        getLanguageEnvs().put(languageEnv.getName(), languageEnv);
+        languageEnvs.put(languageEnv.getName(), languageEnv);
     }
 
     public Optional<LanguageEnv> mayHaveLanguageEnv(Language language) {
@@ -193,7 +170,8 @@ public class Problem {
     }
 
     public Map<String, LanguageEnv> getLanguageEnvs() {
-        return languageEnvs = requireNonNullElseGet(languageEnvs, HashMap::new);
+        languageEnvs = requireNonNullElseGet(languageEnvs, HashMap::new);
+        return unmodifiableMap(languageEnvs);
     }
 
     public int getTotalGrade() {
@@ -207,7 +185,11 @@ public class Problem {
 
     public void upsertTestcase(Testcase testcase) {
         getTestcaseById(testcase.getId()).ifPresent(testcases::remove);
-        testcases.add(testcase);
+        if (testcases.stream().noneMatch(t -> t.getName().equals(testcase.getName()))) {
+            testcases.add(testcase);
+        } else {
+            throw new IllegalStateException("Duplicate testcase's name");
+        }
     }
 
     public Optional<Testcase> getTestcaseById(String testcaseId) {
@@ -219,6 +201,7 @@ public class Problem {
     }
 
     public List<Testcase> getTestcases() {
-        return testcases = requireNonNullElseGet(testcases, LinkedList::new);
+        testcases = requireNonNullElseGet(testcases, LinkedList::new);
+        return unmodifiableList(testcases);
     }
 }
