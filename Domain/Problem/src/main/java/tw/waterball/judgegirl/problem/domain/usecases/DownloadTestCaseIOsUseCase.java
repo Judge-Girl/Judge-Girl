@@ -34,18 +34,13 @@ public class DownloadTestCaseIOsUseCase extends BaseProblemUseCase {
     }
 
     public FileResource execute(Request request) throws NotFoundException {
-        Problem problem = findProblem(request.problemId);
-        if (problem.getTestcaseIOsFileId().equals(request.testcaseIOsFileId)) {
-            return problemRepository.downloadTestCaseIOs(request.problemId, request.testcaseIOsFileId)
-                    .orElseThrow(() -> notFound(Problem.class).id(request.problemId));
-        }
-        throw new IllegalArgumentException(
-                String.format("Invalid testcase IO's file id: %s.", request.testcaseIOsFileId));
+        return problemRepository.downloadTestCaseIOs(request.problemId, request.testcaseId)
+                .orElseThrow(() -> notFound(Problem.class).id(request.problemId));
     }
 
     @Value
     public static class Request {
         public int problemId;
-        public String testcaseIOsFileId;
+        public String testcaseId;
     }
 }

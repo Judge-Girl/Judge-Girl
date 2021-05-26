@@ -27,7 +27,7 @@ public class FakeProblemServiceDriver implements ProblemServiceDriver {
     }
 
     @Override
-    public FileResource downloadTestCaseIOs(int problemId, String testcaseIOsFileId) throws UnsupportedOperationException {
+    public FileResource downloadTestCaseIOs(int problemId, String testcaseId) throws UnsupportedOperationException {
         throw new UnsupportedOperationException();
     }
 

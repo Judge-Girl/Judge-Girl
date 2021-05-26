@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import tw.waterball.judgegirl.commons.utils.ValidationUtils;
+import tw.waterball.judgegirl.commons.utils.validations.ValidationUtils;
 
 import javax.validation.constraints.NotBlank;
 import java.util.List;

@@ -71,7 +71,6 @@ public abstract class AbstractJudgerTest {
     void setup() {
         problem = getProblem();
         problem.setOutputMatchPolicyPluginTag(AllMatchPolicyPlugin.TAG);
-        problem.setTestcaseIOsFileId("testcaseIOsFileId");
         problem.getLanguageEnvs().values().forEach(languageEnv -> languageEnv.setProvidedCodesFileId("providedCodesFileId"));
         problemId = problem.getId();
         submission = new Submission(studentId, problem.getId(), CURRENTLY_ONLY_SUPPORT_C.toString(), "fileId");
@@ -231,18 +230,20 @@ public abstract class AbstractJudgerTest {
 
     private void mockDownloadTestcaseIOs() throws IOException {
         String testcaseIOsHomePath = format(testcaseIOsHomeFormat, problem.getId());
-        byte[] zippedTestcaseIOsBytes = zipDirectory(testcaseIOsHomePath);
-        when(problemServiceDriver.downloadTestCaseIOs(problem.getId(), problem.getTestcaseIOsFileId()))
-                .thenReturn(new FileResource(testcaseIOsHomePath,
-                        zippedTestcaseIOsBytes.length,
-                        new ByteArrayInputStream(zippedTestcaseIOsBytes)));
+        for (Testcase testcase : problem.getTestcases()) {
+            byte[] zippedTestcaseIOBytes = zipDirectory(testcaseIOsHomePath + "/" + testcase.getName());
+            when(problemServiceDriver.downloadTestCaseIOs(problem.getId(), testcase.getId()))
+                    .thenReturn(new FileResource(testcaseIOsHomePath, zippedTestcaseIOBytes.length,
+                            new ByteArrayInputStream(zippedTestcaseIOBytes)));
+        }
     }
 
     private static byte[] zipDirectory(String directoryPath) throws IOException {
-        File submittedCodesZip = createTempFile("judge-girl", ".zip");
-        submittedCodesZip.deleteOnExit();
+        File tempZip = createTempFile("judge-girl", ".zip");
+        tempZip.deleteOnExit();
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         zipDirectoryContents(new File(directoryPath), baos);
+        Files.write(tempZip.toPath(), baos.toByteArray());
         return baos.toByteArray();
     }
 

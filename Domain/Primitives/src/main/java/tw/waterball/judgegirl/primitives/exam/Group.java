@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Set;
 
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
-import static tw.waterball.judgegirl.commons.utils.ValidationUtils.validate;
+import static tw.waterball.judgegirl.commons.utils.validations.ValidationUtils.validate;
 
 /**
  * @author - wally55077@gmail.com

@@ -31,7 +31,6 @@ public class ProblemData {
     private List<String> tags = new ArrayList<>();
     private Map<String, TestcaseData> testcases = new HashMap<>();
     private boolean visible;
-    private String testcaseIOsFileId;
     private boolean archived;
 
     public static ProblemData toData(Problem problem) {
@@ -47,7 +46,6 @@ public class ProblemData {
                 .tags(problem.getTags())
                 .testcases(toMap(problem.getTestcases(), Testcase::getId, TestcaseData::toData))
                 .visible(problem.getVisible())
-                .testcaseIOsFileId(problem.getTestcaseIOsFileId())
                 .archived(problem.isArchived())
                 .build();
     }
@@ -58,7 +56,7 @@ public class ProblemData {
                         Map.Entry::getKey, e -> e.getValue().toValue()),
                 outputMatchPolicyPluginTag.toValue(),
                 mapToSet(filterPluginTags, JudgePluginTagData::toValue), tags,
-                getTestCaseList(), visible, archived, testcaseIOsFileId);
+                getTestCaseList(), visible, archived);
     }
 
     private List<Testcase> getTestCaseList() {

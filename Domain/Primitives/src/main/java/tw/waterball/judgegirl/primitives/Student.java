@@ -14,7 +14,7 @@
 package tw.waterball.judgegirl.primitives;
 
 import lombok.*;
-import tw.waterball.judgegirl.commons.utils.ValidationUtils;
+import tw.waterball.judgegirl.commons.utils.validations.ValidationUtils;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;

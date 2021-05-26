@@ -6,7 +6,7 @@ import tw.waterball.judgegirl.primitives.grading.Grading;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
 
-import static tw.waterball.judgegirl.commons.utils.ValidationUtils.validate;
+import static tw.waterball.judgegirl.commons.utils.validations.ValidationUtils.validate;
 
 @Getter
 @Setter
@@ -15,7 +15,7 @@ public class Question {
     private Id id;
 
     @Positive
-    private int quota = NO_QUOTA_LIMITATION;
+    private int quota;
 
     @PositiveOrZero
     private int score;

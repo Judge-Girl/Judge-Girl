@@ -22,14 +22,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 import static java.util.Arrays.stream;
 import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toList;
 import static tw.waterball.judgegirl.commons.utils.ArrayUtils.contains;
 
 /**
@@ -46,10 +47,10 @@ public class ZipUtils {
         return zip(stream(resourcePaths)
                 .map(path -> new StreamingResource(PathUtils.getFileName(path),
                         ResourceUtils.getResourceAsStream(path)))
-                .collect(Collectors.toList()));
+                .collect(toList()));
     }
 
-    public static <T extends StreamingResource> byte[] zip(List<T> streamingResources) {
+    public static <T extends StreamingResource> byte[] zip(Collection<T> streamingResources) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (ZipOutputStream zipos = new ZipOutputStream(baos)) {
             for (StreamingResource streamingResource : streamingResources) {
@@ -67,12 +68,12 @@ public class ZipUtils {
         return zip(Arrays.asList(streamingResources));
     }
 
-    public static ByteArrayInputStream zipToStream(StreamingResource... multipartFiles) {
-        return new ByteArrayInputStream(zip(multipartFiles));
+    public static ByteArrayInputStream zipToStream(StreamingResource... files) {
+        return new ByteArrayInputStream(zip(files));
     }
 
-    public static <T extends StreamingResource> ByteArrayInputStream zipToStream(List<T> multipartFiles) {
-        return new ByteArrayInputStream(zip(multipartFiles));
+    public static <T extends StreamingResource> ByteArrayInputStream zipToStream(Collection<T> files) {
+        return new ByteArrayInputStream(zip(files));
     }
 
     public static byte[] zip(String fileName, InputStream in) {
@@ -182,9 +183,8 @@ public class ZipUtils {
         }
     }
 
-
-    private static void writeFileAsZipEntry(String fileName,
-                                            ZipOutputStream zipos, InputStream in) throws IOException {
+    public static void writeFileAsZipEntry(String fileName,
+                                           ZipOutputStream zipos, InputStream in) throws IOException {
         ZipEntry zipEntry = new ZipEntry(fileName);
         zipos.putNextEntry(zipEntry);
         IOUtils.copy(in, zipos);

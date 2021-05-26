@@ -54,6 +54,7 @@ import java.util.stream.Collectors;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static java.util.Objects.requireNonNull;
+import static org.apache.commons.io.FileUtils.forceMkdir;
 import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
 
 /**
@@ -149,10 +150,14 @@ public class CCJudger extends PluginExtendedJudger {
 
     @Override
     protected void downloadTestcaseIOs() throws IOException {
-        SubmissionHome submissionHome = getSubmissionHome();
-        FileResource zip = problemServiceDriver.downloadTestCaseIOs(
-                getProblem().getId(), getProblem().getTestcaseIOsFileId());
-        ZipUtils.unzipToDestination(zip.getInputStream(), submissionHome.getPath());
+        Problem problem = getProblem();
+        for (Testcase testcase : problem.getTestcases()) {
+            FileResource zip = problemServiceDriver.downloadTestCaseIOs(
+                    getProblem().getId(), testcase.getId());
+            Path testcaseHomePath = getTestcaseHome(testcase).getPath();
+            forceMkdir(testcaseHomePath.toFile());
+            ZipUtils.unzipToDestination(zip.getInputStream(), testcaseHomePath);
+        }
     }
 
     @Override
@@ -326,7 +331,7 @@ public class CCJudger extends PluginExtendedJudger {
     @SneakyThrows
     private void mkdirIfNotExists(Path directoryPath) {
         if (!Files.exists(directoryPath)) {
-            FileUtils.forceMkdir(directoryPath.toFile());
+            forceMkdir(directoryPath.toFile());
         }
     }
 

@@ -14,29 +14,25 @@
 package tw.waterball.judgegirl.problem.domain.usecases;
 
 import lombok.Value;
-import tw.waterball.judgegirl.commons.models.files.FileResource;
-import tw.waterball.judgegirl.primitives.problem.Language;
 import tw.waterball.judgegirl.primitives.problem.Problem;
+import tw.waterball.judgegirl.primitives.problem.TestcaseIO;
 import tw.waterball.judgegirl.problem.domain.repositories.ProblemRepository;
 
 import javax.inject.Named;
-import java.util.List;
 
 /**
  * @author chaoyulee chaoyu2330@gmail.com
  */
 @Named
-public class UploadProvidedCodeUseCase extends BaseProblemUseCase {
+public class UploadTestcaseIOUseCase extends BaseProblemUseCase {
 
-    public UploadProvidedCodeUseCase(ProblemRepository problemRepository) {
+    public UploadTestcaseIOUseCase(ProblemRepository problemRepository) {
         super(problemRepository);
     }
 
     public void execute(Request request, Presenter presenter) {
         Problem problem = findProblem(request.problemId);
-        problem.mayHaveLanguageEnv(request.language)
-                .orElseThrow(() -> new IllegalStateException("The languageEnv must be saved before its providedCodes are uploaded."));
-        problemRepository.uploadProvidedCodes(problem, request.language, request.providedCodes);
+        problem = problemRepository.uploadTestcaseIO(problem, request.ioFiles);
         presenter.showResult(problem);
     }
 
@@ -47,7 +43,6 @@ public class UploadProvidedCodeUseCase extends BaseProblemUseCase {
     @Value
     public static class Request {
         public int problemId;
-        public Language language;
-        public List<FileResource> providedCodes;
+        public TestcaseIO.Files ioFiles;
     }
 }
