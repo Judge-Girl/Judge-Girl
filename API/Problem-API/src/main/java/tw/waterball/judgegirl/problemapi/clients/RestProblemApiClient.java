@@ -57,7 +57,7 @@ public class RestProblemApiClient implements ProblemServiceDriver {
     @Override
     public FileResource downloadTestCaseIOs(int problemId, String testcaseId) throws NotFoundException {
         try {
-            String url = parsePath(API_PREFIX + "/{problemId}/testcases/{testcaseId}",
+            String url = parsePath(API_PREFIX + "/{problemId}/testcases/{testcaseId}/io",
                     problemId, testcaseId);
             HttpEntity<?> entity = new HttpEntity<>(withBearerTokenHeader(tokenSupplier.get()));
             ResponseEntity<byte[]> response = restTemplate.exchange(url, HttpMethod.GET, entity, byte[].class);
