@@ -28,5 +28,5 @@ public interface ProblemServiceDriver {
 
     FileResource downloadProvidedCodes(int problemId, String languageEnvName, String providedCodesFileId) throws NotFoundException;
 
-    FileResource downloadTestCaseIOs(int problemId, String testcaseIOsFileId) throws NotFoundException;
+    FileResource downloadTestCaseIOs(int problemId, String testcaseId) throws NotFoundException;
 }

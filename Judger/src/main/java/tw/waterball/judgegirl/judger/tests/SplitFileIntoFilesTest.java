@@ -35,6 +35,7 @@ public class SplitFileIntoFilesTest extends AbstractJudgerTest {
                 new FileInputStream(problemHomePath + "/50179/problem.json"), ProblemView.class);
         problem.setDescription(IOUtils.toString(new FileInputStream(problemHomePath + "/50179/description.md"), StandardCharsets.UTF_8));
         problem.setJudgeMatchPolicyPluginTag(toViewModel(AllMatchPolicyPlugin.TAG));
+        problem.getTestcases().forEach(t -> t.setId(t.getName()));
         return toEntity(problem);
     }
 
