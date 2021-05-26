@@ -552,7 +552,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
 
     private void downloadTestcaseIOsShouldRespondContent(int problemId, String testcaseId, byte[] expectedContent) throws Exception {
         byte[] actualContent = mockMvc.perform(withToken(adminToken,
-                get(API_PREFIX + "/{problemId}/testcases/{testcaseId}",
+                get(API_PREFIX + "/{problemId}/testcases/{testcaseId}/io",
                         problemId, testcaseId))).andExpect(status().isOk())
                 .andExpect(content().contentType("application/zip"))
                 .andReturn().getResponse().getContentAsByteArray();

@@ -66,7 +66,10 @@ public class PatchProblemUseCase extends BaseProblemUseCase {
                 problem.putLanguageEnv(languageEnv);
             }
             if (testcase != null) {
-                problem.upsertTestcase(testcase.toValue());
+                Testcase upsertedTestcase = testcase.toValue();
+                problem.getTestcaseById(testcase.id)
+                        .ifPresent(tc -> upsertedTestcase.setTestcaseIO(tc.getTestcaseIO().orElse(null)));
+                problem.upsertTestcase(upsertedTestcase);
             }
             if (visible != null) {
                 problem.setVisible(visible);

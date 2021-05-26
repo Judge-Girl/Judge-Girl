@@ -50,8 +50,8 @@ import static tw.waterball.judgegirl.springboot.utils.MultipartFileUtils.convert
 public class ProblemController {
     public static final String TESTCASE_IN_FILES_MULTIPART_KEY_NAME = "testcaseIOs.inFiles";
     public static final String TESTCASE_OUT_FILES_MULTIPART_KEY_NAME = "testcaseIOs.outFiles";
-    public static final String TESTCASE_STDIN_MULTIPART_KEY_NAME = "stdIn";
-    public static final String TESTCASE_STDOUT_MULTIPART_KEY_NAME = "stdOut";
+    public static final String TESTCASE_STDIN_MULTIPART_KEY_NAME = "testcaseIOs.stdIn";
+    public static final String TESTCASE_STDOUT_MULTIPART_KEY_NAME = "testcaseIOs.stdOut";
     public static final String PROVIDED_CODE_MULTIPART_KEY_NAME = "providedCodes";
     private final GetProblemUseCase getProblemUseCase;
     private final GetProblemsUseCase getProblemsUseCase;
@@ -117,7 +117,7 @@ public class ProblemController {
         });
     }
 
-    @GetMapping(value = "/{problemId}/testcases/{testcaseId}",
+    @GetMapping(value = "/{problemId}/testcases/{testcaseId}/io",
             produces = "application/zip")
     public ResponseEntity<InputStreamResource> downloadTestCaseIOs(@RequestHeader("Authorization") String authorization,
                                                                    @PathVariable int problemId,
@@ -223,7 +223,6 @@ public class ProblemController {
             patchProblemUseCase.execute(request);
         });
     }
-
 }
 
 class GetProblemPresenter implements GetProblemUseCase.Presenter {
