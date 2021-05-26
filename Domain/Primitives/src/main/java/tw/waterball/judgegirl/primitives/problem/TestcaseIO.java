@@ -2,7 +2,6 @@ package tw.waterball.judgegirl.primitives.problem;
 
 import lombok.Builder;
 import lombok.Data;
-import lombok.Getter;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
 import tw.waterball.judgegirl.commons.models.files.StreamingResource;
 
@@ -18,7 +17,6 @@ import static tw.waterball.judgegirl.commons.utils.validations.ValidationUtils.v
  * @author - johnny850807@gmail.com (Waterball)
  */
 @Data
-@Getter
 @Builder
 public class TestcaseIO {
     public static final String DEFAULT_STD_IN = "std.in";

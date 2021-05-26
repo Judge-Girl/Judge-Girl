@@ -232,8 +232,8 @@ public class MongoProblemRepository implements ProblemRepository {
 
     private InputStream compressTestcaseIoFiles(TestcaseIO.Files ioFiles) throws IOException {
         PipedInputStream pipedIn = new PipedInputStream();
-        try (PipedOutputStream pipedOut = new PipedOutputStream(pipedIn);
-             ZipOutputStream zipos = new ZipOutputStream(pipedOut)) {
+        try (var pipedOut = new PipedOutputStream(pipedIn);
+             var zipos = new ZipOutputStream(pipedOut)) {
             // organize in and out under the two entry in/ and out/
             writeFileAsZipEntry("in/" + ioFiles.stdIn.getFileName(), zipos, ioFiles.stdIn.getInputStream());
             for (FileResource inputFile : ioFiles.inputFiles) {
