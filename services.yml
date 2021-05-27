@@ -43,7 +43,7 @@ services:
       REDIS_HOST: "${REDIS_HOST}"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.academy-service.rule=PathPrefix(`/api/exams`) || PathPrefix(`/api/students/{studentId:[0-9]+}/exams`) || PathPrefix(`/api/homework`) || PathPrefix(`/api/members`) || PathPrefix(`/api/groups`)"
+      - "traefik.http.routers.academy-service.rule=PathPrefix(`/api/exams`) || PathPrefix(`/api/students/{studentId:[0-9]+}/exams`) || PathPrefix(`/api/students/{studentId:[0-9]+}/homework`) || PathPrefix(`/api/homework`) || PathPrefix(`/api/members`) || PathPrefix(`/api/groups`)"
       - "traefik.http.routers.academy-service.entrypoints=web"
       - "traefik.http.routers.academy-service.service=academy-service"
       - "traefik.http.services.academy-service.loadbalancer.server.port=80"
