@@ -67,7 +67,6 @@ void child_process(FILE *log_fp, struct config *_config, int mount_list_len) {
     FILE *input_file = NULL, *output_file = NULL, *error_file = NULL;
     char *submission_id = _config->submission_id;
     //setrlimit(maxrss) will cause some crash issues, SEGMENTATION FAULT
-    /*
     if (_config->max_stack != UNLIMITED) {
         struct rlimit max_stack;
         max_stack.rlim_cur = max_stack.rlim_max = (rlim_t) (_config->max_stack);
@@ -87,7 +86,6 @@ void child_process(FILE *log_fp, struct config *_config, int mount_list_len) {
             }
         }
     }
-    */
 
     // set memory limit
     // if memory_limit_check_only == 0, we only check memory usage number
@@ -178,7 +176,7 @@ void child_process(FILE *log_fp, struct config *_config, int mount_list_len) {
     }
 
     //chroot jail
-    if (chdir(_config->sandbox_path) != 0) {
+    if (chroot(_config->sandbox_path) != 0) {
         CHILD_ERROR_EXIT(CHROOT_FAILED);
     }
 
