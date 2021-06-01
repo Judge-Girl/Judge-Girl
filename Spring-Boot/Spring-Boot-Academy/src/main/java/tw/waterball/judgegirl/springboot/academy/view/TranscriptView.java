@@ -1,6 +1,7 @@
 package tw.waterball.judgegirl.springboot.academy.view;
 
 import lombok.*;
+import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 
 import java.util.List;
 import java.util.Map;
@@ -13,18 +14,29 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TranscriptView {
-    private double averageScore;
-    private int maxScore;
 
     // student's email --> examineeRecord
-    @Singular
-    public Map<String, ExamineeRecord> examineeRecords;
+    public Map<String, ExamineeRecordView> scoreBoard;
+
+    public List<RecordView> records;
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ExamineeRecordView {
+        // problem's id -> score
+        @Singular
+        public Map<Integer, Integer> questionScores;
+    }
 
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class ExamineeRecord {
-        public int totalScore;
-        public List<Integer> questionScores;
+    public static class RecordView {
+        public int examId;
+        public int problemId;
+        public SubmissionView submission;
     }
+
 }

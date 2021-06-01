@@ -121,6 +121,13 @@ public class SubmissionApiClient extends BaseRetrofitAPI implements SubmissionSe
     }
 
     @Override
+    public List<SubmissionView> getSubmissions(String... submissionIds) {
+        return errorHandlingGetBody(() -> api.getSubmissionsByIds(
+                bearerWithToken(tokenSupplier.get()),
+                String.join(",", submissionIds)).execute());
+    }
+
+    @Override
     public SubmissionView findBestRecord(List<String> submissionIds) {
         if (submissionIds.isEmpty()) {
             throw new IllegalArgumentException("The `submissionIds` should not be empty.");
@@ -163,6 +170,11 @@ public class SubmissionApiClient extends BaseRetrofitAPI implements SubmissionSe
                                                   @Path("langEnvName") String langEnvName,
                                                   @Path("studentId") int studentId,
                                                   @QueryMap Map<String, String> bagQueryParameters);
+
+
+        @GET("/api/submissions")
+        Call<List<SubmissionView>> getSubmissionsByIds(@Header("Authorization") String authorization,
+                                                       @Query("ids") String submissionIdsSplitByCommas);
 
         @GET("/api/problems/{problemId}/{langEnvName}/students/{studentId}/submissions/{submissionId}/submittedCodes/{submittedCodesFileId}")
         Call<ResponseBody> getSubmittedCodes(@Header("Authorization") String authorization,

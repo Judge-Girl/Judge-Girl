@@ -32,11 +32,15 @@ public class GetSubmissionsUseCase {
     }
 
     public void execute(SubmissionQueryParams queryParams, Presenter presenter) {
-        List<Submission> submissions = submissionRepository.query(queryParams);
-        presenter.setSubmissions(submissions);
+        var submissions = submissionRepository.query(queryParams);
+        presenter.showSubmissions(submissions);
+    }
+
+    public void execute(String[] submissionIds, Presenter presenter) {
+        presenter.showSubmissions(submissionRepository.findAllByIds(submissionIds));
     }
 
     public interface Presenter {
-        void setSubmissions(List<Submission> submissions);
+        void showSubmissions(List<Submission> submissions);
     }
 }

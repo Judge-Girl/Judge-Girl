@@ -28,10 +28,9 @@ import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.springboot.academy.SpringBootAcademyApplication;
 import tw.waterball.judgegirl.springboot.academy.amqp.VerdictIssuedEventHandler;
 import tw.waterball.judgegirl.springboot.academy.view.*;
-import tw.waterball.judgegirl.springboot.academy.view.TranscriptView.ExamineeRecord;
 import tw.waterball.judgegirl.springboot.profiles.Profiles;
 import tw.waterball.judgegirl.studentapi.clients.FakeStudentServiceDriver;
-import tw.waterball.judgegirl.submissionapi.clients.SubmissionServiceDriver;
+import tw.waterball.judgegirl.submissionapi.clients.FakeSubmissionServiceDriver;
 import tw.waterball.judgegirl.submissionapi.clients.VerdictPublisher;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
@@ -41,6 +40,7 @@ import java.sql.SQLException;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
@@ -49,13 +49,12 @@ import static java.util.Collections.singletonMap;
 import static java.util.UUID.randomUUID;
 import static java.util.concurrent.TimeUnit.HOURS;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static tw.waterball.judgegirl.academy.domain.usecases.exam.AnswerQuestionUseCase.BAG_KEY_EXAM_ID;
 import static tw.waterball.judgegirl.commons.utils.DateUtils.*;
+import static tw.waterball.judgegirl.commons.utils.MapUtils.map;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.*;
 import static tw.waterball.judgegirl.primitives.exam.Question.NO_QUOTA_LIMITATION;
 import static tw.waterball.judgegirl.primitives.stubs.ProblemStubs.problemTemplate;
@@ -109,7 +108,8 @@ class ExamControllerTest extends AbstractSpringBootTest {
     GroupRepository groupRepository;
 
     @Autowired
-    SubmissionServiceDriver submissionServiceDriver;
+    FakeSubmissionServiceDriver submissionServiceDriver;
+
     private final int[] testcaseGrades = {20, 30, 50};
     private final int numOfTestcases = testcaseGrades.length;
     private ProblemView problem;
@@ -123,7 +123,6 @@ class ExamControllerTest extends AbstractSpringBootTest {
     void setup() {
         fakeProblemServiceDriver();
         fakeStudentServiceDriver();
-        mockSubmissionServiceDriver();
     }
 
     private void fakeProblemServiceDriver() {
@@ -144,10 +143,6 @@ class ExamControllerTest extends AbstractSpringBootTest {
                 .forEach(studentServiceDriver::addStudent);
     }
 
-    private void mockSubmissionServiceDriver() {
-        when(submissionServiceDriver.submit(any()))
-                .thenReturn(new SubmissionView(SUBMISSION_ID, STUDENT_A_ID, PROBLEM_ID, LANG_ENV, null, "fileId", now()));
-    }
 
     @AfterEach
     void cleanup() {
@@ -609,29 +604,27 @@ class ExamControllerTest extends AbstractSpringBootTest {
         var sC1 = publishVerdictAndAwait(problem, exam, submission(randomUUID().toString()).CE(problem.totalGrade).build(STUDENT_C_ID, PROBLEM_ID, CURRENTLY_ONLY_SUPPORT_C));
         var sC2 = publishVerdictAndAwait(anotherProblem, exam, randomizedSubmission(toEntity(anotherProblem), STUDENT_C_ID, 1));
 
-        var transcript = createExamTranscript(exam);
+        var transcript = produceExamTranscript(exam);
 
-        var examineeRecordA = transcript.examineeRecords.get(STUDENT_A_EMAIL);
-        var examineeRecordB = transcript.examineeRecords.get(STUDENT_B_EMAIL);
-        var examineeRecordC = transcript.examineeRecords.get(STUDENT_C_EMAIL);
+        var examineeRecordA = transcript.scoreBoard.get(STUDENT_A_EMAIL);
+        var examineeRecordB = transcript.scoreBoard.get(STUDENT_B_EMAIL);
+        var examineeRecordC = transcript.scoreBoard.get(STUDENT_C_EMAIL);
         int scoreA1 = q1.calculateScore(sA1), scoreA2 = q2.calculateScore(sA2);
         int scoreB1 = q1.calculateScore(sB1), scoreB2 = q2.calculateScore(sB2);
         int scoreC1 = q1.calculateScore(sC1), scoreC2 = q2.calculateScore(sC2);
 
-        examineeShouldHaveScores(examineeRecordA, scoreA1, scoreA2);
-        examineeShouldHaveScores(examineeRecordB, scoreB1, scoreB2);
-        examineeShouldHaveScores(examineeRecordC, scoreC1, scoreC2);
-        assertFalse(transcript.examineeRecords.containsKey(STUDENT_D_EMAIL),
+        examineeShouldHaveScores(examineeRecordA, map(PROBLEM_ID, ANOTHER_PROBLEM_ID).to(scoreA1, scoreA2));
+        examineeShouldHaveScores(examineeRecordB, map(PROBLEM_ID, ANOTHER_PROBLEM_ID).to(scoreB1, scoreB2));
+        examineeShouldHaveScores(examineeRecordC, map(PROBLEM_ID, ANOTHER_PROBLEM_ID).to(scoreC1, scoreC2));
+        assertFalse(transcript.scoreBoard.containsKey(STUDENT_D_EMAIL),
                 "Student D doesn't participate the exam, should not include hos record.");
 
-        // D is absent, don't count D's score in average
-        assertEquals(average((scoreA1 + scoreA2), (scoreB1 + scoreB2), (scoreC1 + scoreC2)),
-                transcript.getAverageScore());
-        assertEquals(q1.getScore() + q2.getScore(), transcript.getMaxScore());
+        assertEqualsIgnoreOrder(mapToList(asList(sA1, sA2, sB1, sB2, sC1, sC2), SubmissionView::toViewModel),
+                mapToList(transcript.records, TranscriptView.RecordView::getSubmission));
     }
 
     @SneakyThrows
-    private TranscriptView createExamTranscript(ExamView exam) {
+    private TranscriptView produceExamTranscript(ExamView exam) {
         return getBody(mockMvc.perform(withAdminToken(
                 get("/api/exams/{examId}/transcript", exam.getId())))
                 .andExpect(status().isOk()), TranscriptView.class);
@@ -651,9 +644,8 @@ class ExamControllerTest extends AbstractSpringBootTest {
                         .file(mockFiles[1])));
     }
 
-    void examineeShouldHaveScores(ExamineeRecord examineeRecord, Integer... scores) {
-        assertEquals(sum(scores), examineeRecord.getTotalScore());
-        assertEqualsIgnoreOrder(asList(scores), examineeRecord.questionScores);
+    void examineeShouldHaveScores(TranscriptView.ExamineeRecordView examineeRecord, Map<Integer, Integer> problemIdToExpectedScore) {
+        assertEquals(examineeRecord.getQuestionScores(), problemIdToExpectedScore);
     }
 
     void assertQuestionEquals(QuestionView expectedQuestion, ExamOverview.QuestionItem actualQuestion, ProblemView problem) {
@@ -684,7 +676,9 @@ class ExamControllerTest extends AbstractSpringBootTest {
         publishVerdict(problem, exam, submission);
     }
 
+
     private Submission publishVerdictAndAwait(ProblemView problem, ExamView exam, Submission submission) {
+        submissionServiceDriver.add(submission);
         publishVerdict(problem, exam, submission);
         awaitVerdictIssuedEvent();
         return submission;

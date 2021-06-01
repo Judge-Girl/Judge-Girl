@@ -19,6 +19,7 @@ import java.util.Date;
 public class Record implements Comparable<Record>, Grading {
     private final Question.Id questionId;
     private final int studentId;
+    private final String submissionId;
     private final JudgeStatus status;
     private final long maximumRuntime;
     private final long maximumMemoryUsage;

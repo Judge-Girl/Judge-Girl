@@ -99,11 +99,6 @@ public abstract class StreamUtils {
         return collection.stream().collect(Collectors.toMap(keyMapper, valueMapper));
     }
 
-    public static <T, L, R> List<T> zipOneToMany(L left, List<R> right,
-                                                 BiFunction<L, R, T> zipAndMap) {
-        return mapToList(right, r -> zipAndMap.apply(left, r));
-    }
-
     public static <T, L, R> List<T> zipToList(Collection<Map.Entry<L, R>> entrySet,
                                               BiFunction<L, R, T> zipAndMap) {
         return mapToList(entrySet, entry -> zipAndMap.apply(entry.getKey(), entry.getValue()));
@@ -112,6 +107,27 @@ public abstract class StreamUtils {
     public static <T, L, R> List<T> zipToList(Map<L, R> map,
                                               BiFunction<L, R, T> zipAndMap) {
         return zipToList(map.entrySet(), zipAndMap);
+    }
+
+    public static <T, L, R> List<T> zipToList(L[] left, R[] right,
+                                              BiFunction<L, R, T> zipAndMap) {
+        return range(0, left.length)
+                .mapToObj(i -> zipAndMap.apply(left[i], right[i]))
+                .collect(toList());
+    }
+
+    public static <T, L, R> List<T> zipToList(Collection<L> left, Collection<R> right,
+                                              BiPredicate<L, R> matching,
+                                              BiFunction<L, R, T> zipAndMap) {
+        var list = new ArrayList<T>(left.size() * right.size());
+        for (L l : left) {
+            for (R r : right) {
+                if (matching.test(l, r)) {
+                    list.add(zipAndMap.apply(l, r));
+                }
+            }
+        }
+        return list;
     }
 
     public static <T, L, R> List<T> zipToList(List<L> left, List<R> right,

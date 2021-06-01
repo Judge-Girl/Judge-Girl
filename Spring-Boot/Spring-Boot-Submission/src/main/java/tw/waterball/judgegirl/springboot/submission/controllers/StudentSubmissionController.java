@@ -23,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 import tw.waterball.judgegirl.commons.token.TokenService;
 import tw.waterball.judgegirl.primitives.submission.Bag;
 import tw.waterball.judgegirl.primitives.submission.Submission;
+import tw.waterball.judgegirl.springboot.submission.presenters.SubmissionsPresenter;
 import tw.waterball.judgegirl.submission.domain.usecases.*;
 import tw.waterball.judgegirl.submission.domain.usecases.dto.SubmissionQueryParams;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
@@ -30,7 +31,6 @@ import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static tw.waterball.judgegirl.springboot.utils.MultipartFileUtils.convertMultipartFilesToFileResources;
 import static tw.waterball.judgegirl.springboot.utils.ResponseEntityUtils.respondInputStreamResource;
@@ -119,7 +119,7 @@ public class StudentSubmissionController {
                                         @RequestParam Map<String, String> bagQueryParameters) {
         bagQueryParameters.remove("page"); // only non-reserved keywords will be accepted by the bag-query filter
         return tokenService.returnIfGranted(studentId, authorization, token -> {
-            GetSubmissionsPresenter presenter = new GetSubmissionsPresenter();
+            SubmissionsPresenter presenter = new SubmissionsPresenter();
             getSubmissionsUseCase.execute(new SubmissionQueryParams(page, problemId, langEnvName, studentId, bagQueryParameters), presenter);
             return presenter.present();
         });
@@ -162,21 +162,6 @@ class SubmissionPresenter implements tw.waterball.judgegirl.submission.domain.us
 
     public SubmissionView present() {
         return submissionView;
-    }
-}
-
-
-class GetSubmissionsPresenter implements GetSubmissionsUseCase.Presenter {
-    private List<SubmissionView> submissionViews;
-
-    @Override
-    public void setSubmissions(List<Submission> submissions) {
-        this.submissionViews = submissions.stream()
-                .map(SubmissionView::toViewModel).collect(Collectors.toList());
-    }
-
-    public List<SubmissionView> present() {
-        return submissionViews;
     }
 }
 

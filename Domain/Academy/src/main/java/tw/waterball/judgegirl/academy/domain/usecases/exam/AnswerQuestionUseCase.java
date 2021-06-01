@@ -112,7 +112,7 @@ public class AnswerQuestionUseCase implements VerdictIssuedEventListener {
     private Record record(VerdictIssuedEvent event, int examId) {
         Verdict newVerdict = event.getVerdict();
         return new Record(new Question.Id(examId, event.getProblemId()),
-                event.getStudentId(), newVerdict.getSummaryStatus(), newVerdict.getMaximumRuntime(), newVerdict.getMaximumMemoryUsage(),
+                event.getStudentId(), event.getSubmissionId(), newVerdict.getSummaryStatus(), newVerdict.getMaximumRuntime(), newVerdict.getMaximumMemoryUsage(),
                 new Grade(newVerdict.getGrade(), newVerdict.getMaxGrade()), event.getSubmissionTime());
     }
 

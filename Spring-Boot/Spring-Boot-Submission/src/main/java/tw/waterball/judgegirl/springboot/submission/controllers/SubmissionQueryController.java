@@ -4,8 +4,12 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import tw.waterball.judgegirl.springboot.submission.presenters.SubmissionsPresenter;
 import tw.waterball.judgegirl.submission.domain.usecases.FindBestRecordUseCase;
+import tw.waterball.judgegirl.submission.domain.usecases.GetSubmissionsUseCase;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
+
+import java.util.List;
 
 import static org.springframework.http.ResponseEntity.badRequest;
 import static org.springframework.http.ResponseEntity.ok;
@@ -17,11 +21,19 @@ import static org.springframework.http.ResponseEntity.ok;
 @RequestMapping("/api/submissions")
 @RestController
 public class SubmissionQueryController {
+    private final GetSubmissionsUseCase getSubmissionsUseCase;
     private final FindBestRecordUseCase findBestRecordUseCase;
 
     @GetMapping("/health")
     public String health() {
         return "OK";
+    }
+
+    @GetMapping
+    public List<SubmissionView> getSubmissionsByIds(@RequestParam String[] ids) {
+        var presenter = new SubmissionsPresenter();
+        getSubmissionsUseCase.execute(ids, presenter);
+        return presenter.present();
     }
 
     @PostMapping(value = "/best", consumes = MediaType.TEXT_PLAIN_VALUE)

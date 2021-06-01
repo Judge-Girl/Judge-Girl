@@ -14,13 +14,10 @@ import java.io.Serializable;
 @Getter
 @Setter
 @Entity
-@AllArgsConstructor
 @NoArgsConstructor
 public class ExamineeData {
     @EmbeddedId
     private Id id;
-    private Integer score;
-    private Boolean absent;
 
     public ExamineeData(int examId, int studentId) {
         this(new Id(examId, studentId));
@@ -31,16 +28,11 @@ public class ExamineeData {
     }
 
     public Examinee toEntity() {
-        return new Examinee(new Examinee.Id(id.examId, id.studentId),
-                score, absent);
+        return new Examinee(new Examinee.Id(id.examId, id.studentId));
     }
 
     public static ExamineeData toData(Examinee examinee) {
-        return ExamineeData.builder()
-                .id(new Id(examinee.getId()))
-                .score(examinee.getScore())
-                .absent(examinee.getAbsent())
-                .build();
+        return new ExamineeData(new Id(examinee.getId()));
     }
 
     public int getExamId() {
