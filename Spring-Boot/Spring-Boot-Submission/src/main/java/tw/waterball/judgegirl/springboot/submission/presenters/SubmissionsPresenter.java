@@ -5,7 +5,8 @@ import tw.waterball.judgegirl.submission.domain.usecases.GetSubmissionsUseCase;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 
 import java.util.List;
-import java.util.stream.Collectors;
+
+import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -15,8 +16,7 @@ public class SubmissionsPresenter implements GetSubmissionsUseCase.Presenter {
 
     @Override
     public void showSubmissions(List<Submission> submissions) {
-        this.submissionViews = submissions.stream()
-                .map(SubmissionView::toViewModel).collect(Collectors.toList());
+        this.submissionViews = mapToList(submissions, SubmissionView::toViewModel);
     }
 
     public List<SubmissionView> present() {

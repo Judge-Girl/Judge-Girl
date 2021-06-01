@@ -119,7 +119,7 @@ public abstract class StreamUtils {
     public static <T, L, R> List<T> zipToList(Collection<L> left, Collection<R> right,
                                               BiPredicate<L, R> matching,
                                               BiFunction<L, R, T> zipAndMap) {
-        List<T> list = new ArrayList<>();
+        var list = new ArrayList<T>(left.size() * right.size());
         for (L l : left) {
             for (R r : right) {
                 if (matching.test(l, r)) {

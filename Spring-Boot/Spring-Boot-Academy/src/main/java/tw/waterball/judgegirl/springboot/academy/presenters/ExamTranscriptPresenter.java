@@ -24,8 +24,7 @@ public class ExamTranscriptPresenter implements CalculateExamScoreUseCase.Presen
 
     @Override
     public void showRecords(List<ExamineeRecord> examineeRecords) {
-        Map<String, TranscriptView.ExamineeRecordView> stringExamineeRecordMap = mapEmailToExamineeRecord(examineeRecords);
-        builder.scoreBoard(stringExamineeRecordMap);
+        builder.scoreBoard(mapEmailToExamineeRecord(examineeRecords));
         builder.records(examineeRecords.stream()
                 .flatMap(r -> r.getQuestionRecords().stream())
                 .map(questionRecord -> new TranscriptView.RecordView(

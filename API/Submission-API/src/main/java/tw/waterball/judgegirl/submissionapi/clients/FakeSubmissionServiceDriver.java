@@ -26,17 +26,17 @@ public class FakeSubmissionServiceDriver implements SubmissionServiceDriver {
     @Override
     public SubmissionView submit(SubmitCodeRequest request) throws SubmissionThrottlingException {
         String id = String.valueOf(submissions.size() + 1);
-        Submission submission = new Submission(request.studentId, request.problemId, request.languageEnvName);
+        var submission = new Submission(id, request.studentId,
+                request.problemId, request.languageEnvName, randomUUID().toString());
         submissions.put(id, submission);
-        submission.setId(id);
-        submission.setSubmittedCodesFileId(randomUUID().toString());
         return toViewModel(submission);
     }
 
     @Override
     public SubmissionView getSubmission(int problemId, int studentId, String submissionId) throws NotFoundException {
         var submission = submissions.get(submissionId);
-        if (submission.getProblemId() == problemId && submission.getStudentId() == studentId) {
+        if (submission == null ||
+                submission.getProblemId() == problemId && submission.getStudentId() == studentId) {
             throw notFound(Submission.class).id(submissionId);
         }
         return toViewModel(submission);

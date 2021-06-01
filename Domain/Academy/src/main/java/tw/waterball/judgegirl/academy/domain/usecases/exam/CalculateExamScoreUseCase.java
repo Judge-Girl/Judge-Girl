@@ -35,7 +35,7 @@ public class CalculateExamScoreUseCase extends AbstractExamUseCase {
 
     public void execute(int examId, Presenter presenter) {
         Exam exam = findExam(examId);
-        List<ExamineeRecord> examineeRecords = getExamineeRecords(exam);
+        var examineeRecords = getExamineeRecords(exam);
         presenter.showExam(exam);
         presenter.showRecords(examineeRecords);
     }
@@ -47,12 +47,23 @@ public class CalculateExamScoreUseCase extends AbstractExamUseCase {
     }
 
     private List<QuestionRecord> findQuestionRecords(Exam exam) {
-        String[] submissionIds = mapToList(examRepository.findAllRecordsInAnExam(exam.getId()),
-                Record::getSubmissionId).toArray(new String[0]);
-        List<Submission> submissions = mapToList(submissionServiceDriver.getSubmissions(submissionIds), SubmissionView::toEntity);
+        var submissions = findSubmissions(exam);
         return zipToList(exam.getQuestions(), submissions,
                 (question, submission) -> question.getProblemId() == submission.getProblemId(),
                 QuestionRecord::new);
+    }
+
+    private List<Submission> findSubmissions(Exam exam) {
+        return findSubmissionsByIds(getSubmissionIds(exam));
+    }
+
+    private List<Submission> findSubmissionsByIds(String[] submissionIds) {
+        return mapToList(submissionServiceDriver.getSubmissions(submissionIds), SubmissionView::toEntity);
+    }
+
+    private String[] getSubmissionIds(Exam exam) {
+        return mapToList(examRepository.findAllRecordsInAnExam(exam.getId()),
+                Record::getSubmissionId).toArray(new String[0]);
     }
 
     private GetById<Integer, Student> examinees(Exam exam) {
