@@ -86,7 +86,8 @@ public class SubmissionView {
                 submissionView.getStudentId(),
                 submissionView.getProblemId(),
                 submissionView.getLanguageEnvName(),
-                submissionView.getSubmittedCodesFileId());
+                submissionView.getSubmittedCodesFileId(),
+                submissionView.submissionTime);
         submission.setBag(new Bag(submissionView.getBag()));
 
         Verdict verdict = VerdictView.toEntity(verdictView);

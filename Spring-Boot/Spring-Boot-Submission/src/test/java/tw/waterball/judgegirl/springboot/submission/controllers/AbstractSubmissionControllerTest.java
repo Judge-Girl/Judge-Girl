@@ -162,14 +162,14 @@ public class AbstractSubmissionControllerTest extends AbstractSpringBootTest {
     // For submission
     protected final MockMultipartFile[] codes1 = {
             new MockMultipartFile(SUBMIT_CODE_MULTIPART_KEY_NAME, "func1.c", "text/plain",
-                    "int plus(int a, int b) {return a + b;}" .getBytes()),
+                    "int plus(int a, int b) {return a + b;}".getBytes()),
             new MockMultipartFile(SUBMIT_CODE_MULTIPART_KEY_NAME, "func2.c", "text/plain",
-                    "int minus(int a, int b) {return a - b;}" .getBytes())};
+                    "int minus(int a, int b) {return a - b;}".getBytes())};
     protected final MockMultipartFile[] codes2 = {
             new MockMultipartFile(SUBMIT_CODE_MULTIPART_KEY_NAME, "func1.c", "text/plain",
-                    "int plus(int a, int b) { /*different content*/ return a + b;}" .getBytes()),
+                    "int plus(int a, int b) { /*different content*/ return a + b;}".getBytes()),
             new MockMultipartFile(SUBMIT_CODE_MULTIPART_KEY_NAME, "func2.c", "text/plain",
-                    "int minus(int a, int b) {return a - b; /*different content*/}" .getBytes())};
+                    "int minus(int a, int b) {return a - b; /*different content*/}".getBytes())};
 
     protected final Report stubReport = ProblemStubs.compositeReport();
 
@@ -193,7 +193,6 @@ public class AbstractSubmissionControllerTest extends AbstractSpringBootTest {
         public SaveSubmissionWithCodesStrategy useVerdictShortcut(MongoTemplate mongoTemplate, GridFsTemplate gridFsTemplate) {
             return new VerdictShortcut(mongoTemplate, gridFsTemplate);
         }
-
     }
 
     @BeforeEach

@@ -41,6 +41,8 @@ public interface SubmissionServiceDriver {
 
     List<SubmissionView> getSubmissions(int problemId, int studentId, Map<String, String> bagQueryParameters);
 
+    List<SubmissionView> getSubmissions(String... submissionIds);
+
     SubmissionView findBestRecord(List<String> submissionIds);
 
     SubmissionView findBestRecord(int problemId, int studentId) throws NotFoundException;

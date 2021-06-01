@@ -8,9 +8,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import tw.waterball.judgegirl.problemapi.clients.FakeProblemServiceDriver;
 import tw.waterball.judgegirl.studentapi.clients.FakeStudentServiceDriver;
-import tw.waterball.judgegirl.submissionapi.clients.SubmissionServiceDriver;
-
-import static org.mockito.Mockito.mock;
+import tw.waterball.judgegirl.submissionapi.clients.FakeSubmissionServiceDriver;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -38,7 +36,7 @@ public class TestConfig {
 
     @Bean
     @Primary
-    public SubmissionServiceDriver submissionServiceDriver() {
-        return mock(SubmissionServiceDriver.class);
+    public FakeSubmissionServiceDriver submissionServiceDriver() {
+        return new FakeSubmissionServiceDriver();
     }
 }

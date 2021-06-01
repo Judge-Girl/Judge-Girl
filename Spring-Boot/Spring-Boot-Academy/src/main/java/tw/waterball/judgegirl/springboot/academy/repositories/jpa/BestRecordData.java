@@ -13,12 +13,13 @@ import java.util.Date;
 @Builder
 @Getter
 @Setter
-@Entity(name = "bestRecords")
+@Entity(name = "best_records")
 @AllArgsConstructor
 @NoArgsConstructor
 public class BestRecordData {
     @EmbeddedId
     private Id id;
+    private String submissionId;
     @Enumerated(EnumType.STRING)
     private JudgeStatus status;
     private long maximumRuntime;
@@ -28,12 +29,13 @@ public class BestRecordData {
     private Date submissionTime;
 
     public Record toEntity() {
-        return new Record(new Question.Id(getExamId(), getProblemId()), getStudentId(),
+        return new Record(new Question.Id(getExamId(), getProblemId()), getStudentId(), getSubmissionId(),
                 status, maximumRuntime, maximumMemoryUsage, new Grade(grade, maxGrade), submissionTime);
     }
 
     public static BestRecordData toData(Record value) {
         return new BestRecordData(new Id(new QuestionData.Id(value.getQuestionId()), value.getStudentId()),
+                value.getSubmissionId(),
                 value.getStatus(), value.getMaximumRuntime(), value.getMaximumMemoryUsage(),
                 value.getGrade(), value.getMaxGrade(), value.getSubmissionTime());
     }

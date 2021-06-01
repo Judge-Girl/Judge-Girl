@@ -58,16 +58,18 @@ public class VerdictView {
     }
 
     public static Verdict toEntity(@Nullable VerdictView verdictView) {
+        Verdict verdict;
         if (verdictView == null) {
             return null;
         }
         if (verdictView.getSummaryStatus() == JudgeStatus.CE) {
-            return Verdict.compileError(verdictView.compileErrorMessage,
+            verdict = Verdict.compileError(verdictView.compileErrorMessage,
                     verdictView.maxGrade, verdictView.issueTime);
+        } else {
+            verdict = new Verdict(
+                    mapToList(verdictView.getJudges(), JudgeView::toEntity),
+                    verdictView.getIssueTime());
         }
-        Verdict verdict = new Verdict(
-                mapToList(verdictView.getJudges(), JudgeView::toEntity),
-                verdictView.getIssueTime());
         verdict.setReport(verdictView.getReport().toEntity());
         return verdict;
     }

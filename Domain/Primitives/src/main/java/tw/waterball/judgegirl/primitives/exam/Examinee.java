@@ -9,19 +9,9 @@ import java.io.Serializable;
 @Getter
 public class Examinee {
     private final Id id;
-    private Integer score;
-    private Boolean absent;
 
     public Examinee(int examId, int studentId) {
         id = new Id(examId, studentId);
-    }
-
-    public void setScore(int score) {
-        this.score = score;
-    }
-
-    public void setAbsent(boolean absent) {
-        this.absent = absent;
     }
 
     public int getExamId() {
