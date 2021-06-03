@@ -15,7 +15,7 @@ package tw.waterball.judgegirl.submission.domain.usecases;
 
 import tw.waterball.judgegirl.primitives.submission.Submission;
 import tw.waterball.judgegirl.submission.domain.repositories.SubmissionRepository;
-import tw.waterball.judgegirl.submission.domain.usecases.dto.SubmissionQueryParams;
+import tw.waterball.judgegirl.submission.domain.usecases.query.SubmissionQueryParams;
 
 import javax.inject.Named;
 import java.util.List;

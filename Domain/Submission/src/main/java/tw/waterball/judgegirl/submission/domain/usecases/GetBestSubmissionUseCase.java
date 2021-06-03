@@ -5,10 +5,9 @@ import lombok.Value;
 import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.primitives.submission.Submission;
 import tw.waterball.judgegirl.submission.domain.repositories.SubmissionRepository;
-import tw.waterball.judgegirl.submission.domain.usecases.dto.SubmissionQueryParams;
+import tw.waterball.judgegirl.submission.domain.usecases.query.SubmissionQueryParams;
 
 import javax.inject.Named;
-import java.util.Collections;
 
 import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
 
@@ -23,8 +22,8 @@ public class GetBestSubmissionUseCase {
 
     public void execute(Request request, Presenter presenter)
             throws NotFoundException {
-        SubmissionQueryParams params = new SubmissionQueryParams(null,
-                request.problemId, request.langEnvName, request.studentId, Collections.emptyMap());
+        var params = SubmissionQueryParams.builder()
+                .problemId(request.problemId).studentId(request.studentId).build();
         Submission bestSubmission = submissionRepository.query(params)
                 .stream()
                 .sorted()

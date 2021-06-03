@@ -15,7 +15,9 @@ package tw.waterball.judgegirl.springboot.submission.impl.mongo;
 
 import com.mongodb.client.result.UpdateResult;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.stereotype.Component;
@@ -32,7 +34,7 @@ import tw.waterball.judgegirl.springboot.submission.impl.mongo.data.VerdictData;
 import tw.waterball.judgegirl.springboot.submission.impl.mongo.strategy.SaveSubmissionWithCodesStrategy;
 import tw.waterball.judgegirl.springboot.utils.MongoUtils;
 import tw.waterball.judgegirl.submission.domain.repositories.SubmissionRepository;
-import tw.waterball.judgegirl.submission.domain.usecases.dto.SubmissionQueryParams;
+import tw.waterball.judgegirl.submission.domain.usecases.query.SubmissionQueryParams;
 
 import java.util.List;
 import java.util.Optional;
@@ -52,7 +54,7 @@ import static tw.waterball.judgegirl.springboot.utils.MongoUtils.downloadFileRes
 @Component
 @AllArgsConstructor
 public class MongoSubmissionRepository implements SubmissionRepository {
-    private static final int PAGE_SIZE = 30;
+    private static final int PAGE_SIZE = 80;
     private final MongoTemplate mongoTemplate;
     private final GridFsTemplate gridFsTemplate;
     private final SaveSubmissionWithCodesStrategy saveSubmissionWithCodesStrategy;
@@ -119,12 +121,20 @@ public class MongoSubmissionRepository implements SubmissionRepository {
 
     @Override
     public List<Submission> query(SubmissionQueryParams params) {
-        var criteria = where("problemId").is(params.getProblemId())
-                .and("languageEnvName").is(params.getLanguageEnvName())
-                .and("studentId").is(params.getStudentId());
-
+        var criteria = new Criteria();
+        params.getProblemId()
+                .ifPresent(problemId -> criteria.and("problemId").is(problemId));
+        params.getLanguageEnvName()
+                .ifPresent(langEnvName -> criteria.and("languageEnvName").is(langEnvName));
+        params.getStudentId()
+                .ifPresent(studentId -> criteria.and("studentId").is(studentId));
         params.getBagQueryParameters().forEach((key, val) -> criteria.and("bag." + key).is(val));
+
         Query query = Query.query(criteria);
+        params.getSortBy()
+                .ifPresent(sortBy -> query.with(
+                        Sort.by(sortBy.isAscending() ? Sort.Direction.ASC : Sort.Direction.DESC,
+                                sortBy.getFieldName().equals("id") ? "_id" : sortBy.getFieldName())));
         params.getPage().ifPresent(page -> query.skip(page * PAGE_SIZE).limit(PAGE_SIZE));
         List<SubmissionData> dataList = mongoTemplate.find(query, SubmissionData.class);
         return DataMapper.toEntity(dataList);
