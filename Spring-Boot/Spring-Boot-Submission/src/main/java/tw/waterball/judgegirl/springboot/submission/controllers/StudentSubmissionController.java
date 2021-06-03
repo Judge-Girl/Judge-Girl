@@ -25,7 +25,6 @@ import tw.waterball.judgegirl.primitives.submission.Bag;
 import tw.waterball.judgegirl.primitives.submission.Submission;
 import tw.waterball.judgegirl.springboot.submission.presenters.SubmissionsPresenter;
 import tw.waterball.judgegirl.submission.domain.usecases.*;
-import tw.waterball.judgegirl.submission.domain.usecases.query.SubmissionQueryParams;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 
 import java.util.List;
@@ -34,6 +33,7 @@ import java.util.Map;
 import static tw.waterball.judgegirl.springboot.submission.controllers.BagExtractor.extractBagsFromHeaders;
 import static tw.waterball.judgegirl.springboot.utils.MultipartFileUtils.convertMultipartFilesToFileResources;
 import static tw.waterball.judgegirl.springboot.utils.ResponseEntityUtils.respondInputStreamResource;
+import static tw.waterball.judgegirl.submission.domain.usecases.query.SubmissionQueryParams.query;
 import static tw.waterball.judgegirl.submissionapi.clients.SubmissionApiClient.SUBMIT_CODE_MULTIPART_KEY_NAME;
 
 /**
@@ -103,7 +103,7 @@ public class StudentSubmissionController {
         bagQueryParameters.remove("page"); // only non-reserved keywords will be accepted by the bag-query filter
         return tokenService.returnIfGranted(studentId, authorization, token -> {
             var presenter = new SubmissionsPresenter();
-            getSubmissionsUseCase.execute(SubmissionQueryParams.builder()
+            getSubmissionsUseCase.execute(query()
                     .page(page).problemId(problemId).languageEnvName(langEnvName)
                     .studentId(studentId).bagQueryParameters(bagQueryParameters).build(), presenter);
             return presenter.present();

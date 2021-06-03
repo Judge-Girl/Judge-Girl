@@ -57,6 +57,10 @@ public class SubmissionQueryParams {
         this.sortBy = sortBy;
     }
 
+    public static SubmissionQueryParamsBuilder query() {
+        return SubmissionQueryParams.builder();
+    }
+
     public Optional<Integer> getPage() {
         return ofNullable(page);
     }

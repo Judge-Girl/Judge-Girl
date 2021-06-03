@@ -320,8 +320,8 @@ public class AbstractSubmissionControllerTest extends AbstractSpringBootTest {
                 .andExpect(zip().content(codes1));
     }
 
-    protected void givenSubmission(Submission submission) {
-        submissionRepository.save(submission);
+    protected SubmissionView givenSubmission(Submission submission) {
+        return toViewModel(submissionRepository.save(submission));
     }
 
     protected SubmissionView submitCodeAndGet(int studentId, Token token) throws Exception {
