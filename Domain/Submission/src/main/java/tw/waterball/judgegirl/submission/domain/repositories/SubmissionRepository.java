@@ -19,7 +19,7 @@ import tw.waterball.judgegirl.primitives.problem.JudgeStatus;
 import tw.waterball.judgegirl.primitives.submission.Submission;
 import tw.waterball.judgegirl.primitives.submission.SubmissionThrottling;
 import tw.waterball.judgegirl.primitives.submission.verdict.Verdict;
-import tw.waterball.judgegirl.submission.domain.usecases.dto.SubmissionQueryParams;
+import tw.waterball.judgegirl.submission.domain.usecases.query.SubmissionQueryParams;
 
 import java.io.IOException;
 import java.util.List;

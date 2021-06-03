@@ -11,53 +11,73 @@
  *   limitations under the License.
  */
 
-package tw.waterball.judgegirl.submission.domain.usecases.dto;
+package tw.waterball.judgegirl.submission.domain.usecases.query;
 
 
+import lombok.Builder;
 import lombok.Data;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+
+import static java.util.Optional.ofNullable;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
 @Data
+@Builder
 public class SubmissionQueryParams {
     @Nullable
     private final Integer page;
-    private final int problemId;
+    @Nullable
+    private final Integer problemId;
+    @Nullable
     private final String languageEnvName;
-    private final int studentId;
-    private final Map<String, String> bagQueryParameters;
+    @Nullable
+    private final Integer studentId;
 
-    public SubmissionQueryParams(@Nullable Integer page, int problemId,
-                                 String languageEnvName, int studentId, Map<String, String> bagQueryParameters) {
+    @Builder.Default
+    private Map<String, String> bagQueryParameters = new HashMap<>();
+
+    @Nullable
+    private final SortBy sortBy;
+
+    public SubmissionQueryParams(@Nullable Integer page, @Nullable Integer problemId,
+                                 @Nullable String languageEnvName, @Nullable Integer studentId,
+                                 Map<String, String> bagQueryParameters,
+                                 @Nullable SortBy sortBy) {
         this.page = page;
         this.problemId = problemId;
         this.languageEnvName = languageEnvName;
         this.studentId = studentId;
         this.bagQueryParameters = bagQueryParameters;
+        this.sortBy = sortBy;
     }
 
     public Optional<Integer> getPage() {
-        return Optional.ofNullable(page);
+        return ofNullable(page);
     }
 
-    public String getLanguageEnvName() {
-        return languageEnvName;
+    public Optional<String> getLanguageEnvName() {
+        return ofNullable(languageEnvName);
     }
 
-    public int getProblemId() {
-        return problemId;
+    public Optional<Integer> getProblemId() {
+        return ofNullable(problemId);
     }
 
-    public int getStudentId() {
-        return studentId;
+    public Optional<Integer> getStudentId() {
+        return ofNullable(studentId);
     }
 
     public Map<String, String> getBagQueryParameters() {
         return bagQueryParameters;
+    }
+
+    public Optional<SortBy> getSortBy() {
+        return ofNullable(sortBy);
     }
 }

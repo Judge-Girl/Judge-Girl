@@ -25,16 +25,15 @@ import tw.waterball.judgegirl.primitives.submission.Bag;
 import tw.waterball.judgegirl.primitives.submission.Submission;
 import tw.waterball.judgegirl.springboot.submission.presenters.SubmissionsPresenter;
 import tw.waterball.judgegirl.submission.domain.usecases.*;
-import tw.waterball.judgegirl.submission.domain.usecases.dto.SubmissionQueryParams;
+import tw.waterball.judgegirl.submission.domain.usecases.query.SubmissionQueryParams;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static tw.waterball.judgegirl.springboot.submission.controllers.BagExtractor.extractBagsFromHeaders;
 import static tw.waterball.judgegirl.springboot.utils.MultipartFileUtils.convertMultipartFilesToFileResources;
 import static tw.waterball.judgegirl.springboot.utils.ResponseEntityUtils.respondInputStreamResource;
-import static tw.waterball.judgegirl.submissionapi.clients.SubmissionApiClient.HEADER_BAG_KEY_PREFIX;
 import static tw.waterball.judgegirl.submissionapi.clients.SubmissionApiClient.SUBMIT_CODE_MULTIPART_KEY_NAME;
 
 /**
@@ -62,28 +61,12 @@ public class StudentSubmissionController {
                                           @RequestParam(SUBMIT_CODE_MULTIPART_KEY_NAME) MultipartFile[] submittedCodes) {
         return tokenService.returnIfGranted(studentId, authorization, token -> {
             boolean throttling = !token.isAdmin();
-            Bag bag = getBagFromHeaders(token, headers);
+            Bag bag = token.isAdmin() ? extractBagsFromHeaders(headers) : Bag.empty();
             SubmitCodeRequest request = convertToSubmitCodeRequest(problemId, langEnvName, studentId, submittedCodes, bag, throttling);
             SubmissionPresenter presenter = new SubmissionPresenter();
             submitCodeUseCase.execute(request, presenter);
             return ResponseEntity.accepted().body(presenter.present());
         });
-    }
-
-    private Bag getBagFromHeaders(TokenService.Token token, HttpHeaders headers) {
-        if (token.isAdmin()) {
-            // 'bag' is only supported for admins
-            Map<String, String> messages = new HashMap<>();
-            headers.forEach((key, val) -> {
-                key = key.trim();
-                if (key.startsWith(HEADER_BAG_KEY_PREFIX)) {  // for example: "BAG_KEY_helloKitty"
-                    String bagKey = key.substring(HEADER_BAG_KEY_PREFIX.length());  // the bagKey will be "helloKitty"
-                    messages.put(bagKey, val.get(0));
-                }
-            });
-            return new Bag(messages);
-        }
-        return Bag.empty();
     }
 
     private SubmitCodeRequest convertToSubmitCodeRequest(int problemId, String langEnvName,
@@ -112,15 +95,17 @@ public class StudentSubmissionController {
 
     @GetMapping
     List<SubmissionView> getSubmissions(@RequestHeader("Authorization") String authorization,
-                                        @RequestParam(value = "page", required = false) Integer page,
+                                        @RequestParam(required = false) Integer page,
                                         @PathVariable int problemId,
                                         @PathVariable String langEnvName,
                                         @PathVariable int studentId,
                                         @RequestParam Map<String, String> bagQueryParameters) {
         bagQueryParameters.remove("page"); // only non-reserved keywords will be accepted by the bag-query filter
         return tokenService.returnIfGranted(studentId, authorization, token -> {
-            SubmissionsPresenter presenter = new SubmissionsPresenter();
-            getSubmissionsUseCase.execute(new SubmissionQueryParams(page, problemId, langEnvName, studentId, bagQueryParameters), presenter);
+            var presenter = new SubmissionsPresenter();
+            getSubmissionsUseCase.execute(SubmissionQueryParams.builder()
+                    .page(page).problemId(problemId).languageEnvName(langEnvName)
+                    .studentId(studentId).bagQueryParameters(bagQueryParameters).build(), presenter);
             return presenter.present();
         });
     }
