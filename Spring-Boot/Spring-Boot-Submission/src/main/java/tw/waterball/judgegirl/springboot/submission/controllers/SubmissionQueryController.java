@@ -35,14 +35,8 @@ public class SubmissionQueryController {
     }
 
     @GetMapping
-    public List<SubmissionView> getSubmissionsByIds(@RequestParam String[] ids) {
-        var presenter = new SubmissionsPresenter();
-        getSubmissionsUseCase.execute(ids, presenter);
-        return presenter.present();
-    }
-
-    @GetMapping
     public List<SubmissionView> getSubmissions(@RequestHeader("Authorization") String authorization,
+                                               @RequestParam(required = false) String[] ids,
                                                @RequestParam(required = false, defaultValue = "0") Integer page,
                                                @RequestParam(required = false) Integer problemId,
                                                @RequestParam(required = false) String langEnvName,
@@ -58,18 +52,22 @@ public class SubmissionQueryController {
         bagQueryParameters.remove("ascending");
         return tokenService.returnIfAdmin(authorization, token -> {
             var presenter = new SubmissionsPresenter();
-            SortBy sort = null;
-            if (sortBy != null) {
-                sort = new SortBy(sortBy, ascending);
+            if (ids != null) {
+                getSubmissionsUseCase.execute(ids, presenter);
+            } else {
+                SortBy sort = null;
+                if (sortBy != null) {
+                    sort = new SortBy(sortBy, ascending);
+                }
+                var query = SubmissionQueryParams.builder()
+                        .page(page)
+                        .problemId(problemId)
+                        .languageEnvName(langEnvName)
+                        .studentId(studentId)
+                        .sortBy(sort)
+                        .bagQueryParameters(bagQueryParameters).build();
+                getSubmissionsUseCase.execute(query, presenter);
             }
-            var query = SubmissionQueryParams.builder()
-                    .page(page)
-                    .problemId(problemId)
-                    .languageEnvName(langEnvName)
-                    .studentId(studentId)
-                    .sortBy(sort)
-                    .bagQueryParameters(bagQueryParameters).build();
-            getSubmissionsUseCase.execute(query, presenter);
             return presenter.present();
         });
     }
