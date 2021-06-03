@@ -16,7 +16,6 @@ package tw.waterball.judgegirl.springboot.submission.controllers;
 import lombok.AllArgsConstructor;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -52,7 +51,7 @@ public class StudentSubmissionController {
     private final GetBestSubmissionUseCase getBestSubmissionUseCase;
 
 
-    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping
     ResponseEntity<SubmissionView> submit(@RequestHeader("Authorization") String authorization,
                                           @PathVariable int problemId,
                                           @PathVariable String langEnvName,
@@ -62,8 +61,8 @@ public class StudentSubmissionController {
         return tokenService.returnIfGranted(studentId, authorization, token -> {
             boolean throttling = !token.isAdmin();
             Bag bag = token.isAdmin() ? extractBagsFromHeaders(headers) : Bag.empty();
-            SubmitCodeRequest request = convertToSubmitCodeRequest(problemId, langEnvName, studentId, submittedCodes, bag, throttling);
-            SubmissionPresenter presenter = new SubmissionPresenter();
+            var request = convertToSubmitCodeRequest(problemId, langEnvName, studentId, submittedCodes, bag, throttling);
+            var presenter = new SubmissionPresenter();
             submitCodeUseCase.execute(request, presenter);
             return ResponseEntity.accepted().body(presenter.present());
         });

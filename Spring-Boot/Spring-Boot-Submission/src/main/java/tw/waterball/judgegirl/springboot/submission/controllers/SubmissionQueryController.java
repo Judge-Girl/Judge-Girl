@@ -55,10 +55,7 @@ public class SubmissionQueryController {
             if (ids != null) {
                 getSubmissionsUseCase.execute(ids, presenter);
             } else {
-                SortBy sort = null;
-                if (sortBy != null) {
-                    sort = new SortBy(sortBy, ascending);
-                }
+                SortBy sort = sortBy == null ? null : new SortBy(sortBy, ascending);
                 getSubmissionsUseCase.execute(query()
                         .page(page)
                         .problemId(problemId)
