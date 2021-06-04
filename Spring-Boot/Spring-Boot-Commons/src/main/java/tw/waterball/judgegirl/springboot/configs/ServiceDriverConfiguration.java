@@ -84,11 +84,13 @@ public class ServiceDriverConfiguration {
     @Bean
     public SubmissionServiceDriver submissionServiceDriver(
             RetrofitFactory retrofitFactory,
+            ObjectMapper objectMapper,
             TokenService tokenService,
             ServiceProps.SubmissionService submissionServiceInstance,
             @Value("${judge-girl.client.submission-service.studentId}") int studentId,
             BagInterceptor... bagInterceptors) {
         return new SubmissionApiClient(retrofitFactory,
+                objectMapper,
                 submissionServiceInstance.getScheme(),
                 submissionServiceInstance.getHost(),
                 submissionServiceInstance.getPort(),
