@@ -9,6 +9,7 @@ import static java.lang.Long.parseLong;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonMap;
 import static java.util.Objects.requireNonNullElse;
+import static java.util.Optional.ofNullable;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -44,13 +45,11 @@ public class Bag extends HashMap<String, String> {
     }
 
     public Optional<String> getAsString(String key) {
-        var value = get(key);
-        return Optional.ofNullable(value);
+        return ofNullable(get(key));
     }
 
     public OptionalInt getAsInteger(String key) {
         var value = get(key);
-
         return value == null ? OptionalInt.empty() : OptionalInt.of(parseInt(value));
     }
 

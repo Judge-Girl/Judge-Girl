@@ -70,8 +70,6 @@ import tw.waterball.judgegirl.submissionapi.views.VerdictView;
 import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
 import tw.waterball.judgegirl.testkit.semantics.Spec;
 
-import javax.servlet.http.Part;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -352,18 +350,13 @@ public class AbstractSubmissionControllerTest extends AbstractSpringBootTest {
     @SneakyThrows
     protected MockHttpServletRequestBuilder multipartRequestWithSubmittedCodes(int studentId, MockMultipartFile... files) {
         var call = multipart(API_PREFIX, problem.getId(), studentId);
-        List<Part> parts = new ArrayList<>();
-
         for (MockMultipartFile file : files) {
             call = call.file(file);
         }
-
         var bagPart = new MockPart(SUBMISSION_BAG_MULTIPART_KEY_NAME, SUBMISSION_BAG_MULTIPART_KEY_NAME,
                 toJson(submissionBag).getBytes(UTF_8));
         bagPart.getHeaders().setContentType(MediaType.APPLICATION_JSON);
-        parts.add(bagPart);
-        call.part(parts.toArray(new Part[0]));
-
+        call.part(bagPart);
         return call;
     }
 
