@@ -29,9 +29,9 @@ import tw.waterball.judgegirl.commons.models.files.FileResource;
 import tw.waterball.judgegirl.primitives.problem.*;
 import tw.waterball.judgegirl.problem.domain.repositories.ProblemQueryParams;
 import tw.waterball.judgegirl.problem.domain.repositories.ProblemRepository;
+import tw.waterball.judgegirl.springboot.mongo.utils.MongoUtils;
 import tw.waterball.judgegirl.springboot.problem.repositories.data.ProblemData;
 import tw.waterball.judgegirl.springboot.profiles.productions.Mongo;
-import tw.waterball.judgegirl.springboot.utils.MongoUtils;
 
 import java.io.*;
 import java.util.*;
@@ -48,9 +48,9 @@ import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
 import static tw.waterball.judgegirl.commons.utils.StringUtils.isNullOrEmpty;
 import static tw.waterball.judgegirl.commons.utils.ZipUtils.writeFileAsZipEntry;
 import static tw.waterball.judgegirl.commons.utils.ZipUtils.zipToStream;
+import static tw.waterball.judgegirl.springboot.mongo.utils.MongoUtils.downloadFileResourceByFileId;
 import static tw.waterball.judgegirl.springboot.problem.repositories.data.LanguageEnvData.toData;
 import static tw.waterball.judgegirl.springboot.problem.repositories.data.ProblemData.toData;
-import static tw.waterball.judgegirl.springboot.utils.MongoUtils.downloadFileResourceByFileId;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)

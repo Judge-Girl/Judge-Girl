@@ -11,7 +11,7 @@
  *   limitations under the License.
  */
 
-package tw.waterball.judgegirl.springboot.utils;
+package tw.waterball.judgegirl.springboot.mongo.utils;
 
 import com.mongodb.client.gridfs.model.GridFSFile;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -57,7 +57,7 @@ public class MongoUtils {
 
 
     public static class Builder {
-        private MongoTemplate mongoTemplate;
+        private final MongoTemplate mongoTemplate;
 
         public Builder(MongoTemplate mongoTemplate) {
             this.mongoTemplate = mongoTemplate;
@@ -68,7 +68,7 @@ public class MongoUtils {
         }
 
         public class FromDocument<T> {
-            private Class<T> documentType;
+            private final Class<T> documentType;
 
             public FromDocument(Class<T> documentType) {
                 this.documentType = documentType;
@@ -79,8 +79,8 @@ public class MongoUtils {
             }
 
             public class SelectOneFieldExecution {
-                private MongoTemplate mongoTemplate;
-                private String fieldName;
+                private final MongoTemplate mongoTemplate;
+                private final String fieldName;
                 private String pkField;
                 private Object pkValue;
 
@@ -115,7 +115,7 @@ public class MongoUtils {
                 }
 
                 public class Result {
-                    private T document;
+                    private final T document;
 
                     public Result(T document) {
                         this.document = document;

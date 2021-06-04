@@ -125,6 +125,11 @@
             </dependency>
             <dependency>
                 <groupId>tw.waterball.judge-girl</groupId>
+                <artifactId>spring-boot-mongo</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>tw.waterball.judge-girl</groupId>
                 <artifactId>spring-boot-academy</artifactId>
                 <version>${project.version}</version>
             </dependency>
