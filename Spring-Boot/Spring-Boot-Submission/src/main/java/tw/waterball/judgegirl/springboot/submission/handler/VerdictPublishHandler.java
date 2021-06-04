@@ -3,7 +3,7 @@ package tw.waterball.judgegirl.springboot.submission.handler;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import tw.waterball.judgegirl.commons.helpers.EventBus;
-import tw.waterball.judgegirl.primitives.submission.verdict.VerdictIssuedEvent;
+import tw.waterball.judgegirl.primitives.submission.events.VerdictIssuedEvent;
 import tw.waterball.judgegirl.submissionapi.clients.VerdictPublisher;
 
 /**

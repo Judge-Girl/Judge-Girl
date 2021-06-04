@@ -22,8 +22,8 @@ import tw.waterball.judgegirl.commons.utils.functional.Otherwise;
 import tw.waterball.judgegirl.primitives.problem.Problem;
 import tw.waterball.judgegirl.primitives.submission.Submission;
 import tw.waterball.judgegirl.primitives.submission.SubmissionThrottlingException;
+import tw.waterball.judgegirl.primitives.submission.events.VerdictIssuedEvent;
 import tw.waterball.judgegirl.primitives.submission.verdict.Verdict;
-import tw.waterball.judgegirl.primitives.submission.verdict.VerdictIssuedEvent;
 import tw.waterball.judgegirl.problemapi.clients.ProblemServiceDriver;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.submission.deployer.JudgerDeployer;
@@ -94,6 +94,7 @@ public class SubmitCodeUseCase {
                     submission.getId(), verdict, submission.getSubmissionTime(), request.submissionBag));
         }
         judgerDeployer.deployJudger(problem, request.getStudentId(), submission);
+
         log.info("Completed: {}", request);
         return empty();
     }

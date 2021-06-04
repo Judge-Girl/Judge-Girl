@@ -11,12 +11,13 @@
  *   limitations under the License.
  */
 
-package tw.waterball.judgegirl.primitives.submission.verdict;
+package tw.waterball.judgegirl.primitives.submission.events;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import tw.waterball.judgegirl.primitives.submission.Bag;
+import tw.waterball.judgegirl.primitives.submission.verdict.Verdict;
 
 import java.util.Date;
 

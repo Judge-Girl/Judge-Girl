@@ -6,7 +6,7 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 import tw.waterball.judgegirl.academy.domain.usecases.VerdictIssuedEventListener;
 import tw.waterball.judgegirl.commons.utils.NotifyWaitLock;
-import tw.waterball.judgegirl.primitives.submission.verdict.VerdictIssuedEvent;
+import tw.waterball.judgegirl.primitives.submission.events.VerdictIssuedEvent;
 import tw.waterball.judgegirl.springboot.profiles.productions.Amqp;
 
 import java.util.List;
