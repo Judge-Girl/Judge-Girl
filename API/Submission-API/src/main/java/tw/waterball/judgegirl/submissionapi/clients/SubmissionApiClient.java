@@ -49,6 +49,7 @@ public class SubmissionApiClient extends BaseRetrofitAPI implements SubmissionSe
     public static final String HEADER_BAG_KEY_PREFIX = "bag_key_";
     public static final String CURRENTLY_ONLY_SUPPORT_C = Language.C.toString();
     public static final String SUBMIT_CODE_MULTIPART_KEY_NAME = "submittedCodes";
+    public static final String SUBMISSION_BAG_MULTIPART_KEY_NAME = "submissionBag";
     private final API api;
     private final Supplier<String> tokenSupplier;
     private final BagInterceptor[] bagInterceptors;

@@ -13,9 +13,10 @@
 
 package tw.waterball.judgegirl.springboot.submission.controllers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
+import lombok.SneakyThrows;
 import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -26,13 +27,14 @@ import tw.waterball.judgegirl.springboot.submission.presenters.SubmissionsPresen
 import tw.waterball.judgegirl.submission.domain.usecases.*;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 
+import javax.servlet.http.Part;
 import java.util.List;
 import java.util.Map;
 
-import static tw.waterball.judgegirl.springboot.submission.controllers.BagExtractor.extractBagsFromHeaders;
 import static tw.waterball.judgegirl.springboot.utils.MultipartFileUtils.convertMultipartFilesToFileResources;
 import static tw.waterball.judgegirl.springboot.utils.ResponseEntityUtils.respondInputStreamResource;
 import static tw.waterball.judgegirl.submission.domain.usecases.query.SubmissionQueryParams.query;
+import static tw.waterball.judgegirl.submissionapi.clients.SubmissionApiClient.SUBMISSION_BAG_MULTIPART_KEY_NAME;
 import static tw.waterball.judgegirl.submissionapi.clients.SubmissionApiClient.SUBMIT_CODE_MULTIPART_KEY_NAME;
 
 /**
@@ -43,6 +45,7 @@ import static tw.waterball.judgegirl.submissionapi.clients.SubmissionApiClient.S
 @AllArgsConstructor
 @RequestMapping("/api/problems/{problemId}/{langEnvName}/students/{studentId}/submissions")
 public class StudentSubmissionController {
+    private final ObjectMapper objectMapper;
     private final TokenService tokenService;
     private final SubmitCodeUseCase submitCodeUseCase;
     private final GetSubmissionUseCase getSubmissionUseCase;
@@ -56,16 +59,21 @@ public class StudentSubmissionController {
                                           @PathVariable int problemId,
                                           @PathVariable String langEnvName,
                                           @PathVariable int studentId,
-                                          @RequestHeader HttpHeaders headers,
+                                          @RequestParam(SUBMISSION_BAG_MULTIPART_KEY_NAME) Part submissionBag,
                                           @RequestParam(SUBMIT_CODE_MULTIPART_KEY_NAME) MultipartFile[] submittedCodes) {
         return tokenService.returnIfGranted(studentId, authorization, token -> {
             boolean throttling = !token.isAdmin();
-            Bag bag = token.isAdmin() ? extractBagsFromHeaders(headers) : Bag.empty();
+            Bag bag = token.isAdmin() ? readSubmissionBag(submissionBag) : Bag.empty();
             var request = convertToSubmitCodeRequest(problemId, langEnvName, studentId, submittedCodes, bag, throttling);
             var presenter = new SubmissionPresenter();
             submitCodeUseCase.execute(request, presenter);
             return ResponseEntity.accepted().body(presenter.present());
         });
+    }
+
+    @SneakyThrows
+    private Bag readSubmissionBag(Part submissionBag) {
+        return objectMapper.readValue(submissionBag.getInputStream(), Bag.class);
     }
 
     private SubmitCodeRequest convertToSubmitCodeRequest(int problemId, String langEnvName,

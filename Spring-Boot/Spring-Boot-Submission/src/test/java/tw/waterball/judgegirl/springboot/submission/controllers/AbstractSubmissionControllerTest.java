@@ -13,6 +13,7 @@ package tw.waterball.judgegirl.springboot.submission.controllers;/*
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.github.fridujo.rabbitmq.mock.MockConnectionFactory;
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.ArgumentCaptor;
@@ -32,6 +33,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.mock.web.MockPart;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
@@ -68,12 +70,15 @@ import tw.waterball.judgegirl.submissionapi.views.VerdictView;
 import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
 import tw.waterball.judgegirl.testkit.semantics.Spec;
 
+import javax.servlet.http.Part;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Optional.of;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -88,7 +93,7 @@ import static tw.waterball.judgegirl.commons.utils.Delay.delay;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
 import static tw.waterball.judgegirl.primitives.time.DateProvider.now;
 import static tw.waterball.judgegirl.problemapi.views.ProblemView.toViewModel;
-import static tw.waterball.judgegirl.submissionapi.clients.SubmissionApiClient.HEADER_BAG_KEY_PREFIX;
+import static tw.waterball.judgegirl.submissionapi.clients.SubmissionApiClient.SUBMISSION_BAG_MULTIPART_KEY_NAME;
 import static tw.waterball.judgegirl.submissionapi.clients.SubmissionApiClient.SUBMIT_CODE_MULTIPART_KEY_NAME;
 import static tw.waterball.judgegirl.submissionapi.views.SubmissionView.toViewModel;
 import static tw.waterball.judgegirl.submissionapi.views.VerdictView.toEntity;
@@ -344,16 +349,22 @@ public class AbstractSubmissionControllerTest extends AbstractSpringBootTest {
                 multipartRequestWithSubmittedCodes(studentId, files)));
     }
 
+    @SneakyThrows
     protected MockHttpServletRequestBuilder multipartRequestWithSubmittedCodes(int studentId, MockMultipartFile... files) {
         var call = multipart(API_PREFIX, problem.getId(), studentId);
+        List<Part> parts = new ArrayList<>();
+
         for (MockMultipartFile file : files) {
             call = call.file(file);
         }
-        MockHttpServletRequestBuilder addingHeaders = call;
-        for (var entry : submissionBag.entrySet()) {
-            addingHeaders = call.header(HEADER_BAG_KEY_PREFIX + entry.getKey(), entry.getValue());
-        }
-        return addingHeaders;
+
+        var bagPart = new MockPart(SUBMISSION_BAG_MULTIPART_KEY_NAME, SUBMISSION_BAG_MULTIPART_KEY_NAME,
+                toJson(submissionBag).getBytes(UTF_8));
+        bagPart.getHeaders().setContentType(MediaType.APPLICATION_JSON);
+        parts.add(bagPart);
+        call.part(parts.toArray(new Part[0]));
+
+        return call;
     }
 
     protected List<SubmissionView> getSubmissionsWithBagQuery(int studentId, Token studentToken, MultiValueMap<String, String> bagQueryParameters) throws Exception {
