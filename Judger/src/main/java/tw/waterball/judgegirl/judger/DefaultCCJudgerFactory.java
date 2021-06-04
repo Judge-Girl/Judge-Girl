@@ -109,6 +109,7 @@ public class DefaultCCJudgerFactory {
 
     private static SubmissionApiClient submissionApiClient(JudgerEnvVariables.Values values, String token) {
         return new SubmissionApiClient(retrofitFactory(),
+                objectMapper(),
                 values.getSubmissionServiceInstance().getScheme(),
                 values.getSubmissionServiceInstance().getHost(),
                 values.getSubmissionServiceInstance().getPort(),

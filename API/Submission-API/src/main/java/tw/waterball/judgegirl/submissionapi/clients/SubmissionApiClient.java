@@ -13,6 +13,8 @@
 
 package tw.waterball.judgegirl.submissionapi.clients;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.SneakyThrows;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
@@ -28,16 +30,16 @@ import tw.waterball.judgegirl.api.retrofit.RetrofitFactory;
 import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
 import tw.waterball.judgegirl.primitives.problem.Language;
+import tw.waterball.judgegirl.primitives.submission.Bag;
 import tw.waterball.judgegirl.primitives.submission.SubmissionThrottlingException;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import static java.util.Arrays.asList;
+import static java.util.Arrays.stream;
 import static tw.waterball.judgegirl.api.retrofit.BaseRetrofitAPI.ExceptionDeclaration.mapStatusCode;
 import static tw.waterball.judgegirl.commons.utils.HttpHeaderUtils.bearerWithToken;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
@@ -49,14 +51,18 @@ public class SubmissionApiClient extends BaseRetrofitAPI implements SubmissionSe
     public static final String HEADER_BAG_KEY_PREFIX = "bag_key_";
     public static final String CURRENTLY_ONLY_SUPPORT_C = Language.C.toString();
     public static final String SUBMIT_CODE_MULTIPART_KEY_NAME = "submittedCodes";
+    public static final String SUBMISSION_BAG_MULTIPART_KEY_NAME = "submissionBag";
     private final API api;
     private final Supplier<String> tokenSupplier;
     private final BagInterceptor[] bagInterceptors;
+    private final ObjectMapper objectMapper;
 
     public SubmissionApiClient(RetrofitFactory retrofitFactory,
+                               ObjectMapper objectMapper,
                                String scheme, String host, int port,
                                Supplier<String> tokenSupplier,
                                BagInterceptor... bagInterceptors) {
+        this.objectMapper = objectMapper;
         this.tokenSupplier = tokenSupplier;
         this.bagInterceptors = bagInterceptors;
         this.api = retrofitFactory.create(scheme, host, port
@@ -66,22 +72,23 @@ public class SubmissionApiClient extends BaseRetrofitAPI implements SubmissionSe
 
     @Override
     public SubmissionView submit(SubmitCodeRequest request) throws SubmissionThrottlingException {
-        return errorHandlingGetBody(() -> api.submit(withSubmissionBagAsHeaders(request),
-                request.problemId, CURRENTLY_ONLY_SUPPORT_C, request.studentId,
-                mapToList(request.fileResources, this::submittedCodesMultipartBody)).execute(),
+        var parts = mapToList(request.fileResources, this::toSubmittedCodesPart);
+        parts.add(toSubmissionBagPart(request.getSubmissionBag()));
+        return errorHandlingGetBody(() -> api.submit(
+                bearerWithToken(tokenSupplier.get()), request.problemId,
+                CURRENTLY_ONLY_SUPPORT_C, request.studentId, parts).execute(),
                 mapStatusCode(400).toThrow(SubmissionThrottlingException::new));
     }
 
-    private Map<String, String> withSubmissionBagAsHeaders(SubmitCodeRequest request) {
-        Map<String, String> headers = new HashMap<>();
-        headers.put("Authorization", bearerWithToken(tokenSupplier.get()));
-        asList(bagInterceptors).forEach(interceptor -> interceptor.intercept(request.submissionBag));
-        request.submissionBag.forEach((key, val) -> headers.put(HEADER_BAG_KEY_PREFIX + key, val));
-        return headers;
+    @SneakyThrows
+    private MultipartBody.Part toSubmissionBagPart(Bag bag) {
+        stream(bagInterceptors).forEach(bagInterceptor -> bagInterceptor.intercept(bag));
+        return MultipartBody.Part.createFormData(SUBMISSION_BAG_MULTIPART_KEY_NAME,
+                objectMapper.writeValueAsString(bag));
     }
 
-    @NotNull
-    private MultipartBody.Part submittedCodesMultipartBody(FileResource r) {
+
+    private MultipartBody.Part toSubmittedCodesPart(FileResource r) {
         return MultipartBody.Part.createFormData(SUBMIT_CODE_MULTIPART_KEY_NAME, r.getFileName(),
                 new RequestBody() {
                     @Override
@@ -146,11 +153,12 @@ public class SubmissionApiClient extends BaseRetrofitAPI implements SubmissionSe
     private interface API {
         @Multipart
         @POST("/api/problems/{problemId}/{langEnvName}/students/{studentId}/submissions")
-        Call<SubmissionView> submit(@HeaderMap Map<String, String> headers,
-                                    @Path("problemId") int problemId,
-                                    @Path("langEnvName") String langEnvName,
-                                    @Path("studentId") int studentId,
-                                    @Part List<MultipartBody.Part> submittedCodes);
+        Call<SubmissionView> submit(
+                @Header("Authorization") String authorization,
+                @Path("problemId") int problemId,
+                @Path("langEnvName") String langEnvName,
+                @Path("studentId") int studentId,
+                @Part List<MultipartBody.Part> parts);
 
         @GET("/api/problems/{problemId}/{langEnvName}/students/{studentId}/submissions/{submissionId}")
         Call<SubmissionView> getSubmission(@Header("Authorization") String authorization,

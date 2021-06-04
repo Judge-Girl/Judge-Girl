@@ -18,11 +18,11 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
-import tw.waterball.judgegirl.primitives.problem.Problem;
-import tw.waterball.judgegirl.primitives.problem.Testcase;
 import tw.waterball.judgegirl.plugins.api.match.JudgeGirlMatchPolicyPlugin;
 import tw.waterball.judgegirl.plugins.impl.match.AllMatchPolicyPlugin;
 import tw.waterball.judgegirl.plugins.impl.match.RegexMatchPolicyPlugin;
+import tw.waterball.judgegirl.primitives.problem.Problem;
+import tw.waterball.judgegirl.primitives.problem.Testcase;
 
 import java.util.List;
 import java.util.Scanner;
@@ -44,7 +44,7 @@ public class MigrateOneProblem /* implements CommandLineRunner */ {
     private MongoTemplate mongoTemplate;
     private GridFsTemplate gridFsTemplate;
     private ObjectMapper objectMapper;
-    private JudgeGirlMatchPolicyPlugin[] matchPolicyPlugins =
+    private final JudgeGirlMatchPolicyPlugin[] matchPolicyPlugins =
             {new AllMatchPolicyPlugin(), new RegexMatchPolicyPlugin()};
 
     public static void main(String[] args) {

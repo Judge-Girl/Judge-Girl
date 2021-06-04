@@ -143,7 +143,6 @@ class ExamControllerTest extends AbstractSpringBootTest {
                 .forEach(studentServiceDriver::addStudent);
     }
 
-
     @AfterEach
     void cleanup() {
         examRepository.deleteAll();

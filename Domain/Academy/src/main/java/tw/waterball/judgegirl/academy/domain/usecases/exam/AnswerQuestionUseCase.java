@@ -30,7 +30,7 @@ import static tw.waterball.judgegirl.commons.utils.ComparableUtils.betterAndNewe
 @Named
 @AllArgsConstructor
 public class AnswerQuestionUseCase implements VerdictIssuedEventHandler {
-    public static final String BAG_KEY_EXAM_ID = "exam-id";
+    public static final String BAG_KEY_EXAM_ID = "examId";
     private final SubmissionServiceDriver submissionService;
     private final ExamRepository examRepository;
 

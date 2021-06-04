@@ -33,6 +33,10 @@
             <groupId>tw.waterball.judge-girl</groupId>
             <artifactId>spring-boot-commons</artifactId>
         </dependency>
+        <dependency>
+            <groupId>tw.waterball.judge-girl</groupId>
+            <artifactId>spring-boot-mongo</artifactId>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
