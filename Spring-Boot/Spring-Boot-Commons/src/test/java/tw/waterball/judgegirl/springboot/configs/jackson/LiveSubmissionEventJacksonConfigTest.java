@@ -2,11 +2,11 @@ package tw.waterball.judgegirl.springboot.configs.jackson;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import tw.waterball.judgegirl.primitives.submission.events.LiveSubmissionEvent;
 import tw.waterball.judgegirl.springboot.configs.JacksonConfig;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static tw.waterball.judgegirl.primitives.stubs.SubmissionStubBuilder.submission;
 import static tw.waterball.judgegirl.primitives.submission.events.LiveSubmissionEvent.liveSubmission;
 
@@ -24,7 +24,7 @@ class LiveSubmissionEventJacksonConfigTest {
         LiveSubmissionEvent after = objectMapper.readValue(
                 objectMapper.writeValueAsString(before), LiveSubmissionEvent.class);
 
-        Assertions.assertEquals(before, after);
+        assertEquals(before, after);
     }
 
 }
