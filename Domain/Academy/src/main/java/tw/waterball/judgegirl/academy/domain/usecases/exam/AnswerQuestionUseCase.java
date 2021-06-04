@@ -3,7 +3,7 @@ package tw.waterball.judgegirl.academy.domain.usecases.exam;
 import lombok.AllArgsConstructor;
 import lombok.Value;
 import tw.waterball.judgegirl.academy.domain.repositories.ExamRepository;
-import tw.waterball.judgegirl.academy.domain.usecases.VerdictIssuedEventListener;
+import tw.waterball.judgegirl.academy.domain.usecases.VerdictIssuedEventHandler;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
 import tw.waterball.judgegirl.primitives.exam.*;
 import tw.waterball.judgegirl.primitives.grading.Grade;
@@ -29,7 +29,7 @@ import static tw.waterball.judgegirl.commons.utils.ComparableUtils.betterAndNewe
  */
 @Named
 @AllArgsConstructor
-public class AnswerQuestionUseCase implements VerdictIssuedEventListener {
+public class AnswerQuestionUseCase implements VerdictIssuedEventHandler {
     public static final String BAG_KEY_EXAM_ID = "exam-id";
     private final SubmissionServiceDriver submissionService;
     private final ExamRepository examRepository;
@@ -91,7 +91,7 @@ public class AnswerQuestionUseCase implements VerdictIssuedEventListener {
     }
 
     @Override
-    public void onVerdictIssued(VerdictIssuedEvent event) {
+    public void handle(VerdictIssuedEvent event) {
         getExamIdFromBag(event.getSubmissionBag())
                 .ifPresent(examId -> updateBestRecord(event, examId));
     }

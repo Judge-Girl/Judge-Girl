@@ -18,7 +18,7 @@ public class LiveSubmissionEvent {
     private final int studentId;
     private final String submissionId;
     private final Date submissionTime;
-    private final Bag bag;
+    private final Bag submissionBag;
 
     public static LiveSubmissionEvent liveSubmission(Submission submission) {
         return new LiveSubmissionEvent(submission.getProblemId(),

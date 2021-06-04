@@ -13,11 +13,14 @@
 
 package tw.waterball.judgegirl.submissionapi.clients;
 
+import tw.waterball.judgegirl.primitives.submission.events.LiveSubmissionEvent;
 import tw.waterball.judgegirl.primitives.submission.events.VerdictIssuedEvent;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
-public interface VerdictPublisher {
+public interface EventPublisher {
     void publish(VerdictIssuedEvent event);
+
+    void publish(LiveSubmissionEvent event);
 }

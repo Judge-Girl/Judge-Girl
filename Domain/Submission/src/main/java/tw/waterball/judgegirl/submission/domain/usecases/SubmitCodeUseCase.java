@@ -35,6 +35,7 @@ import java.util.List;
 import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
 import static tw.waterball.judgegirl.commons.utils.functional.Otherwise.empty;
 import static tw.waterball.judgegirl.commons.utils.functional.Otherwise.of;
+import static tw.waterball.judgegirl.primitives.submission.events.LiveSubmissionEvent.liveSubmission;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -42,7 +43,7 @@ import static tw.waterball.judgegirl.commons.utils.functional.Otherwise.of;
 @Slf4j
 @Named
 @AllArgsConstructor
-public class SubmitCodeUseCase {
+public class SubmitCodeUseCase implements VerdictIssuedEventHandler {
     private final ThrottleSubmissionUseCase throttleSubmissionUseCase;
     private final SubmissionRepository submissionRepository;
     private final JudgerDeployer judgerDeployer;
@@ -58,6 +59,7 @@ public class SubmitCodeUseCase {
         mayDeployJudgerIfNotJudged(request, problem, submission)
                 .otherwise(this::publishVerdict);
 
+        eventBus.publish(liveSubmission(submission));
         presenter.setSubmission(submission);
     }
 
@@ -103,5 +105,9 @@ public class SubmitCodeUseCase {
         eventBus.publish(verdictIssuedEvent);
     }
 
-
+    @Override
+    public void handle(VerdictIssuedEvent event) {
+        Verdict verdict = event.getVerdict();
+        submissionRepository.issueVerdict(event.getSubmissionId(), verdict);
+    }
 }

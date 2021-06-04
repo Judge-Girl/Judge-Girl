@@ -34,10 +34,10 @@ import tw.waterball.judgegirl.plugins.api.JudgeGirlPlugin;
 import tw.waterball.judgegirl.plugins.api.PresetJudgeGirlPluginLocator;
 import tw.waterball.judgegirl.problemapi.clients.ProblemServiceDriver;
 import tw.waterball.judgegirl.problemapi.clients.RestProblemApiClient;
-import tw.waterball.judgegirl.springboot.amqp.AmqpVerdictPublisher;
+import tw.waterball.judgegirl.springboot.amqp.AmqpEventPublisher;
+import tw.waterball.judgegirl.submissionapi.clients.EventPublisher;
 import tw.waterball.judgegirl.submissionapi.clients.SubmissionApiClient;
 import tw.waterball.judgegirl.submissionapi.clients.SubmissionServiceDriver;
-import tw.waterball.judgegirl.submissionapi.clients.VerdictPublisher;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -78,14 +78,14 @@ public class DefaultCCJudgerFactory {
     public static CCJudger create(String judgeWorkspaceLayoutYamlResourcePath,
                                   ProblemServiceDriver problemServiceDriver,
                                   SubmissionServiceDriver submissionServiceDriver,
-                                  VerdictPublisher verdictPublisher,
+                                  EventPublisher eventPublisher,
                                   JudgeGirlPlugin... plugins) {
         return new CCJudger(
                 new YAMLJudgerWorkspace(judgeWorkspaceLayoutYamlResourcePath),
                 new PresetJudgeGirlPluginLocator(aggregateJudgeGirlPlugins(plugins)),
                 problemServiceDriver,
                 submissionServiceDriver,
-                verdictPublisher,
+                eventPublisher,
                 new ShellCompilerFactory(),
                 new CCSandboxTestcaseExecutorFactory()
         );
@@ -123,15 +123,15 @@ public class DefaultCCJudgerFactory {
         return new RestTemplateFactory(objectMapper());
     }
 
-    private static VerdictPublisher verdictPublisher(JudgerEnvVariables.Values values) {
+    private static EventPublisher verdictPublisher(JudgerEnvVariables.Values values) {
         ConnectionFactory connectionFactory = connectionFactory(values);
         AmqpAdmin amqpAdmin = new RabbitAdmin(connectionFactory);
         RabbitTemplate amqpTemplate = new RabbitTemplate(connectionFactory);
         ObjectMapper objectMapper = objectMapper();
         amqpTemplate.setMessageConverter(new Jackson2JsonMessageConverter(objectMapper));
-        return new AmqpVerdictPublisher(amqpAdmin, amqpTemplate,
+        return new AmqpEventPublisher(amqpAdmin, amqpTemplate,
                 values.verdictExchangeName,
-                values.verdictIssuedRoutingKeyFormat);
+                values.verdictIssuedRoutingKeyFormat, null /*Judger doesn't need it*/);
     }
 
     private static ConnectionFactory connectionFactory(JudgerEnvVariables.Values values) {

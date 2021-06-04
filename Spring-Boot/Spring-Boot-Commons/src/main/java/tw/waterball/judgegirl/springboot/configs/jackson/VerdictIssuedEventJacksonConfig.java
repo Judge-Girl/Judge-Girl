@@ -23,7 +23,7 @@ import static tw.waterball.judgegirl.submissionapi.views.VerdictView.toViewModel
  */
 @Configuration
 public class VerdictIssuedEventJacksonConfig {
-    public final static JsonDeserializer<VerdictIssuedEvent> DESERIALIZER = new JsonObjectDeserializer<>() {
+    public static final JsonDeserializer<VerdictIssuedEvent> DESERIALIZER = new JsonObjectDeserializer<>() {
         @Override
         public Class<VerdictIssuedEvent> handledType() {
             return VerdictIssuedEvent.class;
@@ -43,7 +43,7 @@ public class VerdictIssuedEventJacksonConfig {
         }
     };
 
-    public final static JsonSerializer<VerdictIssuedEvent> SERIALIZER = new JsonObjectSerializer<>() {
+    public static final JsonSerializer<VerdictIssuedEvent> SERIALIZER = new JsonObjectSerializer<>() {
         @Override
         public Class<VerdictIssuedEvent> handledType() {
             return VerdictIssuedEvent.class;

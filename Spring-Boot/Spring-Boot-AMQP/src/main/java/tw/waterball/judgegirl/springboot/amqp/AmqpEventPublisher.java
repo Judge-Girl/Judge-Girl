@@ -19,40 +19,48 @@ import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.core.TopicExchange;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import tw.waterball.judgegirl.primitives.submission.events.LiveSubmissionEvent;
 import tw.waterball.judgegirl.primitives.submission.events.VerdictIssuedEvent;
 import tw.waterball.judgegirl.springboot.profiles.productions.Amqp;
-import tw.waterball.judgegirl.submissionapi.clients.VerdictPublisher;
+import tw.waterball.judgegirl.submissionapi.clients.EventPublisher;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
 @Amqp
 @Component
-public class AmqpVerdictPublisher implements VerdictPublisher {
+public class AmqpEventPublisher implements EventPublisher {
     private final AmqpTemplate amqpTemplate;
-    private final TopicExchange verdictExchange;
+    private final TopicExchange submissionsExchange;
     private final String verdictIssueRoutingKey;
+    private final String liveSubmissionsRoutingKey;
 
-    public AmqpVerdictPublisher(AmqpAdmin amqpAdmin, AmqpTemplate amqpTemplate,
-                                @Value("${judge-girl.amqp.verdict-exchange-name}")
-                                        String verdictExchangeName,
-                                @Value("${judge-girl.amqp.verdict-issued-routing-key-format}")
-                                        String verdictIssuedRoutingKeyFormat) {
+    public AmqpEventPublisher(AmqpAdmin amqpAdmin, AmqpTemplate amqpTemplate,
+                              @Value("${judge-girl.amqp.submissions-exchange-name}")
+                                      String verdictExchangeName,
+                              @Value("${judge-girl.amqp.verdict-issued-routing-key-format}")
+                                      String verdictIssuedRoutingKeyFormat,
+                              @Value("${judge-girl.amqp.live-submissions-routing-key}")
+                                      String liveSubmissionsRoutingKey) {
         this.amqpTemplate = amqpTemplate;
-        this.verdictExchange = new TopicExchange(verdictExchangeName);
+        this.submissionsExchange = new TopicExchange(verdictExchangeName);
         this.verdictIssueRoutingKey = verdictIssuedRoutingKeyFormat;
-        amqpAdmin.declareExchange(verdictExchange);
+        this.liveSubmissionsRoutingKey = liveSubmissionsRoutingKey;
+        amqpAdmin.declareExchange(submissionsExchange);
     }
 
     @SneakyThrows
     @Override
     public void publish(VerdictIssuedEvent event) {
-        String routingKey = getRoutingKey(event.getSubmissionId());
-        amqpTemplate.convertAndSend(verdictExchange.getName(),
+        String routingKey = String.format(verdictIssueRoutingKey, event.getSubmissionId());
+        amqpTemplate.convertAndSend(submissionsExchange.getName(),
                 routingKey, event);
     }
 
-    private String getRoutingKey(String submissionId) {
-        return String.format(verdictIssueRoutingKey, submissionId);
+    @Override
+    public void publish(LiveSubmissionEvent event) {
+        amqpTemplate.convertAndSend(submissionsExchange.getName(),
+                liveSubmissionsRoutingKey, event);
     }
+
 }

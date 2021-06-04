@@ -38,8 +38,8 @@ import tw.waterball.judgegirl.primitives.submission.events.VerdictIssuedEvent;
 import tw.waterball.judgegirl.primitives.submission.verdict.Verdict;
 import tw.waterball.judgegirl.problemapi.clients.ProblemServiceDriver;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
+import tw.waterball.judgegirl.submissionapi.clients.EventPublisher;
 import tw.waterball.judgegirl.submissionapi.clients.SubmissionServiceDriver;
-import tw.waterball.judgegirl.submissionapi.clients.VerdictPublisher;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 
 import java.io.File;
@@ -74,7 +74,7 @@ public class CCJudger extends PluginExtendedJudger {
     private final JudgerWorkspace judgerWorkspace;
     private final ProblemServiceDriver problemServiceDriver;
     private final SubmissionServiceDriver submissionServiceDriver;
-    private final VerdictPublisher verdictPublisher;
+    private final EventPublisher eventPublisher;
     private final CompilerFactory compilerFactory;
     private final TestcaseExecutorFactory testcaseExecutorFactory;
 
@@ -86,14 +86,14 @@ public class CCJudger extends PluginExtendedJudger {
                     JudgeGirlPluginLocator pluginLocator,
                     ProblemServiceDriver problemServiceDriver,
                     SubmissionServiceDriver submissionServiceDriver,
-                    VerdictPublisher verdictPublisher,
+                    EventPublisher eventPublisher,
                     CompilerFactory compilerFactory,
                     TestcaseExecutorFactory testcaseExecutorFactory) {
         super(pluginLocator);
         this.judgerWorkspace = judgerWorkspace;
         this.problemServiceDriver = problemServiceDriver;
         this.submissionServiceDriver = submissionServiceDriver;
-        this.verdictPublisher = verdictPublisher;
+        this.eventPublisher = eventPublisher;
         this.compilerFactory = compilerFactory;
         this.testcaseExecutorFactory = testcaseExecutorFactory;
     }
@@ -323,7 +323,7 @@ public class CCJudger extends PluginExtendedJudger {
 
     @Override
     protected void publishVerdict(Verdict verdict) {
-        verdictPublisher.publish(
+        eventPublisher.publish(
                 new VerdictIssuedEvent(getProblem().getId(),
                         getProblem().getTitle(), getStudent(),
                         getSubmission().getId(),

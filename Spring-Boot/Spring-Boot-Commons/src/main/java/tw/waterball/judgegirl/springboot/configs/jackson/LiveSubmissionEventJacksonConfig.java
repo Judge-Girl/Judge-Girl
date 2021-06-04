@@ -19,7 +19,7 @@ import java.util.Date;
  */
 @Configuration
 public class LiveSubmissionEventJacksonConfig {
-    public final static JsonDeserializer<LiveSubmissionEvent> DESERIALIZER = new JsonObjectDeserializer<>() {
+    public static final JsonDeserializer<LiveSubmissionEvent> DESERIALIZER = new JsonObjectDeserializer<>() {
         @Override
         public Class<LiveSubmissionEvent> handledType() {
             return LiveSubmissionEvent.class;
@@ -32,12 +32,12 @@ public class LiveSubmissionEventJacksonConfig {
             int studentId = tree.get("studentId").asInt();
             String submissionId = tree.get("submissionId").asText();
             Date submissionTime = new Date(tree.get("submissionTime").asLong());
-            Bag bag = codec.treeToValue(tree.get("bag"), Bag.class);
+            Bag bag = codec.treeToValue(tree.get("submissionBag"), Bag.class);
             return new LiveSubmissionEvent(problemId, languageEnvName, studentId, submissionId, submissionTime, bag);
         }
     };
 
-    public final static JsonSerializer<LiveSubmissionEvent> SERIALIZER = new JsonObjectSerializer<>() {
+    public static final JsonSerializer<LiveSubmissionEvent> SERIALIZER = new JsonObjectSerializer<>() {
         @Override
         public Class<LiveSubmissionEvent> handledType() {
             return LiveSubmissionEvent.class;
@@ -50,7 +50,7 @@ public class LiveSubmissionEventJacksonConfig {
             jgen.writeNumberField("studentId", value.getStudentId());
             jgen.writeStringField("submissionId", value.getSubmissionId());
             jgen.writeNumberField("submissionTime", value.getSubmissionTime().getTime());
-            jgen.writeObjectField("bag", value.getBag());
+            jgen.writeObjectField("submissionBag", value.getSubmissionBag());
         }
     };
 

@@ -53,7 +53,7 @@ import tw.waterball.judgegirl.problemapi.clients.ProblemServiceDriver;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.springboot.profiles.Profiles;
 import tw.waterball.judgegirl.springboot.submission.SpringBootSubmissionApplication;
-import tw.waterball.judgegirl.springboot.submission.handler.VerdictIssuedEventHandler;
+import tw.waterball.judgegirl.springboot.submission.amqp.VerdictIssuedEventListener;
 import tw.waterball.judgegirl.springboot.submission.impl.mongo.data.DataMapper;
 import tw.waterball.judgegirl.springboot.submission.impl.mongo.data.SubmissionData;
 import tw.waterball.judgegirl.springboot.submission.impl.mongo.data.VerdictData;
@@ -62,7 +62,7 @@ import tw.waterball.judgegirl.springboot.submission.impl.mongo.strategy.VerdictS
 import tw.waterball.judgegirl.submission.deployer.JudgerDeployer;
 import tw.waterball.judgegirl.submission.domain.repositories.SubmissionRepository;
 import tw.waterball.judgegirl.submission.domain.usecases.SubmitCodeUseCase;
-import tw.waterball.judgegirl.submissionapi.clients.VerdictPublisher;
+import tw.waterball.judgegirl.submissionapi.clients.EventPublisher;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 import tw.waterball.judgegirl.submissionapi.views.VerdictView;
 import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
@@ -136,7 +136,7 @@ public class AbstractSubmissionControllerTest extends AbstractSpringBootTest {
     SubmitCodeUseCase submitCodeUseCase;
 
     @SpyBean
-    VerdictPublisher verdictPublisher;
+    EventPublisher eventPublisher;
 
     @MockBean
     ProblemServiceDriver problemServiceDriver;
@@ -154,7 +154,7 @@ public class AbstractSubmissionControllerTest extends AbstractSpringBootTest {
     TokenService tokenService;
 
     @Autowired
-    VerdictIssuedEventHandler verdictIssuedEventHandler;
+    VerdictIssuedEventListener verdictIssuedEventHandler;
 
     @Autowired
     SubmissionRepository submissionRepository;
@@ -252,7 +252,7 @@ public class AbstractSubmissionControllerTest extends AbstractSpringBootTest {
     protected VerdictIssuedEvent publishVerdictAfterTheWhile(SubmissionView submissionView, VerdictView verdict) {
         delay(1000);
         VerdictIssuedEvent verdictIssuedEvent = generateVerdictIssuedEvent(submissionView, verdict);
-        verdictPublisher.publish(verdictIssuedEvent);
+        eventPublisher.publish(verdictIssuedEvent);
         return verdictIssuedEvent;
     }
 

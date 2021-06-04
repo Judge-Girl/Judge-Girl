@@ -46,7 +46,7 @@ public interface JudgerEnvVariables {
     String ENV_AMQP_PASSWORD = "spring.rabbitmq.password";
     String ENV_AMQP_HOST = "spring.rabbitmq.host";
     String ENV_AMQP_PORT = "spring.rabbitmq.port";
-    String ENV_VERDICT_EXCHANGE_NAME = "judge-girl.amqp.verdict-exchange-name";
+    String ENV_VERDICT_EXCHANGE_NAME = "judge-girl.amqp.submissions-exchange-name";
     String ENV_VERDICT_ISSUED_ROUTING_KEY_FORMAT = "judge-girl.amqp.verdict-issued-routing-key-format";
 
 

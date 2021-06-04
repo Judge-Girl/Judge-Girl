@@ -22,7 +22,7 @@ import static tw.waterball.judgegirl.primitives.time.DateProvider.now;
 import static tw.waterball.judgegirl.submissionapi.views.VerdictView.toViewModel;
 
 class VerdictIssuedEventJacksonConfigTest {
-    final static ObjectMapper objectMapper = JacksonConfig.OBJECT_MAPPER;
+    static final ObjectMapper objectMapper = JacksonConfig.OBJECT_MAPPER;
 
     @Test
     void testCEVerdictIssuedEvent() throws JsonProcessingException {

@@ -18,6 +18,8 @@ import org.springframework.http.MediaType;
 import org.springframework.util.LinkedMultiValueMap;
 import tw.waterball.judgegirl.primitives.problem.JudgeStatus;
 import tw.waterball.judgegirl.primitives.problem.Language;
+import tw.waterball.judgegirl.primitives.submission.Bag;
+import tw.waterball.judgegirl.primitives.submission.events.LiveSubmissionEvent;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 import tw.waterball.judgegirl.submissionapi.views.VerdictView;
 import tw.waterball.judgegirl.testkit.resultmatchers.ZipResultMatcher;
@@ -32,6 +34,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -47,13 +50,23 @@ public class StudentSubmissionControllerTest extends AbstractSubmissionControlle
 
     @Test
     void testSubmitAndThenDownload() throws Exception {
-        SubmissionView submissionView = submitCodeAndGet(STUDENT1_ID, STUDENT1_TOKEN);
+        var submission = submitCodeAndGet(STUDENT1_ID, STUDENT1_TOKEN);
 
         requestGetSubmission(STUDENT1_ID, STUDENT1_TOKEN)
                 .andExpect(content().json(
-                        toJson(singletonList(submissionView))));
+                        toJson(singletonList(submission))));
 
-        requestDownloadSubmittedCodes(STUDENT1_ID, STUDENT1_TOKEN, submissionView.id, submissionView.submittedCodesFileId);
+        requestDownloadSubmittedCodes(STUDENT1_ID, STUDENT1_TOKEN, submission.id, submission.submittedCodesFileId);
+    }
+
+    @Test
+    void WhenSubmitCode_ShouldPublishNewLiveSubmission() throws Exception {
+        var submission = submitCodeAndGet(STUDENT1_ID, STUDENT1_TOKEN);
+
+        var event = new LiveSubmissionEvent(submission.problemId, submission.languageEnvName,
+                submission.studentId, submission.id, submission.submissionTime, new Bag(submission.getBag()));
+
+        verify(eventPublisher).publish(event);
     }
 
     @Test

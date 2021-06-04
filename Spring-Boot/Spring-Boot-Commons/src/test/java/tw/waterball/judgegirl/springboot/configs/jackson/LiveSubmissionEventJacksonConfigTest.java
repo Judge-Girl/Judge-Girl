@@ -11,7 +11,7 @@ import static tw.waterball.judgegirl.primitives.stubs.SubmissionStubBuilder.subm
 import static tw.waterball.judgegirl.primitives.submission.events.LiveSubmissionEvent.liveSubmission;
 
 class LiveSubmissionEventJacksonConfigTest {
-    final static ObjectMapper objectMapper = JacksonConfig.OBJECT_MAPPER;
+    static final ObjectMapper objectMapper = JacksonConfig.OBJECT_MAPPER;
 
     @Test
     void test() throws JsonProcessingException {
