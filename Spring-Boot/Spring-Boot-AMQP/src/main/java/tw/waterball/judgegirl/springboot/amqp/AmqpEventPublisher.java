@@ -37,16 +37,16 @@ public class AmqpEventPublisher implements EventPublisher {
 
     public AmqpEventPublisher(AmqpAdmin amqpAdmin, AmqpTemplate amqpTemplate,
                               @Value("${judge-girl.amqp.submissions-exchange-name}")
-                                      String verdictExchangeName,
+                                      String submissionsExchange,
                               @Value("${judge-girl.amqp.verdict-issued-routing-key-format}")
                                       String verdictIssuedRoutingKeyFormat,
                               @Value("${judge-girl.amqp.live-submissions-routing-key}")
                                       String liveSubmissionsRoutingKey) {
         this.amqpTemplate = amqpTemplate;
-        this.submissionsExchange = new TopicExchange(verdictExchangeName);
+        this.submissionsExchange = new TopicExchange(submissionsExchange);
         this.verdictIssueRoutingKey = verdictIssuedRoutingKeyFormat;
         this.liveSubmissionsRoutingKey = liveSubmissionsRoutingKey;
-        amqpAdmin.declareExchange(submissionsExchange);
+        amqpAdmin.declareExchange(this.submissionsExchange);
     }
 
     @SneakyThrows
