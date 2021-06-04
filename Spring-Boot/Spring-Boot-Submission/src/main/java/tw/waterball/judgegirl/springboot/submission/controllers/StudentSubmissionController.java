@@ -59,7 +59,7 @@ public class StudentSubmissionController {
                                           @PathVariable int problemId,
                                           @PathVariable String langEnvName,
                                           @PathVariable int studentId,
-                                          @RequestParam(SUBMISSION_BAG_MULTIPART_KEY_NAME) Part submissionBag,
+                                          @RequestParam(value = SUBMISSION_BAG_MULTIPART_KEY_NAME, required = false) Part submissionBag,
                                           @RequestParam(SUBMIT_CODE_MULTIPART_KEY_NAME) MultipartFile[] submittedCodes) {
         return tokenService.returnIfGranted(studentId, authorization, token -> {
             boolean throttling = !token.isAdmin();
@@ -73,6 +73,9 @@ public class StudentSubmissionController {
 
     @SneakyThrows
     private Bag readSubmissionBag(Part submissionBag) {
+        if (submissionBag == null) {
+            return Bag.empty();
+        }
         return objectMapper.readValue(submissionBag.getInputStream(), Bag.class);
     }
 
