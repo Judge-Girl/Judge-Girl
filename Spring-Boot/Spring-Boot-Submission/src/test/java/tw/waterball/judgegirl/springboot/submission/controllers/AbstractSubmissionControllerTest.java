@@ -70,13 +70,13 @@ import tw.waterball.judgegirl.submissionapi.views.VerdictView;
 import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
 import tw.waterball.judgegirl.testkit.semantics.Spec;
 
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Arrays.stream;
 import static java.util.Optional.of;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -245,7 +245,7 @@ public class AbstractSubmissionControllerTest extends AbstractSpringBootTest {
         assertEquals(submissionView.studentId, studentIdArgumentCaptor.getValue());
         assertEquals(toViewModel(problem), toViewModel(problemArgumentCaptor.getValue()));
         assertEquals(submissionView, toViewModel(actualSubmission));
-        Arrays.stream(specs).forEach(s -> s.verify(actualSubmission));
+        stream(specs).forEach(s -> s.verify(actualSubmission));
     }
 
     protected Spec<Submission> shouldBringSubmissionBagToJudger() {
@@ -350,9 +350,7 @@ public class AbstractSubmissionControllerTest extends AbstractSpringBootTest {
     @SneakyThrows
     protected MockHttpServletRequestBuilder multipartRequestWithSubmittedCodes(int studentId, MockMultipartFile... files) {
         var call = multipart(API_PREFIX, problem.getId(), studentId);
-        for (MockMultipartFile file : files) {
-            call = call.file(file);
-        }
+        stream(files).forEach(call::file);
         var bagPart = new MockPart(SUBMISSION_BAG_MULTIPART_KEY_NAME, SUBMISSION_BAG_MULTIPART_KEY_NAME,
                 toJson(submissionBag).getBytes(UTF_8));
         bagPart.getHeaders().setContentType(MediaType.APPLICATION_JSON);
