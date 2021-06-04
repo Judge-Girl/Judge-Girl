@@ -27,12 +27,12 @@ import tw.waterball.judgegirl.primitives.problem.JudgeStatus;
 import tw.waterball.judgegirl.primitives.submission.Submission;
 import tw.waterball.judgegirl.primitives.submission.SubmissionThrottling;
 import tw.waterball.judgegirl.primitives.submission.verdict.Verdict;
+import tw.waterball.judgegirl.springboot.mongo.utils.MongoUtils;
 import tw.waterball.judgegirl.springboot.profiles.productions.Mongo;
 import tw.waterball.judgegirl.springboot.submission.impl.mongo.data.DataMapper;
 import tw.waterball.judgegirl.springboot.submission.impl.mongo.data.SubmissionData;
 import tw.waterball.judgegirl.springboot.submission.impl.mongo.data.VerdictData;
 import tw.waterball.judgegirl.springboot.submission.impl.mongo.strategy.SaveSubmissionWithCodesStrategy;
-import tw.waterball.judgegirl.springboot.utils.MongoUtils;
 import tw.waterball.judgegirl.submission.domain.repositories.SubmissionRepository;
 import tw.waterball.judgegirl.submission.domain.usecases.query.SubmissionQueryParams;
 
@@ -45,7 +45,7 @@ import static java.util.Optional.ofNullable;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Update.update;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
-import static tw.waterball.judgegirl.springboot.utils.MongoUtils.downloadFileResourceByFileId;
+import static tw.waterball.judgegirl.springboot.mongo.utils.MongoUtils.downloadFileResourceByFileId;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
