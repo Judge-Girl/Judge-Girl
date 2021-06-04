@@ -21,17 +21,17 @@ import tw.waterball.judgegirl.primitives.problem.Language;
 import tw.waterball.judgegirl.primitives.problem.Problem;
 import tw.waterball.judgegirl.primitives.submission.Bag;
 import tw.waterball.judgegirl.primitives.submission.Submission;
-import tw.waterball.judgegirl.primitives.submission.verdict.VerdictIssuedEvent;
+import tw.waterball.judgegirl.primitives.submission.events.VerdictIssuedEvent;
 import tw.waterball.judgegirl.primitives.time.Duration;
 import tw.waterball.judgegirl.problemapi.clients.FakeProblemServiceDriver;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.springboot.academy.SpringBootAcademyApplication;
-import tw.waterball.judgegirl.springboot.academy.amqp.VerdictIssuedEventHandler;
+import tw.waterball.judgegirl.springboot.academy.amqp.VerdictIssuedEventListener;
 import tw.waterball.judgegirl.springboot.academy.view.*;
 import tw.waterball.judgegirl.springboot.profiles.Profiles;
 import tw.waterball.judgegirl.studentapi.clients.FakeStudentServiceDriver;
+import tw.waterball.judgegirl.submissionapi.clients.EventPublisher;
 import tw.waterball.judgegirl.submissionapi.clients.FakeSubmissionServiceDriver;
-import tw.waterball.judgegirl.submissionapi.clients.VerdictPublisher;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
 
@@ -101,9 +101,9 @@ class ExamControllerTest extends AbstractSpringBootTest {
     @Autowired
     FakeStudentServiceDriver studentServiceDriver;
     @Autowired
-    VerdictPublisher verdictPublisher;
+    EventPublisher eventPublisher;
     @Autowired
-    VerdictIssuedEventHandler verdictIssuedEventHandler;
+    VerdictIssuedEventListener verdictIssuedEventListener;
     @Autowired
     GroupRepository groupRepository;
 
@@ -686,7 +686,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
 
     private Submission publishVerdict(ProblemView problem, ExamView exam, Submission submission) {
         assertEquals(problem.getId(), submission.getProblemId());
-        verdictPublisher.publish(new VerdictIssuedEvent(problem.getId(), problem.getTitle(), submission.getStudentId(), submission.getId(),
+        eventPublisher.publish(new VerdictIssuedEvent(problem.getId(), problem.getTitle(), submission.getStudentId(), submission.getId(),
                 submission.mayHaveVerdict().orElseThrow(),
                 submission.getSubmissionTime(),
                 new Bag(singletonMap(BAG_KEY_EXAM_ID, String.valueOf(exam.id)))));
@@ -699,7 +699,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
     }
 
     private void awaitVerdictIssuedEvent() {
-        verdictIssuedEventHandler.onHandlingCompletion$.doWait(3000);
+        verdictIssuedEventListener.onHandlingCompletion$.doWait(3000);
     }
 
     private void shouldHaveSavedAnswer(AnswerView answer) {

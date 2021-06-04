@@ -31,21 +31,21 @@ import tw.waterball.judgegirl.springboot.profiles.productions.Amqp;
 public class AmqpConfiguration {
 
     @Bean
-    public Queue examServiceQueue(
-            @Value("${judge-girl.amqp.exam-service-queue}")
-                    String verdictIssuedEventQueueName) {
-        return new Queue(verdictIssuedEventQueueName, true);
+    public Queue academyServiceQueue(
+            @Value("${judge-girl.amqp.academy-service-queue}")
+                    String academyServiceQueueName) {
+        return new Queue(academyServiceQueueName, true);
     }
 
     @Bean
-    public TopicExchange verdictExchange(@Value("${judge-girl.amqp.verdict-exchange-name}") String verdictExchangeName) {
-        return new TopicExchange(verdictExchangeName);
+    public TopicExchange verdictExchange(@Value("${judge-girl.amqp.submissions-exchange-name}") String submissionsExchangeName) {
+        return new TopicExchange(submissionsExchangeName);
     }
 
     @Bean
     public Binding binding(@Value("${judge-girl.amqp.verdict-issued-routing-key-format}")
                                    String verdictIssuedRoutingKeyFormat,
-                           @Qualifier("examServiceQueue") Queue queue,
+                           @Qualifier("academyServiceQueue") Queue queue,
                            @Qualifier("verdictExchange") TopicExchange exchange) {
         return BindingBuilder.bind(queue)
                 .to(exchange)

@@ -37,7 +37,7 @@ public interface SubmissionRepository {
 
     Optional<Submission> findOne(int studentId, String submissionId);
 
-    void issueVerdictOfSubmission(String submissionId, Verdict verdict);
+    void issueVerdict(String submissionId, Verdict verdict);
 
     List<Submission> findBySummaryJudgeStatus(JudgeStatus summaryJudgeStatus);
 

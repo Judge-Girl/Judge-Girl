@@ -11,27 +11,16 @@
  *   limitations under the License.
  */
 
-package tw.waterball.judgegirl.primitives.submission.verdict;
+package tw.waterball.judgegirl.submissionapi.clients;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import tw.waterball.judgegirl.primitives.submission.Bag;
-
-import java.util.Date;
+import tw.waterball.judgegirl.primitives.submission.events.LiveSubmissionEvent;
+import tw.waterball.judgegirl.primitives.submission.events.VerdictIssuedEvent;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
-@Builder
-@Data
-@AllArgsConstructor
-public class VerdictIssuedEvent {
-    private int problemId;
-    private String problemTitle;
-    private int studentId;
-    private String submissionId;
-    private Verdict verdict;
-    private Date submissionTime;
-    private Bag submissionBag;
+public interface EventPublisher {
+    void publish(VerdictIssuedEvent event);
+
+    void publish(LiveSubmissionEvent event);
 }

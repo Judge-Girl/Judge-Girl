@@ -3,14 +3,14 @@ package tw.waterball.judgegirl.academy.domain.usecases.exam;
 import lombok.AllArgsConstructor;
 import lombok.Value;
 import tw.waterball.judgegirl.academy.domain.repositories.ExamRepository;
-import tw.waterball.judgegirl.academy.domain.usecases.VerdictIssuedEventListener;
+import tw.waterball.judgegirl.academy.domain.usecases.VerdictIssuedEventHandler;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
 import tw.waterball.judgegirl.primitives.exam.*;
 import tw.waterball.judgegirl.primitives.grading.Grade;
 import tw.waterball.judgegirl.primitives.submission.Bag;
 import tw.waterball.judgegirl.primitives.submission.SubmissionThrottlingException;
+import tw.waterball.judgegirl.primitives.submission.events.VerdictIssuedEvent;
 import tw.waterball.judgegirl.primitives.submission.verdict.Verdict;
-import tw.waterball.judgegirl.primitives.submission.verdict.VerdictIssuedEvent;
 import tw.waterball.judgegirl.submissionapi.clients.SubmissionServiceDriver;
 import tw.waterball.judgegirl.submissionapi.clients.SubmitCodeRequest;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
@@ -29,7 +29,7 @@ import static tw.waterball.judgegirl.commons.utils.ComparableUtils.betterAndNewe
  */
 @Named
 @AllArgsConstructor
-public class AnswerQuestionUseCase implements VerdictIssuedEventListener {
+public class AnswerQuestionUseCase implements VerdictIssuedEventHandler {
     public static final String BAG_KEY_EXAM_ID = "exam-id";
     private final SubmissionServiceDriver submissionService;
     private final ExamRepository examRepository;
@@ -91,7 +91,7 @@ public class AnswerQuestionUseCase implements VerdictIssuedEventListener {
     }
 
     @Override
-    public void onVerdictIssued(VerdictIssuedEvent event) {
+    public void handle(VerdictIssuedEvent event) {
         getExamIdFromBag(event.getSubmissionBag())
                 .ifPresent(examId -> updateBestRecord(event, examId));
     }

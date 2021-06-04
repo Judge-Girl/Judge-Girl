@@ -75,7 +75,7 @@ public class MongoSubmissionRepository implements SubmissionRepository {
     }
 
     @Override
-    public void issueVerdictOfSubmission(String submissionId, Verdict verdict) {
+    public void issueVerdict(String submissionId, Verdict verdict) {
         VerdictData verdictData = DataMapper.toData(verdict);
         UpdateResult result = mongoTemplate.updateFirst(
                 Query.query(where("id").is(submissionId)),

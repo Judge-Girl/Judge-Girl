@@ -11,15 +11,18 @@
  *   limitations under the License.
  */
 
-package tw.waterball.judgegirl.springboot.submission.handler;
+package tw.waterball.judgegirl.springboot.submission.amqp;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 import tw.waterball.judgegirl.commons.utils.NotifyWaitLock;
-import tw.waterball.judgegirl.primitives.submission.verdict.VerdictIssuedEvent;
+import tw.waterball.judgegirl.primitives.submission.events.VerdictIssuedEvent;
 import tw.waterball.judgegirl.submission.domain.repositories.SubmissionRepository;
+import tw.waterball.judgegirl.submission.domain.usecases.VerdictIssuedEventHandler;
+
+import java.util.List;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -27,7 +30,9 @@ import tw.waterball.judgegirl.submission.domain.repositories.SubmissionRepositor
 @Slf4j
 @Component
 @AllArgsConstructor
-public class VerdictIssuedEventHandler {
+public class VerdictIssuedEventListener {
+    private final List<VerdictIssuedEventHandler> handlers;
+
     private final SubmissionRepository submissionRepository;
 
 
@@ -37,7 +42,7 @@ public class VerdictIssuedEventHandler {
     @RabbitListener(queues = "${judge-girl.amqp.submission-service-queue}")
     public void listen(VerdictIssuedEvent event) {
         log.info("Handle: {}", event);
-        submissionRepository.issueVerdictOfSubmission(event.getSubmissionId(), event.getVerdict());
+        handlers.forEach(handler -> handler.handle(event));
         onHandlingCompletion$.doNotifyAll();
     }
 

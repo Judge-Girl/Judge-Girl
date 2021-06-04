@@ -13,14 +13,14 @@ import tw.waterball.judgegirl.primitives.problem.Language;
 import tw.waterball.judgegirl.primitives.problem.Problem;
 import tw.waterball.judgegirl.primitives.problem.Testcase;
 import tw.waterball.judgegirl.primitives.submission.Submission;
+import tw.waterball.judgegirl.primitives.submission.events.VerdictIssuedEvent;
 import tw.waterball.judgegirl.primitives.submission.verdict.Judge;
 import tw.waterball.judgegirl.primitives.submission.verdict.ProgramProfile;
 import tw.waterball.judgegirl.primitives.submission.verdict.Verdict;
-import tw.waterball.judgegirl.primitives.submission.verdict.VerdictIssuedEvent;
 import tw.waterball.judgegirl.problemapi.clients.ProblemServiceDriver;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
+import tw.waterball.judgegirl.submissionapi.clients.EventPublisher;
 import tw.waterball.judgegirl.submissionapi.clients.SubmissionServiceDriver;
-import tw.waterball.judgegirl.submissionapi.clients.VerdictPublisher;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -52,7 +52,7 @@ public abstract class AbstractJudgerTest {
     private Submission submission;
     private ProblemServiceDriver problemServiceDriver;
     private SubmissionServiceDriver submissionServiceDriver;
-    private VerdictPublisher verdictPublisher;
+    private EventPublisher eventPublisher;
     private CCJudger judger;
 
     @BeforeAll
@@ -77,10 +77,10 @@ public abstract class AbstractJudgerTest {
 
         problemServiceDriver = mock(ProblemServiceDriver.class);
         submissionServiceDriver = mock(SubmissionServiceDriver.class);
-        verdictPublisher = mock(VerdictPublisher.class);
+        eventPublisher = mock(EventPublisher.class);
 
         judger = DefaultCCJudgerFactory.create("/judger-layout.yaml",
-                problemServiceDriver, submissionServiceDriver, verdictPublisher);
+                problemServiceDriver, submissionServiceDriver, eventPublisher);
     }
 
     protected abstract Problem getProblem();
@@ -249,7 +249,7 @@ public abstract class AbstractJudgerTest {
 
     private VerdictIssuedEvent captureVerdictIssuedEvent() {
         ArgumentCaptor<VerdictIssuedEvent> argumentCaptor = ArgumentCaptor.forClass(VerdictIssuedEvent.class);
-        verify(verdictPublisher).publish(argumentCaptor.capture());
+        verify(eventPublisher).publish(argumentCaptor.capture());
         return argumentCaptor.getValue();
     }
 

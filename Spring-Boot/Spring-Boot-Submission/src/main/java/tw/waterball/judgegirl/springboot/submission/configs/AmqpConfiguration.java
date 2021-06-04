@@ -29,7 +29,7 @@ import tw.waterball.judgegirl.springboot.profiles.productions.Amqp;
 @Amqp
 @Configuration
 public class AmqpConfiguration {
-    
+
     @Bean
     public Queue submissionServiceQueue(
             @Value("${judge-girl.amqp.submission-service-queue}")
@@ -38,15 +38,15 @@ public class AmqpConfiguration {
     }
 
     @Bean
-    public TopicExchange verdictExchange(@Value("${judge-girl.amqp.verdict-exchange-name}") String verdictExchangeName) {
-        return new TopicExchange(verdictExchangeName);
+    public TopicExchange submissionsExchange(@Value("${judge-girl.amqp.submissions-exchange-name}") String submissionsExchangeName) {
+        return new TopicExchange(submissionsExchangeName);
     }
 
     @Bean
     public Binding binding(@Value("${judge-girl.amqp.verdict-issued-routing-key-format}")
                                    String verdictIssuedRoutingKeyFormat,
                            @Qualifier("submissionServiceQueue") Queue queue,
-                           @Qualifier("verdictExchange") TopicExchange exchange) {
+                           @Qualifier("submissionsExchange") TopicExchange exchange) {
         return BindingBuilder.bind(queue)
                 .to(exchange)
                 .with(String.format(verdictIssuedRoutingKeyFormat, "*"));

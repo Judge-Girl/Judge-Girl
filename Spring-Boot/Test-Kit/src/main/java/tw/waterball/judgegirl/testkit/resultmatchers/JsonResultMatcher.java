@@ -28,7 +28,7 @@ public class JsonResultMatcher implements ResultMatcher {
     private Object expectedObj;
     private ObjectMapper objectMapper;
 
-    public JsonResultMatcher() {
+    JsonResultMatcher() {
     }
 
     public static JsonResultMatcher.Builder objectMapper(ObjectMapper objectMapper) {
