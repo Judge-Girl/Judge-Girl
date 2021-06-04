@@ -29,7 +29,6 @@ public class JudgeGirlAmqpProps {
     private String password;
     private String host;
     private int port;
-    private String verdictIssuedEventQueue;
-    private String verdictExchangeName;
+    private String submissionsExchangeName;
     private String verdictIssuedRoutingKeyFormat;
 }

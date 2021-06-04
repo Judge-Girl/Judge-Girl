@@ -131,7 +131,7 @@ public class DefaultCCJudgerFactory {
         ObjectMapper objectMapper = objectMapper();
         amqpTemplate.setMessageConverter(new Jackson2JsonMessageConverter(objectMapper));
         return new AmqpEventPublisher(amqpAdmin, amqpTemplate,
-                values.verdictExchangeName,
+                values.submissionsExchangeName,
                 values.verdictIssuedRoutingKeyFormat, null /*Judger doesn't need it*/);
     }
 
