@@ -51,7 +51,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <maven-checkstyle-plugin.version>3.1.2</maven-checkstyle-plugin.version>
-        <maven-checkstyle-dependency.version>8.40</maven-checkstyle-dependency.version>
+        <puppycrawl.checkstyle.version>8.40</puppycrawl.checkstyle.version>
     </properties>
 
     <dependencyManagement>
@@ -135,7 +135,7 @@
                         <dependency>
                             <groupId>com.puppycrawl.tools</groupId>
                             <artifactId>checkstyle</artifactId>
-                            <version>${maven-checkstyle-dependency.version}</version>
+                            <version>${puppycrawl.checkstyle.version}</version>
                         </dependency>
                     </dependencies>
                 </plugin>
