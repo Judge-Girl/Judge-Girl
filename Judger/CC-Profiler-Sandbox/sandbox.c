@@ -87,6 +87,24 @@ void child_process(FILE *log_fp, struct config *_config, int mount_list_len) {
         }
     }
 
+    char buf[MAX_PATH_LENGTH];
+    struct stat statbuf;
+    strcpy(buf,_config->sandbox_path);
+    strcat(buf,"/judger.log");
+    if(stat(buf,&statbuf) != 0 && link(_config->log_path,buf) != 0) {
+        CHILD_ERROR_EXIT(CHROOT_FAILED);
+    }
+    strcpy(buf,_config->sandbox_path);
+    strcat(buf,"/a.out");
+    if(stat(buf,&statbuf) != 0 && link(_config->exe_path,buf) != 0) {
+        CHILD_ERROR_EXIT(CHROOT_FAILED);
+    }
+    strcpy(_config->exe_path,"/a.out");
+    strcpy(_config->input_path,"/std.in");
+    strcpy(_config->output_path,"/std.out");
+    strcpy(_config->error_path,"/std.err");
+    strcpy(_config->log_path,"/judger.log");
+
     // set memory limit
     // if memory_limit_check_only == 0, we only check memory usage number
     //if we want to judge simultaneously，group "sandbox" should be submissionId
@@ -131,6 +149,51 @@ void child_process(FILE *log_fp, struct config *_config, int mount_list_len) {
         }
     }
 
+    //chroot jail
+
+    strcpy(buf,_config->sandbox_path);
+    strcat(buf,"/lib");
+    if(stat(buf,&statbuf) != 0){
+        /*
+        if(mkdir(buf,0755) != 0){
+            CHILD_ERROR_EXIT(CHROOT_FAILED);
+        }
+        if(mount("/lib",buf,NULL,MS_BIND,NULL) != 0){
+            CHILD_ERROR_EXIT(CHROOT_FAILED);
+        }
+        */
+        strcpy(buf,"cp -a /lib '");
+        strcat(buf,_config->sandbox_path);
+        strcat(buf,"/lib'");
+        system(buf);
+    }
+    strcpy(buf,_config->sandbox_path);
+    strcat(buf,"/lib64");
+    if(stat(buf,&statbuf) != 0){
+        /*
+        if(mkdir(buf,0755) != 0){
+            CHILD_ERROR_EXIT(CHROOT_FAILED);
+        }
+        if(mount("/lib64",buf,NULL,MS_BIND,NULL) != 0){
+            CHILD_ERROR_EXIT(CHROOT_FAILED);
+        }
+        */
+        strcpy(buf,"cp -a /lib64 '");
+        strcat(buf,_config->sandbox_path);
+        strcat(buf,"/lib64'");
+        system(buf);
+    }
+
+    if (chdir(_config->sandbox_path) != 0) {
+        CHILD_ERROR_EXIT(CHROOT_FAILED);
+    }
+
+    if (chroot(_config->sandbox_path) != 0) {
+        CHILD_ERROR_EXIT(CHROOT_FAILED);
+    }
+
+    strcpy(_config->sandbox_path,"/");
+
     if (strcmp(_config->input_path, "")) {
         input_file = fopen(_config->input_path, "r");
         if (input_file == NULL) {
@@ -174,12 +237,7 @@ void child_process(FILE *log_fp, struct config *_config, int mount_list_len) {
             CHILD_ERROR_EXIT(DUP2_FAILED);
         }
     }
-
-    //chroot jail
-    if (chroot(_config->sandbox_path) != 0) {
-        CHILD_ERROR_EXIT(CHROOT_FAILED);
-    }
-
+    
     //make sure the sandbox_path is executable and writable (for creating new file to output)
     if (chmod(_config->sandbox_path, 0777) != 0) {
         CHILD_ERROR_EXIT(SET_PERMISSION_FAILED);

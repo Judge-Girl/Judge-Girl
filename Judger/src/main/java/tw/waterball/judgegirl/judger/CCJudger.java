@@ -216,8 +216,10 @@ public class CCJudger extends PluginExtendedJudger {
     private Set<String> generateFilesOtherThanOutFilesFromSandboxRoot(Path sandboxRootPath) {
         var files = stream(requireNonNull(sandboxRootPath.toFile().listFiles()))
                 .map(File::getName).collect(Collectors.toSet());
-        files.add("std.out");
         files.add("std.err");
+        files.add("lib");
+        files.add("lib64");
+        files.add("judger.log");
         files.add(EXECUTABLE_NAME);
         return files;
     }
