@@ -13,7 +13,7 @@
 #   limitations under the License.
 #
 
-./mvnw clean package -DskipTests
+./mvnw clean package -T 4 -DskipTests
 cd Judger/ && docker build . -t judger -f Dockerfile.cqi && cd ..
 docker-compose -f services.yml build
 docker-compose -f services.yml up

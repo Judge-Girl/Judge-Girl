@@ -16,7 +16,7 @@ public class BagConfiguration {
                 .ifPresent(examId -> {
                     // Add the exam's broker destination, see "tw.waterball.judgegirl.springboot.student.broker"
                     // TODO: [must improve] weak reference using String instead of constant, consider improving this by adding a constant in API/Student-API
-                    bag.put("broker-additional-destinations", "exams/" + examId);
+                    bag.put("broker-additional-destinations", "/exams/" + examId);
                 });
     }
 }
