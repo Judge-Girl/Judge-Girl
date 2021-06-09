@@ -21,7 +21,6 @@ public class SubmissionRejudgeController {
     @PostMapping(value = "/judges")
     void rejudgeAllSubmissions(@RequestBody RejudgeSubmissionsUseCase.Request request,
                                @RequestParam Map<String, String> bagQueryParameters) {
-        bagQueryParameters.remove("page"); // only non-reserved keywords will be accepted by the bag-query filter
         var submissionQueryParams = SubmissionQueryParams.builder()
                 .problemId(request.problemId)
                 .bagQueryParameters(bagQueryParameters)
