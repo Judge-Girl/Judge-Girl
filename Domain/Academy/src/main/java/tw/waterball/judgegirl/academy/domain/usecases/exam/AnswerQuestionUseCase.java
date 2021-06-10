@@ -34,7 +34,7 @@ public class AnswerQuestionUseCase implements VerdictIssuedEventHandler {
     private final SubmissionServiceDriver submissionService;
     private final ExamRepository examRepository;
 
-    public void execute(Request request, Presenter presenter) throws SubmissionThrottlingException, ExamHasNotBeenStartedException, NoSubmissionQuotaException {
+    public void execute(Request request, Presenter presenter) throws SubmissionThrottlingException, ExamHasNotBeenStartedOrHasBeenClosedException, NoSubmissionQuotaException {
         Date answerTime = new Date();
         Exam exam = findExam(request.examId);
         Question question = findQuestion(request, exam);
@@ -56,16 +56,16 @@ public class AnswerQuestionUseCase implements VerdictIssuedEventHandler {
         }
     }
 
-    private void examMustHaveBeenStarted(Exam exam) throws ExamHasNotBeenStartedException {
-        if (!exam.isCurrent()) {
-            throw new ExamHasNotBeenStartedException();
+    private void examMustHaveBeenStarted(Exam exam) throws ExamHasNotBeenStartedOrHasBeenClosedException {
+        if (!exam.isOngoing()) {
+            throw new ExamHasNotBeenStartedOrHasBeenClosedException(exam);
         }
     }
 
     private void answerCountMustNotExceedSubmissionQuota(Request request, Question question) throws NoSubmissionQuotaException {
         int answerCount = examRepository.countAnswersInQuestion(question.getId(), request.studentId);
         if (answerCount >= question.getQuota()) {
-            throw new NoSubmissionQuotaException();
+            throw new NoSubmissionQuotaException(question.getQuota());
         }
     }
 

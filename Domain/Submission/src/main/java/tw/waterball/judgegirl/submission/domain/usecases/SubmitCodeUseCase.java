@@ -16,9 +16,9 @@ package tw.waterball.judgegirl.submission.domain.usecases;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import tw.waterball.judgegirl.commons.helpers.EventBus;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
 import tw.waterball.judgegirl.commons.utils.functional.Otherwise;
+import tw.waterball.judgegirl.primitives.EventBus;
 import tw.waterball.judgegirl.primitives.problem.Problem;
 import tw.waterball.judgegirl.primitives.submission.Submission;
 import tw.waterball.judgegirl.primitives.submission.SubmissionThrottlingException;
@@ -51,13 +51,14 @@ public class SubmitCodeUseCase implements VerdictIssuedEventHandler {
     private final EventBus eventBus;
 
     public void execute(SubmitCodeRequest request, SubmissionPresenter presenter) throws SubmissionThrottlingException {
+        log.info("[Submit Code] {}", request.toString());
         mayThrottleOnRequest(request);
         Problem problem = getProblem(request.problemId);
 
         Submission submission = saveSubmissionWithCodes(submission(request), request.fileResources);
 
         mayDeployJudgerIfNotJudged(request, problem, submission)
-                .otherwise(this::publishVerdict);
+                .otherwise(eventBus::publish);
 
         eventBus.publish(liveSubmission(submission));
         presenter.setSubmission(submission);
@@ -70,7 +71,6 @@ public class SubmitCodeUseCase implements VerdictIssuedEventHandler {
     }
 
     private void mayThrottleOnRequest(SubmitCodeRequest request) throws SubmissionThrottlingException {
-        log.info(request.toString());
         if (request.throttle) {
             throttleSubmissionUseCase.execute(request);
         }
@@ -85,7 +85,7 @@ public class SubmitCodeUseCase implements VerdictIssuedEventHandler {
     @SneakyThrows
     private Submission saveSubmissionWithCodes(Submission submission, List<FileResource> codes) {
         Submission saved = submissionRepository.saveSubmissionWithCodes(submission, codes);
-        log.info("Saved submission: " + submission.getId());
+        log.trace("[Submission Saved] submissionId=\"{}\"", saved.getId());
         return saved;
     }
 
@@ -97,12 +97,8 @@ public class SubmitCodeUseCase implements VerdictIssuedEventHandler {
         }
         judgerDeployer.deployJudger(problem, request.getStudentId(), submission);
 
-        log.info("Completed: {}", request);
+        log.trace("[Judger Deployed] submissionId=\"{}\"", submission.getId());
         return empty();
-    }
-
-    private void publishVerdict(VerdictIssuedEvent verdictIssuedEvent) {
-        eventBus.publish(verdictIssuedEvent);
     }
 
     @Override

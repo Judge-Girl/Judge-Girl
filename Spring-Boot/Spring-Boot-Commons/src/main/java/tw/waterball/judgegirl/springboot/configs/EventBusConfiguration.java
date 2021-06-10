@@ -2,7 +2,7 @@ package tw.waterball.judgegirl.springboot.configs;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import tw.waterball.judgegirl.commons.helpers.EventBus;
+import tw.waterball.judgegirl.primitives.EventBus;
 
 import java.util.List;
 

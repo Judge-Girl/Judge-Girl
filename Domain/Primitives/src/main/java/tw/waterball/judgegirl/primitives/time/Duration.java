@@ -2,6 +2,7 @@ package tw.waterball.judgegirl.primitives.time;
 
 import java.util.Date;
 
+import static tw.waterball.judgegirl.commons.utils.DateUtils.format;
 import static tw.waterball.judgegirl.primitives.time.DateProvider.now;
 
 /**
@@ -44,4 +45,8 @@ public class Duration {
         return getStartTime().before(now) && getEndTime().after(now);
     }
 
+    @Override
+    public String toString() {
+        return String.format("%s ~ %s", format(start), format(end));
+    }
 }

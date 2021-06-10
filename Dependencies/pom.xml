@@ -31,7 +31,8 @@
         <testcontainers-version>1.15.3</testcontainers-version>
         <docker-java.version>3.2.2</docker-java.version>
         <kubernetes.client-java.version>5.0.0</kubernetes.client-java.version>
-        <log4j.version>2.11.2</log4j.version>
+        <slf4j.version>1.7.30</slf4j.version>
+        <logback-classic.version>1.2.3</logback-classic.version>
         <jackson-yaml.version>2.11.1</jackson-yaml.version>
         <commons-io.version>2.7</commons-io.version>
         <jsonwebtoken.jjwt.version>0.11.0</jsonwebtoken.jjwt.version>
@@ -163,6 +164,16 @@
 
             <!-- Start of External components -->
             <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-classic</artifactId>
+                <version>${logback-classic.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.junit.jupiter</groupId>
                 <artifactId>junit-jupiter-api</artifactId>
                 <version>${junit-jupiter.version}</version>
@@ -243,17 +254,6 @@
                 <artifactId>commons-io</artifactId>
                 <version>${commons-io.version}</version>
             </dependency>
-            <dependency>
-                <groupId>org.apache.logging.log4j</groupId>
-                <artifactId>log4j-api</artifactId>
-                <version>${log4j.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.logging.log4j</groupId>
-                <artifactId>log4j-core</artifactId>
-                <version>${log4j.version}</version>
-            </dependency>
-
             <dependency>
                 <groupId>io.jsonwebtoken</groupId>
                 <artifactId>jjwt-api</artifactId>

@@ -1,8 +1,6 @@
 package tw.waterball.judgegirl.springboot.student.advices;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
-import lombok.SneakyThrows;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -17,8 +15,6 @@ import tw.waterball.judgegirl.studentservice.domain.usecases.student.ChangePassw
 import tw.waterball.judgegirl.studentservice.domain.usecases.student.LoginUseCase;
 import tw.waterball.judgegirl.studentservice.domain.usecases.student.SignUpUseCase;
 
-import static tw.waterball.judgegirl.studentapi.clients.view.StudentView.toViewModel;
-
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
@@ -26,8 +22,6 @@ import static tw.waterball.judgegirl.studentapi.clients.view.StudentView.toViewM
 @Component
 @AllArgsConstructor
 public class LoggingAspect {
-    private final ObjectMapper objectMapper;
-
     @Around("bean(loginUseCase)")
     public Object logLoginUseCase(ProceedingJoinPoint joinPoint) throws Throwable {
         var args = joinPoint.getArgs();
@@ -35,11 +29,11 @@ public class LoggingAspect {
         var presenter = (LoginUseCase.Presenter) args[1];
         var useCase = (LoginUseCase) joinPoint.getTarget();
         Logger log = LoggerFactory.getLogger(useCase.getClass());
-        log.info("[Login] {\"email\":\"{}\"}", request.email);
+        log.info("[Login] email={} admin={}", request.email, request.admin);
         args[1] = new LoginUseCase.Presenter() {
             @Override
             public void loginSuccessfully(Student student) {
-                log.info("[Login Successfully] {}", toJson(toViewModel(student)));
+                log.info("[Login Successfully] id={} email={} name={}", student.getId(), student.getEmail(), student.getName());
                 presenter.loginSuccessfully(student);
             }
 
@@ -51,7 +45,7 @@ public class LoggingAspect {
         try {
             return joinPoint.proceed(args);
         } catch (ForbiddenLoginException err) {
-            log.info("[Login Failed] {\"email\"=\"{}\", \"message\":\"{}\"}", request.email, err.getMessage());
+            log.warn("[Login Failed]");
             throw err;
         }
     }
@@ -63,11 +57,7 @@ public class LoggingAspect {
         var presenter = (SignUpUseCase.Presenter) args[1];
         var useCase = (SignUpUseCase) joinPoint.getTarget();
         Logger log = LoggerFactory.getLogger(useCase.getClass());
-        log.info("[SignUp] {\"name\"=\"{}\", \"email\"=\"{}\", \"admin\"={}}", request.name, request.email, request.admin);
-        args[1] = (SignUpUseCase.Presenter) student -> {
-            log.info("[SignUp Successfully] {}", toJson(toViewModel(student)));
-            presenter.signUpSuccessfully(student);
-        };
+        log.info("[Sign Up] name=\"{}\" email=\"{}\" admin={}", request.name, request.email, request.admin);
         return joinPoint.proceed(args);
     }
 
@@ -77,19 +67,12 @@ public class LoggingAspect {
         var request = (ChangePasswordUseCase.Request) args[0];
         var useCase = (ChangePasswordUseCase) joinPoint.getTarget();
         Logger log = LoggerFactory.getLogger(useCase.getClass());
-        log.info("[Change Password] {\"id\"={}}", request.studentId);
+        log.info("[Change Password] id={}", request.studentId);
         try {
-            Object response = joinPoint.proceed(args);
-            log.info("[Change Password Successfully] {\"id\"={}}", request.studentId);
-            return response;
+            return joinPoint.proceed(args);
         } catch (StudentPasswordIncorrectException err) {
-            log.info("[Change Password Failed] {\"id\"={}, \"message\":\"{}\"}", request.studentId, err.getMessage());
+            log.warn("[Change Password Failed] id={} message=\"{}\"}", request.studentId, err.getMessage());
             throw err;
         }
-    }
-
-    @SneakyThrows
-    private String toJson(Object obj) {
-        return objectMapper.writeValueAsString(obj);
     }
 }

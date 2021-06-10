@@ -14,6 +14,7 @@
 package tw.waterball.judgegirl.springboot.configs;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import okhttp3.Interceptor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -41,8 +42,9 @@ import static tw.waterball.judgegirl.commons.token.TokenService.Identity.admin;
 public class ServiceDriverConfiguration {
 
     @Bean
-    public RetrofitFactory retrofitFactory(ObjectMapper objectMapper) {
-        return new RetrofitFactory(objectMapper);
+    public RetrofitFactory retrofitFactory(ObjectMapper objectMapper,
+                                           Interceptor[] interceptors) {
+        return new RetrofitFactory(objectMapper, interceptors);
     }
 
     @Bean

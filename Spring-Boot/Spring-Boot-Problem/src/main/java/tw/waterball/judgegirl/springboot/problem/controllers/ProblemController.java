@@ -15,6 +15,7 @@ package tw.waterball.judgegirl.springboot.problem.controllers;
 
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -43,6 +44,7 @@ import static tw.waterball.judgegirl.springboot.utils.MultipartFileUtils.convert
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
+@Slf4j
 @CrossOrigin
 @RestController
 @RequestMapping(value = "/api/problems")
@@ -64,8 +66,7 @@ public class ProblemController {
     private final UploadProvidedCodeUseCase uploadProvidedCodeUseCase;
     private final UploadTestcaseIOUseCase uploadTestcaseIOUseCase;
     private final TokenService tokenService;
-
-
+    
     @GetMapping("/tags")
     public List<String> getTags() {
         return getAllTagsUseCase.execute();

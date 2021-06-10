@@ -13,6 +13,7 @@
 
 package tw.waterball.judgegirl.commons.utils;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
@@ -31,7 +32,7 @@ public class DateUtils {
     public static Date oneSecondAfter() {
         return afterCurrentTime(1, TimeUnit.SECONDS);
     }
-    
+
     public static Date oneSecondAgo() {
         return beforeCurrentTime(1, TimeUnit.SECONDS);
     }
@@ -48,4 +49,8 @@ public class DateUtils {
         return new Date(now - before);
     }
 
+    public static String format(Date date) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        return dateFormat.format(date);
+    }
 }

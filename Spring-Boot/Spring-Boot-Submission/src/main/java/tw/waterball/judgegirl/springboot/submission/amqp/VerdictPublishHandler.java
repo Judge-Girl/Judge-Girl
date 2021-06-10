@@ -2,7 +2,7 @@ package tw.waterball.judgegirl.springboot.submission.amqp;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
-import tw.waterball.judgegirl.commons.helpers.EventBus;
+import tw.waterball.judgegirl.primitives.EventBus;
 import tw.waterball.judgegirl.primitives.submission.events.LiveSubmissionEvent;
 import tw.waterball.judgegirl.primitives.submission.events.VerdictIssuedEvent;
 import tw.waterball.judgegirl.submissionapi.clients.EventPublisher;

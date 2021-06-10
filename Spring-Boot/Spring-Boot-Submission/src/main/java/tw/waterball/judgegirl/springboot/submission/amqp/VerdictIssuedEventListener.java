@@ -41,7 +41,7 @@ public class VerdictIssuedEventListener {
 
     @RabbitListener(queues = "${judge-girl.amqp.submission-service-queue}")
     public void listen(VerdictIssuedEvent event) {
-        log.info("Handle: {}", event);
+        log.trace("[Consume: {}] {}", event.getName(), event);
         handlers.forEach(handler -> handler.handle(event));
         onHandlingCompletion$.doNotifyAll();
     }

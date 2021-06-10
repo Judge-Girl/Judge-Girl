@@ -24,6 +24,8 @@ import tw.waterball.judgegirl.commons.exceptions.ForbiddenAccessException;
 import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.commons.token.TokenInvalidException;
 
+import static org.springframework.http.ResponseEntity.status;
+
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
@@ -37,53 +39,37 @@ public class CommonExceptionAdvices {
     @ExceptionHandler({NotFoundException.class})
     public ResponseEntity<?> handleNotFoundException(Exception err) {
         if (log.isDebugEnabled()) {
-            log.error("[NotFound]", err);
-        } else {
-            log.error("[NotFound] {\"message\": \"{}\"}", err.getMessage());
+            log.debug("[Resource Not Found] {}", err.getMessage());
         }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(err.getMessage());
+        return status(HttpStatus.NOT_FOUND).body(err.getMessage());
     }
 
     @ExceptionHandler({IllegalStateException.class, IllegalArgumentException.class})
     public ResponseEntity<?> handleIllegalExceptions(Exception err) {
-        if (log.isDebugEnabled()) {
-            log.error("[Illegal]", err);
-        } else {
-            log.error("[Illegal] {\"message\": \"{}\"}", err.getMessage());
-        }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(err.getMessage());
+        log.warn("[Illegal operation] {}", err.getMessage());
+        return status(HttpStatus.BAD_REQUEST).body(err.getMessage());
     }
 
     @ExceptionHandler({TokenInvalidException.class})
     public ResponseEntity<?> handleTokenInvalidException(TokenInvalidException err) {
-        if (log.isDebugEnabled()) {
-            log.error("[Token Invalid]", err);
-        } else {
-            log.error("[Token Invalid] {\"message\": \"{}\"}", err.getMessage());
-        }
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token Invalid");
+        log.warn("[Invalid Token] {}", err.getMessage());
+        return status(HttpStatus.UNAUTHORIZED).body("Invalid Token");
     }
 
     @ExceptionHandler({ForbiddenAccessException.class})
     public ResponseEntity<?> handleForbiddenAccessException(ForbiddenAccessException err) {
-        if (log.isDebugEnabled()) {
-            log.error("[Forbidden]", err);
-        } else {
-            log.error("[Forbidden] {\"message\": \"{}\"}", err.getMessage());
-        }
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(err.getMessage());
+        log.warn("[Forbidden Access] {}", err.getMessage());
+        return status(HttpStatus.FORBIDDEN).body(err.getMessage());
     }
 
     @ExceptionHandler({ApiRequestFailedException.class})
     public ResponseEntity<?> handleApiRequestFailedException(ApiRequestFailedException err) {
-        if (log.isDebugEnabled()) {
-            log.error("[Api Failed]", err);
-        } else {
-            log.error("[Api Failed] {\"message\": \"{}\"}", err.getMessage());
-        }
         if (err.isNetworkingError()) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            log.error("[Api Failure]", err);
+            return status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        } else {
+            log.warn("[API Failure] {}", err.getMessage());
         }
-        return ResponseEntity.status(err.getErrorCode()).body(err.getMessage());
+        return status(err.getErrorCode()).body(err.getMessage());
     }
 }
