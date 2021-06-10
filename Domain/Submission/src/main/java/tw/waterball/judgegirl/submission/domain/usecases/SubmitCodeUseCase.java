@@ -57,20 +57,18 @@ public class SubmitCodeUseCase implements VerdictIssuedEventHandler {
 
         Submission submission = saveSubmissionWithCodes(submission(request), request.fileResources);
 
-        mayDeployJudgerAndPublishEvent(problem, submission);
+        mayDeployJudgerAndPublishEvents(problem, submission);
 
         presenter.setSubmission(submission);
     }
 
-    public void execute(Submission originalSubmission) throws SubmissionThrottlingException {
-        Problem problem = getProblem(originalSubmission.getProblemId());
+    public void execute(Submission submission) throws SubmissionThrottlingException {
+        Problem problem = getProblem(submission.getProblemId());
 
-        Submission submission = saveSubmission(newSubmission(originalSubmission));
-
-        mayDeployJudgerAndPublishEvent(problem, submission);
+        mayDeployJudgerAndPublishEvents(problem, saveSubmission(submission));
     }
 
-    private void mayDeployJudgerAndPublishEvent(Problem problem, Submission submission) {
+    private void mayDeployJudgerAndPublishEvents(Problem problem, Submission submission) {
         mayDeployJudgerIfNotJudged(problem, submission)
                 .otherwise(eventBus::publish);
 
@@ -81,13 +79,6 @@ public class SubmitCodeUseCase implements VerdictIssuedEventHandler {
         Submission submission = new Submission(request.studentId, request.problemId, request.languageEnvName);
         submission.setBag(request.submissionBag);
         return submission;
-    }
-
-    private Submission newSubmission(Submission submission) {
-        Submission newSubmission = new Submission(submission.getStudentId(),
-                submission.getProblemId(), submission.getLanguageEnvName(), submission.getSubmittedCodesFileId());
-        newSubmission.setBag(submission.getBag());
-        return newSubmission;
     }
 
     private void mayThrottleOnRequest(SubmitCodeRequest request) throws SubmissionThrottlingException {
