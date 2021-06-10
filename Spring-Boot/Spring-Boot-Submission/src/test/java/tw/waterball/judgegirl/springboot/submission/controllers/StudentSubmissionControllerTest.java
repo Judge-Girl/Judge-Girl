@@ -16,7 +16,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockPart;
 import org.springframework.util.LinkedMultiValueMap;
+import tw.waterball.judgegirl.commons.token.TokenService;
 import tw.waterball.judgegirl.primitives.problem.JudgeStatus;
 import tw.waterball.judgegirl.primitives.problem.Language;
 import tw.waterball.judgegirl.primitives.submission.Bag;
@@ -31,19 +33,20 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static tw.waterball.judgegirl.primitives.problem.JudgeStatus.AC;
 import static tw.waterball.judgegirl.primitives.stubs.SubmissionStubBuilder.submission;
 import static tw.waterball.judgegirl.primitives.stubs.VerdictStubBuilder.verdict;
+import static tw.waterball.judgegirl.submissionapi.clients.SubmissionApiClient.SUBMISSION_BAG_MULTIPART_KEY_NAME;
 import static tw.waterball.judgegirl.submissionapi.views.VerdictView.toViewModel;
 
 /**
@@ -271,7 +274,11 @@ public class StudentSubmissionControllerTest extends AbstractSubmissionControlle
         mockMvc.perform(post("/api/submissions/{submissionId}/judge", submission.getId()))
                 .andExpect(status().isOk());
 
-        var afterRejudgeSubmissions = getSubmissionsInPage(ADMIN_ID, ADMIN_TOKEN, 0);
+        assertSubmittedCodesEquals(ADMIN_TOKEN);
+    }
+
+    private void assertSubmittedCodesEquals(TokenService.Token token) throws Exception {
+        var afterRejudgeSubmissions = getSubmissionsInPage(token.getStudentId(), token, 0);
         assertEquals(2, afterRejudgeSubmissions.size());
 
         var submissions1 = afterRejudgeSubmissions.get(0);
@@ -282,30 +289,24 @@ public class StudentSubmissionControllerTest extends AbstractSubmissionControlle
     @Test
     void GiveSubmit2CodeWithAdmin2Token_WhenRejudgeAllSubmissionsAndRespectivelyGetTwoStudentSubmissions_ShouldGetTwoGroupsSubmissionWhitTheSameFileId() throws Exception {
 
-        var submissionWithCodes1 = submitCodeAndGet(ADMIN_ID, ADMIN_TOKEN, codes1);
-        var submissionWithCodes2 = submitCodeAndGet(ADMIN_ID2, ADMIN_TOKEN2, codes2);
+        submitCodeAndGet(ADMIN_ID, ADMIN_TOKEN, codes1);
+        submitCodeAndGet(ADMIN_ID2, ADMIN_TOKEN2, codes2);
 
-        var request = new RejudgeSubmissionsUseCase.Request();
-        request.setProblemId(problem.getId());
-        mockMvc.perform(post("/api/submissions/judges").param("examId", "1")
+        var bagPart = new MockPart(SUBMISSION_BAG_MULTIPART_KEY_NAME, SUBMISSION_BAG_MULTIPART_KEY_NAME,
+                toJson(new Bag() {{
+                    put("examId", "1");
+                }}).getBytes(UTF_8));
+        bagPart.getHeaders().setContentType(MediaType.APPLICATION_JSON);
+        var request = new RejudgeSubmissionsUseCase.Request(problem.getId());
+        mockMvc.perform(multipart("/api/submissions/judges")
+                .part(bagPart)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(request)))
                 .andExpect(status().isOk());
 
-        var afterRejudgeSubmissions = getSubmissionsInPage(ADMIN_ID, ADMIN_TOKEN, 0);
-        assertEquals(2, afterRejudgeSubmissions.size());
+        assertSubmittedCodesEquals(ADMIN_TOKEN);
 
-        var submissions1 = afterRejudgeSubmissions.get(0);
-        var submissions2 = afterRejudgeSubmissions.get(1);
-        assertEquals(submissions1.submittedCodesFileId, submissions2.submittedCodesFileId);
-
-
-        var afterRejudgeSubmissions2 = getSubmissionsInPage(ADMIN_ID2, ADMIN_TOKEN2, 0);
-        assertEquals(2, afterRejudgeSubmissions2.size());
-
-        var submissions3 = afterRejudgeSubmissions2.get(0);
-        var submissions4 = afterRejudgeSubmissions2.get(1);
-        assertEquals(submissions3.submittedCodesFileId, submissions4.submittedCodesFileId);
+        assertSubmittedCodesEquals(ADMIN_TOKEN2);
     }
 
 }

@@ -30,7 +30,11 @@ public class RejudgeSubmissionsUseCase {
     }
 
     @Data
+    @AllArgsConstructor
     public static class Request {
         public int problemId;
+
+        public Request() {
+        }
     }
 }
