@@ -39,7 +39,7 @@ public class VerdictIssuedEvent extends Event {
     private final Bag submissionBag;
 
     public VerdictIssuedEvent(int problemId, String problemTitle, int studentId, String submissionId, Verdict verdict, Date submissionTime, Bag submissionBag) {
-        super("VerdictIssuedEvent");
+        super(VerdictIssuedEvent.class.getSimpleName());
         this.problemId = problemId;
         this.problemTitle = problemTitle;
         this.studentId = studentId;

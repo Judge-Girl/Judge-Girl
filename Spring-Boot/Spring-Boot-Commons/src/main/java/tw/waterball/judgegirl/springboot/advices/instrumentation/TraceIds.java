@@ -33,7 +33,7 @@ public final class TraceIds {
     }
 
     public static String generateTraceId() {
-        byte[] bytes = new byte[16];
+        byte[] bytes = new byte[BYTES_LENGTH];
         RANDOM.nextBytes(bytes);
         String traceId = fromBytes(bytes);
         if (isValid(traceId)) {
@@ -250,7 +250,7 @@ final class OtelEncodingUtils {
  */
 final class TemporaryBuffers {
     private static final ThreadLocal<char[]> CHAR_ARRAY = new ThreadLocal<>();
-    
+
     private TemporaryBuffers() {
     }
 

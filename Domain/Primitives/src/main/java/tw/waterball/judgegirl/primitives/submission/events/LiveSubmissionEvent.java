@@ -23,7 +23,7 @@ public class LiveSubmissionEvent extends Event {
     private final Bag submissionBag;
 
     public LiveSubmissionEvent(int problemId, String languageEnvName, int studentId, String submissionId, Date submissionTime, Bag submissionBag) {
-        super("LiveSubmissionEvent");
+        super(LiveSubmissionEvent.class.getSimpleName());
         this.problemId = problemId;
         this.languageEnvName = languageEnvName;
         this.studentId = studentId;

@@ -13,10 +13,8 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.util.HashSet;
 import java.util.Set;
 
-import static java.util.Arrays.asList;
 import static java.util.Objects.requireNonNullElse;
 import static tw.waterball.judgegirl.springboot.advices.instrumentation.TraceIds.generateTraceId;
 
@@ -27,7 +25,7 @@ import static tw.waterball.judgegirl.springboot.advices.instrumentation.TraceIds
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @Component
 public class ControllerInstrumentationFilter extends GenericFilterBean {
-    public static final Set<String> INCLUDED_HEADERS = new HashSet<>(asList("authorization", "user-agent", "host", "connection"));
+    public static final Set<String> INCLUDED_HEADERS = Set.of("authorization", "user-agent", "host", "connection");
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {

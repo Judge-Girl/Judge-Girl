@@ -15,7 +15,6 @@ package tw.waterball.judgegirl.springboot.advices;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.annotation.Order;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -24,6 +23,7 @@ import tw.waterball.judgegirl.commons.exceptions.ForbiddenAccessException;
 import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.commons.token.TokenInvalidException;
 
+import static org.springframework.http.HttpStatus.*;
 import static org.springframework.http.ResponseEntity.status;
 
 /**
@@ -41,32 +41,32 @@ public class CommonExceptionAdvices {
         if (log.isDebugEnabled()) {
             log.debug("[Resource Not Found] {}", err.getMessage());
         }
-        return status(HttpStatus.NOT_FOUND).body(err.getMessage());
+        return status(NOT_FOUND).body(err.getMessage());
     }
 
     @ExceptionHandler({IllegalStateException.class, IllegalArgumentException.class})
     public ResponseEntity<?> handleIllegalExceptions(Exception err) {
         log.warn("[Illegal operation] {}", err.getMessage());
-        return status(HttpStatus.BAD_REQUEST).body(err.getMessage());
+        return status(BAD_REQUEST).body(err.getMessage());
     }
 
     @ExceptionHandler({TokenInvalidException.class})
     public ResponseEntity<?> handleTokenInvalidException(TokenInvalidException err) {
         log.warn("[Invalid Token] {}", err.getMessage());
-        return status(HttpStatus.UNAUTHORIZED).body("Invalid Token");
+        return status(UNAUTHORIZED).body("Invalid Token");
     }
 
     @ExceptionHandler({ForbiddenAccessException.class})
     public ResponseEntity<?> handleForbiddenAccessException(ForbiddenAccessException err) {
         log.warn("[Forbidden Access] {}", err.getMessage());
-        return status(HttpStatus.FORBIDDEN).body(err.getMessage());
+        return status(FORBIDDEN).body(err.getMessage());
     }
 
     @ExceptionHandler({ApiRequestFailedException.class})
     public ResponseEntity<?> handleApiRequestFailedException(ApiRequestFailedException err) {
         if (err.isNetworkingError()) {
             log.error("[Api Failure]", err);
-            return status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return status(INTERNAL_SERVER_ERROR).build();
         } else {
             log.warn("[API Failure] {}", err.getMessage());
         }

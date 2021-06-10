@@ -44,7 +44,8 @@ public class BaseRetrofitAPI {
         log.debug("[API Response] {}", response);
         final int code = response.code();
         if (!response.isSuccessful()) {
-            var exceptionDeclaration = stream(exceptionDeclarations).filter(d -> d.errorCode == code)
+            var exceptionDeclaration = stream(exceptionDeclarations)
+                    .filter(d -> d.errorCode == code)
                     .findFirst().orElseGet(defaultExceptionDeclarations(response, code));
             exceptionDeclaration.throwIt();
         }
@@ -56,10 +57,11 @@ public class BaseRetrofitAPI {
             if (code == 404) {
                 return mapStatusCode(404).toThrow(() -> {
                     try {
-                        if (response.errorBody() == null) {
+                        ResponseBody errorBody = response.errorBody();
+                        if (errorBody == null) {
                             return new NotFoundException();
                         } else {
-                            return new NotFoundException(response.errorBody().string());
+                            return new NotFoundException(errorBody.string());
                         }
                     } catch (IOException e) {
                         log.error("Error during interpreting the error response.", e);
@@ -67,7 +69,7 @@ public class BaseRetrofitAPI {
                     }
                 });
             } else {
-                return mapStatusCode(code).toThrow(() -> failed(response.code(), response.message()));
+                return mapStatusCode(code).toThrow(() -> failed(code, response.message()));
             }
         };
     }
