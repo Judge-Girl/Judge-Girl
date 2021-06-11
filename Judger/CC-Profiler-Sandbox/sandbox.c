@@ -154,14 +154,6 @@ void child_process(FILE *log_fp, struct config *_config, int mount_list_len) {
     strcpy(buf,_config->sandbox_path);
     strcat(buf,"/lib");
     if(stat(buf,&statbuf) != 0){
-        /*
-        if(mkdir(buf,0755) != 0){
-            CHILD_ERROR_EXIT(CHROOT_FAILED);
-        }
-        if(mount("/lib",buf,NULL,MS_BIND,NULL) != 0){
-            CHILD_ERROR_EXIT(CHROOT_FAILED);
-        }
-        */
         strcpy(buf,"cp -a /lib '");
         strcat(buf,_config->sandbox_path);
         strcat(buf,"/lib'");
@@ -170,14 +162,6 @@ void child_process(FILE *log_fp, struct config *_config, int mount_list_len) {
     strcpy(buf,_config->sandbox_path);
     strcat(buf,"/lib64");
     if(stat(buf,&statbuf) != 0){
-        /*
-        if(mkdir(buf,0755) != 0){
-            CHILD_ERROR_EXIT(CHROOT_FAILED);
-        }
-        if(mount("/lib64",buf,NULL,MS_BIND,NULL) != 0){
-            CHILD_ERROR_EXIT(CHROOT_FAILED);
-        }
-        */
         strcpy(buf,"cp -a /lib64 '");
         strcat(buf,_config->sandbox_path);
         strcat(buf,"/lib64'");
