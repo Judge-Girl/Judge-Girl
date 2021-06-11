@@ -38,7 +38,7 @@ public class VerdictBroker extends AbstractBroker {
         List<String> destinations = new ArrayList<>(asList(studentDestination, problemDestination));
         Bag bag = event.getSubmissionBag();
         destinations.addAll(getAdditionalDestinationsFromBag(bag, "verdicts"));
-        log.info("Event: {}, Broadcast to => {}", event, String.join(", ", destinations));
+        log.trace("[Consume: {}] broker-destinations=[{}]", event.getName(), String.join(", ", destinations));
         destinations.forEach(destination -> simpMessaging.convertAndSend(destination, event));
 
         onHandlingCompletion$.doNotifyAll();

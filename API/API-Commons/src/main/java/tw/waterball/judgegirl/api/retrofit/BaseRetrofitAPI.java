@@ -14,10 +14,9 @@
 package tw.waterball.judgegirl.api.retrofit;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import okhttp3.Headers;
 import okhttp3.ResponseBody;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import retrofit2.Call;
 import retrofit2.Response;
 import tw.waterball.judgegirl.api.exceptions.ApiRequestFailedException;
@@ -31,20 +30,21 @@ import java.util.function.Supplier;
 
 import static java.util.Arrays.stream;
 import static java.util.Objects.requireNonNull;
+import static tw.waterball.judgegirl.api.exceptions.ApiRequestFailedException.failed;
 import static tw.waterball.judgegirl.api.retrofit.BaseRetrofitAPI.ExceptionDeclaration.mapStatusCode;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
+@Slf4j
 public class BaseRetrofitAPI {
-    private final Logger logger = LogManager.getLogger(getClass());
 
     protected final <T> Response<T> validateResponse(Response<T> response,
                                                      ExceptionDeclaration... exceptionDeclarations) throws NotFoundException, ApiRequestFailedException {
-        logger.debug("Response: " + response);
         final int code = response.code();
         if (!response.isSuccessful()) {
-            var exceptionDeclaration = stream(exceptionDeclarations).filter(d -> d.errorCode == code)
+            var exceptionDeclaration = stream(exceptionDeclarations)
+                    .filter(d -> d.errorCode == code)
                     .findFirst().orElseGet(defaultExceptionDeclarations(response, code));
             exceptionDeclaration.throwIt();
         }
@@ -54,9 +54,21 @@ public class BaseRetrofitAPI {
     private <T> Supplier<ExceptionDeclaration> defaultExceptionDeclarations(Response<T> response, int code) {
         return () -> {
             if (code == 404) {
-                return mapStatusCode(404).toThrow(() -> new NotFoundException(response.message()));
+                return mapStatusCode(404).toThrow(() -> {
+                    try {
+                        ResponseBody errorBody = response.errorBody();
+                        if (errorBody == null) {
+                            return new NotFoundException();
+                        } else {
+                            return new NotFoundException(errorBody.string());
+                        }
+                    } catch (IOException e) {
+                        log.error("Error during interpreting the error response.", e);
+                        return new NotFoundException();
+                    }
+                });
             } else {
-                return mapStatusCode(code).toThrow(() -> ApiRequestFailedException.failed(response.code(), response.message()));
+                return mapStatusCode(code).toThrow(() -> failed(code, response.message()));
             }
         };
     }
@@ -84,7 +96,7 @@ public class BaseRetrofitAPI {
             throw ApiRequestFailedException.connectionError(e);
         }
     }
-    
+
     @RequiredArgsConstructor
     public static class ExceptionDeclaration {
         public final int errorCode;

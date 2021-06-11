@@ -35,12 +35,12 @@ public class LiveSubmissionsBroker extends AbstractBroker {
                 STOMP_ROOT_DESTINATION_PREFIX, event.getStudentId());
         String problemDestination = String.format("%s/problems/%d/submissions",
                 STOMP_ROOT_DESTINATION_PREFIX, event.getProblemId());
-        
+
         List<String> destinations = new ArrayList<>(asList(studentDestination, problemDestination));
         Bag bag = event.getSubmissionBag();
 
         destinations.addAll(getAdditionalDestinationsFromBag(bag, "submissions"));
-        log.info("Event: {}, Broadcast to => {}", event, String.join(", ", destinations));
+        log.trace("[Consume: {}] broker-destinations=[{}]", event.getName(), String.join(", ", destinations));
         destinations.forEach(destination -> simpMessaging.convertAndSend(destination, event));
 
         onHandlingCompletion$.doNotifyAll();

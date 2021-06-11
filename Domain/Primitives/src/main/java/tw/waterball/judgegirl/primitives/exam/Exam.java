@@ -68,7 +68,7 @@ public class Exam {
         return getDuration().isPast();
     }
 
-    public boolean isCurrent() {
+    public boolean isOngoing() {
         return getDuration().isOngoing();
     }
 

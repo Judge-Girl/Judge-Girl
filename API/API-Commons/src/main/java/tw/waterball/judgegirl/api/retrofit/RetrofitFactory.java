@@ -19,7 +19,7 @@ import okhttp3.OkHttpClient;
 import retrofit2.Retrofit;
 import retrofit2.converter.jackson.JacksonConverterFactory;
 
-import javax.inject.Inject;
+import java.util.concurrent.TimeUnit;
 
 import static java.util.Arrays.stream;
 
@@ -28,10 +28,11 @@ import static java.util.Arrays.stream;
  */
 public class RetrofitFactory {
     private final ObjectMapper objectMapper;
+    private final Interceptor[] interceptors;
 
-    @Inject
-    public RetrofitFactory(ObjectMapper objectMapper) {
+    public RetrofitFactory(ObjectMapper objectMapper, Interceptor... interceptors) {
         this.objectMapper = objectMapper;
+        this.interceptors = interceptors;
     }
 
     public Retrofit create(String scheme, String host, int port, Interceptor... interceptors) {
@@ -40,12 +41,13 @@ public class RetrofitFactory {
         }
 
         OkHttpClient.Builder httpClientBuilder = new OkHttpClient.Builder();
+        stream(this.interceptors).forEach(httpClientBuilder::addInterceptor);
         stream(interceptors).forEach(httpClientBuilder::addInterceptor);
 
         return new Retrofit.Builder()
                 .addConverterFactory(JacksonConverterFactory.create(objectMapper))
                 .baseUrl(String.format("%s://%s:%d", scheme, host, port))
-                .client(httpClientBuilder.build())
+                .client(httpClientBuilder.connectTimeout(30, TimeUnit.SECONDS).build())
                 .build();
     }
 }

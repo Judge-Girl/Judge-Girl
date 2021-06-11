@@ -23,6 +23,7 @@ services:
     build: Spring-Boot/Spring-Boot-Student
     environment:
       spring.profiles.active: prod,mysql,amqp
+      logging.level.tw.waterball: TRACE
       MYSQL_HOST: "${MYSQL_HOST}"
       RABBIT_HOST: "${RABBIT_HOST}"
       REDIS_HOST: "${REDIS_HOST}"
@@ -38,6 +39,7 @@ services:
     build: Spring-Boot/Spring-Boot-Academy
     environment:
       spring.profiles.active: prod,amqp,mysql
+      logging.level.tw.waterball: TRACE
       MYSQL_HOST: "${MYSQL_HOST}"
       RABBIT_HOST: "${RABBIT_HOST}"
       REDIS_HOST: "${REDIS_HOST}"
@@ -53,6 +55,7 @@ services:
     build: Spring-Boot/Spring-Boot-Problem
     environment:
       spring.profiles.active: prod,mongo,redis
+      logging.level.tw.waterball: TRACE
       MONGO_HOST: "${MONGO_HOST}"
       REDIS_HOST: "${REDIS_HOST}"
     labels:
@@ -67,6 +70,7 @@ services:
     build: Spring-Boot/Spring-Boot-Submission
     environment:
       spring.profiles.active: prod,mongo,amqp
+      logging.level.tw.waterball: TRACE
       MONGO_HOST: "${MONGO_HOST}"
       RABBIT_HOST: "${RABBIT_HOST}"
       REDIS_HOST: "${REDIS_HOST}"
