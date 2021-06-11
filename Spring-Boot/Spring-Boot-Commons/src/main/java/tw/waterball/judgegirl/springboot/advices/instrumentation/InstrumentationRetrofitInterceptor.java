@@ -28,6 +28,11 @@ public class InstrumentationRetrofitInterceptor implements Interceptor {
         if (log.isTraceEnabled()) {
             log.trace("[Outgoing Http Request] {} {}", request.method(), request.url());
         }
-        return chain.proceed(request);
+        var response = chain.proceed(request);
+//
+        if (log.isTraceEnabled()) {
+            log.trace("[Outgoing Http Response] {}", response.code());
+        }
+        return response;
     }
 }

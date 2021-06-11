@@ -28,6 +28,11 @@ public class InstrumentationClientHttpRequestInterceptor implements ClientHttpRe
         if (log.isTraceEnabled()) {
             log.trace("[Outgoing Http Request] {} {}", request.getMethod(), request.getURI());
         }
-        return execution.execute(request, body);
+        var response = execution.execute(request, body);
+
+        if (log.isTraceEnabled()) {
+            log.trace("[Outgoing Http Response] {} ", response.getStatusCode());
+        }
+        return response;
     }
 }

@@ -20,8 +20,6 @@ import java.util.Random;
  *       right most part of the {@code TraceId}. This is equivalent with the values being stored as
  *       big-endian.
  * </ul>
- *
- * @author - johnny850807@gmail.com (Waterball)
  */
 public final class TraceIds {
     private static final int BYTES_LENGTH = 16;

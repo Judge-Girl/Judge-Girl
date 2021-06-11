@@ -41,7 +41,6 @@ public class BaseRetrofitAPI {
 
     protected final <T> Response<T> validateResponse(Response<T> response,
                                                      ExceptionDeclaration... exceptionDeclarations) throws NotFoundException, ApiRequestFailedException {
-        log.debug("[API Response] {}", response);
         final int code = response.code();
         if (!response.isSuccessful()) {
             var exceptionDeclaration = stream(exceptionDeclarations)
