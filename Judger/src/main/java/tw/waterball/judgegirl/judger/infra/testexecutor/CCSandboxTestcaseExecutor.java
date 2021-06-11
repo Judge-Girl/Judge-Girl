@@ -56,9 +56,15 @@ public class CCSandboxTestcaseExecutor extends AbstractProcessRunner implements 
                 .getTestCaseHome(testcase.getName());
         this.realTimeLimit = testcase.getTimeLimit();
         this.cpuTimeLimit = -1;
-        this.memoryLimit = this.stackLimit = testcase.getMemoryLimit();
-        this.outputLimit = testcase.getOutputLimit();
         this.processLimit = testcase.getThreadNumberLimit();
+        this.memoryLimit = testcase.getMemoryLimit();
+        if (this.processLimit == 1) {
+            this.stackLimit = this.memoryLimit;
+        } else {
+            this.stackLimit = -1;
+        }
+
+        this.outputLimit = testcase.getOutputLimit();
     }
 
     @Override

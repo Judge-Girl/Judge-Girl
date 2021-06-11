@@ -31,7 +31,7 @@
       "timeLimit": 1000,
       "memoryLimit": 67108864,
       "outputLimit": 67108864,
-      "threadNumberLimit": -1,
+      "threadNumberLimit": 1,
       "grade": 0
     },
     {
@@ -40,7 +40,7 @@
       "timeLimit": 1000,
       "memoryLimit": 67108864,
       "outputLimit": 67108864,
-      "threadNumberLimit": -1,
+      "threadNumberLimit": 1,
       "grade": 0
     },
     {
@@ -49,7 +49,7 @@
       "timeLimit": 1000,
       "memoryLimit": 67108864,
       "outputLimit": 67108864,
-      "threadNumberLimit": -1,
+      "threadNumberLimit": 1,
       "grade": 0
     },
     {
@@ -58,7 +58,7 @@
       "timeLimit": 1000,
       "memoryLimit": 67108864,
       "outputLimit": 67108864,
-      "threadNumberLimit": -1,
+      "threadNumberLimit": 1,
       "grade": 10
     },
     {
@@ -67,7 +67,7 @@
       "timeLimit": 1000,
       "memoryLimit": 67108864,
       "outputLimit": 67108864,
-      "threadNumberLimit": -1,
+      "threadNumberLimit": 1,
       "grade": 10
     },
     {
@@ -76,7 +76,7 @@
       "timeLimit": 1000,
       "memoryLimit": 67108864,
       "outputLimit": 67108864,
-      "threadNumberLimit": -1,
+      "threadNumberLimit": 1,
       "grade": 10
     },
     {
@@ -85,7 +85,7 @@
       "timeLimit": 1000,
       "memoryLimit": 67108864,
       "outputLimit": 67108864,
-      "threadNumberLimit": -1,
+      "threadNumberLimit": 1,
       "grade": 10
     },
     {
@@ -94,7 +94,7 @@
       "timeLimit": 1000,
       "memoryLimit": 67108864,
       "outputLimit": 67108864,
-      "threadNumberLimit": -1,
+      "threadNumberLimit": 1,
       "grade": 10
     },
     {
@@ -103,7 +103,7 @@
       "timeLimit": 1000,
       "memoryLimit": 67108864,
       "outputLimit": 67108864,
-      "threadNumberLimit": -1,
+      "threadNumberLimit": 1,
       "grade": 10
     },
     {
@@ -112,7 +112,7 @@
       "timeLimit": 1000,
       "memoryLimit": 67108864,
       "outputLimit": 67108864,
-      "threadNumberLimit": -1,
+      "threadNumberLimit": 1,
       "grade": 10
     },
     {
@@ -121,7 +121,7 @@
       "timeLimit": 1000,
       "memoryLimit": 67108864,
       "outputLimit": 67108864,
-      "threadNumberLimit": -1,
+      "threadNumberLimit": 1,
       "grade": 10
     },
     {
@@ -130,7 +130,7 @@
       "timeLimit": 1000,
       "memoryLimit": 67108864,
       "outputLimit": 67108864,
-      "threadNumberLimit": -1,
+      "threadNumberLimit": 1,
       "grade": 10
     },
     {
@@ -139,7 +139,7 @@
       "timeLimit": 1000,
       "memoryLimit": 67108864,
       "outputLimit": 67108864,
-      "threadNumberLimit": -1,
+      "threadNumberLimit": 1,
       "grade": 10
     }
   ]
