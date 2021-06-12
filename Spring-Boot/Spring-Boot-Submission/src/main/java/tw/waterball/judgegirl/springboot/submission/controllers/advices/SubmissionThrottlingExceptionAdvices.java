@@ -21,6 +21,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import tw.waterball.judgegirl.primitives.submission.SubmissionThrottlingException;
 
+import static java.lang.String.format;
+
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
@@ -30,6 +32,6 @@ public class SubmissionThrottlingExceptionAdvices {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler({SubmissionThrottlingException.class})
     public String handleExceptions(SubmissionThrottlingException err) {
-        return String.format("{error:%s}", err.getName());
+        return format("{error:%s}", err.getName());
     }
 }

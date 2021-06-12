@@ -119,11 +119,8 @@ public class ExamController {
     public List<String> addExaminees(@RequestHeader("Authorization") String authorization,
                                      @PathVariable int examId, @RequestBody List<String> emails) {
         return tokenService.returnIfAdmin(authorization, token -> {
-            AddExamineesUseCase.Request request = new AddExamineesUseCase.Request();
-            request.emails = emails;
-            request.examId = examId;
             AddExamineesPresenter presenter = new AddExamineesPresenter();
-            addExamineesUseCase.execute(request, presenter);
+            addExamineesUseCase.execute(new AddExamineesUseCase.Request(examId, emails), presenter);
             return presenter.present();
         });
     }
@@ -141,12 +138,8 @@ public class ExamController {
     @DeleteMapping("/exams/{examId}/students")
     public void deleteExaminees(@RequestHeader("Authorization") String authorization,
                                 @PathVariable int examId, @RequestBody List<String> emails) {
-        tokenService.ifAdminToken(authorization, token -> {
-            DeleteExamineesUseCase.Request request = new DeleteExamineesUseCase.Request();
-            request.emails = emails;
-            request.examId = examId;
-            deleteExamineesUseCase.execute(request);
-        });
+        tokenService.ifAdminToken(authorization, token ->
+                deleteExamineesUseCase.execute(new DeleteExamineesUseCase.Request(examId, emails)));
     }
 
     @DeleteMapping("/exams/{examId}")

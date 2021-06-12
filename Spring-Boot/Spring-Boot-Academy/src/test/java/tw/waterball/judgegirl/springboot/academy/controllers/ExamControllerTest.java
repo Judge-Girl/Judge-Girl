@@ -565,7 +565,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
         createQuestion(new CreateQuestionUseCase.Request(exam.getId(), PROBLEM_ID, SUBMISSION_QUOTA, 100, 1));
 
         atTheSameTime(studentIds, studentId -> {
-            for (int i = 0; i < 3; i++) {
+            for (int i = 0; i < SUBMISSION_QUOTA; i++) {
                 var view = answerQuestionAndGet(exam, studentId);
                 assertEquals(SUBMISSION_QUOTA - i, view.getRemainingSubmissionQuota());
                 shouldHaveSavedAnswer(view.getAnswer());
