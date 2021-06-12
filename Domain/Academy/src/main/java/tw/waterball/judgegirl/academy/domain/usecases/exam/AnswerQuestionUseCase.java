@@ -47,6 +47,7 @@ public class AnswerQuestionUseCase implements VerdictIssuedEventHandler {
         var submission = submissionService.submit(submitCodeRequest(request));
         Answer answer = answer(request, question, submission, answerTime);
         answer = examRepository.saveAnswer(answer);
+        remainingSubmissionQuota -= 1;
 
         presenter.showRemainingSubmissionQuota(remainingSubmissionQuota);
         presenter.showAnswer(answer, submission);
