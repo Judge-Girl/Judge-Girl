@@ -26,11 +26,10 @@ import tw.waterball.judgegirl.primitives.submission.SubmissionThrottlingExceptio
  */
 @ControllerAdvice
 @Order(Ordered.HIGHEST_PRECEDENCE)
-public class SubmissionControllerExceptionAdvices {
-
+public class SubmissionThrottlingExceptionAdvices {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler({SubmissionThrottlingException.class})
-    public void handleExceptions() {
-        // Nothing to do
+    public String handleExceptions(SubmissionThrottlingException err) {
+        return String.format("{error:%s}", err.getName());
     }
 }

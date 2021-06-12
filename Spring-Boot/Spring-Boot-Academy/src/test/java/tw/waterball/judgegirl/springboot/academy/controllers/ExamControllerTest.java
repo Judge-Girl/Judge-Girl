@@ -27,6 +27,7 @@ import tw.waterball.judgegirl.problemapi.clients.FakeProblemServiceDriver;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.springboot.academy.SpringBootAcademyApplication;
 import tw.waterball.judgegirl.springboot.academy.amqp.VerdictIssuedEventListener;
+import tw.waterball.judgegirl.springboot.academy.presenters.AnswerQuestionPresenter;
 import tw.waterball.judgegirl.springboot.academy.view.*;
 import tw.waterball.judgegirl.springboot.profiles.Profiles;
 import tw.waterball.judgegirl.studentapi.clients.FakeStudentServiceDriver;
@@ -50,8 +51,7 @@ import static java.util.UUID.randomUUID;
 import static java.util.concurrent.TimeUnit.HOURS;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static tw.waterball.judgegirl.academy.domain.usecases.exam.AnswerQuestionUseCase.BAG_KEY_EXAM_ID;
 import static tw.waterball.judgegirl.commons.utils.DateUtils.*;
 import static tw.waterball.judgegirl.commons.utils.MapUtils.map;
@@ -566,10 +566,13 @@ class ExamControllerTest extends AbstractSpringBootTest {
 
         atTheSameTime(studentIds, studentId -> {
             for (int i = 0; i < 3; i++) {
-                var answer = answerQuestionAndGet(exam, studentId);
-                shouldHaveSavedAnswer(answer);
+                var view = answerQuestionAndGet(exam, studentId);
+                assertEquals(SUBMISSION_QUOTA - i, view.getRemainingSubmissionQuota());
+                shouldHaveSavedAnswer(view.getAnswer());
             }
-            answerQuestion(studentId, exam).andExpect(status().is4xxClientError());
+            answerQuestion(studentId, exam).andExpect(status().is4xxClientError())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("error").value(NoSubmissionQuotaException.NAME));
         });
     }
 
@@ -630,8 +633,9 @@ class ExamControllerTest extends AbstractSpringBootTest {
     }
 
     @SneakyThrows
-    AnswerView answerQuestionAndGet(ExamView exam, Integer studentId) {
-        return getBody(answerQuestion(studentId, exam).andExpect(status().isOk()), AnswerView.class);
+    AnswerQuestionPresenter.View answerQuestionAndGet(ExamView exam, Integer studentId) {
+        return getBody(answerQuestion(studentId, exam).andExpect(status().isOk()),
+                AnswerQuestionPresenter.View.class);
     }
 
     @SneakyThrows

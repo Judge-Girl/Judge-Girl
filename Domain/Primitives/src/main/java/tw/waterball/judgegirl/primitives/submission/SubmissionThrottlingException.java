@@ -16,12 +16,15 @@ package tw.waterball.judgegirl.primitives.submission;
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
-public class SubmissionThrottlingException extends IllegalStateException {
+public class SubmissionThrottlingException extends SubmissionException {
+    private final static String NAME = "submission-throttling";
+
     public SubmissionThrottlingException() {
+        super(NAME);
     }
 
     public SubmissionThrottlingException(long secondsToWait) {
-        super("You should wait about " + secondsToWait + " seconds for the next submission.");
+        super(NAME, "You should wait about " + secondsToWait + " seconds for the next submission.");
     }
 
 }

@@ -11,15 +11,12 @@ import tw.waterball.judgegirl.commons.models.files.FileResource;
 import tw.waterball.judgegirl.commons.token.TokenService;
 import tw.waterball.judgegirl.commons.token.TokenService.Token;
 import tw.waterball.judgegirl.primitives.Student;
-import tw.waterball.judgegirl.primitives.exam.Answer;
 import tw.waterball.judgegirl.primitives.exam.Exam;
 import tw.waterball.judgegirl.primitives.exam.ExamineeOnlyOperationException;
 import tw.waterball.judgegirl.primitives.exam.Question;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
-import tw.waterball.judgegirl.springboot.academy.presenters.ExamHomePresenter;
-import tw.waterball.judgegirl.springboot.academy.presenters.ExamOverviewPresenter;
 import tw.waterball.judgegirl.springboot.academy.presenters.ExamPresenter;
-import tw.waterball.judgegirl.springboot.academy.presenters.ExamTranscriptPresenter;
+import tw.waterball.judgegirl.springboot.academy.presenters.*;
 import tw.waterball.judgegirl.springboot.academy.view.*;
 import tw.waterball.judgegirl.studentapi.clients.view.StudentView;
 
@@ -179,7 +176,6 @@ public class ExamController {
     }
 
     // Student-accessible APIs
-
     @GetMapping("/exams/{examId}")
     public ExamView getExamById(@RequestHeader("Authorization") String authorization,
                                 @PathVariable int examId) {
@@ -200,12 +196,12 @@ public class ExamController {
     }
 
     @PostMapping("/exams/{examId}/problems/{problemId}/{langEnvName}/students/{studentId}/answers")
-    public AnswerView answerQuestion(@RequestHeader("Authorization") String authorization,
-                                     @PathVariable int examId,
-                                     @PathVariable int problemId,
-                                     @PathVariable String langEnvName,
-                                     @PathVariable int studentId,
-                                     @RequestParam(SUBMIT_CODE_MULTIPART_KEY_NAME) MultipartFile[] submittedCodes) {
+    public AnswerQuestionPresenter.View answerQuestion(@RequestHeader("Authorization") String authorization,
+                                                       @PathVariable int examId,
+                                                       @PathVariable int problemId,
+                                                       @PathVariable String langEnvName,
+                                                       @PathVariable int studentId,
+                                                       @RequestParam(SUBMIT_CODE_MULTIPART_KEY_NAME) MultipartFile[] submittedCodes) {
         return tokenService.returnIfGranted(studentId, authorization, token -> {
             AnswerQuestionPresenter presenter = new AnswerQuestionPresenter();
             List<FileResource> fileResources = convertMultipartFilesToFileResources(submittedCodes);
@@ -245,19 +241,6 @@ public class ExamController {
     @ResponseStatus(HttpStatus.FORBIDDEN)
     @ExceptionHandler({ExamineeOnlyOperationException.class})
     public void handleExamineeOnlyOperationException() {
-    }
-}
-
-class AnswerQuestionPresenter implements AnswerQuestionUseCase.Presenter {
-    private Answer answer;
-
-    @Override
-    public void showAnswer(Answer answer) {
-        this.answer = answer;
-    }
-
-    public AnswerView present() {
-        return AnswerView.toViewModel(answer);
     }
 }
 
