@@ -80,8 +80,7 @@ import static java.util.Arrays.stream;
 import static java.util.Optional.of;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -247,6 +246,23 @@ public class AbstractSubmissionControllerTest extends AbstractSpringBootTest {
         assertEquals(toViewModel(problem), toViewModel(problemArgumentCaptor.getValue()));
         assertEquals(submissionView, toViewModel(actualSubmission));
         stream(specs).forEach(s -> s.verify(actualSubmission));
+    }
+
+    protected void allSubmissionsShouldDeployJudger(List<Submission> submissions) {
+        ArgumentCaptor<Problem> problemArgumentCaptor = ArgumentCaptor.forClass(Problem.class);
+        ArgumentCaptor<Integer> studentIdArgumentCaptor = ArgumentCaptor.forClass(Integer.class);
+        ArgumentCaptor<Submission> submissionArgumentCaptor = ArgumentCaptor.forClass(Submission.class);
+
+        verify(judgerDeployer, times(submissions.size())).deployJudger(
+                problemArgumentCaptor.capture(), studentIdArgumentCaptor.capture(), submissionArgumentCaptor.capture());
+        List<Problem> problemArguments = problemArgumentCaptor.getAllValues();
+        List<Integer> studentIdArguments = studentIdArgumentCaptor.getAllValues();
+        List<Submission> submissionArguments = submissionArgumentCaptor.getAllValues();
+        for (int i = 0; i < submissions.size(); i++) {
+            assertEquals(toViewModel(problem), toViewModel(problemArguments.get(i)));
+            assertEquals(submissions.get(i).getStudentId(), studentIdArguments.get(i));
+            assertEquals(toViewModel(submissions.get(i)), toViewModel(submissionArguments.get(i)));
+        }
     }
 
     protected Spec<Submission> shouldBringSubmissionBagToJudger() {

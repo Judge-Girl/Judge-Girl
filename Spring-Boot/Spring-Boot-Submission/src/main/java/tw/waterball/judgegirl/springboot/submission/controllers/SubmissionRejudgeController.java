@@ -20,7 +20,7 @@ public class SubmissionRejudgeController {
     private final RejudgeSubmissionsUseCase rejudgeSubmissionsUseCase;
 
     @PostMapping("/judges")
-    void rejudgeAllSubmissions(@RequestBody Request request) {
+    void rejudgeSubmissions(@RequestBody Request request) {
         var submissionQueryParams = SubmissionQueryParams.builder()
                 .problemId(request.problemId)
                 .bagQueryParameters(request.submissionBag)

@@ -22,6 +22,7 @@ import tw.waterball.judgegirl.primitives.problem.JudgeStatus;
 import tw.waterball.judgegirl.primitives.problem.Language;
 import tw.waterball.judgegirl.primitives.submission.Bag;
 import tw.waterball.judgegirl.primitives.submission.events.LiveSubmissionEvent;
+import tw.waterball.judgegirl.submission.domain.usecases.query.SubmissionQueryParams;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 import tw.waterball.judgegirl.submissionapi.views.VerdictView;
 import tw.waterball.judgegirl.testkit.resultmatchers.ZipResultMatcher;
@@ -264,39 +265,38 @@ public class StudentSubmissionControllerTest extends AbstractSubmissionControlle
     }
 
     @Test
-    void GivenAStudentHasOneSubmission_WhenRejudgeThatSubmission_ThenTheStudentShouldHaveTwoSubmissionsWithTheSameFileIds() throws Exception {
-
+    void GivenAStudentHasOneSubmission_WhenRejudgeThatSubmission_ThenTheJudgerShouldBeDeployedAndStudentShouldHaveTwoSubmissionsWithTheSameFileIds() throws Exception {
         var submission = submitCodeAndGet(ADMIN_ID, ADMIN_TOKEN);
 
         mockMvc.perform(post("/api/submissions/{submissionId}/judge", submission.getId()))
                 .andExpect(status().isOk());
 
+        allSubmissionsShouldDeployJudger(submissionRepository.query(SubmissionQueryParams.builder().build()));
         allOfTheStudentSubmissionsShouldHaveTheSameFileIds(ADMIN_TOKEN);
     }
 
     @Test
-    void GivenTwoSubmissionsOfAQuestionFrom2Admins_WhenRejudgeAllSubmissionsOfThatQuestion_SubmissionsOfBothAdminsShouldHaveTheSameFileIds() throws Exception {
-
+    void GivenTwoSubmissionsOfAQuestionFrom2Admins_WhenRejudgeAllSubmissionsOfThatQuestion_Then2JudgersAreDeployedAndSubmissionsOfBothAdminsShouldHaveTheSameFileIds() throws Exception {
         submitCodeAndGet(ADMIN_ID, ADMIN_TOKEN, codes1);
         submitCodeAndGet(ADMIN_ID2, ADMIN_TOKEN2, codes2);
 
-        var request = new Request(problem.getId(), new Bag("examId", "1"));
         mockMvc.perform(post("/api/submissions/judges")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(toJson(request)))
+                .content(toJson(new Request(problem.getId(), new Bag("examId", "1")))))
                 .andExpect(status().isOk());
 
+        allSubmissionsShouldDeployJudger(submissionRepository.query(SubmissionQueryParams.builder().build()));
         allOfTheStudentSubmissionsShouldHaveTheSameFileIds(ADMIN_TOKEN);
         allOfTheStudentSubmissionsShouldHaveTheSameFileIds(ADMIN_TOKEN2);
     }
 
     private void allOfTheStudentSubmissionsShouldHaveTheSameFileIds(Token token) throws Exception {
-        var afterRejudgeSubmissions = getSubmissionsInPage(token.getStudentId(), token, 0);
-        assertEquals(2, afterRejudgeSubmissions.size());
+        var submissions = getSubmissionsInPage(token.getStudentId(), token, 0);
 
-        var submissions1 = afterRejudgeSubmissions.get(0);
-        var submissions2 = afterRejudgeSubmissions.get(1);
-        assertEquals(submissions1.submittedCodesFileId, submissions2.submittedCodesFileId);
+        String fileId = submissions.get(0).getSubmittedCodesFileId();
+        for (SubmissionView submission : submissions) {
+            assertEquals(fileId, submission.submittedCodesFileId);
+        }
     }
 
 }
