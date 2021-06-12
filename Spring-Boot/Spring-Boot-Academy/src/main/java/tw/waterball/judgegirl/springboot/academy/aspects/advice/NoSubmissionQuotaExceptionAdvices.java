@@ -11,26 +11,28 @@
  *   limitations under the License.
  */
 
-package tw.waterball.judgegirl.springboot.submission.controllers.advices;
+package tw.waterball.judgegirl.springboot.academy.aspects.advice;
 
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import tw.waterball.judgegirl.primitives.submission.SubmissionThrottlingException;
+import tw.waterball.judgegirl.primitives.exam.NoSubmissionQuotaException;
+
+import static java.lang.String.format;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
 @ControllerAdvice
 @Order(Ordered.HIGHEST_PRECEDENCE)
-public class SubmissionControllerExceptionAdvices {
-
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler({SubmissionThrottlingException.class})
-    public void handleExceptions() {
-        // Nothing to do
+public class NoSubmissionQuotaExceptionAdvices {
+    @ExceptionHandler({NoSubmissionQuotaException.class})
+    public ResponseEntity<String> handleExceptions(NoSubmissionQuotaException err) {
+        return ResponseEntity.badRequest()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(format("{\"error\":%s}", err.getName()));
     }
 }

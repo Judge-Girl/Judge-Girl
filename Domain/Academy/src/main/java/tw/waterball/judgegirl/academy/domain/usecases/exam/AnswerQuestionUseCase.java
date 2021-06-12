@@ -41,13 +41,15 @@ public class AnswerQuestionUseCase implements VerdictIssuedEventHandler {
 
         onlyExamineeCanAnswerQuestion(request);
         examMustHaveBeenStarted(exam);
-        answerCountMustNotExceedSubmissionQuota(request, question);
+        int remainingSubmissionQuota = calculateRemainingSubmissionQuota(request, question);
+        mustHaveRemainingSubmissionQuota(remainingSubmissionQuota, question.getQuota());
 
         var submission = submissionService.submit(submitCodeRequest(request));
         Answer answer = answer(request, question, submission, answerTime);
         answer = examRepository.saveAnswer(answer);
 
-        presenter.showAnswer(answer);
+        presenter.showRemainingSubmissionQuota(remainingSubmissionQuota);
+        presenter.showAnswer(answer, submission);
     }
 
     private void onlyExamineeCanAnswerQuestion(Request request) throws ExamineeOnlyOperationException {
@@ -62,10 +64,14 @@ public class AnswerQuestionUseCase implements VerdictIssuedEventHandler {
         }
     }
 
-    private void answerCountMustNotExceedSubmissionQuota(Request request, Question question) throws NoSubmissionQuotaException {
+    private int calculateRemainingSubmissionQuota(Request request, Question question) {
         int answerCount = examRepository.countAnswersInQuestion(question.getId(), request.studentId);
-        if (answerCount >= question.getQuota()) {
-            throw new NoSubmissionQuotaException(question.getQuota());
+        return question.getQuota() - answerCount;
+    }
+
+    private void mustHaveRemainingSubmissionQuota(int remainingSubmissionQuota, int maxSubmissionQuota) throws NoSubmissionQuotaException {
+        if (remainingSubmissionQuota <= 0) {
+            throw new NoSubmissionQuotaException(maxSubmissionQuota);
         }
     }
 
@@ -126,7 +132,9 @@ public class AnswerQuestionUseCase implements VerdictIssuedEventHandler {
     }
 
     public interface Presenter {
-        void showAnswer(Answer answer);
+        void showRemainingSubmissionQuota(int remainingSubmissionQuota);
+
+        void showAnswer(Answer answer, SubmissionView submission);
     }
 
 }
