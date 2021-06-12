@@ -17,7 +17,7 @@ package tw.waterball.judgegirl.primitives.submission;
  * @author - johnny850807@gmail.com (Waterball)
  */
 public class SubmissionThrottlingException extends SubmissionException {
-    private final static String NAME = "submission-throttling";
+    private static final String NAME = "submission-throttling";
 
     public SubmissionThrottlingException() {
         super(NAME);
