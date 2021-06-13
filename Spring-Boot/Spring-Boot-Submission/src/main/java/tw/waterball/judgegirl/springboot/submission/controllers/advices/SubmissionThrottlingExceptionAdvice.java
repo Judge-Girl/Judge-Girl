@@ -15,23 +15,25 @@ package tw.waterball.judgegirl.springboot.submission.controllers.advices;
 
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import tw.waterball.judgegirl.primitives.submission.SubmissionThrottlingException;
 
 import static java.lang.String.format;
+import static org.springframework.http.ResponseEntity.badRequest;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
 @ControllerAdvice
 @Order(Ordered.HIGHEST_PRECEDENCE)
-public class SubmissionThrottlingExceptionAdvices {
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler({SubmissionThrottlingException.class})
-    public String handleExceptions(SubmissionThrottlingException err) {
-        return format("{error:%s}", err.getName());
+public class SubmissionThrottlingExceptionAdvice {
+    @ExceptionHandler(SubmissionThrottlingException.class)
+    public ResponseEntity<String> handleExceptions(SubmissionThrottlingException err) {
+        return badRequest()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(format("{\"error\":\"%s\"}", err.getName()));
     }
 }

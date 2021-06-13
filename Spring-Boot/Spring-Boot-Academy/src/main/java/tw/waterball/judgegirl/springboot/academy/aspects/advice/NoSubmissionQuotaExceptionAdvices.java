@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import tw.waterball.judgegirl.primitives.exam.NoSubmissionQuotaException;
 
 import static java.lang.String.format;
+import static org.springframework.http.ResponseEntity.badRequest;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -29,10 +30,10 @@ import static java.lang.String.format;
 @ControllerAdvice
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class NoSubmissionQuotaExceptionAdvices {
-    @ExceptionHandler({NoSubmissionQuotaException.class})
+    @ExceptionHandler(NoSubmissionQuotaException.class)
     public ResponseEntity<String> handleExceptions(NoSubmissionQuotaException err) {
-        return ResponseEntity.badRequest()
+        return badRequest()
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(format("{\"error\":%s}", err.getName()));
+                .body(format("{\"error\":\"%s\"}", err.getName()));
     }
 }

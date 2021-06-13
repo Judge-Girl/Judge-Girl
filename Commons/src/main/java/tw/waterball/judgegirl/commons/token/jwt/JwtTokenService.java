@@ -59,15 +59,18 @@ public class JwtTokenService implements TokenService {
             jwt = Jwts.parserBuilder()
                     .setSigningKey(key)
                     .build().parseClaimsJws(token);
+
+            io.jsonwebtoken.Claims claims = jwt.getBody();
+            Identity identity = new Identity((boolean) claims.get(Identity.KEY_IS_ADMIN),
+                    (int) claims.get(Identity.KEY_STUDENT_ID));
+
+            return new Token(identity.isAdmin(), identity.getStudentId(),
+                    compactTokenString(claims.getExpiration(), identity), claims.getExpiration());
+        } catch (NullPointerException err) {
+            throw new TokenInvalidException("Incomplete attributes.");
         } catch (JwtException err) {
             throw new TokenInvalidException(err);
         }
-
-        io.jsonwebtoken.Claims claims = jwt.getBody();
-        Identity identity = new Identity((boolean) claims.get(Identity.KEY_IS_ADMIN),
-                (int) claims.get(Identity.KEY_STUDENT_ID));
-        return new Token(identity.isAdmin(), identity.getStudentId(),
-                compactTokenString(claims.getExpiration(), identity), claims.getExpiration());
     }
 
     private String compactTokenString(Date expirationDate, Identity identity) {
