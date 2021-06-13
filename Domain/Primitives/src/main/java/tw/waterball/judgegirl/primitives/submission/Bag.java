@@ -15,6 +15,7 @@ import static java.util.Optional.ofNullable;
  * @author - johnny850807@gmail.com (Waterball)
  */
 public class Bag extends HashMap<String, String> {
+    public static final Bag EMPTY = new Bag();
 
     private static final long serialVersionUID = 1L;
     

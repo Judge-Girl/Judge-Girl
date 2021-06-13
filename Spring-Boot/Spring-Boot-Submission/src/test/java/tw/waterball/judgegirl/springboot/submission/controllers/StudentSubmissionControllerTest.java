@@ -285,7 +285,9 @@ public class StudentSubmissionControllerTest extends AbstractSubmissionControlle
                 .content(toJson(new Request(problem.getId(), new Bag("examId", "1")))))
                 .andExpect(status().isOk());
 
-        allSubmissionsShouldDeployJudger(submissionRepository.query(SubmissionQueryParams.builder().build()));
+        var submissions = submissionRepository.query(SubmissionQueryParams.EMPTY);
+        assertEquals(4, submissions.size());
+        allSubmissionsShouldDeployJudger(submissions);
         allOfTheStudentSubmissionsShouldHaveTheSameFileIds(ADMIN_TOKEN);
         allOfTheStudentSubmissionsShouldHaveTheSameFileIds(ADMIN_TOKEN2);
     }
@@ -293,10 +295,9 @@ public class StudentSubmissionControllerTest extends AbstractSubmissionControlle
     private void allOfTheStudentSubmissionsShouldHaveTheSameFileIds(Token token) throws Exception {
         var submissions = getSubmissionsInPage(token.getStudentId(), token, 0);
 
-        String fileId = submissions.get(0).getSubmittedCodesFileId();
-        for (SubmissionView submission : submissions) {
-            assertEquals(fileId, submission.submittedCodesFileId);
-        }
+        assertTrue(submissions.stream()
+                .map(SubmissionView::getSubmittedCodesFileId)
+                .distinct().count() == 1);
     }
 
 }

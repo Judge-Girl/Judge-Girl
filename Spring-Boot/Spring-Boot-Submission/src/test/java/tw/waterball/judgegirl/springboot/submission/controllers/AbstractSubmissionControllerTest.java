@@ -235,9 +235,9 @@ public class AbstractSubmissionControllerTest extends AbstractSpringBootTest {
     }
 
     protected void shouldDeployJudger(SubmissionView submissionView, Spec<Submission>[] specs) {
-        ArgumentCaptor<Problem> problemArgumentCaptor = ArgumentCaptor.forClass(Problem.class);
-        ArgumentCaptor<Integer> studentIdArgumentCaptor = ArgumentCaptor.forClass(Integer.class);
-        ArgumentCaptor<Submission> submissionArgumentCaptor = ArgumentCaptor.forClass(Submission.class);
+        var problemArgumentCaptor = ArgumentCaptor.forClass(Problem.class);
+        var studentIdArgumentCaptor = ArgumentCaptor.forClass(Integer.class);
+        var submissionArgumentCaptor = ArgumentCaptor.forClass(Submission.class);
 
         verify(judgerDeployer).deployJudger(problemArgumentCaptor.capture(), studentIdArgumentCaptor.capture(),
                 submissionArgumentCaptor.capture());
@@ -249,9 +249,9 @@ public class AbstractSubmissionControllerTest extends AbstractSpringBootTest {
     }
 
     protected void allSubmissionsShouldDeployJudger(List<Submission> submissions) {
-        ArgumentCaptor<Problem> problemArgumentCaptor = ArgumentCaptor.forClass(Problem.class);
-        ArgumentCaptor<Integer> studentIdArgumentCaptor = ArgumentCaptor.forClass(Integer.class);
-        ArgumentCaptor<Submission> submissionArgumentCaptor = ArgumentCaptor.forClass(Submission.class);
+        var problemArgumentCaptor = ArgumentCaptor.forClass(Problem.class);
+        var studentIdArgumentCaptor = ArgumentCaptor.forClass(Integer.class);
+        var submissionArgumentCaptor = ArgumentCaptor.forClass(Submission.class);
 
         verify(judgerDeployer, times(submissions.size())).deployJudger(
                 problemArgumentCaptor.capture(), studentIdArgumentCaptor.capture(), submissionArgumentCaptor.capture());
