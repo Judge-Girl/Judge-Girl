@@ -295,9 +295,9 @@ public class StudentSubmissionControllerTest extends AbstractSubmissionControlle
     private void allOfTheStudentSubmissionsShouldHaveTheSameFileIds(Token token) throws Exception {
         var submissions = getSubmissionsInPage(token.getStudentId(), token, 0);
 
-        assertTrue(submissions.stream()
+        assertEquals(1, submissions.stream()
                 .map(SubmissionView::getSubmittedCodesFileId)
-                .distinct().count() == 1);
+                .distinct().count(), "Must have the same file Ids");
     }
 
 }
