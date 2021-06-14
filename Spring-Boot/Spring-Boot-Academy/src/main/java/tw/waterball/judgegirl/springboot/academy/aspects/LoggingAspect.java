@@ -9,13 +9,13 @@ import org.aspectj.lang.annotation.Before;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import tw.waterball.judgegirl.academy.domain.repositories.ExamFilter;
 import tw.waterball.judgegirl.academy.domain.usecases.exam.*;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
 import tw.waterball.judgegirl.primitives.exam.ExamHasNotBeenStartedOrHasBeenClosedException;
 import tw.waterball.judgegirl.primitives.exam.NoSubmissionQuotaException;
 import tw.waterball.judgegirl.primitives.submission.SubmissionThrottlingException;
 
+import static java.lang.String.join;
 import static tw.waterball.judgegirl.commons.utils.DateUtils.format;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.sum;
 
@@ -28,15 +28,10 @@ import static tw.waterball.judgegirl.commons.utils.StreamUtils.sum;
 public class LoggingAspect {
     private static final Logger ANSWER_QUESTION_USE_CASE_LOGGER = LoggerFactory.getLogger(AnswerQuestionUseCase.class);
     private static final Logger CREATE_EXAM_USE_CASE_LOGGER = LoggerFactory.getLogger(CreateExamUseCase.class);
-    private static final Logger GET_EXAMS_USE_CASE_LOGGER = LoggerFactory.getLogger(GetExamsUseCase.class);
-    private static final Logger GET_EXAM_PROGRESS_OVERVIEW_USE_CASE_LOGGER = LoggerFactory.getLogger(GetExamProgressOverviewUseCase.class);
-    private static final Logger GET_EXAM_OVERVIEW_USE_CASE_LOGGER = LoggerFactory.getLogger(GetExamOverviewUseCase.class);
     private static final Logger UPDATE_EXAM_USE_CASE_LOGGER = LoggerFactory.getLogger(UpdateExamUseCase.class);
-    private static final Logger GET_EXAM_USE_CASE_LOGGER = LoggerFactory.getLogger(GetExamUseCase.class);
     private static final Logger DELETE_EXAMINEES_USE_CASE_LOGGER = LoggerFactory.getLogger(DeleteExamineesUseCase.class);
     private static final Logger DELETE_EXAM_USE_CASE_LOGGER = LoggerFactory.getLogger(DeleteExamUseCase.class);
     private static final Logger ADD_GROUP_OF_EXAMINEES_USE_CASE_LOGGER = LoggerFactory.getLogger(AddGroupOfExamineesUseCase.class);
-    private static final Logger GET_EXAMINEES_USE_CASE_LOGGER = LoggerFactory.getLogger(GetExamineesUseCase.class);
     private static final Logger ADD_EXAMINEES_USE_CASE_LOGGER = LoggerFactory.getLogger(AddExamineesUseCase.class);
     private static final Logger CALCULATE_EXAM_SCORE_USE_CASE_LOGGER = LoggerFactory.getLogger(CalculateExamScoreUseCase.class);
     private static final Logger CREATE_QUESTION_USE_CASE_LOGGER = LoggerFactory.getLogger(CreateQuestionUseCase.class);
@@ -76,29 +71,6 @@ public class LoggingAspect {
                 request.getName(), format(request.getStartTime()), format(request.getEndTime()), request.getDescription());
     }
 
-    @Before("bean(getExamsUseCase)")
-    public void logGetExamsUseCase(JoinPoint joinPoint) {
-        var args = joinPoint.getArgs();
-        var examFilter = (ExamFilter) args[0];
-        GET_EXAMS_USE_CASE_LOGGER.info("[Get Exams] studentId={} status=\"{}\" skip={} size={}",
-                examFilter.getStudentId(), examFilter.getStatus(), examFilter.getSkip(), examFilter.getSize());
-    }
-
-    @Before("bean(getExamProgressOverviewUseCase)")
-    public void logGetExamProgressOverviewUseCase(JoinPoint joinPoint) {
-        var args = joinPoint.getArgs();
-        var request = (GetExamProgressOverviewUseCase.Request) args[0];
-        GET_EXAM_PROGRESS_OVERVIEW_USE_CASE_LOGGER.info("[Get ExamProgress Overview] examId={} studentId={}",
-                request.getStudentId(), request.getStudentId());
-    }
-
-    @Before("bean(getExamOverviewUseCase)")
-    public void logGetExamOverviewUseCase(JoinPoint joinPoint) {
-        var args = joinPoint.getArgs();
-        var examId = (Integer) args[0];
-        GET_EXAM_OVERVIEW_USE_CASE_LOGGER.info("[Get Exam Overview] examId={}", examId);
-    }
-
     @Before("bean(updateExamUseCase)")
     public void logUpdateExamUseCase(JoinPoint joinPoint) {
         var args = joinPoint.getArgs();
@@ -107,20 +79,12 @@ public class LoggingAspect {
                 request.getExamId(), request.getName(), format(request.getStartTime()), format(request.getEndTime()), request.getDescription());
     }
 
-    @Before("bean(getExamUseCase)")
-    public void logGetExamUseCase(JoinPoint joinPoint) {
-        var args = joinPoint.getArgs();
-        var request = (GetExamUseCase.Request) args[0];
-        GET_EXAM_USE_CASE_LOGGER.info("[Get Exam] examId={} onlyExamineeCanAccess={} studentId={}",
-                request.getExamId(), request.isOnlyExamineeCanAccess(), request.getStudentId());
-    }
-
     @Before("bean(deleteExamineesUseCase)")
     public void logDeleteExamineesUseCase(JoinPoint joinPoint) {
         var args = joinPoint.getArgs();
         var request = (DeleteExamineesUseCase.Request) args[0];
-        DELETE_EXAMINEES_USE_CASE_LOGGER.info("[Delete Examinees] examId={} emails={}",
-                request.getExamId(), request.getEmails());
+        DELETE_EXAMINEES_USE_CASE_LOGGER.info("[Delete Examinees] examId={} emails=\"{}\"",
+                request.getExamId(), join(", ", request.getEmails()));
     }
 
     @Before("bean(deleteExamUseCase)")
@@ -134,31 +98,23 @@ public class LoggingAspect {
     public void logAddGroupOfExamineesUseCase(JoinPoint joinPoint) {
         var args = joinPoint.getArgs();
         var request = (AddGroupOfExamineesUseCase.Request) args[0];
-        ADD_GROUP_OF_EXAMINEES_USE_CASE_LOGGER.info("[Add Group Of Examinees] examId={} names={}",
-                request.getExamId(), request.getNames());
-    }
-
-    @Before("bean(getExamineesUseCase)")
-    public void logGetExamineesUseCase(JoinPoint joinPoint) {
-        var args = joinPoint.getArgs();
-        var request = (GetExamineesUseCase.Request) args[0];
-        GET_EXAMINEES_USE_CASE_LOGGER.info("[Get Examinees] examId={} onlyExamineeCanAccess={} studentId={}",
-                request.getExamId(), request.isOnlyExamineeCanAccess(), request.getStudentId());
+        ADD_GROUP_OF_EXAMINEES_USE_CASE_LOGGER.info("[Add Group Of Examinees] examId={} names=\"{}\"",
+                request.getExamId(), join(", ", request.getNames()));
     }
 
     @Before("bean(addExamineesUseCase)")
     public void logAddExamineesUseCase(JoinPoint joinPoint) {
         var args = joinPoint.getArgs();
         var request = (AddExamineesUseCase.Request) args[0];
-        ADD_EXAMINEES_USE_CASE_LOGGER.info("[Add Examinees] examId={} emails={}",
-                request.getExamId(), request.getEmails());
+        ADD_EXAMINEES_USE_CASE_LOGGER.info("[Add Examinees] examId={} emails=\"{}\"",
+                request.getExamId(), join(", ", request.getEmails()));
     }
 
     @Before("bean(calculateExamScoreUseCase)")
     public void logCalculateExamScoreUseCase(JoinPoint joinPoint) {
         var args = joinPoint.getArgs();
         var examId = (Integer) args[0];
-        CALCULATE_EXAM_SCORE_USE_CASE_LOGGER.info("[Calculate Exam Score] examId={}", examId);
+        CALCULATE_EXAM_SCORE_USE_CASE_LOGGER.trace("[Calculate Exam Score] examId={}", examId);
     }
 
     @Before("bean(createQuestionUseCase)")
