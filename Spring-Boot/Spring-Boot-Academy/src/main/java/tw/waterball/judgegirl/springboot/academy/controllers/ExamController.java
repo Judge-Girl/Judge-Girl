@@ -2,7 +2,6 @@ package tw.waterball.judgegirl.springboot.academy.controllers;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import tw.waterball.judgegirl.academy.domain.repositories.ExamFilter;
@@ -12,7 +11,6 @@ import tw.waterball.judgegirl.commons.token.TokenService;
 import tw.waterball.judgegirl.commons.token.TokenService.Token;
 import tw.waterball.judgegirl.primitives.Student;
 import tw.waterball.judgegirl.primitives.exam.Exam;
-import tw.waterball.judgegirl.primitives.exam.ExamineeOnlyOperationException;
 import tw.waterball.judgegirl.primitives.exam.Question;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.springboot.academy.presenters.ExamPresenter;
@@ -231,10 +229,6 @@ public class ExamController {
         });
     }
 
-    @ResponseStatus(HttpStatus.FORBIDDEN)
-    @ExceptionHandler({ExamineeOnlyOperationException.class})
-    public void handleExamineeOnlyOperationException() {
-    }
 }
 
 
