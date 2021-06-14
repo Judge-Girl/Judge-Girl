@@ -12,12 +12,11 @@ import static java.util.Optional.ofNullable;
  */
 @Builder
 @Getter
-public
-class ExamFilter {
+public class ExamFilter {
     Integer studentId;
     @Builder.Default
     Status status = Status.all;
-    @Builder.Default
+    
     int skip;
     @Builder.Default
     int size = 50;

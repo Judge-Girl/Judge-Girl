@@ -175,6 +175,10 @@ public abstract class StreamUtils {
         return collection.stream().mapToInt(mapper).sum();
     }
 
+    public static <T> long sum(Collection<T> collection, ToLongFunction<T> mapper) {
+        return collection.stream().mapToLong(mapper).sum();
+    }
+
     public static <T> List<T> generate(int count, T obj) {
         return range(0, count).mapToObj(i -> obj).collect(toList());
     }
