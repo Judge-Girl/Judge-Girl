@@ -17,7 +17,6 @@ package tw.waterball.judgegirl.submission.domain.usecases.query;
 import lombok.Builder;
 import lombok.Data;
 import org.jetbrains.annotations.Nullable;
-import tw.waterball.judgegirl.primitives.submission.Bag;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -31,8 +30,7 @@ import static java.util.Optional.ofNullable;
 @Data
 @Builder
 public class SubmissionQueryParams {
-    public static final SubmissionQueryParams EMPTY = new SubmissionQueryParams
-            (null, null, null, null, Bag.EMPTY, null);
+    public static final SubmissionQueryParams EMPTY = SubmissionQueryParams.builder().build();
     @Nullable
     private final Integer page;
     @Nullable
