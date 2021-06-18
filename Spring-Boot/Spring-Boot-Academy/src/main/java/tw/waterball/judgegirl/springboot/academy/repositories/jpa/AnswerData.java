@@ -52,6 +52,7 @@ public class AnswerData {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class Id implements Serializable {
+        private static final long serialVersionUID = 1L;
         private Integer number;
         private int examId;
         private int problemId;

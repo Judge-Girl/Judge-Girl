@@ -40,6 +40,7 @@ public class NaiveTokenService implements TokenService {
     @Override
     public Token parseAndValidate(String token) throws TokenInvalidException {
         try {
+            assert token != null;
             String[] splits = token.split(DELIMITER);
             boolean isAdmin = splits[0].equals("admin");
             long expirationTime = Long.parseLong(splits[1]);

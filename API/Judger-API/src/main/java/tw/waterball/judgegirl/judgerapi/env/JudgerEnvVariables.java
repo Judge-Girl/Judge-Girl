@@ -19,6 +19,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tw.waterball.judgegirl.api.ServiceInstance;
 
+import java.util.Locale;
+
 import static java.lang.Integer.parseInt;
 
 /**
@@ -126,7 +128,8 @@ public interface JudgerEnvVariables {
     }
 
     static String convertEnv(String env) {
-        return env.toUpperCase().replaceAll("\\.", "_")
+        Locale local = new Locale("en", "US");
+        return env.toUpperCase(local).replaceAll("\\.", "_")
                 .replaceAll("-", "_");
     }
 

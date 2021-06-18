@@ -24,6 +24,6 @@ public class PathUtils {
      * Example: `/home/user/path/to/file.java`  -->  `file.java`
      */
     public static String getFileName(String path) {
-        return Paths.get(path).getFileName().toString();
+        return String.valueOf(Paths.get(path).getFileName());
     }
 }

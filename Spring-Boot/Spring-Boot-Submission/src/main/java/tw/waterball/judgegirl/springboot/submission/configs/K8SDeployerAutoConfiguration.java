@@ -28,6 +28,7 @@ import tw.waterball.judgegirl.submission.deployer.JudgerDeployer;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -57,7 +58,7 @@ public class K8SDeployerAutoConfiguration {
         InputStream in = ResourceUtils.getResourceAsStream("/kubeconfig");
         ApiClient client =
                 ClientBuilder.kubeconfig(KubeConfig.loadKubeConfig(
-                        new InputStreamReader(in))).build();
+                        new InputStreamReader(in, StandardCharsets.UTF_8))).build();
         // set the global default api-client to the in-cluster one from above
         io.kubernetes.client.Configuration.setDefaultApiClient(client);
 

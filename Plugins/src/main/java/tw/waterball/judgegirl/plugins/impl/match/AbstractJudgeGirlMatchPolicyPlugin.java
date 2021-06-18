@@ -27,11 +27,9 @@ import java.util.Map;
  */
 public abstract class AbstractJudgeGirlMatchPolicyPlugin extends AbstractJudgeGirlPlugin
         implements JudgeGirlMatchPolicyPlugin {
-    protected Map<String, String> parameters;
 
     public AbstractJudgeGirlMatchPolicyPlugin(Map<String, String> parameters) {
         super(parameters);
-        this.parameters = parameters;
     }
 
     @Override

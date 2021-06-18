@@ -21,10 +21,7 @@ import org.jetbrains.annotations.Nullable;
 import tw.waterball.judgegirl.primitives.grading.Grading;
 import tw.waterball.judgegirl.primitives.submission.verdict.Verdict;
 
-import java.util.Date;
-import java.util.Optional;
-import java.util.OptionalInt;
-import java.util.OptionalLong;
+import java.util.*;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -148,6 +145,15 @@ public class Submission implements Comparable<Submission>, Grading {
                 .compareTo(submission.mayHaveVerdict().orElseThrow());
     }
 
+    @Override
+    public boolean equals(Object o) {
+        return o == this;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, problemId, studentId, languageEnvName, verdict, submittedCodesFileId, submissionTime, bag);
+    }
 
     public Optional<String> getBagMessageAsString(String key) {
         return bag.getAsString(key);

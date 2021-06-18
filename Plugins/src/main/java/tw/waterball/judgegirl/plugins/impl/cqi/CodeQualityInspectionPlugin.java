@@ -13,7 +13,6 @@
 
 package tw.waterball.judgegirl.plugins.impl.cqi;
 
-import lombok.SneakyThrows;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tw.waterball.judgegirl.cqi.csa.CodingStyleAnalyzer;
@@ -30,9 +29,7 @@ import tw.waterball.judgegirl.primitives.problem.LanguageEnv;
 import tw.waterball.judgegirl.primitives.problem.Problem;
 import tw.waterball.judgegirl.primitives.submission.verdict.VerdictIssuer;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 
@@ -103,10 +100,10 @@ public class CodeQualityInspectionPlugin extends AbstractJudgeGirlPlugin
         return null;
     }
 
-    @SneakyThrows
-    private String readSourceCode(String sourceCodePath) {
-        return Files.readString(Paths.get(sourceCodePath));
-    }
+//    @SneakyThrows
+//    private String readSourceCode(String sourceCodePath) {
+//        return Files.readString(Paths.get(sourceCodePath));
+//    }
 
 
     private CodingStyleAnalyzeReport analyzeCodingStyle(String sourceRoot, List<String> variableWhitelist) {

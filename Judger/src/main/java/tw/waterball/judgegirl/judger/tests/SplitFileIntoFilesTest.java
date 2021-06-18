@@ -31,11 +31,13 @@ public class SplitFileIntoFilesTest extends AbstractJudgerTest {
     @SneakyThrows
     @Override
     protected Problem getProblem() {
+        FileInputStream fileInputStream = new FileInputStream(problemHomePath + "/50179/problem.json");
         var problem = OBJECT_MAPPER.readValue(
-                new FileInputStream(problemHomePath + "/50179/problem.json"), ProblemView.class);
+                fileInputStream, ProblemView.class);
         problem.setDescription(IOUtils.toString(new FileInputStream(problemHomePath + "/50179/description.md"), StandardCharsets.UTF_8));
         problem.setJudgeMatchPolicyPluginTag(toViewModel(AllMatchPolicyPlugin.TAG));
         problem.getTestcases().forEach(t -> t.setId(t.getName()));
+        fileInputStream.close();
         return toEntity(problem);
     }
 

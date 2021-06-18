@@ -14,7 +14,7 @@ public final class DateProvider {
     private static Date now;
 
     public static void setNow(Date now) {
-        DateProvider.now = now;
+        DateProvider.now = (Date) now.clone();
     }
 
     public static Date now() {

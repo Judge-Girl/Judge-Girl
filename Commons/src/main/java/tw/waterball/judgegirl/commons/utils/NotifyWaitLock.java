@@ -13,8 +13,6 @@
 
 package tw.waterball.judgegirl.commons.utils;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-
 /**
  * A syntax-sugar that provides synchronization-free statement for notify-wait,
  * ##Note##: you have to invoke doWait() / doNotify() / doNotifyAll()
@@ -25,40 +23,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class NotifyWaitLock {
     private final Object monitor = new Object();
 
-    public void doNotify() {
-        synchronized (monitor) {
-            monitor.notify();
-        }
-    }
-
     public void doNotifyAll() {
         synchronized (monitor) {
             monitor.notifyAll();
-        }
-    }
-
-    public void doWait(long timeout) {
-        AtomicBoolean completed = new AtomicBoolean(false);
-        Thread timeoutThread = new Thread(() -> {
-            Delay.delay(timeout);
-            if (completed.compareAndSet(false, true)) {
-                // timeout
-                synchronized (monitor) {
-                    monitor.notify();
-                }
-            }
-        });
-        timeoutThread.start();
-        synchronized (monitor) {
-            try {
-                monitor.wait();
-                if (completed.compareAndSet(true, true)) {
-                    throw new IllegalStateException("Timeout");
-                } else {
-                    timeoutThread.interrupt();
-                }
-            } catch (InterruptedException ignored) {
-            }
         }
     }
 

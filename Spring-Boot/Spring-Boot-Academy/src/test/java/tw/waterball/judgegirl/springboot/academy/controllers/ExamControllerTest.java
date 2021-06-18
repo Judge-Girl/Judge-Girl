@@ -467,6 +467,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
+    @Timeout(5)
     void WheneverReceiveNewVerdict_ShouldUpdateBestRecordOfAQuestion() {
         var exam = createExamAndGet(beforeCurrentTime(1, HOURS), afterCurrentTime(1, HOURS), "A");
         givenStudentParticipatingExam(STUDENT_A_ID, exam);
@@ -498,6 +499,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
 
     // TODO: drunk code, need to be improved
     @Test
+    @Timeout(5)
     void testGetStudentExamProgressOverview() throws Exception {
         final int QUOTA = 5;
         Date start = beforeCurrentTime(1, HOURS), end = afterCurrentTime(1, HOURS);
@@ -593,6 +595,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
 
     // TODO: drunk code, need to be improved
     @Test
+    @Timeout(5)
     void testProduceExamTranscript() {
         Integer[] studentIds = {STUDENT_A_ID, STUDENT_B_ID, STUDENT_C_ID, STUDENT_D_ID};
         var exam = createExamAndGet(now(), oneSecondAfter(), "Exam");
@@ -702,7 +705,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
     }
 
     private void awaitVerdictIssuedEvent() {
-        verdictIssuedEventListener.onHandlingCompletion$.doWait(3000);
+        verdictIssuedEventListener.onHandlingCompletion$.doWait();
     }
 
     private void shouldHaveSavedAnswer(AnswerView answer) {

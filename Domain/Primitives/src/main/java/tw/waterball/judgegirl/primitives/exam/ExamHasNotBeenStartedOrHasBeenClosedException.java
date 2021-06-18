@@ -6,7 +6,7 @@ import tw.waterball.judgegirl.primitives.time.Duration;
  * @author - johnny850807@gmail.com (Waterball)
  */
 public class ExamHasNotBeenStartedOrHasBeenClosedException extends IllegalStateException {
-    private final Duration duration;
+    private final transient Duration duration;
 
     public ExamHasNotBeenStartedOrHasBeenClosedException(Exam exam) {
         this.duration = exam.getDuration();

@@ -3,6 +3,7 @@ package tw.waterball.judgegirl.problemapi.clients;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
@@ -36,7 +37,7 @@ public class RestProblemApiClient implements ProblemServiceDriver {
             String url = parsePath(API_PREFIX + "/{problemId}", problemId);
             HttpEntity<?> entity = new HttpEntity<>(withBearerTokenHeader(tokenSupplier.get()));
             return ofNullable(restTemplate.exchange(url, HttpMethod.GET, entity, ProblemView.class).getBody());
-        } catch (Exception e) {
+        } catch (RestClientException e) {
             return empty();
         }
     }
@@ -49,7 +50,7 @@ public class RestProblemApiClient implements ProblemServiceDriver {
             HttpEntity<?> entity = new HttpEntity<>(withBearerTokenHeader(tokenSupplier.get()));
             ResponseEntity<byte[]> response = restTemplate.exchange(url, HttpMethod.GET, entity, byte[].class);
             return parseFileResourceFromResponse(response);
-        } catch (Exception e) {
+        } catch (RestClientException e) {
             throw new NotFoundException(e.getMessage());
         }
     }
@@ -62,7 +63,7 @@ public class RestProblemApiClient implements ProblemServiceDriver {
             HttpEntity<?> entity = new HttpEntity<>(withBearerTokenHeader(tokenSupplier.get()));
             ResponseEntity<byte[]> response = restTemplate.exchange(url, HttpMethod.GET, entity, byte[].class);
             return parseFileResourceFromResponse(response);
-        } catch (Exception e) {
+        } catch (RestClientException e) {
             throw new NotFoundException(e.getMessage());
         }
     }

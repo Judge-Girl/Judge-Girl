@@ -19,13 +19,12 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.gridfs.GridFsResource;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
+import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
 
 import java.io.IOException;
 import java.util.Optional;
 import java.util.function.Function;
-
-import static java.util.Objects.requireNonNull;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -43,7 +42,10 @@ public class MongoUtils {
      */
     public static FileResource downloadFileResourceByFileId(GridFsTemplate gridFsTemplate, String fileId) {
         GridFSFile gridFsFile = gridFsTemplate.findOne(new Query(Criteria.where("_id").is(fileId)));
-        GridFsResource resource = gridFsTemplate.getResource(requireNonNull(gridFsFile));
+        if (gridFsFile == null) {
+            throw NotFoundException.notFound(fileId).message("gridFsFile not found");
+        }
+        GridFsResource resource = gridFsTemplate.getResource(gridFsFile);
         try {
             return new FileResource(resource.getFilename(), resource.contentLength(), resource.getInputStream());
         } catch (IOException e) {

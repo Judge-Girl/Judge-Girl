@@ -12,6 +12,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.data.redis.serializer.SerializationException;
+import org.springframework.lang.Nullable;
 import tw.waterball.judgegirl.springboot.profiles.productions.Redis;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -58,8 +59,8 @@ public class RedisConfig {
         }
 
         @Override
-        public String deserialize(byte[] bytes) throws SerializationException {
-            return new String(bytes, keyPrefix.length(), bytes.length - keyPrefix.length(), UTF_8);
+        public String deserialize(@Nullable byte[] bytes) throws SerializationException {
+            return bytes != null ? new String(bytes, keyPrefix.length(), bytes.length - keyPrefix.length(), UTF_8) : "";
         }
     }
 

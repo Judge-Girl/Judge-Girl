@@ -135,7 +135,7 @@ public class MongoSubmissionRepository implements SubmissionRepository {
                 .ifPresent(sortBy -> query.with(
                         Sort.by(sortBy.isAscending() ? Sort.Direction.ASC : Sort.Direction.DESC,
                                 sortBy.getFieldName().equals("id") ? "_id" : sortBy.getFieldName())));
-        params.getPage().ifPresent(page -> query.skip(page * PAGE_SIZE).limit(PAGE_SIZE));
+        params.getPage().map(Integer::longValue).ifPresent(page -> query.skip(page * PAGE_SIZE).limit(PAGE_SIZE));
         List<SubmissionData> dataList = mongoTemplate.find(query, SubmissionData.class);
         return DataMapper.toEntity(dataList);
     }

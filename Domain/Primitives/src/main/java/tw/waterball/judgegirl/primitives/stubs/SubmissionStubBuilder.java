@@ -10,10 +10,8 @@ import tw.waterball.judgegirl.primitives.submission.verdict.Judge;
 import tw.waterball.judgegirl.primitives.submission.verdict.ProgramProfile;
 import tw.waterball.judgegirl.primitives.submission.verdict.Verdict;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
+import java.security.SecureRandom;
+import java.util.*;
 
 import static java.lang.System.currentTimeMillis;
 import static java.util.UUID.randomUUID;
@@ -40,6 +38,7 @@ public class SubmissionStubBuilder extends Submission {
     private final String submissionId;
     private final Bag bag = new Bag();
     private VerdictStubBuilder verdictBuilder;
+    public static final SecureRandom random = new SecureRandom();
 
     public static SubmissionStubBuilder submission(String id) {
         return new SubmissionStubBuilder(id);
@@ -128,10 +127,11 @@ public class SubmissionStubBuilder extends Submission {
      * @return A randomized and judged submission.
      */
     public static Submission randomizedSubmission(Problem problem, int studentId, int howManyACs) {
-        Random random = new Random(currentTimeMillis());
+
+        random.setSeed(currentTimeMillis());
         List<JudgeStatus> statuses = generate(howManyACs, AC);
         statuses.addAll(generate(problem.numOfTestcases() - howManyACs,
-                i -> NORMAL_STATUSES_NO_CE[random.nextInt(NORMAL_STATUSES_NO_CE.length)]));
+                i -> NORMAL_STATUSES_NO_CE.get(random.nextInt(NORMAL_STATUSES_NO_CE.size()))));
 
         List<Judge> judges = generate(problem.numOfTestcases(),
                 i -> new Judge(problem.getTestcase(i),
@@ -144,4 +144,10 @@ public class SubmissionStubBuilder extends Submission {
         submission.setVerdict(new Verdict(judges));
         return submission;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        return o == this;
+    }
+
 }

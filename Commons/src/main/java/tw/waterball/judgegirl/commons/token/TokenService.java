@@ -13,8 +13,7 @@
 
 package tw.waterball.judgegirl.commons.token;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.NonNull;
 import org.jetbrains.annotations.Nullable;
 import tw.waterball.judgegirl.commons.exceptions.ForbiddenAccessException;
 import tw.waterball.judgegirl.commons.utils.HttpHeaderUtils;
@@ -79,18 +78,16 @@ public interface TokenService {
         return parseAndValidate(tokenString);
     }
 
-    @Getter
-    @Setter
     class Token extends TokenService.Identity {
         @Nullable
-        private String token;
+        private final String token;
         @Nullable
-        private Date expiration;
+        private final Date expiration;
 
         public Token(boolean isAdmin, int studentId, @Nullable String token, @Nullable Date expiration) {
             super(isAdmin, studentId);
             this.token = token;
-            this.expiration = expiration;
+            this.expiration = expiration == null ? null : (Date) expiration.clone();
         }
 
         public static Token ofStudent(int studentId, String token, Date expiration) {
@@ -105,10 +102,20 @@ public interface TokenService {
             return new Token(false, Identity.GUEST_STUDENT_ID, null, null);
         }
 
-        @Nullable
         @Override
+        @NonNull
         public String toString() {
+            return token == null ? "" : token;
+        }
+
+        @Nullable
+        public String getToken() {
             return token;
+        }
+
+        @Nullable
+        public Date getExpiration() {
+            return expiration == null ? null : new Date(expiration.getTime());
         }
     }
 

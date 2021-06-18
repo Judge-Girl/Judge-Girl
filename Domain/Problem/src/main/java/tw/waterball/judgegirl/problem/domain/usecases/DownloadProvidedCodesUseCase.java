@@ -37,7 +37,8 @@ public class DownloadProvidedCodesUseCase extends BaseProblemUseCase {
     public FileResource execute(Request request) throws NotFoundException {
         Problem problem = findProblem(request.problemId);
         LanguageEnv languageEnv = problem.getLanguageEnv(request.langEnvName);
-        if (languageEnv.getProvidedCodesFileId().equals(request.providedCodesFileId)) {
+        String providedCodesFileId = languageEnv.getProvidedCodesFileId();
+        if (providedCodesFileId != null && providedCodesFileId.equals(request.providedCodesFileId)) {
             return problemRepository.downloadProvidedCodes(request.problemId, request.langEnvName)
                     .orElseThrow(() -> notFound(Problem.class).id(request.problemId));
         }

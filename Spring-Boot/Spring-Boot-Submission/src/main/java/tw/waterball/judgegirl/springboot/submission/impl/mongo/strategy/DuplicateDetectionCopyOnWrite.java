@@ -16,6 +16,7 @@ import java.io.InputStream;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 import static java.util.Optional.ofNullable;
@@ -78,7 +79,8 @@ public class DuplicateDetectionCopyOnWrite implements SaveSubmissionWithCodesStr
     }
 
     private String digestToHex(DigestInputStream digestInputStream) {
-        return printHexBinary(digestInputStream.getMessageDigest().digest()).toUpperCase();
+        Locale locale = new Locale("en","US");
+        return printHexBinary(digestInputStream.getMessageDigest().digest()).toUpperCase(locale);
     }
 
     private String saveAndGetFileId(StreamingResource streamingResource) {

@@ -220,18 +220,15 @@ public class AbstractSubmissionControllerTest extends AbstractSpringBootTest {
     }
 
     @SafeVarargs
-    protected final VerdictIssuedEvent shouldCompleteJudgeFlow(SubmissionView submission,
-                                                               VerdictView verdict,
-                                                               JudgeStatus judgeStatus,
-                                                               int expectTotalGrade,
-                                                               Spec<Submission>... specs) {
+    protected final void shouldCompleteJudgeFlow(SubmissionView submission,
+                                                 VerdictView verdict, JudgeStatus judgeStatus, int expectTotalGrade,
+                                                 Spec<Submission>... specs) {
         shouldDeployJudger(submission, specs);
 
         VerdictIssuedEvent verdictIssuedEvent = publishVerdictAfterTheWhile(submission, verdict);
 
-        shouldNotifyVerdictIssuedEventHandlerWithTimeout(5000);
+        shouldNotifyVerdictIssuedEventHandlerWithTimeout();
         verdictShouldHaveBeenSavedCorrectly(submission, judgeStatus, expectTotalGrade, verdictIssuedEvent);
-        return verdictIssuedEvent;
     }
 
     protected void shouldDeployJudger(SubmissionView submissionView, Spec<Submission>[] specs) {
@@ -259,8 +256,8 @@ public class AbstractSubmissionControllerTest extends AbstractSpringBootTest {
         return verdictIssuedEvent;
     }
 
-    protected void shouldNotifyVerdictIssuedEventHandlerWithTimeout(long timeout) {
-        verdictIssuedEventHandler.onHandlingCompletion$.doWait(timeout);
+    protected void shouldNotifyVerdictIssuedEventHandlerWithTimeout() {
+        verdictIssuedEventHandler.onHandlingCompletion$.doWait();
     }
 
     protected void verdictShouldHaveBeenSavedCorrectly(SubmissionView submissionView,
