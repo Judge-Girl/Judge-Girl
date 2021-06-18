@@ -25,14 +25,14 @@ public final class TraceIds {
     private static final int BYTES_LENGTH = 16;
     private static final int HEX_LENGTH = 2 * BYTES_LENGTH;
     private static final String INVALID = "00000000000000000000000000000000";
-    private static final SecureRandom random = new SecureRandom();
+    private static final SecureRandom RANDOM = new SecureRandom();
 
     private TraceIds() {
     }
 
     public static String generateTraceId() {
         byte[] bytes = new byte[BYTES_LENGTH];
-        random.nextBytes(bytes);
+        RANDOM.nextBytes(bytes);
         String traceId = fromBytes(bytes);
         if (isValid(traceId)) {
             return traceId;

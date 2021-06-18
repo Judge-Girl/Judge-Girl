@@ -179,7 +179,7 @@ public class ZipUtils {
             if (file.isDirectory()) {
                 String[] files = file.list();
                 if (files != null) {
-                    for (String fileName : requireNonNull(files)) {
+                    for (String fileName : files) {
                         writeZipEntry(path + file.getName() + "/",
                                 new File(file, fileName), zipos, ignoredFileNames);
                     }

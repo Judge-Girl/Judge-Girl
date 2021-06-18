@@ -47,13 +47,17 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static org.apache.commons.io.FileUtils.forceMkdir;
 import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
+import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToSet;
 
 /**
  * TODO: some drunk codes that ruins my perfectionism, require some talents to refactor it!
@@ -209,8 +213,7 @@ public class CCJudger extends PluginExtendedJudger {
     private Set<String> generateFilesOtherThanOutFilesFromSandboxRoot(Path sandboxRootPath) {
         File[] obj = sandboxRootPath.toFile().listFiles();
         if (obj != null && obj.length > 0) {
-            var files = stream(obj)
-                    .map(File::getName).collect(Collectors.toSet());
+            var files = mapToSet(obj, File::getName);
             files.add("std.out");
             files.add("std.err");
             files.add(EXECUTABLE_NAME);
@@ -230,10 +233,10 @@ public class CCJudger extends PluginExtendedJudger {
                         .filter(f -> !f.getName().equals("std.in") && !f.getName().equals(EXECUTABLE_NAME))
                         .collect(Collectors.toSet());
             } else {
-                return new HashSet<File>();
+                return new HashSet<>();
             }
         } else {
-            return new HashSet<File>();
+            return new HashSet<>();
         }
     }
 
@@ -272,7 +275,7 @@ public class CCJudger extends PluginExtendedJudger {
         if (files != null) {
             actualOutFiles = new HashSet<>(
                     asList(files));
-        }else{
+        } else {
             actualOutFiles = new HashSet<>();
         }
         actualOutFiles.removeIf(f -> filesWithinSandboxRootOtherThanOutFiles.contains(f.getName()));
