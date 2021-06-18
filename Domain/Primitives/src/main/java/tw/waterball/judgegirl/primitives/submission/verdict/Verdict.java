@@ -24,6 +24,7 @@ import tw.waterball.judgegirl.primitives.submission.report.Report;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 import static tw.waterball.judgegirl.primitives.time.DateProvider.now;
 
@@ -174,7 +175,9 @@ public class Verdict implements Comparable<Verdict> {
         if (this.report == Report.EMPTY) {
             this.report = new CompositeReport();
         }
-        ((CompositeReport) this.report).addReport(report);
+        if (this.report instanceof CompositeReport){
+            ((CompositeReport) this.report).addReport(report);
+        }
     }
 
     @Override
@@ -194,5 +197,15 @@ public class Verdict implements Comparable<Verdict> {
             return getBestJudge().compareTo(verdict.getBestJudge());
         }
         return myGrade - hisGrade;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return o == this;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(judges, compileErrorMessage, issueTime, report, grade);
     }
 }

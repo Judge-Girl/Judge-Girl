@@ -8,6 +8,7 @@ import tw.waterball.judgegirl.primitives.grading.Grading;
 import tw.waterball.judgegirl.primitives.problem.JudgeStatus;
 
 import java.util.Date;
+import java.util.Objects;
 
 /**
  * A record that a student achieves in a question.
@@ -47,5 +48,15 @@ public class Record implements Comparable<Record>, Grading {
     @Override
     public int getMaxGrade() {
         return grade.max();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return o == this;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(questionId, studentId, submissionId, status, maximumRuntime, maximumMemoryUsage, grade, submissionTime);
     }
 }

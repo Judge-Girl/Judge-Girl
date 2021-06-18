@@ -1,7 +1,7 @@
 package tw.waterball.judgegirl.primitives.problem;
 
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
 import tw.waterball.judgegirl.commons.models.files.StreamingResource;
 
@@ -16,7 +16,7 @@ import static tw.waterball.judgegirl.commons.utils.validations.ValidationUtils.v
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
-@Data
+@Getter
 @Builder
 public class TestcaseIO {
     public static final String DEFAULT_STD_IN = "std.in";
@@ -32,11 +32,6 @@ public class TestcaseIO {
     Set<@Size(min = 1, max = 300) String> inputFiles = new HashSet<>();
     @Builder.Default
     Set<@Size(min = 1, max = 300) String> outputFiles = new HashSet<>();
-
-    public TestcaseIO(String testcaseId) {
-        this.testcaseId = testcaseId;
-        validate(this);
-    }
 
     public TestcaseIO(String testcaseId, String stdIn, String stdOut, Set<String> inputFiles, Set<String> outputFiles) {
         this(null, testcaseId, stdIn, stdOut, inputFiles, outputFiles);
@@ -83,5 +78,6 @@ public class TestcaseIO {
             all.addAll(outputFiles);
             return all;
         }
+
     }
 }

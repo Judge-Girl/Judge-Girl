@@ -54,7 +54,6 @@ public class LoggingAspect {
     public Object logSignUpUseCase(ProceedingJoinPoint joinPoint) throws Throwable {
         var args = joinPoint.getArgs();
         var request = (SignUpUseCase.Request) args[0];
-        var presenter = (SignUpUseCase.Presenter) args[1];
         var useCase = (SignUpUseCase) joinPoint.getTarget();
         Logger log = LoggerFactory.getLogger(useCase.getClass());
         log.info("[Sign Up] name=\"{}\" email=\"{}\" admin={}", request.name, request.email, request.admin);

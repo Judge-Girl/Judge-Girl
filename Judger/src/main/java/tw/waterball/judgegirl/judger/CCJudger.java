@@ -44,6 +44,7 @@ import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -54,9 +55,9 @@ import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
-import static java.util.Objects.requireNonNull;
 import static org.apache.commons.io.FileUtils.forceMkdir;
 import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
+import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToSet;
 
 /**
  * TODO: some drunk codes that ruins my perfectionism, require some talents to refactor it!
@@ -135,7 +136,6 @@ public class CCJudger extends PluginExtendedJudger {
         Path tempSubmittedCodesPath = submissionHome.getPath().resolve(TEMP_SUBMITTED_CODES_DIR_NAME);
         FileUtils.copyDirectory(getSourceRootPath().toFile(), tempSubmittedCodesPath.toFile());
 
-        logger.info("<After downloadSubmittedCodes> Files under src: {}.", stream(requireNonNull(getSourceRootPath().toFile().listFiles())).map(f -> f.getName() + (f.isDirectory() ? "/" : "")).collect(Collectors.joining(",")));
     }
 
     @Override
@@ -147,8 +147,6 @@ public class CCJudger extends PluginExtendedJudger {
         } catch (NotFoundException ignored) {
             logger.info("No providedCodes.");
         }
-
-        logger.info("<After downloadProvidedCodes> Files under src: {}.", stream(requireNonNull(getSourceRootPath().toFile().listFiles())).map(f -> f.getName() + (f.isDirectory() ? "/" : "")).collect(Collectors.joining(",")));
     }
 
     @Override
@@ -167,8 +165,7 @@ public class CCJudger extends PluginExtendedJudger {
     @SneakyThrows
     protected CompileResult doCompile() {
         String script = getLanguageEnv().getCompilation().getScript();
-        Files.write(getCompileScriptPath(), script.getBytes());
-        logger.info("<After compile> Files under src: {}.", stream(requireNonNull(getSourceRootPath().toFile().listFiles())).map(f -> f.getName() + (f.isDirectory() ? "/" : "")).collect(Collectors.joining(",")));
+        Files.write(getCompileScriptPath(), script.getBytes(StandardCharsets.UTF_8));
         Compiler compiler = compilerFactory.create(getSourceRootPath());
         CompileResult result = compiler.compile(getLanguageEnv().getCompilation());
         if (result.isSuccessful()) {
@@ -214,19 +211,33 @@ public class CCJudger extends PluginExtendedJudger {
 
     @NotNull
     private Set<String> generateFilesOtherThanOutFilesFromSandboxRoot(Path sandboxRootPath) {
-        var files = stream(requireNonNull(sandboxRootPath.toFile().listFiles()))
-                .map(File::getName).collect(Collectors.toSet());
-        files.add("std.out");
-        files.add("std.err");
-        files.add(EXECUTABLE_NAME);
-        return files;
+        File[] obj = sandboxRootPath.toFile().listFiles();
+        if (obj != null && obj.length > 0) {
+            var files = mapToSet(obj, File::getName);
+            files.add("std.out");
+            files.add("std.err");
+            files.add(EXECUTABLE_NAME);
+            return files;
+        } else {
+            return new HashSet<>();
+        }
     }
 
     @NotNull
     private Set<File> filterInFilesFromSandboxRoot(Path sandboxRootPath) {
-        return stream(requireNonNull(sandboxRootPath.toFile().listFiles()))
-                .filter(f -> !f.getName().equals("std.in") && !f.getName().equals(EXECUTABLE_NAME))
-                .collect(Collectors.toSet());
+        File file = sandboxRootPath.toFile();
+        if (file.exists() && file.isDirectory()) {
+            File[] files = file.listFiles();
+            if (files != null && files.length > 0) {
+                return stream(files)
+                        .filter(f -> !f.getName().equals("std.in") && !f.getName().equals(EXECUTABLE_NAME))
+                        .collect(Collectors.toSet());
+            } else {
+                return new HashSet<>();
+            }
+        } else {
+            return new HashSet<>();
+        }
     }
 
     private void copyExecutableIntoSandboxRoot(Testcase testcase) throws IOException {
@@ -260,8 +271,13 @@ public class CCJudger extends PluginExtendedJudger {
 
     @Override
     protected void onAfterRunningTestcase(Testcase testcase) {
-        actualOutFiles = new HashSet<>(
-                asList(requireNonNull(getSandboxRoot(testcase).getPath().toFile().listFiles())));
+        File[] files = getSandboxRoot(testcase).getPath().toFile().listFiles();
+        if (files != null) {
+            actualOutFiles = new HashSet<>(
+                    asList(files));
+        } else {
+            actualOutFiles = new HashSet<>();
+        }
         actualOutFiles.removeIf(f -> filesWithinSandboxRootOtherThanOutFiles.contains(f.getName()));
     }
 

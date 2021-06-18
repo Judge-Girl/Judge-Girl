@@ -19,14 +19,9 @@ import tw.waterball.judgegirl.primitives.problem.JudgePluginTag;
  * @author - johnny850807@gmail.com (Waterball)
  */
 public class JudgeGirlPluginNotFoundException extends RuntimeException {
-    private JudgePluginTag judgePluginTag;
 
     public JudgeGirlPluginNotFoundException(JudgePluginTag judgePluginTag) {
         super(String.format("The plugin %s not found.", judgePluginTag));
-        this.judgePluginTag = judgePluginTag;
     }
 
-    public JudgePluginTag getJudgePluginTag() {
-        return judgePluginTag;
-    }
 }

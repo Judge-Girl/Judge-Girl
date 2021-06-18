@@ -42,6 +42,7 @@ public class MembershipData {
     @AllArgsConstructor
     @NoArgsConstructor
     public static class Id implements Serializable {
+        private static final long serialVersionUID = 1L;
         @Column(name = "group_id")
         private int groupId;
         @Column(name = "member_id")

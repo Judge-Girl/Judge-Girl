@@ -67,7 +67,7 @@ public class ZipResultMatcher implements ResultMatcher {
                     fileNameSet.contains(fileName));
             fileNameSet.remove(fileName);
             MultipartFile expectFile = fileNameToFileMap.get(zipEntry.getName());
-            String expectContent = new String(expectFile.getBytes());
+            String expectContent = new String(expectFile.getBytes(),StandardCharsets.UTF_8);
             assertEquals(expectContent, IOUtils.toString(zis, StandardCharsets.UTF_8),
                     String.format("File: <%s>'s content not matched.", fileName));
         }

@@ -21,6 +21,7 @@ import tw.waterball.judgegirl.commons.token.TokenInvalidException;
 import tw.waterball.judgegirl.commons.token.TokenService;
 
 import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 /**
@@ -32,7 +33,7 @@ public class JwtTokenService implements TokenService {
 
     public JwtTokenService(String secret,
                            long expiration) {
-        key = Keys.hmacShaKeyFor(secret.getBytes());
+        key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
         this.expiration = new Date(expiration);
     }
 
@@ -80,9 +81,4 @@ public class JwtTokenService implements TokenService {
                 .signWith(key).compact();
     }
 
-    private String compactTokenStringWithoutExpiration(Identity identity) {
-        return Jwts.builder()
-                .setClaims(identity.getClaimMap())
-                .signWith(key).compact();
-    }
 }

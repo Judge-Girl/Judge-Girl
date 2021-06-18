@@ -41,7 +41,7 @@
         <intellij.annotations.version>12.0</intellij.annotations.version>
         <lombok.version>1.18.12</lombok.version>
         <javax.inject.version>1</javax.inject.version>
-        <javax.validation.version>2.0.0.Final</javax.validation.version>
+        <javax.validation.version>2.0.1.Final</javax.validation.version>
         <org.hibernate-validator.version>6.0.10.Final</org.hibernate-validator.version>
         <javax.el.version>3.0.0</javax.el.version>
         <org.glassfish.web.javax.el.version>2.2.6</org.glassfish.web.javax.el.version>
@@ -52,6 +52,8 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <maven-checkstyle-plugin.version>3.1.2</maven-checkstyle-plugin.version>
         <puppycrawl.checkstyle.version>8.40</puppycrawl.checkstyle.version>
+        <maven-spotbugs-maven-plugin.version>4.2.0</maven-spotbugs-maven-plugin.version>
+        <spotbugs-plugin.version>4.2.3</spotbugs-plugin.version>
     </properties>
 
     <dependencyManagement>
@@ -125,6 +127,7 @@
             <artifactId>log4j-core</artifactId>
         </dependency>
 
+
         <!-- Start of Shared Components -->
     </dependencies>
 
@@ -135,6 +138,14 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-checkstyle-plugin</artifactId>
                     <version>${maven-checkstyle-plugin.version}</version>
+                    <executions>
+                        <execution>
+                            <phase>prepare-package</phase>
+                            <goals>
+                                <goal>check</goal>
+                            </goals>
+                        </execution>
+                    </executions>
                     <dependencies>
                         <dependency>
                             <groupId>com.puppycrawl.tools</groupId>
@@ -143,8 +154,10 @@
                         </dependency>
                     </dependencies>
                 </plugin>
+
             </plugins>
         </pluginManagement>
+
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -193,6 +206,65 @@
                     <execution>
                         <id>validate</id>
                         <phase>validate</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.github.spotbugs</groupId>
+                <artifactId>spotbugs-maven-plugin</artifactId>
+                <version>${maven-spotbugs-maven-plugin.version}</version>
+                <configuration>
+                    <threshold>Low</threshold>
+                    <effort>Max</effort>
+                    <debug>true</debug>
+                    <xmlOutput>true</xmlOutput>
+                    <xmlOutputDirectory>target/</xmlOutputDirectory>
+                    <omitVisitors>
+                        <!-- EI2: May expose internal representation by incorporating reference to mutable object
+                        Omit reason:
+                        -->
+                        <!--                        FindReturnRef,-->
+                        <!-- UwF: Field not initialized in constructor but dereferenced without null check
+                        Omit reason: When annotate a Map field with Lombok's @Singular annotation,
+                        lombok builder doesn't check the nullity of the map, causing the inevitable failure on this bug detection -->
+                        UnreadFields,
+                        <!-- Nm: Class names shouldn’t shadow simple name of implemented interface.
+                        Omit reason: We typically tolerate our Presenter (clean architecture) to shadow its name from its interface,
+                        Example: `class SubmissionPresenter implements tw.waterball.judgegirl.submission.domain.usecases.SubmissionPresenter`
+                        -->
+                        Naming,
+                        <!-- UPM: Private method is never called.
+                        Omit reason: False Positive, some methods are actually called by Spring boot.
+                        Example: `DockerJudgerDeployer.removeAllExitedJudgerContainers` -->
+                        FindUncalledPrivateMethods,
+                        <!-- DMI: Code contains a hard coded reference to an absolute pathname
+                        Omit reason: In a container, the hard-coded reference to an absolute pathname is acceptable.
+                        Example: `tw.waterball.judgegirl.judger.filelayout.AbstractItem.getAbsolutePath` -->
+                        DumbMethodInvocations,
+                        <!-- UW: Unconditional wait, Wa: Wait not in loop
+                        Omit reason: `tw.waterball.judgegirl.commons.utils.NotifyWaitLock` is an util class which is an encapsulation of 'lock'
+                        and so it doesn't require condition to meet during notify-and-wait.
+                        -->
+                        FindUnconditionalWait, WaitInLoop,
+                        <!-- EI: May expose internal representation by returning reference to mutable object
+                            EI2: May expose internal representation by incorporating reference to mutable object
+                            Omit reason: Too strict. Classes currently tightly coupled with 'java.util.Date' class which is mutable.-->
+                        FindReturnRef
+                    </omitVisitors>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>com.github.spotbugs</groupId>
+                        <artifactId>spotbugs</artifactId>
+                        <version>${spotbugs-plugin.version}</version>
+                    </dependency>
+                </dependencies>
+                <executions>
+                    <execution>
+                        <phase>compile</phase>
                         <goals>
                             <goal>check</goal>
                         </goals>

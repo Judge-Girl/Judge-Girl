@@ -1,8 +1,8 @@
 package tw.waterball.judgegirl.springboot.advices.instrumentation;
 
 
+import java.security.SecureRandom;
 import java.util.Arrays;
-import java.util.Random;
 
 /**
  * Reference: https://github.com/open-telemetry/opentelemetry-java/blob/main/api/all/src/main/java/io/opentelemetry/api/trace/TraceId.java
@@ -25,7 +25,7 @@ public final class TraceIds {
     private static final int BYTES_LENGTH = 16;
     private static final int HEX_LENGTH = 2 * BYTES_LENGTH;
     private static final String INVALID = "00000000000000000000000000000000";
-    private static final Random RANDOM = new Random();
+    private static final SecureRandom RANDOM = new SecureRandom();
 
     private TraceIds() {
     }

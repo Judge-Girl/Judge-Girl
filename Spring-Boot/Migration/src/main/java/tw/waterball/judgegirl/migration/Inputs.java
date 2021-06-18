@@ -13,7 +13,9 @@
 
 package tw.waterball.judgegirl.migration;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
+import java.util.Locale;
 import java.util.Scanner;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -22,11 +24,12 @@ import java.util.function.Predicate;
  * @author - johnny850807@gmail.com (Waterball)
  */
 public class Inputs {
-    private static final Scanner scanner = new Scanner(System.in);
+    private static final Scanner scanner = new Scanner(System.in, StandardCharsets.UTF_8);
 
     public static boolean inputForYesOrNo(String message) {
         System.out.println(message + " [y/n]: ");
-        String next = scanner.next().trim().toLowerCase();
+        Locale locale = new Locale("en", "US");
+        String next = scanner.next().trim().toLowerCase(locale);
         if ("y".equals(next)) {
             return true;
         } else if ("n".equals(next)) {
@@ -37,7 +40,8 @@ public class Inputs {
 
     public static boolean inputForYesOrNo(String message, boolean defaultBoolean) {
         System.out.println(message + " [y/n]: ");
-        String next = scanner.next().trim().toLowerCase();
+        Locale locale = new Locale("en", "US");
+        String next = scanner.next().trim().toLowerCase(locale);
         if (next.isEmpty()) {
             return defaultBoolean;
         } else if ("y".equals(next)) {

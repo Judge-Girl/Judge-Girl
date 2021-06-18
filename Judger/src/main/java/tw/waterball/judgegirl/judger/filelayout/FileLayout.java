@@ -41,7 +41,11 @@ public class FileLayout {
                 }
             });
         } catch (RuntimeException err) {
-            throw (IOException) err.getCause();
+            Throwable cause = err.getCause();
+            if (cause instanceof IOException) {
+                throw (IOException) cause;
+            }
+            throw err;
         }
     }
 

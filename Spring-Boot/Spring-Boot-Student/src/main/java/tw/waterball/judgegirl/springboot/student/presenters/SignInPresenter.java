@@ -19,6 +19,8 @@ import tw.waterball.judgegirl.primitives.Student;
 import tw.waterball.judgegirl.springboot.student.controllers.LoginResponse;
 import tw.waterball.judgegirl.studentservice.domain.usecases.student.LoginUseCase;
 
+import java.util.Date;
+
 /**
  * @author chaoyulee chaoyu2330@gmail.com
  */
@@ -46,7 +48,11 @@ public class SignInPresenter implements LoginUseCase.Presenter {
     }
 
     public LoginResponse present() {
+        Date expiration = token.getExpiration();
+        if (expiration == null) {
+            throw new RuntimeException("token expiration is null");
+        }
         return new LoginResponse(student.getId(), student.getEmail(), token.toString(),
-                token.getExpiration().getTime(), student.isAdmin());
+                expiration.getTime(), student.isAdmin());
     }
 }

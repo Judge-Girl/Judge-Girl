@@ -5,3 +5,9 @@ spring:
       ddl-auto: none
   datasource:
     initialization-mode: always
+
+logging:
+  level:
+    tw:
+      waterball:
+        judgegirl: trace

@@ -24,6 +24,7 @@ import tw.waterball.judgegirl.studentapi.clients.view.StudentView;
 import tw.waterball.judgegirl.studentservice.domain.usecases.student.*;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -146,8 +147,12 @@ class AuthPresenter implements AuthUseCase.Presenter {
     }
 
     LoginResponse present() {
+        Date expiration = token.getExpiration();
+        if (expiration == null) {
+            throw new RuntimeException("token expiration is null");
+        }
         return new LoginResponse(token.getStudentId(), student.getEmail(), token.toString(),
-                token.getExpiration().getTime(), student.isAdmin());
+                expiration.getTime(), student.isAdmin());
     }
 }
 

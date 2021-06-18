@@ -25,6 +25,7 @@ public class Examinee {
     @Getter
     @AllArgsConstructor
     public static class Id implements Serializable {
+        private static final long serialVersionUID = 1L;
         private final int examId;
         private final int studentId;
     }

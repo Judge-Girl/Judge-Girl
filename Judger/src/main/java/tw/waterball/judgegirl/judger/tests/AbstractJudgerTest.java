@@ -41,10 +41,10 @@ import static tw.waterball.judgegirl.submissionapi.views.SubmissionView.toViewMo
  * @author - johnny850807@gmail.com (Waterball)
  */
 public abstract class AbstractJudgerTest {
-    public static String problemHomePath;
-    public static String providedCodesHomeFormat;
-    public static String testcaseIOsHomeFormat;
-    public static String submittedCodesHomeFormat;
+    static String problemHomePath;
+    static String providedCodesHomeFormat;
+    static String testcaseIOsHomeFormat;
+    static String submittedCodesHomeFormat;
     public static final Language CURRENTLY_ONLY_SUPPORT_C = Language.C;
     private final int studentId = 1234;
     private int problemId;
@@ -56,7 +56,7 @@ public abstract class AbstractJudgerTest {
     private CCJudger judger;
 
     @BeforeAll
-    static void beforeAll() {
+    protected static void beforeAll() {
         problemHomePath = System.getenv("JUDGER_TEST_PROBLEM_HOME");
         if (problemHomePath == null) {
             throw new IllegalArgumentException("Require an env var: JUDGER_TEST_PROBLEM_HOME");
@@ -64,7 +64,7 @@ public abstract class AbstractJudgerTest {
         providedCodesHomeFormat = problemHomePath + "/%s/providedCodes"; // (1: problem's id)
         testcaseIOsHomeFormat = problemHomePath + "/%s/testcases"; // (1: problem's id)
         submittedCodesHomeFormat = problemHomePath + "/%s/%s/submitted"; // (1: problem's id, 2: judge status)
-        System.out.printf("Problem home: %s\n", problemHomePath);
+        System.out.printf("Problem home: %s%n", problemHomePath);
     }
 
     @BeforeEach

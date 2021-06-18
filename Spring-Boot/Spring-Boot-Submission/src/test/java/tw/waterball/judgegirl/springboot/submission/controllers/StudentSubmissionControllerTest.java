@@ -14,6 +14,7 @@ package tw.waterball.judgegirl.springboot.submission.controllers;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.springframework.http.MediaType;
 import org.springframework.util.LinkedMultiValueMap;
 import tw.waterball.judgegirl.primitives.problem.JudgeStatus;
@@ -70,6 +71,7 @@ public class StudentSubmissionControllerTest extends AbstractSubmissionControlle
     }
 
     @Test
+    @Timeout(5)
     void WhenSubmitCodeWithAdminToken_ShouldCompleteJudgeFlow_SaveAndBringSubmissionBagToJudger() throws Exception {
         SubmissionView submission = submitCodeAndGet(ADMIN_ID, ADMIN_TOKEN);
         assertThat("Admin's submission should have bag in the responded submission",
@@ -88,6 +90,7 @@ public class StudentSubmissionControllerTest extends AbstractSubmissionControlle
     }
 
     @Test
+    @Timeout(5)
     void WhenSubmitCodeWithValidToken_ShouldCompleteJudgeFlow() throws Exception {
         SubmissionView submission = submitCodeAndGet(STUDENT1_ID, STUDENT1_TOKEN);
 
@@ -237,15 +240,16 @@ public class StudentSubmissionControllerTest extends AbstractSubmissionControlle
 //    }
 
     @Test
+    @Timeout(5)
     void GiveSubmitTwoCodesWithAdminTokenAndJudgeFlowHasCompleted_WhenGetBestSubmission_ShouldRespondTheBestOne() throws Exception {
         SubmissionView firstSubmission = submitCodeAndGet(ADMIN_ID, ADMIN_TOKEN);
         SubmissionView secondSubmission = submitCodeAndGet(ADMIN_ID, ADMIN_TOKEN);
         publishVerdictAfterTheWhile(firstSubmission,
                 toViewModel(verdict().AC(1, 100, 10).build()));
-        shouldNotifyVerdictIssuedEventHandlerWithTimeout(3000);
+        shouldNotifyVerdictIssuedEventHandlerWithTimeout();
         publishVerdictAfterTheWhile(secondSubmission,
                 toViewModel(verdict().RE(2, 200).build()));
-        shouldNotifyVerdictIssuedEventHandlerWithTimeout(3000);
+        shouldNotifyVerdictIssuedEventHandlerWithTimeout();
 
         SubmissionView bestSubmission = getBestSubmission(ADMIN_ID);
 

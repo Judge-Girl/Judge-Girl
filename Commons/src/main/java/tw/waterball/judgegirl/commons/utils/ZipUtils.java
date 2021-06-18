@@ -13,11 +13,11 @@
 
 package tw.waterball.judgegirl.commons.utils;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import tw.waterball.judgegirl.commons.models.files.StreamingResource;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -29,8 +29,8 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 import static java.util.Arrays.stream;
-import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
+import static org.apache.commons.io.FileUtils.forceMkdir;
 import static tw.waterball.judgegirl.commons.utils.ArrayUtils.contains;
 
 /**
@@ -39,9 +39,6 @@ import static tw.waterball.judgegirl.commons.utils.ArrayUtils.contains;
  * @author - johnny850807@gmail.com (Waterball)
  */
 public class ZipUtils {
-    public static ByteArrayInputStream zipClassPathResourcesToStream(String... resourcePaths) {
-        return new ByteArrayInputStream(zipFilesFromResources(resourcePaths));
-    }
 
     public static byte[] zipFilesFromResources(String... resourcePaths) {
         return zip(stream(resourcePaths)
@@ -86,11 +83,11 @@ public class ZipUtils {
         return baos.toByteArray();
     }
 
-    public static byte[] zip(String fileName, String str) {
-        return zip(fileName, new ByteArrayInputStream(str.getBytes()));
+    public static byte[] zip(String fileName, String str) throws IOException {
+        return zip(fileName, new ByteArrayInputStream(str.getBytes(StandardCharsets.UTF_8)));
     }
 
-    public static ByteArrayInputStream zipToStream(String fileName, String str) {
+    public static ByteArrayInputStream zipToStream(String fileName, String str) throws IOException {
         return new ByteArrayInputStream(zip(fileName, str));
     }
 
@@ -100,7 +97,10 @@ public class ZipUtils {
             ZipEntry entry;
             while ((entry = zin.getNextEntry()) != null) {
                 Path path = destinationPath.resolve(entry.getName());
-                FileUtils.forceMkdir(path.getParent().toFile());
+                Path parent = path.getParent();
+                if (parent != null) {
+                    forceMkdir(parent.toFile());
+                }
                 if (entry.isDirectory()) {
                     if (!Files.exists(path)) {
                         Files.createDirectory(path);
@@ -139,7 +139,11 @@ public class ZipUtils {
         if (!directory.isDirectory()) {
             throw new IllegalArgumentException("The file " + directory.getAbsolutePath() + " is not a directory.");
         }
-        zipFromFile(requireNonNull(directory.listFiles()), out, ignoredFileNames);
+        File[] files = directory.listFiles();
+        if (files != null) {
+            zipFromFile(files, out, ignoredFileNames);
+        }
+
     }
 
     public static void zipFromFile(File file, OutputStream out, String... ignoredFileNames) {
@@ -172,10 +176,14 @@ public class ZipUtils {
                                       ZipOutputStream zipos, String... ignoredFileNames) throws IOException {
         if (!contains(ignoredFileNames, file.getName())) {
             if (file.isDirectory()) {
-                for (String fileName : requireNonNull(file.list())) {
-                    writeZipEntry(path + file.getName() + "/",
-                            new File(file, fileName), zipos, ignoredFileNames);
+                String[] files = file.list();
+                if (files != null) {
+                    for (String fileName : files) {
+                        writeZipEntry(path + file.getName() + "/",
+                                new File(file, fileName), zipos, ignoredFileNames);
+                    }
                 }
+
             } else {
                 writeFileAsZipEntry(path + file.getName(), zipos,
                         new FileInputStream(file));
@@ -192,10 +200,4 @@ public class ZipUtils {
         zipos.closeEntry();
     }
 
-    private static String removeTrailingSeparator(String path) {
-        if (path.charAt(path.length() - 1) == File.separatorChar) {
-            path = path.substring(0, path.length() - 1);
-        }
-        return path;
-    }
 }

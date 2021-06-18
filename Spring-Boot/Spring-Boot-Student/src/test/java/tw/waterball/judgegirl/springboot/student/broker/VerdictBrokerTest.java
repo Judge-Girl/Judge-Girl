@@ -2,6 +2,7 @@ package tw.waterball.judgegirl.springboot.student.broker;
 
 import com.github.fridujo.rabbitmq.mock.MockConnectionFactory;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,10 +57,11 @@ class VerdictBrokerTest extends AbstractSpringBootTest {
     }
 
     @Test
+    @Timeout(5)
     void WhenPublishVerdict_ShouldBroadcast() {
         publishVerdict(submission("A")
                 .AC(10, 10, 100).build(100, 200, "JAVA"));
-        verdictBroker.onHandlingCompletion$.doWait(3000);
+        verdictBroker.onHandlingCompletion$.doWait();
 
         verify(simpMessagingTemplate).convertAndSend(eq("/topic/problems/200/verdicts"), isA(VerdictIssuedEvent.class));
         verify(simpMessagingTemplate).convertAndSend(eq("/topic/students/100/verdicts"), isA(VerdictIssuedEvent.class));
@@ -71,9 +73,11 @@ class VerdictBrokerTest extends AbstractSpringBootTest {
     }
 
     @Test
+    @Timeout(5)
     void WhenPublishLiveSubmission_ShouldBroadcast() {
         publishLiveSubmissions(submission("A").CE(100).build(1, 2, "C"));
-        liveSubmissionsBroker.onHandlingCompletion$.doWait(3000);
+
+        liveSubmissionsBroker.onHandlingCompletion$.doWait();
 
         verify(simpMessagingTemplate).convertAndSend(eq("/topic/problems/2/submissions"), isA(LiveSubmissionEvent.class));
         verify(simpMessagingTemplate).convertAndSend(eq("/topic/students/1/submissions"), isA(LiveSubmissionEvent.class));
