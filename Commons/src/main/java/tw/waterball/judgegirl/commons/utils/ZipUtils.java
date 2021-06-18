@@ -29,7 +29,6 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 import static java.util.Arrays.stream;
-import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.io.FileUtils.forceMkdir;
 import static tw.waterball.judgegirl.commons.utils.ArrayUtils.contains;
@@ -142,7 +141,7 @@ public class ZipUtils {
         }
         File[] files = directory.listFiles();
         if (files != null) {
-            zipFromFile(requireNonNull(files), out, ignoredFileNames);
+            zipFromFile(files, out, ignoredFileNames);
         }
 
     }
