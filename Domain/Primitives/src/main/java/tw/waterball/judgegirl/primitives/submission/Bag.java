@@ -125,15 +125,19 @@ public class Bag implements Map<String, String> {
             return true;
         }
         if (o == null || getClass() != o.getClass()) {
+            if (o instanceof Map) {
+                return map.equals(o);
+            }
             return false;
+        } else {
+            Bag bag = (Bag) o;
+            return map.equals(bag.map);
         }
-        Bag bag = (Bag) o;
-        return map.equals(bag.map);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(map);
+        return map.hashCode();
     }
 
     @Override
