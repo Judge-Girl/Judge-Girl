@@ -271,7 +271,7 @@ public class StudentSubmissionControllerTest extends AbstractSubmissionControlle
         mockMvc.perform(post("/api/submissions/{submissionId}/judge", submission.getId()))
                 .andExpect(status().isOk());
 
-        allSubmissionsShouldDeployJudger(submissionRepository.query(SubmissionQueryParams.builder().build()));
+        allSubmissionsShouldDeployJudger(submissionRepository.query(SubmissionQueryParams.EMPTY));
         allOfTheStudentSubmissionsShouldHaveTheSameFileIds(ADMIN_TOKEN);
     }
 
