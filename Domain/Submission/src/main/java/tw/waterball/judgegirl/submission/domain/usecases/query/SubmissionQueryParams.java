@@ -30,6 +30,7 @@ import static java.util.Optional.ofNullable;
 @Data
 @Builder
 public class SubmissionQueryParams {
+    public static final SubmissionQueryParams EMPTY = SubmissionQueryParams.builder().build();
     @Nullable
     private final Integer page;
     @Nullable

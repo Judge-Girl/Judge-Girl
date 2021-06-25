@@ -80,8 +80,7 @@ import static java.util.Arrays.stream;
 import static java.util.Optional.of;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -104,12 +103,14 @@ import static tw.waterball.judgegirl.testkit.resultmatchers.ZipResultMatcher.zip
 @ContextConfiguration(classes = {SpringBootSubmissionApplication.class, AbstractSubmissionControllerTest.TestConfig.class})
 public class AbstractSubmissionControllerTest extends AbstractSpringBootTest {
     public static final int ADMIN_ID = 12345;
+    public static final int ADMIN_ID2 = 12348;
     public static final int STUDENT1_ID = 22;
     public static final int STUDENT2_ID = 34;
     protected final String API_PREFIX = "/api/problems/{problemId}/" + Language.C + "/students/{studentId}/submissions";
     protected final Problem problem = ProblemStubs.problemTemplate().build();
     protected final String SUBMISSION_EXCHANGE_NAME = "submissions";
     protected Token ADMIN_TOKEN;
+    protected Token ADMIN_TOKEN2;
     protected Token STUDENT1_TOKEN;
     protected Token STUDENT2_TOKEN;
 
@@ -180,6 +181,7 @@ public class AbstractSubmissionControllerTest extends AbstractSpringBootTest {
         put("int", "1");
         put("long", "1");
         put("string", "h");
+        put("examId", "1");
     }};
 
 
@@ -201,6 +203,7 @@ public class AbstractSubmissionControllerTest extends AbstractSpringBootTest {
     @BeforeEach
     void setup() {
         ADMIN_TOKEN = tokenService.createToken(admin(ADMIN_ID));
+        ADMIN_TOKEN2 = tokenService.createToken(admin(ADMIN_ID2));
         amqpAdmin.declareExchange(new TopicExchange(SUBMISSION_EXCHANGE_NAME));
         STUDENT1_TOKEN = tokenService.createToken(student(STUDENT1_ID));
         STUDENT2_TOKEN = tokenService.createToken(student(STUDENT2_ID));
@@ -232,9 +235,9 @@ public class AbstractSubmissionControllerTest extends AbstractSpringBootTest {
     }
 
     protected void shouldDeployJudger(SubmissionView submissionView, Spec<Submission>[] specs) {
-        ArgumentCaptor<Problem> problemArgumentCaptor = ArgumentCaptor.forClass(Problem.class);
-        ArgumentCaptor<Integer> studentIdArgumentCaptor = ArgumentCaptor.forClass(Integer.class);
-        ArgumentCaptor<Submission> submissionArgumentCaptor = ArgumentCaptor.forClass(Submission.class);
+        var problemArgumentCaptor = ArgumentCaptor.forClass(Problem.class);
+        var studentIdArgumentCaptor = ArgumentCaptor.forClass(Integer.class);
+        var submissionArgumentCaptor = ArgumentCaptor.forClass(Submission.class);
 
         verify(judgerDeployer).deployJudger(problemArgumentCaptor.capture(), studentIdArgumentCaptor.capture(),
                 submissionArgumentCaptor.capture());
@@ -243,6 +246,23 @@ public class AbstractSubmissionControllerTest extends AbstractSpringBootTest {
         assertEquals(toViewModel(problem), toViewModel(problemArgumentCaptor.getValue()));
         assertEquals(submissionView, toViewModel(actualSubmission));
         stream(specs).forEach(s -> s.verify(actualSubmission));
+    }
+
+    protected void allSubmissionsShouldDeployJudger(List<Submission> submissions) {
+        var problemArgumentCaptor = ArgumentCaptor.forClass(Problem.class);
+        var studentIdArgumentCaptor = ArgumentCaptor.forClass(Integer.class);
+        var submissionArgumentCaptor = ArgumentCaptor.forClass(Submission.class);
+
+        verify(judgerDeployer, times(submissions.size())).deployJudger(
+                problemArgumentCaptor.capture(), studentIdArgumentCaptor.capture(), submissionArgumentCaptor.capture());
+        List<Problem> problemArguments = problemArgumentCaptor.getAllValues();
+        List<Integer> studentIdArguments = studentIdArgumentCaptor.getAllValues();
+        List<Submission> submissionArguments = submissionArgumentCaptor.getAllValues();
+        for (int i = 0; i < submissions.size(); i++) {
+            assertEquals(toViewModel(problem), toViewModel(problemArguments.get(i)));
+            assertEquals(submissions.get(i).getStudentId(), studentIdArguments.get(i));
+            assertEquals(toViewModel(submissions.get(i)), toViewModel(submissionArguments.get(i)));
+        }
     }
 
     protected Spec<Submission> shouldBringSubmissionBagToJudger() {

@@ -17,10 +17,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.springframework.http.MediaType;
 import org.springframework.util.LinkedMultiValueMap;
+import tw.waterball.judgegirl.commons.token.TokenService.Token;
 import tw.waterball.judgegirl.primitives.problem.JudgeStatus;
 import tw.waterball.judgegirl.primitives.problem.Language;
 import tw.waterball.judgegirl.primitives.submission.Bag;
 import tw.waterball.judgegirl.primitives.submission.events.LiveSubmissionEvent;
+import tw.waterball.judgegirl.submission.domain.usecases.query.SubmissionQueryParams;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 import tw.waterball.judgegirl.submissionapi.views.VerdictView;
 import tw.waterball.judgegirl.testkit.resultmatchers.ZipResultMatcher;
@@ -37,6 +39,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static tw.waterball.judgegirl.primitives.problem.JudgeStatus.AC;
@@ -259,6 +262,42 @@ public class StudentSubmissionControllerTest extends AbstractSubmissionControlle
     private SubmissionView getBestSubmission(int studentId) throws Exception {
         return getBody(mockMvc.perform(get(API_PREFIX + "/best", problem.getId(), studentId))
                 .andExpect(status().isOk()), SubmissionView.class);
+    }
+
+    @Test
+    void GivenAStudentHasOneSubmission_WhenRejudgeThatSubmission_ThenTheJudgerShouldBeDeployedAndStudentShouldHaveTwoSubmissionsWithTheSameFileIds() throws Exception {
+        var submission = submitCodeAndGet(ADMIN_ID, ADMIN_TOKEN);
+
+        mockMvc.perform(post("/api/submissions/{submissionId}/judge", submission.getId()))
+                .andExpect(status().isOk());
+
+        allSubmissionsShouldDeployJudger(submissionRepository.query(SubmissionQueryParams.EMPTY));
+        allOfTheStudentSubmissionsShouldHaveTheSameFileIds(ADMIN_TOKEN);
+    }
+
+    @Test
+    void GivenTwoSubmissionsOfAQuestionFrom2Admins_WhenRejudgeAllSubmissionsOfThatQuestion_Then2JudgersAreDeployedAndSubmissionsOfBothAdminsShouldHaveTheSameFileIds() throws Exception {
+        submitCodeAndGet(ADMIN_ID, ADMIN_TOKEN, codes1);
+        submitCodeAndGet(ADMIN_ID2, ADMIN_TOKEN2, codes2);
+
+        mockMvc.perform(post("/api/submissions/judges")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(toJson(new Request(problem.getId(), new Bag("examId", "1")))))
+                .andExpect(status().isOk());
+
+        var submissions = submissionRepository.query(SubmissionQueryParams.EMPTY);
+        assertEquals(4, submissions.size());
+        allSubmissionsShouldDeployJudger(submissions);
+        allOfTheStudentSubmissionsShouldHaveTheSameFileIds(ADMIN_TOKEN);
+        allOfTheStudentSubmissionsShouldHaveTheSameFileIds(ADMIN_TOKEN2);
+    }
+
+    private void allOfTheStudentSubmissionsShouldHaveTheSameFileIds(Token token) throws Exception {
+        var submissions = getSubmissionsInPage(token.getStudentId(), token, 0);
+
+        assertEquals(1, submissions.stream()
+                .map(SubmissionView::getSubmittedCodesFileId)
+                .distinct().count(), "Must have the same file Ids");
     }
 
 }
