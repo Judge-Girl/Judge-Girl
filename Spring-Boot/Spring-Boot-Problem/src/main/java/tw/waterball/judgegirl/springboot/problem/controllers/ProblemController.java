@@ -36,7 +36,6 @@ import tw.waterball.judgegirl.springboot.utils.ResponseEntityUtils;
 import java.util.HashSet;
 import java.util.List;
 
-import static java.util.Objects.nonNull;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
 import static tw.waterball.judgegirl.springboot.utils.MultipartFileUtils.convertMultipartFileToFileResource;
 import static tw.waterball.judgegirl.springboot.utils.MultipartFileUtils.convertMultipartFilesToFileResources;
@@ -66,26 +65,28 @@ public class ProblemController {
     private final UploadProvidedCodeUseCase uploadProvidedCodeUseCase;
     private final UploadTestcaseIOUseCase uploadTestcaseIOUseCase;
     private final TokenService tokenService;
-    
+
     @GetMapping("/tags")
     public List<String> getTags() {
         return getAllTagsUseCase.execute();
     }
 
     @GetMapping
-    public List<ProblemItem> getProblems(@RequestHeader(value = "Authorization", required = false) String authorization,
-                                         @RequestParam(value = "tags", required = false) String[] tags,
-                                         @RequestParam(value = "page", defaultValue = "0") int page,
-                                         @RequestParam(required = false) int[] ids) {
+    public List<?> getProblems(@RequestHeader(value = "Authorization", required = false) String authorization,
+                               @RequestParam(value = "tags", required = false) String[] tags,
+                               @RequestParam(value = "page", defaultValue = "0") int page,
+                               @RequestParam(required = false) int[] ids) {
         var token = tokenService.parseBearerTokenAndValidate(authorization);
         boolean includeInvisibleProblems = token.isAdmin();
-        var presenter = new GetProblemsPresenter();
-        if (nonNull(ids)) {
+        if (ids != null) {
+            var presenter = new GetProblemsPresenter();
             getProblemsUseCase.execute(new GetProblemsUseCase.Request(includeInvisibleProblems, ids), presenter);
+            return presenter.present();
         } else {
+            var presenter = new GetProblemItemsPresenter();
             getProblemsUseCase.execute(new ProblemQueryParams(tags == null ? new String[0] : tags, page, includeInvisibleProblems), presenter);
+            return presenter.present();
         }
-        return presenter.present();
     }
 
     @GetMapping("/{problemId}")
@@ -239,8 +240,7 @@ class GetProblemPresenter implements GetProblemUseCase.Presenter {
     }
 }
 
-
-class GetProblemsPresenter implements GetProblemsUseCase.Presenter {
+class GetProblemItemsPresenter implements GetProblemsUseCase.Presenter {
     private List<Problem> problems;
 
     @Override
@@ -250,6 +250,19 @@ class GetProblemsPresenter implements GetProblemsUseCase.Presenter {
 
     List<ProblemItem> present() {
         return mapToList(problems, ProblemItem::toProblemItem);
+    }
+}
+
+class GetProblemsPresenter implements GetProblemsUseCase.Presenter {
+    private List<Problem> problems;
+
+    @Override
+    public void showProblems(List<Problem> problems) {
+        this.problems = problems;
+    }
+
+    List<ProblemView> present() {
+        return mapToList(problems, ProblemView::toViewModel);
     }
 }
 
