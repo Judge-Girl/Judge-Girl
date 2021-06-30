@@ -29,7 +29,6 @@ import tw.waterball.judgegirl.primitives.problem.TestcaseIO;
 import tw.waterball.judgegirl.problem.domain.repositories.ProblemQueryParams;
 import tw.waterball.judgegirl.problem.domain.usecases.*;
 import tw.waterball.judgegirl.problem.domain.usecases.PatchProblemUseCase.LanguageEnvUpsert;
-import tw.waterball.judgegirl.problemapi.views.ProblemItem;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.springboot.utils.ResponseEntityUtils;
 
@@ -66,14 +65,14 @@ public class ProblemController {
     private final UploadProvidedCodeUseCase uploadProvidedCodeUseCase;
     private final UploadTestcaseIOUseCase uploadTestcaseIOUseCase;
     private final TokenService tokenService;
-    
+
     @GetMapping("/tags")
     public List<String> getTags() {
         return getAllTagsUseCase.execute();
     }
 
     @GetMapping
-    public List<ProblemItem> getProblems(@RequestHeader(value = "Authorization", required = false) String authorization,
+    public List<ProblemView> getProblems(@RequestHeader(value = "Authorization", required = false) String authorization,
                                          @RequestParam(value = "tags", required = false) String[] tags,
                                          @RequestParam(value = "page", defaultValue = "0") int page,
                                          @RequestParam(required = false) int[] ids) {
@@ -248,8 +247,8 @@ class GetProblemsPresenter implements GetProblemsUseCase.Presenter {
         this.problems = problems;
     }
 
-    List<ProblemItem> present() {
-        return mapToList(problems, ProblemItem::toProblemItem);
+    List<ProblemView> present() {
+        return mapToList(problems, ProblemView::toViewModel);
     }
 }
 
