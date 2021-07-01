@@ -20,7 +20,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.OptionalInt;
 
-import static java.util.Collections.singletonMap;
 import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
 import static tw.waterball.judgegirl.commons.utils.ComparableUtils.betterAndNewer;
 
@@ -90,7 +89,7 @@ public class AnswerQuestionUseCase implements VerdictIssuedEventHandler {
     private SubmitCodeRequest submitCodeRequest(Request request) {
         return new SubmitCodeRequest(request.problemId,
                 request.langEnvName, request.studentId, request.fileResources,
-                new Bag(singletonMap(BAG_KEY_EXAM_ID, String.valueOf(request.examId))));
+                new Bag(BAG_KEY_EXAM_ID, String.valueOf(request.examId)));
     }
 
     private Answer answer(Request request, Question question, SubmissionView submissionView, Date answerTime) {
