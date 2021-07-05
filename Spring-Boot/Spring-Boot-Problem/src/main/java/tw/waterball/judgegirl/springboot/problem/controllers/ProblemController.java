@@ -64,6 +64,7 @@ public class ProblemController {
     private final ArchiveOrDeleteProblemUseCase deleteProblemUseCase;
     private final UploadProvidedCodeUseCase uploadProvidedCodeUseCase;
     private final UploadTestcaseIOUseCase uploadTestcaseIOUseCase;
+    private final RestoreProblemUseCase restoreProblemUseCase;
     private final TokenService tokenService;
 
     @GetMapping("/tags")
@@ -224,6 +225,13 @@ public class ProblemController {
 
             patchProblemUseCase.execute(request);
         });
+    }
+
+    @PatchMapping("/{problemId}/restore")
+    public void restoreProblem(@RequestHeader("Authorization") String authorization,
+                               @PathVariable int problemId) {
+        tokenService.ifAdminToken(authorization,
+                token -> restoreProblemUseCase.execute(problemId));
     }
 }
 

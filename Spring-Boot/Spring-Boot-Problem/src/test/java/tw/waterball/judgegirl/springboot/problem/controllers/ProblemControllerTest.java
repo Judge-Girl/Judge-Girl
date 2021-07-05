@@ -159,7 +159,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     void GivenProblemSaved_WhenGetProblemById_ShouldRespondThatProblem() throws Exception {
         Problem problem = givenOneProblemSaved();
 
-        var actualProblem = getProblem(withToken(adminToken), problem.getId());
+        var actualProblem = getProblem(problem.getId());
 
         assertProblemEquals(toViewModel(problem), actualProblem);
     }
@@ -248,7 +248,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         String randomTitle = randomUUID().toString();
         int id = saveProblemWithTitle(randomTitle);
 
-        assertEquals(randomTitle, getProblem(withToken(adminToken), id).getTitle());
+        assertEquals(randomTitle, getProblem(id).getTitle());
     }
 
     @Test
@@ -259,7 +259,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         expectedProblem.setTitle(newTitle);
         patchProblem(patch -> patch.title(newTitle));
 
-        var actualProblem = getProblem(withToken(adminToken), expectedProblem.getId());
+        var actualProblem = getProblem(expectedProblem.getId());
         assertProblemEquals(toViewModel(expectedProblem), actualProblem);
     }
 
@@ -271,7 +271,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         expectedProblem.setDescription(newDescription);
         patchProblem(patch -> patch.description(newDescription));
 
-        var actualProblem = getProblem(withToken(adminToken), expectedProblem.getId());
+        var actualProblem = getProblem(expectedProblem.getId());
         assertProblemEquals(toViewModel(expectedProblem), actualProblem);
     }
 
@@ -283,7 +283,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         expectedProblem.setOutputMatchPolicyPluginTag(pluginMatchTag);
         patchProblem(patch -> patch.matchPolicyPluginTag(new PatchProblemUseCase.JudgePluginTagItem(pluginMatchTag)));
 
-        var actualProblem = getProblem(withToken(adminToken), expectedProblem.getId());
+        var actualProblem = getProblem(expectedProblem.getId());
         assertProblemEquals(toViewModel(expectedProblem), actualProblem);
     }
 
@@ -298,7 +298,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         expectedProblem.setFilterPluginTags(filterPluginTags);
         patchProblem(patch -> patch.filterPluginTags(mapToList(filterPluginTags, PatchProblemUseCase.JudgePluginTagItem::new)));
 
-        var actualProblem = getProblem(withToken(adminToken), expectedProblem.getId());
+        var actualProblem = getProblem(expectedProblem.getId());
         assertProblemEquals(toViewModel(expectedProblem), actualProblem);
     }
 
@@ -310,7 +310,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         expectedProblem.setTags(newTags);
         patchProblem(patch -> patch.tags(newTags));
 
-        var actualProblem = getProblem(withToken(adminToken), expectedProblem.getId());
+        var actualProblem = getProblem(expectedProblem.getId());
         assertProblemEquals(toViewModel(expectedProblem), actualProblem);
     }
 
@@ -321,7 +321,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         expectedProblem.setVisible(true);
         patchProblem(patch -> patch.visible(true));
 
-        var actualProblem = getProblem(withToken(adminToken), expectedProblem.getId());
+        var actualProblem = getProblem(expectedProblem.getId());
         assertProblemEquals(toViewModel(expectedProblem), actualProblem);
     }
 
@@ -336,7 +336,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         expectedProblem.upsertTestcase(expectedTestcaseUpdate.toValue());
         upsertTestCase(problemId, expectedTestcaseUpdate);
 
-        var actualProblem = getProblem(withToken(adminToken), problemId);
+        var actualProblem = getProblem(problemId);
         assertProblemEquals(toViewModel(expectedProblem), actualProblem);
 
     }
@@ -351,7 +351,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         expectedProblem.upsertTestcase(testcaseUpsert.toValue());
         upsertTestCase(problemId, testcaseUpsert);
 
-        var actualProblem = getProblem(withToken(adminToken), problemId);
+        var actualProblem = getProblem(problemId);
         assertProblemEquals(toViewModel(expectedProblem), actualProblem);
     }
 
@@ -406,7 +406,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         var langEnvUpdate = upsertLanguageEnv(languageEnv, update -> update.setResourceSpecCpu(8));
         upsertLanguageEnv(problemId, langEnvUpdate);
 
-        var actualProblem = getProblem(withToken(adminToken), problemId);
+        var actualProblem = getProblem(problemId);
         var actualLangEnv = actualProblem.getLanguageEnvs().get(0);
         var expectedLangEnv = langEnvUpdate.toValue();
         expectedLangEnv.setProvidedCodesFileId(languageEnv.getProvidedCodesFileId());
@@ -421,7 +421,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         var newJavaEnvUpdate = upsertLanguageEnv(Language.JAVA);
         upsertLanguageEnv(problemId, newJavaEnvUpdate);
 
-        var problem = getProblem(withToken(adminToken), problemId);
+        var problem = getProblem(problemId);
         var languageEnvs = problem.getLanguageEnvs();
         assertEquals(2, languageEnvs.size());
         var actualJavaEnv = problem.getLanguageEnv(Language.JAVA).orElseThrow();
@@ -437,7 +437,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         String providedCodesId = uploadProvidedCodesAndGetFileId(problemId, language, getProvidedCodes());
 
         assertNotNull(providedCodesId);
-        var problem = getProblem(withToken(adminToken), problemId);
+        var problem = getProblem(problemId);
         problemShouldHaveProvidedCodesId(problem, providedCodesId, language);
         assertTrue(existsFile(providedCodesId), "ProvidedCodes haven't been saved.");
 
@@ -458,7 +458,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
 
         String testcaseIosFileId = uploadTestcaseIosAndGetFileId(problemId, testcase.getId(), getTestcaseIOFiles());
 
-        var problem = getProblem(withToken(adminToken), problemId);
+        var problem = getProblem(problemId);
         problemShouldHaveTestcaseIoFileId(problem, testcase.getId(), testcaseIosFileId);
         filesShouldBeSaved("TestcaseIoFiles haven't been saved completely.",
                 getAllTestcaseIoFileIds(toEntity(problem)));
@@ -539,6 +539,19 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
                 .andExpect(status().isNotFound());
     }
 
+    @Test
+    void GivenOneProblemSavedAndArchived_WhenRestoreProblemById_ThenTheProblemShouldNotBeArchived() throws Exception {
+        int problemId = 1;
+        saveProblem(problemId);
+        archiveOrDeleteProblem(problemId);
+        assertTrue(getProblem(problemId).isArchived());
+
+        restoreProblem(problemId);
+
+        var actualProblem = getProblem(problemId);
+        assertFalse(actualProblem.isArchived());
+    }
+
     private void downloadProvidedCodesShouldRespondContent(int problemId, String languageEnv, String providedCodesFileId,
                                                            byte[] expectedContent) throws Exception {
         byte[] actualContent = mockMvc.perform(withToken(adminToken,
@@ -582,6 +595,12 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
                 .andExpect(status().isOk());
     }
 
+    private void restoreProblem(int problemId) throws Exception {
+        mockMvc.perform(withToken(adminToken,
+                patch(API_PREFIX + "/{problemId}/restore", problemId)))
+                .andExpect(status().isOk());
+    }
+
     private void patchProblem(Consumer<PatchProblemUseCase.Request.RequestBuilder> patching) throws Exception {
         var requestBuilder = PatchProblemUseCase.Request.builder();
         patching.accept(requestBuilder);
@@ -614,9 +633,8 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         actualProblems.forEach(problem -> assertTrue(idsSet.contains(problem.getId())));
     }
 
-    private ProblemView getProblem(WithHeader withHeader, int problemId) throws Exception {
-        var request = get(API_PREFIX + "/{problemId}", problemId);
-        withHeader.decorate(request);
+    private ProblemView getProblem(int problemId) throws Exception {
+        var request = withAdminToken(get(API_PREFIX + "/{problemId}", problemId));
         return getBody(mockMvc.perform(request).andExpect(status().isOk()), ProblemView.class);
     }
 
