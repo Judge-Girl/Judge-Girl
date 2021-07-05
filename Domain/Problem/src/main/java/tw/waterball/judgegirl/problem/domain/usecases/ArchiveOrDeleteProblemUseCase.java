@@ -1,5 +1,6 @@
 package tw.waterball.judgegirl.problem.domain.usecases;
 
+import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.primitives.problem.Problem;
 import tw.waterball.judgegirl.problem.domain.repositories.ProblemRepository;
 
@@ -17,9 +18,9 @@ public class ArchiveOrDeleteProblemUseCase extends BaseProblemUseCase {
         super(problemRepository);
     }
 
-    public void execute(int problemId) {
-        problemRepository.findProblemById(problemId)
-                .ifPresent(this::archiveOrDeleteProblem);
+    public void execute(int problemId) throws NotFoundException {
+        var problem = findProblem(problemId);
+        archiveOrDeleteProblem(problem);
     }
 
     private void archiveOrDeleteProblem(Problem problem) {

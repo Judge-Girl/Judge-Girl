@@ -152,8 +152,8 @@ public class MongoProblemRepository implements ProblemRepository {
 
     @Override
     public void archiveProblem(Problem problem) {
-        Update update = update("archived", true);
         Query query = query(where("_id").is(problem.getId()));
+        Update update = update("archived", true);
         mongoTemplate.updateFirst(query, update, ProblemData.class);
     }
 
@@ -228,6 +228,13 @@ public class MongoProblemRepository implements ProblemRepository {
         Problem savedProblem = save(problem);
         removeFileByFileId(originalIoFileId);
         return savedProblem;
+    }
+
+    @Override
+    public void restoreProblem(Problem problem) {
+        Query query = query(where("_id").is(problem.getId()));
+        Update update = update("archived", false);
+        mongoTemplate.updateFirst(query, update, ProblemData.class);
     }
 
     private InputStream compressTestcaseIoFiles(TestcaseIO.Files ioFiles) throws IOException {

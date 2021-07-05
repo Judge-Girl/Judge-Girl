@@ -91,6 +91,12 @@ public class CacheProblemRepository implements ProblemRepository {
     }
 
     @Override
+    public void restoreProblem(Problem problem) {
+        invalidateProblemCache(problem.getId());
+        problemRepository.restoreProblem(problem);
+    }
+
+    @Override
     public boolean problemExists(int problemId) {
         return problemRepository.problemExists(problemId);
     }

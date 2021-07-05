@@ -63,4 +63,6 @@ public interface ProblemRepository {
     void uploadProvidedCodes(Problem problem, Language language, List<FileResource> providedCodes);
 
     Problem uploadTestcaseIO(Problem problem, TestcaseIO.Files ioFiles);
+
+    void restoreProblem(Problem problem);
 }
