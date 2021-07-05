@@ -540,7 +540,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    void GivenOneProblemSavedAndArchived_WhenRestoreProblemById_ThenProblemShouldNotArchived() throws Exception {
+    void GivenOneProblemSavedAndArchived_WhenRestoreProblemById_ThenTheProblemShouldNotBeArchived() throws Exception {
         int problemId = 1;
         saveProblem(problemId);
         archiveOrDeleteProblem(problemId);
