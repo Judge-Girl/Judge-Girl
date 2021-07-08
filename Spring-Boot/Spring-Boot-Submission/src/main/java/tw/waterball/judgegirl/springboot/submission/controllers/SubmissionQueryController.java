@@ -21,6 +21,7 @@ import static tw.waterball.judgegirl.submission.domain.usecases.query.Submission
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
+@CrossOrigin
 @AllArgsConstructor
 @RequestMapping("/api/submissions")
 @RestController
