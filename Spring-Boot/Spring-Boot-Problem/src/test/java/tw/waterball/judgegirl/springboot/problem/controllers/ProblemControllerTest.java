@@ -429,9 +429,9 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    void GivenProblemSaved_WhenDeleteTestcase_ThenShouldDeleteSuccessfully() throws Exception {
+    void GivenProblemAndThreeTestcaseSaved_WhenDeleteTestcaseById_ThenShouldDeleteSuccessfully() throws Exception {
         int problemId = 1;
-        saveProblems(problemId);
+        problemRepository.save(problemTemplate(3).id(problemId).build());
         var problem = getProblem(problemId);
 
         var expectDeletedTestcase = problem.getTestcases().get(0);
@@ -439,7 +439,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
 
         var actualTestcases = getProblem(problemId).getTestcases();
         assertEquals(problem.getTestcases().size() - 1, actualTestcases.size());
-        assertTrue(findFirst(actualTestcases, testcaseView -> testcaseView.id.equals(expectDeletedTestcase.id)).isEmpty());
+        assertTrue(findFirst(actualTestcases, actualTestcase -> actualTestcase.getId().equals(expectDeletedTestcase.getId())).isEmpty());
     }
 
     @Test
@@ -567,19 +567,9 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     }
 
     private void deleteTestCase(int problemId, String testCaseId) throws Exception {
-        mockMvc.perform(delete(API_PREFIX + "/{problemId}/testcases/{testcaseId}", problemId, testCaseId)
-                .accept(MediaType.APPLICATION_JSON))
+        mockMvc.perform(withToken(adminToken,
+                delete(API_PREFIX + "/{problemId}/testcases/{testcaseId}", problemId, testCaseId)))
                 .andExpect(status().isOk());
-    }
-
-    private void assertTestCaseEquals(TestcaseView expectedTestcase, TestcaseView actualTestCase) {
-        assertEquals(expectedTestcase.getName(), actualTestCase.getName());
-        assertEquals(expectedTestcase.getProblemId(), actualTestCase.getProblemId());
-        assertEquals(expectedTestcase.getTimeLimit(), actualTestCase.getTimeLimit());
-        assertEquals(expectedTestcase.getMemoryLimit(), actualTestCase.getMemoryLimit());
-        assertEquals(expectedTestcase.getOutputLimit(), actualTestCase.getOutputLimit());
-        assertEquals(expectedTestcase.getThreadNumberLimit(), actualTestCase.getThreadNumberLimit());
-        assertEquals(expectedTestcase.getGrade(), actualTestCase.getGrade());
     }
 
     private void downloadProvidedCodesShouldRespondContent(int problemId, String languageEnv, String providedCodesFileId,

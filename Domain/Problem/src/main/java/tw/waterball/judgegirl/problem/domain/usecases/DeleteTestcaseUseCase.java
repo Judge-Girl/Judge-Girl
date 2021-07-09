@@ -1,7 +1,6 @@
 package tw.waterball.judgegirl.problem.domain.usecases;
 
 import lombok.AllArgsConstructor;
-import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.problem.domain.repositories.ProblemRepository;
 
 import javax.inject.Named;
@@ -11,18 +10,14 @@ import javax.inject.Named;
  */
 
 @Named
+@AllArgsConstructor
 public class DeleteTestcaseUseCase {
 
-    private final ProblemRepository testCaseRepository;
+    private final ProblemRepository problemRepository;
 
-    public DeleteTestcaseUseCase(ProblemRepository testCaseRepository) {
-        this.testCaseRepository = testCaseRepository;
+    public void execute(Request request) {
+        problemRepository.deleteTestcaseById(request.problemId, request.testcaseId);
     }
-
-    public void execute(Request request) throws NotFoundException {
-        testCaseRepository.deleteTestcaseById(request.problemId, request.testcaseId);
-    }
-
 
     @AllArgsConstructor
     public static class Request {
