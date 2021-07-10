@@ -429,6 +429,20 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
+    void GivenProblemAndThreeTestcaseSaved_WhenDeleteTestcaseById_ThenShouldDeleteSuccessfully() throws Exception {
+        int problemId = 1;
+        problemRepository.save(problemTemplate(3).id(problemId).build());
+        var problem = getProblem(problemId);
+
+        var expectDeletedTestcase = problem.getTestcases().get(0);
+        deleteTestCase(problem.getId(), expectDeletedTestcase.getId());
+
+        var actualTestcases = getProblem(problemId).getTestcases();
+        assertEquals(problem.getTestcases().size() - 1, actualTestcases.size());
+        assertTrue(findFirst(actualTestcases, actualTestcase -> actualTestcase.getId().equals(expectDeletedTestcase.getId())).isEmpty());
+    }
+
+    @Test
     void GivenOneProblemSaved_WhenUploadTwoProvidedCodes_ShouldRespondProvidedCodesFileId_AndIoFiles() throws Exception {
         Language language = Language.C;
         int problemId = 1;
@@ -550,6 +564,12 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
 
         var actualProblem = getProblem(problemId);
         assertFalse(actualProblem.isArchived());
+    }
+
+    private void deleteTestCase(int problemId, String testCaseId) throws Exception {
+        mockMvc.perform(withToken(adminToken,
+                delete(API_PREFIX + "/{problemId}/testcases/{testcaseId}", problemId, testCaseId)))
+                .andExpect(status().isOk());
     }
 
     private void downloadProvidedCodesShouldRespondContent(int problemId, String languageEnv, String providedCodesFileId,

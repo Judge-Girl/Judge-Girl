@@ -118,10 +118,6 @@ public class CacheProblemRepository implements ProblemRepository {
         problemRepository.deleteProblem(problem);
     }
 
-    private void invalidateProblemCache(int problemId) {
-        redisTemplate.delete(getProblemKey(problemId));
-    }
-
     @Override
     public void deleteAll() {
         redisTemplate.delete(getCacheProblemKeys());
@@ -131,6 +127,16 @@ public class CacheProblemRepository implements ProblemRepository {
     @Override
     public void saveTags(List<String> tagList) {
         problemRepository.saveTags(tagList);
+    }
+
+    @Override
+    public void deleteTestcaseById(int problemId, String testcaseId) {
+        invalidateProblemCache(problemId);
+        problemRepository.deleteTestcaseById(problemId, testcaseId);
+    }
+
+    private void invalidateProblemCache(int problemId) {
+        redisTemplate.delete(getProblemKey(problemId));
     }
 
     private Optional<Problem> cacheProblemById(int problemId, GetById<Integer, Optional<Problem>> getActualProblemById) {

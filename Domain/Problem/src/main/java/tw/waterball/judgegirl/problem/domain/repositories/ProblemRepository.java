@@ -60,9 +60,12 @@ public interface ProblemRepository {
 
     void saveTags(List<String> tagList);
 
+    void deleteTestcaseById(int problemId, String testcaseId);
+
     void uploadProvidedCodes(Problem problem, Language language, List<FileResource> providedCodes);
 
     Problem uploadTestcaseIO(Problem problem, TestcaseIO.Files ioFiles);
 
     void restoreProblem(Problem problem);
+
 }

@@ -63,6 +63,7 @@ public class ProblemController {
     private final PatchProblemUseCase patchProblemUseCase;
     private final ArchiveOrDeleteProblemUseCase deleteProblemUseCase;
     private final UploadProvidedCodeUseCase uploadProvidedCodeUseCase;
+    private final DeleteTestcaseUseCase deleteTestcaseUseCase;
     private final UploadTestcaseIOUseCase uploadTestcaseIOUseCase;
     private final RestoreProblemUseCase restoreProblemUseCase;
     private final TokenService tokenService;
@@ -105,6 +106,14 @@ public class ProblemController {
         var presenter = new GetTestCasesPresenter();
         getProblemUseCase.execute(new GetProblemUseCase.Request(problemId), presenter);
         return presenter.present();
+    }
+
+    @DeleteMapping("/{problemId}/testcases/{testcaseId}")
+    public void deleteTestcase(@RequestHeader("Authorization") String authorization,
+                               @PathVariable int problemId,
+                               @PathVariable String testcaseId) {
+        tokenService.ifAdminToken(authorization,
+                token -> deleteTestcaseUseCase.execute(new DeleteTestcaseUseCase.Request(problemId, testcaseId)));
     }
 
     @GetMapping(value = "/{problemId}/{langEnvName}/providedCodes/{providedCodesFileId}",
