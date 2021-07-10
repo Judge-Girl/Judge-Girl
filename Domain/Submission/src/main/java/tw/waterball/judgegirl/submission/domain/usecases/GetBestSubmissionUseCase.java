@@ -20,10 +20,11 @@ public class GetBestSubmissionUseCase {
 
     private final SubmissionRepository submissionRepository;
 
-    public void execute(Request request, Presenter presenter)
-            throws NotFoundException {
-        var params = SubmissionQueryParams.builder()
-                .problemId(request.problemId).studentId(request.studentId).build();
+    public void execute(Request request, Presenter presenter) throws NotFoundException {
+        var params = SubmissionQueryParams.query()
+                .problemId(request.problemId)
+                .languageEnvName(request.langEnvName)
+                .studentId(request.studentId).build();
         Submission bestSubmission = submissionRepository.query(params)
                 .stream()
                 .sorted()

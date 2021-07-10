@@ -53,7 +53,6 @@ public class StudentSubmissionController {
     private final DownloadSubmittedCodesUseCase downloadSubmittedCodesUseCase;
     private final GetBestSubmissionUseCase getBestSubmissionUseCase;
 
-
     @PostMapping
     ResponseEntity<SubmissionView> submit(@RequestHeader("Authorization") String authorization,
                                           @PathVariable int problemId,
