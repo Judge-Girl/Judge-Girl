@@ -655,17 +655,20 @@ class ExamControllerTest extends AbstractSpringBootTest {
 
         final String COLUMN_NAME = "Name";
         final String COLUMN_EMAIL = "Email";
-        final String COLUMN_PROBLEM_1 = problem.title;
-        final String COLUMN_PROBLEM_2 = anotherProblem.title;
+        final String COLUMN_PROBLEM_1_TITLE = problem.title;
+        final String COLUMN_PROBLEM_2_TITLE = anotherProblem.title;
         final String COLUMN_TOTAL_SCORE = "Total Score";
+
         Reader in = new InputStreamReader(new ByteArrayInputStream(response.getContentAsByteArray()));
-        Iterable<CSVRecord> records = CSVFormat.DEFAULT.withHeader(COLUMN_NAME, COLUMN_EMAIL, COLUMN_PROBLEM_1, COLUMN_PROBLEM_2, COLUMN_TOTAL_SCORE).parse(in);
+        Iterable<CSVRecord> records = CSVFormat.DEFAULT.withHeader
+                (COLUMN_NAME, COLUMN_EMAIL, COLUMN_PROBLEM_1_TITLE, COLUMN_PROBLEM_2_TITLE, COLUMN_TOTAL_SCORE)
+                .parse(in);
 
         CSVRecord csvHeader = records.iterator().next();
         assertEquals(COLUMN_NAME, csvHeader.get(COLUMN_NAME));
         assertEquals(COLUMN_EMAIL, csvHeader.get(COLUMN_EMAIL));
-        assertEquals(COLUMN_PROBLEM_1, csvHeader.get(COLUMN_PROBLEM_1));
-        assertEquals(COLUMN_PROBLEM_2, csvHeader.get(COLUMN_PROBLEM_2));
+        assertEquals(COLUMN_PROBLEM_1_TITLE, csvHeader.get(COLUMN_PROBLEM_1_TITLE));
+        assertEquals(COLUMN_PROBLEM_2_TITLE, csvHeader.get(COLUMN_PROBLEM_2_TITLE));
         assertEquals(COLUMN_TOTAL_SCORE, csvHeader.get(COLUMN_TOTAL_SCORE));
 
         Map<String, TranscriptView.ExamineeRecordView> scoreBoard = transcript.scoreBoard;

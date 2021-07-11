@@ -28,10 +28,9 @@ public class ExamTranscriptCsvFilePresenter implements CreateExamTranscriptUseCa
     private List<ProblemView> problems;
     private List<ExamineeRecord> examineeRecords;
     private static final String EXAM_TRANSCRIPT_FILE_NAME = "ExamTranscript.csv";
-    private String COLUMN_NAME = "Name";
-    private String COLUMN_EMAIL = "Email";
-    private String COLUMN_TOTAL_SCORE = "Total Score";
-
+    private static final String COLUMN_NAME = "Name";
+    private static final String COLUMN_EMAIL = "Email";
+    private static final String COLUMN_TOTAL_SCORE = "Total Score";
 
     @Override
     public void showExam(Exam exam) {
