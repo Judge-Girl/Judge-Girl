@@ -30,7 +30,7 @@ public class FindBestRecordUseCase {
     }
 
     @NotNull
-    private List<Submission> findSubmissions(Request request) {
+    private List<Submission> findSubmissions(@NotNull Request request) {
         return submissionRepository.findAllByIds(request.submissionIds);
     }
 

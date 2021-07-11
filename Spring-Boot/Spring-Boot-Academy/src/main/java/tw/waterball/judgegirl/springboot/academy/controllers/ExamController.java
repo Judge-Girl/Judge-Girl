@@ -2,6 +2,8 @@ package tw.waterball.judgegirl.springboot.academy.controllers;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import tw.waterball.judgegirl.academy.domain.repositories.ExamFilter;
@@ -16,6 +18,7 @@ import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.springboot.academy.presenters.ExamPresenter;
 import tw.waterball.judgegirl.springboot.academy.presenters.*;
 import tw.waterball.judgegirl.springboot.academy.view.*;
+import tw.waterball.judgegirl.springboot.utils.ResponseEntityUtils;
 import tw.waterball.judgegirl.studentapi.clients.view.StudentView;
 
 import java.util.List;
@@ -44,7 +47,7 @@ public class ExamController {
     private final AddGroupOfExamineesUseCase addGroupOfExamineesUseCase;
     private final GetExamineesUseCase getExamineesUseCase;
     private final AddExamineesUseCase addExamineesUseCase;
-    private final CalculateExamScoreUseCase calculateExamScoreUseCase;
+    private final CreateExamTranscriptUseCase createExamTranscriptUseCase;
     private final CreateQuestionUseCase createQuestionUseCase;
     private final UpdateQuestionUseCase updateQuestionUseCase;
     private final DeleteQuestionUseCase deleteQuestionUseCase;
@@ -161,8 +164,19 @@ public class ExamController {
                                            @PathVariable int examId) {
         return tokenService.returnIfAdmin(authorization, token -> {
             ExamTranscriptPresenter presenter = new ExamTranscriptPresenter();
-            calculateExamScoreUseCase.execute(examId, presenter);
+            createExamTranscriptUseCase.execute(examId, presenter);
             return presenter.present();
+        });
+    }
+
+    @GetMapping(value = "/exams/{examId}/transcript/csv",
+            produces = "application/csv")
+    public ResponseEntity<InputStreamResource> createCsvFileOfTranscript(@RequestHeader("Authorization") String authorization,
+                                                                         @PathVariable int examId) {
+        return tokenService.returnIfAdmin(authorization, token -> {
+            ExamTranscriptCsvFilePresenter presenter = new ExamTranscriptCsvFilePresenter();
+            createExamTranscriptUseCase.execute(examId, presenter);
+            return ResponseEntityUtils.respondInputStreamResource(presenter.present());
         });
     }
 
