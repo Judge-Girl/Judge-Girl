@@ -13,6 +13,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,7 +27,11 @@ import static java.util.stream.Collectors.toList;
 public class ExamTranscriptCsvFilePresenter implements CreateExamTranscriptUseCase.Presenter {
     private List<ProblemView> problems;
     private List<ExamineeRecord> examineeRecords;
-    public static final String EXAM_TRANSCRIPT_FILE_NAME = "ExamTranscript.csv";
+    private static final String EXAM_TRANSCRIPT_FILE_NAME = "ExamTranscript.csv";
+    private String COLUMN_NAME = "Name";
+    private String COLUMN_EMAIL = "Email";
+    private String COLUMN_TOTAL_SCORE = "Total Score";
+
 
     @Override
     public void showExam(Exam exam) {
@@ -44,12 +49,12 @@ public class ExamTranscriptCsvFilePresenter implements CreateExamTranscriptUseCa
 
     private String[] createExamTranscriptCsvHeader(List<ProblemView> problemViews) {
         List<String> csvHeader = new ArrayList<>();
-        csvHeader.add("Name");
-        csvHeader.add("Email");
+        csvHeader.add(COLUMN_NAME);
+        csvHeader.add(COLUMN_EMAIL);
         for (ProblemView problemView : problemViews) {
             csvHeader.add(problemView.title);
         }
-        csvHeader.add("Total Score");
+        csvHeader.add(COLUMN_TOTAL_SCORE);
         return csvHeader.toArray(new String[0]);
     }
 
@@ -79,7 +84,7 @@ public class ExamTranscriptCsvFilePresenter implements CreateExamTranscriptUseCa
         try {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             CSVPrinter csvPrinter = new CSVPrinter(
-                    new PrintWriter(out),
+                    new PrintWriter(out, false, StandardCharsets.UTF_8),
                     CSVFormat.DEFAULT.withHeader(createExamTranscriptCsvHeader(problems))
             );
 
