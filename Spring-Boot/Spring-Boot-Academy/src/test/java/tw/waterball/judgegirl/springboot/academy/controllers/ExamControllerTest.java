@@ -7,9 +7,7 @@ import org.apache.commons.csv.CSVRecord;
 import org.h2.tools.Server;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
@@ -655,30 +653,34 @@ class ExamControllerTest extends AbstractSpringBootTest {
         var response = produceCsvFileExamTranscript(exam);
         assertEquals("application/csv", response.getContentType());
 
-        final String COLUMN_1 = "Name";
-        final String COLUMN_2 = "Email";
-        final String COLUMN_3 = problem.title;
-        final String COLUMN_4 = anotherProblem.title;
-        final String COLUMN_5 = "Total Score";
+        final String COLUMN_NAME = "Name";
+        final String COLUMN_EMAIL = "Email";
+        final String COLUMN_PROBLEM_1 = problem.title;
+        final String COLUMN_PROBLEM_2 = anotherProblem.title;
+        final String COLUMN_TOTAL_SCORE = "Total Score";
         Reader in = new InputStreamReader(new ByteArrayInputStream(response.getContentAsByteArray()));
-        Iterable<CSVRecord> records = CSVFormat.DEFAULT.withHeader(COLUMN_1, COLUMN_2, COLUMN_3, COLUMN_4, COLUMN_5).parse(in);
+        Iterable<CSVRecord> records = CSVFormat.DEFAULT.withHeader(COLUMN_NAME, COLUMN_EMAIL, COLUMN_PROBLEM_1, COLUMN_PROBLEM_2, COLUMN_TOTAL_SCORE).parse(in);
 
         CSVRecord csvHeader = records.iterator().next();
-        assertEquals(COLUMN_1, csvHeader.get(COLUMN_1));
-        assertEquals(COLUMN_2, csvHeader.get(COLUMN_2));
-        assertEquals(COLUMN_3, csvHeader.get(COLUMN_3));
-        assertEquals(COLUMN_4, csvHeader.get(COLUMN_4));
-        assertEquals(COLUMN_5, csvHeader.get(COLUMN_5));
+        assertEquals(COLUMN_NAME, csvHeader.get(COLUMN_NAME));
+        assertEquals(COLUMN_EMAIL, csvHeader.get(COLUMN_EMAIL));
+        assertEquals(COLUMN_PROBLEM_1, csvHeader.get(COLUMN_PROBLEM_1));
+        assertEquals(COLUMN_PROBLEM_2, csvHeader.get(COLUMN_PROBLEM_2));
+        assertEquals(COLUMN_TOTAL_SCORE, csvHeader.get(COLUMN_TOTAL_SCORE));
 
         Map<String, TranscriptView.ExamineeRecordView> scoreBoard = transcript.scoreBoard;
         for (CSVRecord record : records) {
-            String email = record.get("Email");
+            String email = record.get(COLUMN_EMAIL);
             assertTrue(scoreBoard.containsKey(email));
+
             var questionScores = scoreBoard.get(email).getQuestionScores();
-            assertEquals(questionScores.get(problem.id), Integer.valueOf(record.get(problem.title)));
-            assertEquals(questionScores.get(anotherProblem.id), Integer.valueOf(record.get(anotherProblem.title)));
-            int actualTotalScore = questionScores.get(problem.id) + questionScores.get(anotherProblem.id);
-            assertEquals(actualTotalScore, Integer.valueOf(record.get("Total Score")));
+            int problemScore = questionScores.get(problem.id);
+            int anotherProblemScore = questionScores.get(anotherProblem.id);
+            assertEquals(problemScore, Integer.valueOf(record.get(problem.title)));
+            assertEquals(anotherProblemScore, Integer.valueOf(record.get(anotherProblem.title)));
+
+            int actualTotalScore = problemScore + anotherProblemScore;
+            assertEquals(actualTotalScore, Integer.valueOf(record.get(COLUMN_TOTAL_SCORE)));
         }
     }
 
