@@ -19,8 +19,6 @@ import javax.inject.Named;
 import java.util.List;
 
 import static java.util.function.Function.identity;
-import static java.util.stream.Collectors.toList;
-import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.*;
 
 /**
@@ -44,12 +42,7 @@ public class CreateExamTranscriptUseCase extends AbstractExamUseCase {
         var examineeRecords = getExamineeRecords(exam);
         presenter.showExam(exam);
         presenter.showRecords(examineeRecords);
-        List<Question> questions = exam.getQuestions();
-        //TODO It should support for getting multiple problems one request
-        List<ProblemView> problems = questions.stream()
-                .map(question -> problemServiceDriver.getProblem(question.getProblemId())
-                        .orElseThrow(() -> notFound(ProblemView.class).id(question.getId().getProblemId())))
-                .collect(toList());
+        var problems = findProblemsByIds(getProblemIds(exam));
         presenter.showProblems(problems);
     }
 
@@ -90,6 +83,14 @@ public class CreateExamTranscriptUseCase extends AbstractExamUseCase {
                 groupingBy(records, questionRecord -> examinees.get(questionRecord.getStudentId()));
 
         return zipToList(examineeToQuestionRecords, ExamineeRecord::new);
+    }
+
+    private List<Integer> getProblemIds(Exam exam) {
+        return mapToList(exam.getQuestions(), Question::getProblemId);
+    }
+
+    private List<ProblemView> findProblemsByIds(List<Integer> problemIds) {
+        return problemServiceDriver.getProblemsByIds(problemIds);
     }
 
     public interface Presenter {

@@ -3,6 +3,7 @@ package tw.waterball.judgegirl.springboot.academy.controllers;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -18,7 +19,6 @@ import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.springboot.academy.presenters.ExamPresenter;
 import tw.waterball.judgegirl.springboot.academy.presenters.*;
 import tw.waterball.judgegirl.springboot.academy.view.*;
-import tw.waterball.judgegirl.springboot.utils.ResponseEntityUtils;
 import tw.waterball.judgegirl.studentapi.clients.view.StudentView;
 
 import java.util.List;
@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
 import static tw.waterball.judgegirl.springboot.utils.MultipartFileUtils.convertMultipartFilesToFileResources;
+import static tw.waterball.judgegirl.springboot.utils.ResponseEntityUtils.respondInputStreamResource;
 import static tw.waterball.judgegirl.submissionapi.clients.SubmissionApiClient.SUBMIT_CODE_MULTIPART_KEY_NAME;
 
 @CrossOrigin
@@ -169,14 +170,13 @@ public class ExamController {
         });
     }
 
-    @GetMapping(value = "/exams/{examId}/transcript/csv",
-            produces = "application/csv")
+    @GetMapping(value = "/exams/{examId}/transcript/csv", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public ResponseEntity<InputStreamResource> createCsvFileOfTranscript(@RequestHeader("Authorization") String authorization,
                                                                          @PathVariable int examId) {
         return tokenService.returnIfAdmin(authorization, token -> {
             ExamTranscriptCsvFilePresenter presenter = new ExamTranscriptCsvFilePresenter();
             createExamTranscriptUseCase.execute(examId, presenter);
-            return ResponseEntityUtils.respondInputStreamResource(presenter.present());
+            return respondInputStreamResource(presenter.present());
         });
     }
 

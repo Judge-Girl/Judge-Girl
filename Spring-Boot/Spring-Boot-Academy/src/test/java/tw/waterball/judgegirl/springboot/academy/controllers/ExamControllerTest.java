@@ -651,7 +651,6 @@ class ExamControllerTest extends AbstractSpringBootTest {
         var transcript = produceExamTranscript(exam);
 
         var response = produceCsvFileExamTranscript(exam);
-        assertEquals("application/csv", response.getContentType());
 
         final String COLUMN_NAME = "Name";
         final String COLUMN_EMAIL = "Email";
@@ -660,7 +659,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
         final String COLUMN_TOTAL_SCORE = "Total Score";
 
         Reader in = new InputStreamReader(new ByteArrayInputStream(response.getContentAsByteArray()));
-        Iterable<CSVRecord> records = CSVFormat.DEFAULT.withHeader
+        var records = CSVFormat.DEFAULT.withHeader
                 (COLUMN_NAME, COLUMN_EMAIL, COLUMN_PROBLEM_1_TITLE, COLUMN_PROBLEM_2_TITLE, COLUMN_TOTAL_SCORE)
                 .parse(in);
 
@@ -671,7 +670,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
         assertEquals(COLUMN_PROBLEM_2_TITLE, csvHeader.get(COLUMN_PROBLEM_2_TITLE));
         assertEquals(COLUMN_TOTAL_SCORE, csvHeader.get(COLUMN_TOTAL_SCORE));
 
-        Map<String, TranscriptView.ExamineeRecordView> scoreBoard = transcript.scoreBoard;
+        var scoreBoard = transcript.scoreBoard;
         for (CSVRecord record : records) {
             String email = record.get(COLUMN_EMAIL);
             assertTrue(scoreBoard.containsKey(email));
@@ -698,7 +697,9 @@ class ExamControllerTest extends AbstractSpringBootTest {
     private MockHttpServletResponse produceCsvFileExamTranscript(ExamView exam) {
         return mockMvc.perform(withAdminToken(
                 get("/api/exams/{examId}/transcript/csv", exam.getId())))
-                .andExpect(status().isOk()).andReturn().getResponse();
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_OCTET_STREAM_VALUE))
+                .andReturn().getResponse();
     }
 
     @SneakyThrows
