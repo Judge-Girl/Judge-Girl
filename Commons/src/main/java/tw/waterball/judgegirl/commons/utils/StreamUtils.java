@@ -23,8 +23,7 @@ import java.util.stream.Stream;
 
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toSet;
+import static java.util.stream.Collectors.*;
 import static java.util.stream.IntStream.range;
 
 /**
@@ -197,5 +196,9 @@ public abstract class StreamUtils {
                         throw new RuntimeException(e);
                     }
                 });
+    }
+
+    public static <T> String join(List<T> ids, String delimiter) {
+        return ids.stream().map(String::valueOf).collect(joining(delimiter));
     }
 }

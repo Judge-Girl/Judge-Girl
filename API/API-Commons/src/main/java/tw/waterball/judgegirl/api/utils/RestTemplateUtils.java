@@ -7,6 +7,7 @@ import tw.waterball.judgegirl.commons.models.files.FileResource;
 
 import java.io.ByteArrayInputStream;
 import java.util.LinkedList;
+import java.util.Map;
 
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
@@ -30,6 +31,12 @@ public class RestTemplateUtils {
                 .map(path -> path.contains("{") && path.contains("}") ? pathVariables.removeFirst().toString() : path)
                 .filter(path -> !path.isEmpty())
                 .collect(joining("/"));
+    }
+
+    public static String parsePath(String regexPath, Map<String, String> queryParams) {
+        StringBuilder resultPath = new StringBuilder(regexPath).append("?");
+        queryParams.forEach((key, value) -> resultPath.append(key).append("=").append(value).append("&"));
+        return resultPath.substring(0, resultPath.length() - 1);
     }
 
     public static HttpHeaders withBearerTokenHeader(String token) {

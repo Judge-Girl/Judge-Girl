@@ -635,7 +635,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    void testProduceCsvFileOfExamTranscript() throws Exception {
+    void                                                                                                                                                                                                                                                                                                                                                    testProduceCsvFileOfExamTranscript() throws Exception {
         Integer[] studentIds = {STUDENT_A_ID, STUDENT_B_ID, STUDENT_C_ID, STUDENT_D_ID};
         var exam = createExamAndGet(now(), oneSecondAfter(), "Exam");
         createQuestionAndGet(new CreateQuestionUseCase.Request(exam.id, PROBLEM_ID, 1, 50, 0)).toEntity();
