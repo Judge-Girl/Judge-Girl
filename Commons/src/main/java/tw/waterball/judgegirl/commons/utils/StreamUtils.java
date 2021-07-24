@@ -198,7 +198,7 @@ public abstract class StreamUtils {
                 });
     }
 
-    public static <T> String join(List<T> ids, String delimiter) {
-        return ids.stream().map(String::valueOf).collect(joining(delimiter));
+    public static <T> String join(Collection<T> collection, String delimiter) {
+        return collection.stream().map(String::valueOf).collect(joining(delimiter));
     }
 }

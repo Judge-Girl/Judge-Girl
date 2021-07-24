@@ -6,7 +6,6 @@ import org.apache.commons.csv.CSVPrinter;
 import tw.waterball.judgegirl.academy.domain.usecases.exam.CreateExamTranscriptUseCase;
 import tw.waterball.judgegirl.academy.domain.usecases.exam.CreateExamTranscriptUseCase.ExamineeRecord;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
-import tw.waterball.judgegirl.commons.utils.functional.GetById;
 import tw.waterball.judgegirl.primitives.exam.Exam;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
 
