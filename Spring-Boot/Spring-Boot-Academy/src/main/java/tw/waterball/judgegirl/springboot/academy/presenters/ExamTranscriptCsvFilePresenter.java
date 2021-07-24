@@ -63,7 +63,7 @@ public class ExamTranscriptCsvFilePresenter implements CreateExamTranscriptUseCa
     }
 
     private String[] createExamTranscriptCsvHeader(List<ProblemView> problemViews) {
-        List<String> csvHeader = new ArrayList<>();
+        List<String> csvHeader = new ArrayList<>(3 + problemViews.size());
         csvHeader.add(COLUMN_NAME);
         csvHeader.add(COLUMN_EMAIL);
         for (ProblemView problemView : problemViews) {
