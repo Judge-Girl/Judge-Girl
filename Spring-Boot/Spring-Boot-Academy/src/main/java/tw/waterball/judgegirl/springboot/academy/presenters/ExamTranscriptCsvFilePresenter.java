@@ -16,6 +16,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.List.of;
@@ -93,7 +94,7 @@ public class ExamTranscriptCsvFilePresenter implements CreateExamTranscriptUseCa
         var questionScores = questionScores(examineeRecord);
         int totalScore = 0;
         for (var problem : problems) {
-            int score = questionScores.get(problem.id);
+            int score = questionScores.getOrDefault(problem.id, 0);
             scoreRows.add(String.valueOf(score));
             totalScore += score;
         }
@@ -101,11 +102,10 @@ public class ExamTranscriptCsvFilePresenter implements CreateExamTranscriptUseCa
         return scoreRows;
     }
 
-    private GetById<Integer, Integer> questionScores(ExamineeRecord examineeRecord) {
+    private Map<Integer, Integer> questionScores(ExamineeRecord examineeRecord) {
         var questionRecords = examineeRecord.getQuestionRecords();
-        var idToQuestionScores = toMap(questionRecords,
+        return toMap(questionRecords,
                 questionRecord -> questionRecord.getQuestion().getProblemId(),
                 CreateExamTranscriptUseCase.QuestionRecord::calculateScore);
-        return idToQuestionScores::get;
     }
 }
