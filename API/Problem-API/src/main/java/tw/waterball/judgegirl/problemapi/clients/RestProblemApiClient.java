@@ -9,12 +9,18 @@ import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+import static java.util.Map.of;
+import static java.util.Objects.requireNonNullElseGet;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static tw.waterball.judgegirl.api.utils.RestTemplateUtils.*;
+import static tw.waterball.judgegirl.commons.utils.StreamUtils.join;
 
 
 /**
@@ -68,4 +74,17 @@ public class RestProblemApiClient implements ProblemServiceDriver {
         }
     }
 
+    @Override
+    public List<ProblemView> getProblemsByIds(List<Integer> ids) {
+        try {
+            String url = parsePath(API_PREFIX, of("ids", join(ids, ",")));
+            HttpEntity<?> entity = new HttpEntity<>(withBearerTokenHeader(tokenSupplier.get()));
+            ResponseEntity<ProblemView[]> response = restTemplate.exchange(
+                    url, HttpMethod.GET, entity, ProblemView[].class);
+            ProblemView[] problemViews = response.getBody();
+            return asList(requireNonNullElseGet(problemViews, () -> new ProblemView[0]));
+        } catch (RestClientException e) {
+            return emptyList();
+        }
+    }
 }
