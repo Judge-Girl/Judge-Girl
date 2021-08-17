@@ -15,9 +15,9 @@ package tw.waterball.judgegirl.judger;
 
 import lombok.SneakyThrows;
 import org.apache.commons.io.FileUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
 import tw.waterball.judgegirl.commons.utils.ZipUtils;
@@ -69,9 +69,10 @@ import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToSet;
  */
 @SuppressWarnings("WeakerAccess")
 public class CCJudger extends PluginExtendedJudger {
-    private static final Logger logger = LogManager.getLogger(CCJudger.class);
+    private static final Logger logger = LoggerFactory.getLogger(CCJudger.class);
     public static final String TEMP_SUBMITTED_CODES_DIR_NAME = "tempSubmittedCodes";
     private static final String EXECUTABLE_NAME = "a.out";
+    private final String id; // used to identify a CCJudger
     private final JudgerWorkspace judgerWorkspace;
     private final ProblemServiceDriver problemServiceDriver;
     private final SubmissionServiceDriver submissionServiceDriver;
@@ -83,7 +84,7 @@ public class CCJudger extends PluginExtendedJudger {
     private Set<File> inFiles;
     private Set<File> actualOutFiles;
 
-    public CCJudger(JudgerWorkspace judgerWorkspace,
+    public CCJudger(String id, JudgerWorkspace judgerWorkspace,
                     JudgeGirlPluginLocator pluginLocator,
                     ProblemServiceDriver problemServiceDriver,
                     SubmissionServiceDriver submissionServiceDriver,
@@ -91,6 +92,7 @@ public class CCJudger extends PluginExtendedJudger {
                     CompilerFactory compilerFactory,
                     TestcaseExecutorFactory testcaseExecutorFactory) {
         super(pluginLocator);
+        this.id = id;
         this.judgerWorkspace = judgerWorkspace;
         this.problemServiceDriver = problemServiceDriver;
         this.submissionServiceDriver = submissionServiceDriver;
@@ -104,7 +106,7 @@ public class CCJudger extends PluginExtendedJudger {
         var problem = problemServiceDriver.getProblem(problemId)
                 .map(ProblemView::toEntity)
                 .orElseThrow(() -> notFound(Problem.class).id(problemId));
-        logger.info(problem);
+        logger.info(problem.toString());
         return problem;
     }
 
@@ -263,7 +265,7 @@ public class CCJudger extends PluginExtendedJudger {
     @Override
     protected TestcaseExecutionResult runTestcase(Testcase testcase) {
         TestcaseExecutor testcaseExecutor =
-                testcaseExecutorFactory.create(getSubmission().getId(),
+                testcaseExecutorFactory.create(id, getSubmission().getId(),
                         testcase, judgerWorkspace);
         return testcaseExecutor.executeProgramByProfiler(
                 judgerWorkspace.getProfilerPath());

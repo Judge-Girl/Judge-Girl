@@ -13,8 +13,8 @@
 
 package tw.waterball.judgegirl.judger.infra.compile;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tw.waterball.judgegirl.commons.helpers.process.AbstractProcessRunner;
 import tw.waterball.judgegirl.primitives.problem.Compilation;
 
@@ -26,7 +26,7 @@ import java.util.Arrays;
  * @author - Haribo, johnny850807@gmail.com (Waterball)
  */
 public class ShellCompiler extends AbstractProcessRunner implements Compiler {
-    private static final Logger logger = LogManager.getLogger(ShellCompiler.class);
+    private static final Logger logger = LoggerFactory.getLogger(ShellCompiler.class);
     private final Path sourceRootPath;
 
     public ShellCompiler(Path sourceRootPath) {
@@ -42,7 +42,7 @@ public class ShellCompiler extends AbstractProcessRunner implements Compiler {
             runProcess(sourceRootPath, commands);
             awaitTermination();
         } catch (Exception e) {
-            logger.error(e);
+            logger.error(e.getMessage(), e);
         }
 
         logger.info(String.format("Compile <%s> %s.", isSuccessful() ? "Successful" : "Failed", getStderr()));

@@ -13,8 +13,8 @@
 
 package tw.waterball.judgegirl.judger.infra.testexecutor;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tw.waterball.judgegirl.commons.helpers.process.AbstractProcessRunner;
 import tw.waterball.judgegirl.judger.layout.JudgerWorkspace;
 import tw.waterball.judgegirl.judger.layout.SandboxRoot;
@@ -27,16 +27,19 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 
+import static java.lang.String.format;
+
 /**
  * @author - Haribo, johnny850807@gmail.com (Waterball)
  */
 public class CCSandboxTestcaseExecutor extends AbstractProcessRunner implements TestcaseExecutor {
+    private static final Logger logger = LoggerFactory.getLogger(CCSandboxTestcaseExecutor.class);
     private static final int numOfArguments = 18;
     private static final String seccompRuleName = "general";
     private static final int uid = 65534;
     private static final int gid = 65534;
     private static final int memoryLimitCheckOnly = 0;
-    private static final Logger logger = LogManager.getLogger(CCSandboxTestcaseExecutor.class);
+    public static final String JUDGER_LOG_FILE_FORMAT = "judger-submission-%s.log";
     private final TestcaseHome testCaseHome;
     private final Path logPath;
     private final String submissionId;
@@ -51,7 +54,7 @@ public class CCSandboxTestcaseExecutor extends AbstractProcessRunner implements 
                                      Testcase testcase,
                                      JudgerWorkspace layoutResolver) {
         this.submissionId = submissionId;
-        this.logPath = layoutResolver.getLogHomePath().resolve("judger.log");
+        this.logPath = layoutResolver.getLogHomePath().resolve(format(JUDGER_LOG_FILE_FORMAT, submissionId));
         this.testCaseHome = layoutResolver.getSubmissionHome(submissionId)
                 .getTestCaseHome(testcase.getName());
         this.realTimeLimit = testcase.getTimeLimit();
@@ -97,7 +100,7 @@ public class CCSandboxTestcaseExecutor extends AbstractProcessRunner implements 
             awaitTermination();
             return parseResult();
         } catch (IOException e) { // TODO Error Handling
-            logger.error(e);
+            logger.error(e.getMessage(), e);
             throw new RuntimeException(e);
         }
     }
@@ -114,7 +117,7 @@ public class CCSandboxTestcaseExecutor extends AbstractProcessRunner implements 
         TestcaseExecutionResult result = new TestcaseExecutionResult(getStatus(statusNumber),
                 new ProgramProfile(runtime, memory, getStderr()));
 
-        logger.info(result);
+        logger.info(result.toString());
         return result;
     }
 

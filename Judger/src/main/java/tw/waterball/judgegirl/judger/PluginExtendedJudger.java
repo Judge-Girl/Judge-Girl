@@ -13,8 +13,9 @@
 
 package tw.waterball.judgegirl.judger;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tw.waterball.judgegirl.plugins.api.*;
 import tw.waterball.judgegirl.plugins.api.codeinspection.JudgeGirlSourceCodeFilterPlugin;
 import tw.waterball.judgegirl.plugins.api.match.JudgeGirlMatchPolicyPlugin;
@@ -35,7 +36,7 @@ import java.util.Map;
  */
 @SuppressWarnings("WeakerAccess")
 public abstract class PluginExtendedJudger extends Judger {
-    private static final Logger logger = LogManager.getLogger(PluginExtendedJudger.class);
+    private static final Logger logger = LoggerFactory.getLogger(PluginExtendedJudger.class);
     private final JudgeGirlPluginLocator pluginLocator;
 
     public PluginExtendedJudger(JudgeGirlPluginLocator pluginLocator) {

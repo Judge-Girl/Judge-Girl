@@ -63,6 +63,7 @@ public class DefaultCCJudgerFactory {
         JwtTokenService jwtTokenService = new JwtTokenService(values.jwtSecret, afterCurrentTime(10, TimeUnit.DAYS).getTime());
         String token = jwtTokenService.createToken(admin(JUDGER_STUDENT_ID)).getToken();
         return new CCJudger(
+                values.traceId,
                 new YAMLJudgerWorkspace(judgeWorkspaceLayoutYamlResourcePath),
                 new PresetJudgeGirlPluginLocator(aggregateJudgeGirlPlugins(plugins)),
                 restProblemApiClient(values, token),
@@ -75,12 +76,12 @@ public class DefaultCCJudgerFactory {
 
 
     @SneakyThrows
-    public static CCJudger create(String judgeWorkspaceLayoutYamlResourcePath,
+    public static CCJudger create(String judgerId, String judgeWorkspaceLayoutYamlResourcePath,
                                   ProblemServiceDriver problemServiceDriver,
                                   SubmissionServiceDriver submissionServiceDriver,
                                   EventPublisher eventPublisher,
                                   JudgeGirlPlugin... plugins) {
-        return new CCJudger(
+        return new CCJudger(judgerId,
                 new YAMLJudgerWorkspace(judgeWorkspaceLayoutYamlResourcePath),
                 new PresetJudgeGirlPluginLocator(aggregateJudgeGirlPlugins(plugins)),
                 problemServiceDriver,

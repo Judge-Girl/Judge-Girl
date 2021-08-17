@@ -13,8 +13,8 @@
 
 package tw.waterball.judgegirl.judger.infra.testexecutor;
 
-import tw.waterball.judgegirl.primitives.problem.Testcase;
 import tw.waterball.judgegirl.judger.layout.JudgerWorkspace;
+import tw.waterball.judgegirl.primitives.problem.Testcase;
 
 /**
  * @author - Haribo
@@ -22,7 +22,7 @@ import tw.waterball.judgegirl.judger.layout.JudgerWorkspace;
 public class CCSandboxTestcaseExecutorFactory implements TestcaseExecutorFactory {
 
     @Override
-    public TestcaseExecutor create(String submissionId,
+    public TestcaseExecutor create(String judgerId, String submissionId,
                                    Testcase testcase,
                                    JudgerWorkspace layoutResolver) {
         return new CCSandboxTestcaseExecutor(submissionId, testcase, layoutResolver);

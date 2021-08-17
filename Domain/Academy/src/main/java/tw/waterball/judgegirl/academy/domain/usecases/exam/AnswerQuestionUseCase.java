@@ -20,6 +20,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.OptionalInt;
 
+import static java.util.Collections.singletonMap;
 import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
 import static tw.waterball.judgegirl.commons.utils.ComparableUtils.betterAndNewer;
 
@@ -29,11 +30,12 @@ import static tw.waterball.judgegirl.commons.utils.ComparableUtils.betterAndNewe
 @Named
 @AllArgsConstructor
 public class AnswerQuestionUseCase implements VerdictIssuedEventHandler {
-    public static final String BAG_KEY_EXAM_ID = "examId";
+    public static final String EXAM_ID_IN_BAG = "examId";
     private final SubmissionServiceDriver submissionService;
     private final ExamRepository examRepository;
 
-    public void execute(Request request, Presenter presenter) throws SubmissionThrottlingException, ExamHasNotBeenStartedOrHasBeenClosedException, NoSubmissionQuotaException {
+    public void execute(Request request, Presenter presenter) throws SubmissionThrottlingException,
+            ExamHasNotBeenStartedOrHasBeenClosedException, NoSubmissionQuotaException {
         Date answerTime = new Date();
         Exam exam = findExam(request.examId);
         Question question = findQuestion(request, exam);
@@ -89,7 +91,7 @@ public class AnswerQuestionUseCase implements VerdictIssuedEventHandler {
     private SubmitCodeRequest submitCodeRequest(Request request) {
         return new SubmitCodeRequest(request.problemId,
                 request.langEnvName, request.studentId, request.fileResources,
-                new Bag(BAG_KEY_EXAM_ID, String.valueOf(request.examId)));
+                new Bag(singletonMap(EXAM_ID_IN_BAG, String.valueOf(request.examId))));
     }
 
     private Answer answer(Request request, Question question, SubmissionView submissionView, Date answerTime) {
@@ -103,7 +105,7 @@ public class AnswerQuestionUseCase implements VerdictIssuedEventHandler {
     }
 
     private OptionalInt getExamIdFromBag(Bag submissionBag) {
-        return submissionBag.getAsInteger(BAG_KEY_EXAM_ID);
+        return submissionBag.getAsInteger(EXAM_ID_IN_BAG);
     }
 
     private void updateBestRecord(VerdictIssuedEvent event, int examId) {

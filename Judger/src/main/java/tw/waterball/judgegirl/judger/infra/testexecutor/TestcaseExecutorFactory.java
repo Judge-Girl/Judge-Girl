@@ -13,13 +13,13 @@
 
 package tw.waterball.judgegirl.judger.infra.testexecutor;
 
-import tw.waterball.judgegirl.primitives.problem.Testcase;
 import tw.waterball.judgegirl.judger.layout.JudgerWorkspace;
+import tw.waterball.judgegirl.primitives.problem.Testcase;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
 public interface TestcaseExecutorFactory {
-    TestcaseExecutor create(String submissionId,
+    TestcaseExecutor create(String judgerId, String submissionId,
                             Testcase testcase, JudgerWorkspace layoutResolver);
 }

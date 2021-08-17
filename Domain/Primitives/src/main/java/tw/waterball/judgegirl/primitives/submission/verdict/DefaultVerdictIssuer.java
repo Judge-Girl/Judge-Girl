@@ -13,8 +13,8 @@
 
 package tw.waterball.judgegirl.primitives.submission.verdict;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tw.waterball.judgegirl.primitives.problem.JudgeStatus;
 import tw.waterball.judgegirl.primitives.submission.report.Report;
 
@@ -26,7 +26,7 @@ import java.util.function.Consumer;
  * @author - johnny850807@gmail.com (Waterball)
  */
 public class DefaultVerdictIssuer implements VerdictIssuer {
-    private static final Logger logger = LogManager.getLogger(DefaultVerdictIssuer.class);
+    private static final Logger logger = LoggerFactory.getLogger(DefaultVerdictIssuer.class);
     private final Verdict verdict;
 
     public DefaultVerdictIssuer(List<Judge> judges) {
