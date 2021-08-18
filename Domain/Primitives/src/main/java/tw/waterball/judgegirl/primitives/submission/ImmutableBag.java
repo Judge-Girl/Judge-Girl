@@ -8,11 +8,11 @@ public class ImmutableBag extends Bag {
     public static final Bag EMPTY = new ImmutableBag();
 
     private ImmutableBag() {
-        super(Map.of());
+        this.map = Map.of();
     }
 
     public ImmutableBag(@Nullable Map<String, String> map) {
-        super(map == null ? Map.of() : Map.copyOf(map));
+        this.map = map == null ? Map.of() : Map.copyOf(map);
     }
 
 }
