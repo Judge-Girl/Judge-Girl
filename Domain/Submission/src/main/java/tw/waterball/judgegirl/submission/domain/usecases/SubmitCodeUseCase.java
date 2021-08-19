@@ -121,6 +121,8 @@ public class SubmitCodeUseCase implements VerdictIssuedEventHandler {
 
     @Override
     public void handle(VerdictIssuedEvent event) {
+        log.trace("[Verdict Issued] submissionId=\"{}\"", event.getSubmissionId());
+
         Verdict verdict = event.getVerdict();
         submissionRepository.issueVerdict(event.getSubmissionId(), verdict);
     }
