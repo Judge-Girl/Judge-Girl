@@ -61,6 +61,7 @@ public class JudgeGirlJudgerProps {
     public static class Docker {
         private String network;
         private String logVolumeHost;
+        private boolean logVolumeEnable;
     }
 
     @Getter
