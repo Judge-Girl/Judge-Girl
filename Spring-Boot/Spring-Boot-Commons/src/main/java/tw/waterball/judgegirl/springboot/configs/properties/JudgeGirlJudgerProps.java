@@ -60,6 +60,7 @@ public class JudgeGirlJudgerProps {
     @Setter
     public static class Docker {
         private String network;
+        private String logVolumeHost;
     }
 
     @Getter

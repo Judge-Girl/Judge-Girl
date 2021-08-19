@@ -15,8 +15,8 @@ package tw.waterball.judgegirl.judgerapi.env;
 
 import lombok.Builder;
 import lombok.Value;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tw.waterball.judgegirl.api.ServiceInstance;
 
 import java.util.Locale;
@@ -27,7 +27,7 @@ import static java.lang.Integer.parseInt;
  * @author - johnny850807@gmail.com (Waterball)
  */
 public interface JudgerEnvVariables {
-    Logger logger = LogManager.getLogger(JudgerEnvVariables.class);
+    Logger logger = LoggerFactory.getLogger(JudgerEnvVariables.class);
     // Judger-Job specific envs
     String ENV_STUDENT_ID = "studentId";
     String ENV_PROBLEM_ID = "problemId";
@@ -50,6 +50,7 @@ public interface JudgerEnvVariables {
     String ENV_AMQP_PORT = "spring.rabbitmq.port";
     String ENV_SUBMISSIONS_EXCHANGE_NAME = "judge-girl.amqp.submissions-exchange-name";
     String ENV_VERDICT_ISSUED_ROUTING_KEY_FORMAT = "judge-girl.amqp.verdict-issued-routing-key-format";
+    String ENV_TRACE_ID = "trace-id";
 
 
     static void apply(Applier applier, Values values) {
@@ -78,6 +79,7 @@ public interface JudgerEnvVariables {
 
         applier.apply(ENV_SUBMISSIONS_EXCHANGE_NAME, values.submissionsExchangeName);
         applier.apply(ENV_VERDICT_ISSUED_ROUTING_KEY_FORMAT, values.verdictIssuedRoutingKeyFormat);
+        applier.apply(ENV_TRACE_ID, values.traceId);
     }
 
     // Since dots are usually not supported in env, convert the key in upper case format with underscore
@@ -115,6 +117,7 @@ public interface JudgerEnvVariables {
                 .amqpPort(parseInt(getenv(ENV_AMQP_PORT)))
                 .submissionsExchangeName(getenv(ENV_SUBMISSIONS_EXCHANGE_NAME))
                 .verdictIssuedRoutingKeyFormat(getenv(ENV_VERDICT_ISSUED_ROUTING_KEY_FORMAT))
+                .traceId(getenv(ENV_TRACE_ID))
                 .build();
     }
 
@@ -157,6 +160,7 @@ public interface JudgerEnvVariables {
         public int amqpPort;
         public String submissionsExchangeName;
         public String verdictIssuedRoutingKeyFormat;
+        public String traceId;
     }
 
 }

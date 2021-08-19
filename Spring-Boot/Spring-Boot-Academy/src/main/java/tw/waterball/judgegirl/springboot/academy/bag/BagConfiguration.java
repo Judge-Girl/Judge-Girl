@@ -12,7 +12,7 @@ import tw.waterball.judgegirl.submissionapi.clients.BagInterceptor;
 public class BagConfiguration {
     @Bean
     public BagInterceptor bagInterceptor() {
-        return bag -> bag.getAsInteger(AnswerQuestionUseCase.BAG_KEY_EXAM_ID)
+        return bag -> bag.getAsInteger(AnswerQuestionUseCase.EXAM_ID_IN_BAG)
                 .ifPresent(examId -> {
                     // Add the exam's broker destination, see "tw.waterball.judgegirl.springboot.student.broker"
                     // TODO: [must improve] weak reference using String instead of constant, consider improving this by adding a constant in API/Student-API

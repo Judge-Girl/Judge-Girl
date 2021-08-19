@@ -15,10 +15,13 @@ package tw.waterball.judgegirl.springboot.submission.impl.deployer.docker;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.RemoveContainerCmd;
+import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.HostConfig;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import com.github.dockerjava.api.model.Volume;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -48,7 +51,7 @@ import static java.util.Collections.singletonList;
         havingValue = DockerDeployerAutoConfiguration.STRATEGY)
 @Component
 public class DockerJudgerDeployer implements JudgerDeployer {
-    private static final Logger logger = LogManager.getLogger(DockerJudgerDeployer.class);
+    private static final Logger logger = LoggerFactory.getLogger(DockerJudgerDeployer.class);
     private final String jwtSecret;
     private final DockerClient dockerClient;
     private final ServiceProps.ProblemService problemServiceInstance;
@@ -73,6 +76,7 @@ public class DockerJudgerDeployer implements JudgerDeployer {
     @Override
     public void deployJudger(Problem problem, int studentId, Submission submission) {
         List<String> envs = new LinkedList<>();
+        String traceId = MDC.get("traceId");
         JudgerEnvVariables.apply((env, value) -> envs.add(env + "=" + value),
                 JudgerEnvVariables.Values.builder()
                         .studentId(studentId)
@@ -89,13 +93,16 @@ public class DockerJudgerDeployer implements JudgerDeployer {
                         .submissionsExchangeName(amqpProps.getSubmissionsExchangeName())
                         .verdictIssuedRoutingKeyFormat(
                                 format(amqpProps.getVerdictIssuedRoutingKeyFormat(), "*"))
+                        .traceId(traceId)
                         .build());
         String containerName = format(judgerProps.getContainer().getNameFormat(), submission.getId());
+        String logVolumeHostPath = judgerProps.getDocker().getLogVolumeHost();
         String containerId =
                 dockerClient.createContainerCmd(judgerProps.getImage().getName())
                         .withName(containerName)
                         .withHostConfig(HostConfig
                                 .newHostConfig()
+                                .withBinds(new Bind(logVolumeHostPath, new Volume(/*TODO: enhance; hard-coded path*/"/judger-home/log")))
                                 .withNetworkMode(judgerProps.getDocker().getNetwork()))
                         .withEnv(envs)
                         .exec().getId();

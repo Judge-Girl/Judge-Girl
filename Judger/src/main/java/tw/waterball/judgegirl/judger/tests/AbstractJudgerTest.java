@@ -79,7 +79,7 @@ public abstract class AbstractJudgerTest {
         submissionServiceDriver = mock(SubmissionServiceDriver.class);
         eventPublisher = mock(EventPublisher.class);
 
-        judger = DefaultCCJudgerFactory.create("/judger-layout.yaml",
+        judger = DefaultCCJudgerFactory.create("test", "/judger-layout.yaml",
                 problemServiceDriver, submissionServiceDriver, eventPublisher);
     }
 

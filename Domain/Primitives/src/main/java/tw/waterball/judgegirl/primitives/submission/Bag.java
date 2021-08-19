@@ -10,7 +10,6 @@ import java.util.function.Function;
 
 import static java.lang.Integer.parseInt;
 import static java.lang.Long.parseLong;
-import static java.util.Objects.requireNonNullElseGet;
 import static java.util.Optional.ofNullable;
 import static tw.waterball.judgegirl.commons.utils.MapUtils.map;
 
@@ -18,11 +17,8 @@ import static tw.waterball.judgegirl.commons.utils.MapUtils.map;
  * @author - johnny850807@gmail.com (Waterball)
  */
 public class Bag implements Map<String, String> {
+    protected Map<String, String> map;
 
-    private final Map<String, String> map;
-
-    private static final long serialVersionUID = 1L;
-    
     public Bag() {
         this(new HashMap<>());
     }
@@ -32,7 +28,11 @@ public class Bag implements Map<String, String> {
     }
 
     public Bag(@Nullable Map<String, String> m) {
-        map = requireNonNullElseGet(m, HashMap::new);
+        if (m == null) {
+            map = new HashMap<>();
+        } else {
+            map = new HashMap<>(m);
+        }
     }
 
     public static Bag empty() {
@@ -104,16 +104,19 @@ public class Bag implements Map<String, String> {
         map.clear();
     }
 
+    @NotNull
     @Override
     public Set<String> keySet() {
         return map.keySet();
     }
 
+    @NotNull
     @Override
     public Collection<String> values() {
         return map.values();
     }
 
+    @NotNull
     @Override
     public Set<Entry<String, String>> entrySet() {
         return map.entrySet();
@@ -142,7 +145,8 @@ public class Bag implements Map<String, String> {
 
     @Override
     public String getOrDefault(Object key, String defaultValue) {
-        return map.getOrDefault((String) key, defaultValue);
+        assert key instanceof String;
+        return map.getOrDefault(key, defaultValue);
     }
 
     @Override

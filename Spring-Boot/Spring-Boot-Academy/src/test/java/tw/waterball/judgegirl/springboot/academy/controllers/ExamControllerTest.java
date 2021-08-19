@@ -58,7 +58,7 @@ import static java.util.concurrent.TimeUnit.HOURS;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import static tw.waterball.judgegirl.academy.domain.usecases.exam.AnswerQuestionUseCase.BAG_KEY_EXAM_ID;
+import static tw.waterball.judgegirl.academy.domain.usecases.exam.AnswerQuestionUseCase.EXAM_ID_IN_BAG;
 import static tw.waterball.judgegirl.commons.utils.DateUtils.*;
 import static tw.waterball.judgegirl.commons.utils.MapUtils.map;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.*;
@@ -762,7 +762,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
         eventPublisher.publish(new VerdictIssuedEvent(problem.getId(), problem.getTitle(), submission.getStudentId(), submission.getId(),
                 submission.mayHaveVerdict().orElseThrow(),
                 submission.getSubmissionTime(),
-                new Bag(singletonMap(BAG_KEY_EXAM_ID, String.valueOf(exam.id)))));
+                new Bag(singletonMap(EXAM_ID_IN_BAG, String.valueOf(exam.id)))));
         return submission;
     }
 

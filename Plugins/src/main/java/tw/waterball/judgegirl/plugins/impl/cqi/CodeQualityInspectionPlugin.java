@@ -13,8 +13,8 @@
 
 package tw.waterball.judgegirl.plugins.impl.cqi;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tw.waterball.judgegirl.cqi.csa.CodingStyleAnalyzer;
 import tw.waterball.judgegirl.cqi.csa.CodingStyleAnalyzerImpl;
 import tw.waterball.judgegirl.cqi.cyclomatic.CyclomaticComplexityCalculator;
@@ -39,7 +39,7 @@ import java.util.List;
  */
 public class CodeQualityInspectionPlugin extends AbstractJudgeGirlPlugin
         implements ProblemAware, LanguageEnvAware, JudgeGirlSourceCodeFilterPlugin, JudgeGirlVerdictFilterPlugin {
-    private static final Logger logger = LogManager.getLogger(CodeQualityInspectionPlugin.class);
+    private static final Logger logger = LoggerFactory.getLogger(CodeQualityInspectionPlugin.class);
     public static final String GROUP = JUDGE_GIRL_GROUP;
     public static final String NAME = "CodeQualityInspection";
     public static final String DESCRIPTION = "Calculate cyclomatic complexity and perform code quality inspection" +

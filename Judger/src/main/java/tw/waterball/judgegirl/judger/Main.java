@@ -13,8 +13,9 @@
 
 package tw.waterball.judgegirl.judger;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import tw.waterball.judgegirl.judgerapi.env.JudgerEnvVariables;
 
 import java.io.IOException;
@@ -25,19 +26,20 @@ import java.io.IOException;
  * @author - johnny850807@gmail.com (Waterball)
  */
 public class Main {
-    private static final Logger logger = LogManager.getLogger(Main.class);
+    private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
     public static void main(String[] args) throws IOException {
-        logger.info("Running CCJudger...");
         var values = JudgerEnvVariables.fromSystemEnvs();
+        logger.info("CCJudger is running...");
         System.out.println(values);
+        MDC.put("traceId", values.traceId);
 
         CCJudger judger = DefaultCCJudgerFactory.create(values,
                 "/judger-layout.yaml");
         logger.info("CCJudger has been instantiated.");
         judger.judge(values.studentId, values.problemId, values.submissionId);
         logger.info("CCJudger has completed the judge.");
-        System.exit(0);
+//        System.exit(0);
     }
 
 }
