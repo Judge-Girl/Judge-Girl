@@ -19,8 +19,7 @@ import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.Volume;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -47,11 +46,11 @@ import static java.util.Collections.singletonList;
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
+@Slf4j
 @ConditionalOnProperty(name = "judge-girl.judger.strategy",
         havingValue = DockerDeployerAutoConfiguration.STRATEGY)
 @Component
 public class DockerJudgerDeployer implements JudgerDeployer {
-    private static final Logger logger = LoggerFactory.getLogger(DockerJudgerDeployer.class);
     private final String jwtSecret;
     private final DockerClient dockerClient;
     private final ServiceProps.ProblemService problemServiceInstance;
@@ -80,6 +79,7 @@ public class DockerJudgerDeployer implements JudgerDeployer {
         HostConfig hostConfig = hostConfig();
         String containerId = createContainer(envs, containerName, hostConfig);
         dockerClient.startContainerCmd(containerId).exec();
+        log.trace("[Judger Deployed] submissionId=\"{}\"", submission.getId());
     }
 
     private List<String> getEnvs(Problem problem, int studentId, Submission submission) {
@@ -140,7 +140,7 @@ public class DockerJudgerDeployer implements JudgerDeployer {
                 .map(name -> name.substring(1))
                 .collect(Collectors.toSet()); // remove the beginning slash '/'
         if (!removedNames.isEmpty()) {
-            logger.info("Remove all exited judger containers which are based on the image '{}', found: {}",
+            log.trace("Remove all exited judger containers which are based on the image '{}', found: {}",
                     judgerProps.getImage().getName(), String.join(", ", removedNames));
         }
     }
