@@ -31,7 +31,7 @@ public class Main {
     public static void main(String[] args) throws IOException {
         var values = JudgerEnvVariables.fromSystemEnvs();
         logger.info("CCJudger is running...");
-        System.out.println(values);
+        logger.info(values.toString());
         MDC.put("traceId", values.traceId);
 
         CCJudger judger = DefaultCCJudgerFactory.create(values,
@@ -39,7 +39,7 @@ public class Main {
         logger.info("CCJudger has been instantiated.");
         judger.judge(values.studentId, values.problemId, values.submissionId);
         logger.info("CCJudger has completed the judge.");
-//        System.exit(0);
+        System.exit(0);
     }
 
 }

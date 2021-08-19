@@ -75,6 +75,14 @@ public class DockerJudgerDeployer implements JudgerDeployer {
 
     @Override
     public void deployJudger(Problem problem, int studentId, Submission submission) {
+        List<String> envs = getEnvs(problem, studentId, submission);
+        String containerName = format(judgerProps.getContainer().getNameFormat(), submission.getId());
+        HostConfig hostConfig = hostConfig();
+        String containerId = createContainer(envs, containerName, hostConfig);
+        dockerClient.startContainerCmd(containerId).exec();
+    }
+
+    private List<String> getEnvs(Problem problem, int studentId, Submission submission) {
         List<String> envs = new LinkedList<>();
         String traceId = MDC.get("traceId");
         JudgerEnvVariables.apply((env, value) -> envs.add(env + "=" + value),
@@ -95,18 +103,28 @@ public class DockerJudgerDeployer implements JudgerDeployer {
                                 format(amqpProps.getVerdictIssuedRoutingKeyFormat(), "*"))
                         .traceId(traceId)
                         .build());
-        String containerName = format(judgerProps.getContainer().getNameFormat(), submission.getId());
+        return envs;
+    }
+
+    private HostConfig hostConfig() {
+        boolean isLogVolumeHostEnable = judgerProps.getDocker().isLogVolumeEnable();
         String logVolumeHostPath = judgerProps.getDocker().getLogVolumeHost();
-        String containerId =
-                dockerClient.createContainerCmd(judgerProps.getImage().getName())
-                        .withName(containerName)
-                        .withHostConfig(HostConfig
-                                .newHostConfig()
-                                .withBinds(new Bind(logVolumeHostPath, new Volume(/*TODO: enhance; hard-coded path*/"/judger-home/log")))
-                                .withNetworkMode(judgerProps.getDocker().getNetwork()))
-                        .withEnv(envs)
-                        .exec().getId();
-        dockerClient.startContainerCmd(containerId).exec();
+        HostConfig hostConfig = HostConfig
+                .newHostConfig()
+                .withNetworkMode(judgerProps.getDocker().getNetwork());
+        if (isLogVolumeHostEnable) {
+            hostConfig.withBinds(new Bind(logVolumeHostPath,
+                    new Volume(/* TODO: enhance; hard-coded path */"/judger-home/log")));
+        }
+        return hostConfig;
+    }
+
+    private String createContainer(List<String> envs, String containerName, HostConfig hostConfig) {
+        return dockerClient.createContainerCmd(judgerProps.getImage().getName())
+                .withName(containerName)
+                .withHostConfig(hostConfig)
+                .withEnv(envs)
+                .exec().getId();
     }
 
     @Scheduled(initialDelay = 5000, fixedDelayString = "${judge-girl.judger.docker.dockerRemovalIntervalInMs}")
