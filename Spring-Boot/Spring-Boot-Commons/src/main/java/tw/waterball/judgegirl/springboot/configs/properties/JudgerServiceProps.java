@@ -11,44 +11,29 @@
  *   limitations under the License.
  */
 
-package tw.waterball.judgegirl.api;
+package tw.waterball.judgegirl.springboot.configs.properties;
 
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import tw.waterball.judgegirl.api.ServiceInstance;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
-@ToString
-@NoArgsConstructor
-@AllArgsConstructor
-public class ServiceInstance {
-    protected String scheme;
-    protected String host;
-    protected int port;
+@Getter
+@Setter
+public class JudgerServiceProps {
 
-    public String getScheme() {
-        return scheme;
+    @ConfigurationProperties("judge-girl.judger.client.problem-service")
+    public static class ProblemService extends ServiceInstance {
     }
 
-    public void setScheme(String scheme) {
-        this.scheme = scheme;
+    @ConfigurationProperties("judge-girl.judger.client.student-service")
+    public static class StudentService extends ServiceInstance {
     }
 
-    public String getHost() {
-        return host;
-    }
-
-    public void setHost(String host) {
-        this.host = host;
-    }
-
-    public int getPort() {
-        return port;
-    }
-
-    public void setPort(int port) {
-        this.port = port;
+    @ConfigurationProperties("judge-girl.judger.client.submission-service")
+    public static class SubmissionService extends ServiceInstance {
     }
 }

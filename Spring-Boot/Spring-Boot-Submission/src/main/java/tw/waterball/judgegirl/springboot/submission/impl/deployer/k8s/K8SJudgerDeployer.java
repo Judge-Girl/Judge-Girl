@@ -19,40 +19,61 @@ import io.kubernetes.client.custom.Quantity;
 import io.kubernetes.client.models.V1EnvVar;
 import io.kubernetes.client.models.V1Job;
 import io.kubernetes.client.models.V1JobBuilder;
-import io.kubernetes.client.models.V1LocalObjectReference;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Component;
+import tw.waterball.judgegirl.judgerapi.env.JudgerEnvVariables;
 import tw.waterball.judgegirl.primitives.problem.LanguageEnv;
 import tw.waterball.judgegirl.primitives.problem.Problem;
 import tw.waterball.judgegirl.primitives.problem.ResourceSpec;
 import tw.waterball.judgegirl.primitives.submission.Submission;
+import tw.waterball.judgegirl.springboot.configs.properties.JudgeGirlAmqpProps;
+import tw.waterball.judgegirl.springboot.configs.properties.JudgeGirlJudgerProps;
+import tw.waterball.judgegirl.springboot.configs.properties.JudgerServiceProps;
+import tw.waterball.judgegirl.springboot.submission.configs.K8SDeployerAutoConfiguration;
 import tw.waterball.judgegirl.submission.deployer.JudgerDeployer;
+
+import java.util.LinkedList;
+import java.util.List;
+
+import static java.lang.String.format;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
+@Slf4j
+@ConditionalOnProperty(name = "judge-girl.judger.strategy",
+        havingValue = K8SDeployerAutoConfiguration.STRATEGY)
+@Component
 public class K8SJudgerDeployer implements JudgerDeployer {
-    private final String judgerJobNameFormat;
-    private final String judgerImageName;
-    private final String judgerContainerNameFormat;
-    private final String judgerImagePullSecret;
     private final BatchV1Api api;
+    private final String jwtSecret;
+    private final JudgerServiceProps.ProblemService problemServiceInstance;
+    private final JudgerServiceProps.SubmissionService submissionServiceInstance;
+    private final JudgeGirlAmqpProps amqpProps;
+    private final JudgeGirlJudgerProps judgerProps;
 
-    public K8SJudgerDeployer(BatchV1Api api,
-                             String judgerJobNameFormat,
-                             String judgerImageName,
-                             String judgerContainerNameFormat,
-                             String judgerImagePullSecret) {
-        this.judgerJobNameFormat = judgerJobNameFormat;
-        this.judgerImageName = judgerImageName;
-        this.judgerContainerNameFormat = judgerContainerNameFormat;
-        this.judgerImagePullSecret = judgerImagePullSecret;
+    public K8SJudgerDeployer(BatchV1Api api, @Value("${jwt.secret}") String jwtSecret,
+                             JudgerServiceProps.ProblemService problemServiceInstance,
+                             JudgerServiceProps.SubmissionService submissionServiceInstance,
+                             JudgeGirlAmqpProps amqpProps,
+                             JudgeGirlJudgerProps judgerProps) {
         this.api = api;
+        this.jwtSecret = jwtSecret;
+        this.problemServiceInstance = problemServiceInstance;
+        this.submissionServiceInstance = submissionServiceInstance;
+        this.amqpProps = amqpProps;
+        this.judgerProps = judgerProps;
     }
 
     @Override
     public void deployJudger(Problem problem, int studentId, Submission submission) {
         try {
-            this.api.createNamespacedJob("default",
+            this.api.createNamespacedJob(judgerProps.getKubernetes().getNamespace(),
                     createJob(problem, studentId, submission), null, null, null);
+            log.trace("[Judger Deployed] submissionId=\"{}\"", submission.getId());
         } catch (ApiException e) {
             throw new RuntimeException(e); // TODO
         }
@@ -62,35 +83,60 @@ public class K8SJudgerDeployer implements JudgerDeployer {
         LanguageEnv languageEnv = problem.getLanguageEnv(submission.getLanguageEnvName());
         ResourceSpec resourceSpec = languageEnv.getResourceSpec();
 
+        // @formatter:off
         return new V1JobBuilder()
                 .withKind("Job")
                 .withNewMetadata()
-                .withName(String.format(judgerJobNameFormat, submission.getId()))
+                    .withName(format(judgerProps.getJob().getNameFormat(), submission.getId()))
                 .endMetadata()
                 .withNewSpec()
-                .withTtlSecondsAfterFinished(50)
-                .withNewTemplate()
-                .withNewSpec()
-                // pull from the private docker registry
-                // the secret must be created following the instructions: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
-                .addToImagePullSecrets(new V1LocalObjectReference().name(judgerImagePullSecret))
-                .addNewContainer()
-                .withName(String.format(judgerContainerNameFormat, submission.getId()))
-                .withImage(judgerImageName)
-                .withNewResources()
-                .addToRequests("cpu", new Quantity(String.valueOf(resourceSpec.getCpu())))
-                .addToLimits("nvidia.com/gpu", new Quantity(String.valueOf(resourceSpec.getGpu())))
-                .endResources()
-                .addToEnv(new V1EnvVar().name("submissionId").value(String.valueOf(submission.getId())))
-                .addToEnv(new V1EnvVar().name("problemId").value(String.valueOf(problem.getId())))
-                .addToEnv(new V1EnvVar().name("studentId").value(String.valueOf(studentId)))
-                .endContainer()
-                .withRestartPolicy("Never")
-                .endSpec()
-                .endTemplate()
-                .withBackoffLimit(4)
+                    .withTtlSecondsAfterFinished(50)
+                    .withNewTemplate()
+                        .withNewSpec()
+                            // pull from the private docker registry
+                            // the secret must be created following the instructions: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+                            // TODO: currently don't support private registry
+                            // .addToImagePullSecrets(new V1LocalObjectReference().name(judgerProps.getKubernetes().getImagePullSecret()))
+                            .withRestartPolicy("Never")
+                            .addNewContainer()
+                                .withName(format(judgerProps.getContainer().getNameFormat(), submission.getId()))
+                                .withImage(judgerProps.getImage().getName())
+                                .withNewResources()
+                                    .addToRequests("cpu", new Quantity(String.valueOf(resourceSpec.getCpu())))
+                                    .addToLimits("nvidia.com/gpu", new Quantity(String.valueOf(resourceSpec.getGpu())))
+                                .endResources()
+                                .addAllToEnv(getEnvs(problem, studentId, submission))
+                            .endContainer()
+                        .endSpec()
+                    .endTemplate()
+                    .withBackoffLimit(4)
                 .endSpec()
                 .build();
+        // @formatter:on
+    }
+
+    private List<V1EnvVar> getEnvs(Problem problem, int studentId, Submission submission) {
+        List<V1EnvVar> envs = new LinkedList<>();
+        String traceId = MDC.get("traceId");
+        JudgerEnvVariables.apply((env, value) -> envs.add(new V1EnvVar().name(env).value(value)),
+                JudgerEnvVariables.Values.builder()
+                        .studentId(studentId)
+                        .problemId(problem.getId())
+                        .submissionId(submission.getId())
+                        .jwtSecret(jwtSecret)
+                        .problemServiceInstance(problemServiceInstance)
+                        .submissionServiceInstance(submissionServiceInstance)
+                        .amqpVirtualHost(amqpProps.getVirtualHost())
+                        .amqpHost(amqpProps.getHost())
+                        .amqpPort(amqpProps.getPort())
+                        .amqpUserName(amqpProps.getUsername())
+                        .amqpPassword(amqpProps.getPassword())
+                        .submissionsExchangeName(amqpProps.getSubmissionsExchangeName())
+                        .verdictIssuedRoutingKeyFormat(
+                                format(amqpProps.getVerdictIssuedRoutingKeyFormat(), "*"))
+                        .traceId(traceId)
+                        .build());
+        return envs;
     }
 }
 

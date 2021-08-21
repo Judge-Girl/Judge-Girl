@@ -68,5 +68,6 @@ public class JudgeGirlJudgerProps {
     @Setter
     public static class Kubernetes {
         private String imagePullSecret;
+        private String namespace;
     }
 }

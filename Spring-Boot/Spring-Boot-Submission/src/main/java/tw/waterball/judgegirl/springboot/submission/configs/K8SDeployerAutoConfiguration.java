@@ -17,13 +17,10 @@ import io.kubernetes.client.ApiClient;
 import io.kubernetes.client.apis.BatchV1Api;
 import io.kubernetes.client.util.ClientBuilder;
 import io.kubernetes.client.util.KubeConfig;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import tw.waterball.judgegirl.commons.utils.ResourceUtils;
-import tw.waterball.judgegirl.springboot.submission.impl.deployer.k8s.K8SJudgerDeployer;
-import tw.waterball.judgegirl.submission.deployer.JudgerDeployer;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,25 +34,11 @@ import java.nio.charset.StandardCharsets;
         havingValue = K8SDeployerAutoConfiguration.STRATEGY)
 @Configuration
 public class K8SDeployerAutoConfiguration {
-    static final String STRATEGY = "kubernetes";
-
-    @Bean
-    public JudgerDeployer kubernetesJudgerDeployer(BatchV1Api api,
-                                                   @Value("${judge-girl.judger.job.name-format}")
-                                                           String judgerJobNameFormat,
-                                                   @Value("${judge-girl.judger.image.name}")
-                                                           String judgerImageName,
-                                                   @Value("${judge-girl.judger.container.name-format}")
-                                                           String judgerContainerNameFormat,
-                                                   @Value("${judge-girl.judger.kubernetes.image-pull-secret}")
-                                                           String judgerImagePullSecret) {
-        return new K8SJudgerDeployer(api, judgerJobNameFormat, judgerImageName, judgerContainerNameFormat, judgerImagePullSecret);
-    }
-
+    public static final String STRATEGY = "kubernetes";
 
     @Bean
     public ApiClient apiClient() throws IOException {
-        InputStream in = ResourceUtils.getResourceAsStream("/kubeconfig");
+        InputStream in = ResourceUtils.getResourceAsStream("/config/kube/kubeconfig");
         ApiClient client =
                 ClientBuilder.kubeconfig(KubeConfig.loadKubeConfig(
                         new InputStreamReader(in, StandardCharsets.UTF_8))).build();

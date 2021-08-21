@@ -28,18 +28,16 @@ import static java.lang.Integer.parseInt;
  */
 public interface JudgerEnvVariables {
     Logger logger = LoggerFactory.getLogger(JudgerEnvVariables.class);
-    // Judger-Job specific envs
+    // Judge specific envs
     String ENV_STUDENT_ID = "studentId";
     String ENV_PROBLEM_ID = "problemId";
     String ENV_SUBMISSION_ID = "submissionId";
     String ENV_JWT_SECRET = "jwt.secret";
 
     // Application Properties
-    String ENV_PROBLEM_STUDENT_ID = "judge-girl.client.problem-service.studentId";
     String ENV_PROBLEM_SVC_SCHEME = "judge-girl.client.problem-service.scheme";
     String ENV_PROBLEM_SVC_HOST = "judge-girl.client.problem-service.host";
     String ENV_PROBLEM_SVC_PORT = "judge-girl.client.problem-service.port";
-    String ENV_SUBMISSION_STUDENT_ID = "judge-girl.client.submission-service.studentId";
     String ENV_SUBMISSION_SVC_SCHEME = "judge-girl.client.submission-service.scheme";
     String ENV_SUBMISSION_SVC_HOST = "judge-girl.client.submission-service.host";
     String ENV_SUBMISSION_SVC_PORT = "judge-girl.client.submission-service.port";
@@ -50,9 +48,10 @@ public interface JudgerEnvVariables {
     String ENV_AMQP_PORT = "spring.rabbitmq.port";
     String ENV_SUBMISSIONS_EXCHANGE_NAME = "judge-girl.amqp.submissions-exchange-name";
     String ENV_VERDICT_ISSUED_ROUTING_KEY_FORMAT = "judge-girl.amqp.verdict-issued-routing-key-format";
+
+    // Observability
     String ENV_TRACE_ID = "trace-id";
-
-
+    
     static void apply(Applier applier, Values values) {
         applier = handleDotsInEnvs(applier);
 
@@ -61,12 +60,10 @@ public interface JudgerEnvVariables {
         applier.apply(ENV_SUBMISSION_ID, values.submissionId);
         applier.apply(ENV_JWT_SECRET, values.jwtSecret);
 
-        applier.apply(ENV_PROBLEM_STUDENT_ID, values.problemServiceInstance.getStudentId());
         applier.apply(ENV_PROBLEM_SVC_HOST, values.problemServiceInstance.getHost());
         applier.apply(ENV_PROBLEM_SVC_PORT, values.problemServiceInstance.getPort());
         applier.apply(ENV_PROBLEM_SVC_SCHEME, values.problemServiceInstance.getScheme());
 
-        applier.apply(ENV_SUBMISSION_STUDENT_ID, values.submissionServiceInstance.getStudentId());
         applier.apply(ENV_SUBMISSION_SVC_HOST, values.submissionServiceInstance.getHost());
         applier.apply(ENV_SUBMISSION_SVC_PORT, values.submissionServiceInstance.getPort());
         applier.apply(ENV_SUBMISSION_SVC_SCHEME, values.submissionServiceInstance.getScheme());
@@ -97,7 +94,6 @@ public interface JudgerEnvVariables {
                 .jwtSecret(getenv(ENV_JWT_SECRET))
                 .problemServiceInstance(
                         new ServiceInstance(
-                                parseInt(getenv(ENV_PROBLEM_STUDENT_ID)),
                                 getenv(ENV_PROBLEM_SVC_SCHEME),
                                 getenv(ENV_PROBLEM_SVC_HOST),
                                 parseInt(getenv(ENV_PROBLEM_SVC_PORT))
@@ -105,7 +101,6 @@ public interface JudgerEnvVariables {
                 )
                 .submissionServiceInstance(
                         new ServiceInstance(
-                                parseInt(getenv(ENV_SUBMISSION_STUDENT_ID)),
                                 getenv(ENV_SUBMISSION_SVC_SCHEME),
                                 getenv(ENV_SUBMISSION_SVC_HOST),
                                 parseInt(getenv(ENV_SUBMISSION_SVC_PORT))

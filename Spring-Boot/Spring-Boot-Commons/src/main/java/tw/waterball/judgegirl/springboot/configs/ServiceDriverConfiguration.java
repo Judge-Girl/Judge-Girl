@@ -15,7 +15,6 @@ package tw.waterball.judgegirl.springboot.configs;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.Interceptor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
@@ -40,6 +39,8 @@ import static tw.waterball.judgegirl.commons.token.TokenService.Identity.admin;
 @ServiceDriver
 @Configuration
 public class ServiceDriverConfiguration {
+    private static final int DRIVER_STUDENT_ID = -10000000;
+    public static final TokenService.Identity DRIVER = admin(DRIVER_STUDENT_ID);
 
     @Bean
     public RetrofitFactory retrofitFactory(ObjectMapper objectMapper,
@@ -57,7 +58,6 @@ public class ServiceDriverConfiguration {
             RestTemplateFactory restTemplateFactory,
             TokenService tokenService,
             ServiceProps.ProblemService problemServiceInstance,
-            @Value("${judge-girl.client.problem-service.studentId}") int studentId,
             ClientHttpRequestInterceptor[] interceptors) {
         var restTemplate = restTemplateFactory.create(
                 problemServiceInstance.getScheme(),
@@ -65,20 +65,19 @@ public class ServiceDriverConfiguration {
                 problemServiceInstance.getPort(),
                 interceptors);
         return new RestProblemApiClient(restTemplate,
-                () -> tokenService.createToken(admin(studentId)).getToken());
+                () -> tokenService.createToken(DRIVER).getToken());
     }
 
     @Bean
     public StudentServiceDriver studentServiceDriver(
             RetrofitFactory retrofitFactory,
             TokenService tokenService,
-            ServiceProps.StudentService studentServiceInstance,
-            @Value("${judge-girl.client.student-service.studentId}") int studentId) {
+            ServiceProps.StudentService studentServiceInstance) {
         return new StudentApiClient(retrofitFactory,
                 studentServiceInstance.getScheme(),
                 studentServiceInstance.getHost(),
                 studentServiceInstance.getPort(),
-                () -> tokenService.createToken(admin(studentId)).getToken());
+                () -> tokenService.createToken(DRIVER).getToken());
 
     }
 
@@ -89,14 +88,13 @@ public class ServiceDriverConfiguration {
             ObjectMapper objectMapper,
             TokenService tokenService,
             ServiceProps.SubmissionService submissionServiceInstance,
-            @Value("${judge-girl.client.submission-service.studentId}") int studentId,
             BagInterceptor... bagInterceptors) {
         return new SubmissionApiClient(retrofitFactory,
                 objectMapper,
                 submissionServiceInstance.getScheme(),
                 submissionServiceInstance.getHost(),
                 submissionServiceInstance.getPort(),
-                () -> tokenService.createToken(admin(studentId)).getToken(),
+                () -> tokenService.createToken(DRIVER).getToken(),
                 bagInterceptors);
     }
 

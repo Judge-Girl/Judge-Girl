@@ -71,6 +71,7 @@ services:
     environment:
       spring.profiles.active: prod,mongo,amqp
       logging.level.tw.waterball: TRACE
+      judge-girl.judger.strategy: kubernetes
       MONGO_HOST: "${MONGO_HOST}"
       RABBIT_HOST: "${RABBIT_HOST}"
       REDIS_HOST: "${REDIS_HOST}"
