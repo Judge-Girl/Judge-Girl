@@ -24,13 +24,14 @@ import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Component;
 import tw.waterball.judgegirl.judgerapi.env.JudgerEnvVariables;
 import tw.waterball.judgegirl.primitives.problem.Problem;
 import tw.waterball.judgegirl.primitives.submission.Submission;
 import tw.waterball.judgegirl.springboot.configs.properties.JudgeGirlAmqpProps;
 import tw.waterball.judgegirl.springboot.configs.properties.JudgeGirlJudgerProps;
-import tw.waterball.judgegirl.springboot.configs.properties.ServiceProps;
+import tw.waterball.judgegirl.springboot.configs.properties.JudgerServiceProps;
 import tw.waterball.judgegirl.springboot.submission.configs.DockerDeployerAutoConfiguration;
 import tw.waterball.judgegirl.submission.deployer.JudgerDeployer;
 
@@ -51,19 +52,25 @@ import static java.util.Collections.singletonList;
         havingValue = DockerDeployerAutoConfiguration.STRATEGY)
 @Component
 public class DockerJudgerDeployer implements JudgerDeployer {
+    // Since Docker Client processes each incoming request in a FIFO manner,
+    // it will become a bottleneck during a massive workload;
+    // Using the taskScheduler to run it in the background can avoid client's TIMEOUT.
+    private final ThreadPoolTaskScheduler taskScheduler;
     private final String jwtSecret;
     private final DockerClient dockerClient;
-    private final ServiceProps.ProblemService problemServiceInstance;
-    private final ServiceProps.SubmissionService submissionServiceInstance;
+    private final JudgerServiceProps.ProblemService problemServiceInstance;
+    private final JudgerServiceProps.SubmissionService submissionServiceInstance;
     private final JudgeGirlAmqpProps amqpProps;
     private final JudgeGirlJudgerProps judgerProps;
 
     public DockerJudgerDeployer(@Value("${jwt.secret}") String jwtSecret,
                                 DockerClient dockerClient,
-                                ServiceProps.ProblemService problemServiceInstance,
-                                ServiceProps.SubmissionService submissionServiceInstance,
+                                JudgerServiceProps.ProblemService problemServiceInstance,
+                                JudgerServiceProps.SubmissionService submissionServiceInstance,
                                 JudgeGirlAmqpProps amqpProps,
-                                JudgeGirlJudgerProps judgerProps) {
+                                JudgeGirlJudgerProps judgerProps,
+                                ThreadPoolTaskScheduler taskScheduler) {
+        this.taskScheduler = taskScheduler;
         this.jwtSecret = jwtSecret;
         this.dockerClient = dockerClient;
         this.problemServiceInstance = problemServiceInstance;
@@ -74,12 +81,14 @@ public class DockerJudgerDeployer implements JudgerDeployer {
 
     @Override
     public void deployJudger(Problem problem, int studentId, Submission submission) {
-        List<String> envs = getEnvs(problem, studentId, submission);
-        String containerName = format(judgerProps.getContainer().getNameFormat(), submission.getId());
-        HostConfig hostConfig = hostConfig();
-        String containerId = createContainer(envs, containerName, hostConfig);
-        dockerClient.startContainerCmd(containerId).exec();
-        log.trace("[Judger Deployed] submissionId=\"{}\"", submission.getId());
+        taskScheduler.execute(() -> {
+            List<String> envs = getEnvs(problem, studentId, submission);
+            String containerName = format(judgerProps.getContainer().getNameFormat(), submission.getId());
+            HostConfig hostConfig = hostConfig();
+            String containerId = createContainer(envs, containerName, hostConfig);
+            dockerClient.startContainerCmd(containerId).exec();
+            log.trace("[Judger Deployed] submissionId=\"{}\"", submission.getId());
+        });
     }
 
     private List<String> getEnvs(Problem problem, int studentId, Submission submission) {

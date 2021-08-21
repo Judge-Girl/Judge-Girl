@@ -17,13 +17,15 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Configuration;
 import tw.waterball.judgegirl.springboot.configs.properties.JudgeGirlAmqpProps;
 import tw.waterball.judgegirl.springboot.configs.properties.JudgeGirlJudgerProps;
+import tw.waterball.judgegirl.springboot.configs.properties.JudgerServiceProps;
 import tw.waterball.judgegirl.springboot.configs.properties.ServiceProps;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
 @EnableConfigurationProperties({JudgeGirlAmqpProps.class, JudgeGirlJudgerProps.class,
-        ServiceProps.ProblemService.class, ServiceProps.StudentService.class, ServiceProps.SubmissionService.class})
+        ServiceProps.ProblemService.class, ServiceProps.StudentService.class, ServiceProps.SubmissionService.class,
+        JudgerServiceProps.ProblemService.class, JudgerServiceProps.StudentService.class, JudgerServiceProps.SubmissionService.class})
 @Configuration
 public class PropertiesConfig {
 
