@@ -36,6 +36,8 @@ public class JudgeGirlJudgerProps {
     private Docker docker;
     @NestedConfigurationProperty
     private Kubernetes kubernetes;
+    @NestedConfigurationProperty
+    private Amqp amqp;
 
 
     @Getter
@@ -69,5 +71,13 @@ public class JudgeGirlJudgerProps {
     public static class Kubernetes {
         private String imagePullSecret;
         private String namespace;
+    }
+
+
+    @Getter
+    @Setter
+    public static class Amqp {
+        private String host;
+        private int port;
     }
 }
