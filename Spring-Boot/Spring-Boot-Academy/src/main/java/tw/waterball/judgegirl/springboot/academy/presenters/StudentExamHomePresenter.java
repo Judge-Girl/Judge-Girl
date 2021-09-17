@@ -1,6 +1,6 @@
 package tw.waterball.judgegirl.springboot.academy.presenters;
 
-import tw.waterball.judgegirl.academy.domain.usecases.exam.GetExamProgressOverviewUseCase;
+import tw.waterball.judgegirl.academy.domain.usecases.exam.GetStudentExamOverviewUseCase;
 import tw.waterball.judgegirl.primitives.exam.Exam;
 import tw.waterball.judgegirl.primitives.exam.Question;
 import tw.waterball.judgegirl.primitives.exam.Record;
@@ -14,18 +14,18 @@ import java.util.List;
 import java.util.Map;
 
 import static java.util.function.Function.identity;
-import static tw.waterball.judgegirl.commons.utils.StreamUtils.toMap;
-import static tw.waterball.judgegirl.commons.utils.StreamUtils.zipToList;
+import static tw.waterball.judgegirl.commons.utils.StreamUtils.*;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
-public class ExamHomePresenter implements GetExamProgressOverviewUseCase.Presenter {
+public class StudentExamHomePresenter implements GetStudentExamOverviewUseCase.Presenter {
     private Exam exam;
     private final List<Record> bestRecords = new ArrayList<>();
     private final List<Problem> problems = new ArrayList<>();
     private final Map<Question.Id, Integer> yourScoreMap = new HashMap<>();
     private final Map<Question.Id, Integer> remainingQuotaMap = new HashMap<>();
+    private final List<Question> notFoundQuestions = new ArrayList<>();
 
     @Override
     public void showExam(Exam exam) {
@@ -52,6 +52,11 @@ public class ExamHomePresenter implements GetExamProgressOverviewUseCase.Present
         remainingQuotaMap.put(question.getId(), remainingQuota);
     }
 
+    @Override
+    public void showNotFoundQuestion(Question question) {
+        notFoundQuestions.add(question);
+    }
+
     public ExamHome present() {
         List<QuestionItem> questionItems = aggregateQuestionOverviews();
         return ExamHome.builder()
@@ -61,13 +66,16 @@ public class ExamHomePresenter implements GetExamProgressOverviewUseCase.Present
                 .endTime(exam.getEndTime())
                 .description(exam.getDescription())
                 .questions(questionItems)
+                .notFoundQuestions(mapToList(notFoundQuestions, QuestionItem::toViewModel))
                 .totalScore(questionItems.stream().mapToInt(ExamHome.QuestionItem::getYourScore).sum())
                 .build();
     }
 
     private List<QuestionItem> aggregateQuestionOverviews() {
         var bestRecordsMap = toMap(bestRecords, Record::getQuestionId, identity());
+
         return zipToList(problems, exam.getQuestions(),
+                (p, q) -> p.getId() == q.getProblemId(),
                 (p, q) -> QuestionItem.toViewModel(q, p, remainingQuotaMap.get(q.getId()),
                         yourScoreMap.get(q.getId()), bestRecordsMap.get(q.getId())));
     }

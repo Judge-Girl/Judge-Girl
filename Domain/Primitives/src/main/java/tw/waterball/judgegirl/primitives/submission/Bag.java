@@ -16,6 +16,7 @@ import static tw.waterball.judgegirl.commons.utils.MapUtils.map;
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
+@SuppressWarnings("NullableProblems")
 public class Bag implements Map<String, String> {
     protected Map<String, String> map;
 
@@ -104,19 +105,16 @@ public class Bag implements Map<String, String> {
         map.clear();
     }
 
-    @NotNull
     @Override
     public Set<String> keySet() {
         return map.keySet();
     }
 
-    @NotNull
     @Override
     public Collection<String> values() {
         return map.values();
     }
 
-    @NotNull
     @Override
     public Set<Entry<String, String>> entrySet() {
         return map.entrySet();

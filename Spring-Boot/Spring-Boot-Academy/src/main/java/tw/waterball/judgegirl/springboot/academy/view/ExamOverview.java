@@ -22,6 +22,7 @@ public class ExamOverview {
     public Date endTime;
     public String description;
     public List<QuestionItem> questions;
+    public List<QuestionItem> notFoundQuestions;
     public int totalScore;
 
     public Optional<QuestionItem> getQuestionById(Question.Id questionId) {
@@ -43,13 +44,18 @@ public class ExamOverview {
         public String problemTitle;
 
         public static QuestionItem toViewModel(Problem problem, Question question) {
+            QuestionItem questionItem = toViewModel(question);
+            questionItem.problemTitle = problem.getTitle();
+            return questionItem;
+        }
+        
+        public static QuestionItem toViewModel(Question question) {
             return QuestionItem.builder()
                     .examId(question.getExamId())
-                    .problemId(problem.getId())
+                    .problemId(question.getProblemId())
                     .quota(question.getQuota())
                     .maxScore(question.getScore())
-                    .questionOrder(question.getQuestionOrder())
-                    .problemTitle(problem.getTitle()).build();
+                    .questionOrder(question.getQuestionOrder()).build();
         }
     }
 

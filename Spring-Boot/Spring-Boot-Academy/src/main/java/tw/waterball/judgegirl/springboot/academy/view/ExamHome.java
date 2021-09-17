@@ -25,6 +25,7 @@ public class ExamHome {
     public Date endTime;
     public String description;
     public List<QuestionItem> questions;
+    public List<QuestionItem> notFoundQuestions;
     public int totalScore;
 
     public Optional<QuestionItem> getQuestionById(Question.Id questionId) {
@@ -40,13 +41,22 @@ public class ExamHome {
     public static class QuestionItem {
         public int examId;
         public int problemId;
-        public int quota;
-        public int remainingQuota;
-        public int maxScore;
-        public int questionOrder;
-        public int yourScore;
+        public Integer quota;
+        public Integer remainingQuota;
+        public Integer maxScore;
+        public Integer questionOrder;
+        public Integer yourScore;
         public BestRecord bestRecord;
         public String problemTitle;
+
+        public static QuestionItem toViewModel(Question question) {
+            var builder = QuestionItem.builder()
+                    .examId(question.getExamId())
+                    .problemId(question.getProblemId())
+                    .quota(question.getQuota())
+                    .maxScore(question.getScore());
+            return builder.build();
+        }
 
         public static QuestionItem toViewModel(Question question, Problem problem,
                                                int remainingQuota, int yourScore,
@@ -65,7 +75,6 @@ public class ExamHome {
             }
             return builder.build();
         }
-
     }
 
     @Builder

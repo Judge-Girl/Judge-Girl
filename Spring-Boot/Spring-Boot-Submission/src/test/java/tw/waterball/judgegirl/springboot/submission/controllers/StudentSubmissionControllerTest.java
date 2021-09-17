@@ -94,7 +94,7 @@ public class StudentSubmissionControllerTest extends AbstractSubmissionControlle
     }
 
     @Test
-    @Timeout(5)
+    @Timeout(7)
     void WhenSubmitCodeWithValidToken_ShouldCompleteJudgeFlow() throws Exception {
         SubmissionView submission = submitCodeAndGet(STUDENT1_ID, STUDENT1_TOKEN);
 

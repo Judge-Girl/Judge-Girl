@@ -69,6 +69,8 @@ public class AllMatchPolicyPlugin extends AbstractJudgeGirlMatchPolicyPlugin {
         // TODO strictTrailingBreakLine is not implemented yet
         String actual = IOUtils.toString(new FileInputStream(actualFilePath.toFile()), StandardCharsets.US_ASCII);
         String expected = IOUtils.toString(new FileInputStream(expectFilePath.toFile()), StandardCharsets.US_ASCII);
+        actual = actual.replaceAll("\r\n", "\n");
+        expected = expected.replaceAll("\r\n", "\n");
         return actual.equals(expected);
     }
 }
