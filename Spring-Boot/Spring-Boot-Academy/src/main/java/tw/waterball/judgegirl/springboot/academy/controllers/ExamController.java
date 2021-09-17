@@ -39,7 +39,7 @@ public class ExamController {
     private final ExamPresenter examPresenter;
     private final CreateExamUseCase createExamUseCase;
     private final GetExamsUseCase getExamsUseCase;
-    private final GetExamProgressOverviewUseCase getExamProgressOverviewUseCase;
+    private final GetStudentExamOverviewUseCase getStudentExamOverviewUseCase;
     private final GetExamOverviewUseCase getExamOverviewUseCase;
     private final UpdateExamUseCase updateExamUseCase;
     private final GetExamUseCase getExamUseCase;
@@ -236,9 +236,9 @@ public class ExamController {
                                             @PathVariable int examId,
                                             @PathVariable int studentId) {
         return tokenService.returnIfGranted(studentId, authorization, token -> {
-            ExamHomePresenter presenter = new ExamHomePresenter();
-            getExamProgressOverviewUseCase.execute(
-                    new GetExamProgressOverviewUseCase.Request(examId, studentId), presenter);
+            StudentExamHomePresenter presenter = new StudentExamHomePresenter();
+            getStudentExamOverviewUseCase.execute(
+                    new GetStudentExamOverviewUseCase.Request(examId, studentId), presenter);
             return presenter.present();
         });
     }

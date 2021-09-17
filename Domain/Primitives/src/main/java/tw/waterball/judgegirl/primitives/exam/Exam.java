@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Consumer;
 
 import static java.util.Objects.requireNonNull;
 import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
@@ -73,10 +72,18 @@ public class Exam {
     }
 
     public Question getQuestionById(Question.Id questionId) {
-        return mayHaveQuestion(questionId).orElseThrow(() -> notFound(Question.class).id(questionId));
+        return mayContainQuestion(questionId).orElseThrow(() -> notFound(Question.class).id(questionId));
     }
 
-    public Optional<Question> mayHaveQuestion(Question.Id questionId) {
+    public boolean containQuestion(int problemId) {
+        return mayContainQuestion(problemId).isPresent();
+    }
+
+    public Optional<Question> mayContainQuestion(int problemId) {
+        return findFirst(questions, q -> q.getId().getProblemId() == problemId);
+    }
+
+    public Optional<Question> mayContainQuestion(Question.Id questionId) {
         return findFirst(questions, q -> q.getId().equals(questionId));
     }
 
@@ -102,10 +109,6 @@ public class Exam {
 
     public void addExaminee(Examinee examinee) {
         examinees.add(examinee);
-    }
-
-    public void foreachQuestion(Consumer<Question> questionConsumer) {
-        questions.forEach(questionConsumer);
     }
 
     public int getMaxScore() {

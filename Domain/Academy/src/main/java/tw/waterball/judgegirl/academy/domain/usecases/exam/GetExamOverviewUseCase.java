@@ -22,8 +22,11 @@ public class GetExamOverviewUseCase {
     public void execute(int examId, Presenter presenter) {
         Exam exam = findExam(examId);
         presenter.showExam(exam);
-        exam.foreachQuestion(question -> findProblem(question)
-                .ifPresent(problem -> presenter.showQuestion(question, problem)));
+        for (Question question : exam.getQuestions()) {
+            findProblem(question)
+                    .ifPresentOrElse(problem -> presenter.showQuestion(question, problem),
+                            () -> presenter.showNotFoundQuestion(question));
+        }
     }
 
     private Exam findExam(int examId) {
@@ -41,6 +44,7 @@ public class GetExamOverviewUseCase {
 
         void showQuestion(Question question, Problem problem);
 
+        void showNotFoundQuestion(Question question);
     }
 
 }

@@ -17,7 +17,7 @@ import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFou
 
 @Named
 @AllArgsConstructor
-public class GetExamProgressOverviewUseCase {
+public class GetStudentExamOverviewUseCase {
     private final ExamRepository examRepository;
     private final ProblemServiceDriver problemService;
 
@@ -26,17 +26,19 @@ public class GetExamProgressOverviewUseCase {
         Exam exam = findExam(request);
         presenter.showExam(exam);
 
-        exam.foreachQuestion(question -> findProblem(question)
-                .ifPresent(problem -> {
-                    presenter.showQuestion(question, problem);
-                    showRemainingQuotaOfQuestion(presenter, studentId, question);
-                    findBestRecord(studentId, question)
-                            .ifPresentOrElse(record -> {
-                                int yourScore = question.calculateScore(record);
-                                presenter.showBestRecordOfQuestion(record);
-                                presenter.showYourScoreOfQuestion(question, yourScore);
-                            }, () -> presenter.showYourScoreOfQuestion(question, 0));
-                }));
+        for (Question question : exam.getQuestions()) {
+            findProblem(question)
+                    .ifPresentOrElse(problem -> {
+                        presenter.showQuestion(question, problem);
+                        showRemainingQuotaOfQuestion(presenter, studentId, question);
+                        findBestRecord(studentId, question)
+                                .ifPresentOrElse(record -> {
+                                    int yourScore = question.calculateScore(record);
+                                    presenter.showBestRecordOfQuestion(record);
+                                    presenter.showYourScoreOfQuestion(question, yourScore);
+                                }, () -> presenter.showYourScoreOfQuestion(question, 0));
+                    }, () -> presenter.showNotFoundQuestion(question));
+        }
     }
 
     private Exam findExam(Request request) {
@@ -68,6 +70,8 @@ public class GetExamProgressOverviewUseCase {
         void showYourScoreOfQuestion(Question question, int yourScore);
 
         void showRemainingQuotaOfQuestion(Question question, int remainingQuota);
+
+        void showNotFoundQuestion(Question question);
     }
 
     @AllArgsConstructor
