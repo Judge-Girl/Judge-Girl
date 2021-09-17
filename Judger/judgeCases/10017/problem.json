@@ -1,0 +1,66 @@
+{
+  "id": 10017,
+  "title": "Fast Dynamic Nearest Neighbors Search",
+  "languageEnvs": [
+    {
+      "name": "C",
+      "language": "C",
+      "compilation": {
+        "script": "gcc -std=c99 -O2 a.c -lm"
+      },
+      "resourceSpec": {
+        "cpu": 1,
+        "gpu": 0
+      },
+      "submittedCodeSpecs": [
+        {
+          "format": "C",
+          "fileName": "a.c"
+        }
+      ],
+      "compiledLanguage": true
+    }
+  ],
+  "tags": [
+    "arithmetic operation, basic I/O"
+  ],
+  "testcases": [
+    {
+      "name": "0",
+      "problemId": 10017,
+      "timeLimit": 1000,
+      "memoryLimit": 67108864,
+      "outputLimit": 67108864,
+      "threadNumberLimit": -1,
+      "grade": 0
+    },
+    {
+      "name": "1",
+      "problemId": 10017,
+      "timeLimit": 1000,
+      "memoryLimit": 67108864,
+      "outputLimit": 67108864,
+      "threadNumberLimit": -1,
+      "grade": 20
+    },
+    {
+      "name": "2",
+      "problemId": 10017,
+      "timeLimit": 1000,
+      "memoryLimit": 67108864,
+      "outputLimit": 67108864,
+      "threadNumberLimit": -1,
+      "grade": 20
+    },
+    {
+      "name": "3",
+      "problemId": 10017,
+      "timeLimit": 10000,
+      "memoryLimit": 67108864,
+      "outputLimit": 67108864,
+      "threadNumberLimit": -1,
+      "grade": 20
+    }
+  ],
+  "visible": false
+}

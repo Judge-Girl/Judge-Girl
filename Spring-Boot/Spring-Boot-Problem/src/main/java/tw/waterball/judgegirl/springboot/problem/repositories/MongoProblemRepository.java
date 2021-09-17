@@ -33,7 +33,10 @@ import tw.waterball.judgegirl.springboot.mongo.utils.MongoUtils;
 import tw.waterball.judgegirl.springboot.problem.repositories.data.ProblemData;
 import tw.waterball.judgegirl.springboot.profiles.productions.Mongo;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 import java.util.zip.ZipOutputStream;
 
@@ -245,20 +248,18 @@ public class MongoProblemRepository implements ProblemRepository {
     }
 
     private InputStream compressTestcaseIoFiles(TestcaseIO.Files ioFiles) throws IOException {
-        PipedInputStream pipedIn = new PipedInputStream();
-        try (var pipedOut = new PipedOutputStream(pipedIn);
-             var zipos = new ZipOutputStream(pipedOut)) {
-            // organize in and out under the two entry in/ and out/
-            writeFileAsZipEntry("in/" + ioFiles.stdIn.getFileName(), zipos, ioFiles.stdIn.getInputStream());
-            for (FileResource inputFile : ioFiles.inputFiles) {
-                writeFileAsZipEntry("in/" + inputFile.getFileName(), zipos, inputFile.getInputStream());
-            }
-            writeFileAsZipEntry("out/" + ioFiles.stdOut.getFileName(), zipos, ioFiles.stdOut.getInputStream());
-            for (FileResource outputFile : ioFiles.outputFiles) {
-                writeFileAsZipEntry("out/" + outputFile.getFileName(), zipos, outputFile.getInputStream());
-            }
+        var baos = new ByteArrayOutputStream();
+        var zipos = new ZipOutputStream(baos);
+        // organize in and out under the two entry in/ and out/
+        writeFileAsZipEntry("in/" + ioFiles.stdIn.getFileName(), zipos, ioFiles.stdIn.getInputStream());
+        for (FileResource inputFile : ioFiles.inputFiles) {
+            writeFileAsZipEntry("in/" + inputFile.getFileName(), zipos, inputFile.getInputStream());
         }
-        return pipedIn;
+        writeFileAsZipEntry("out/" + ioFiles.stdOut.getFileName(), zipos, ioFiles.stdOut.getInputStream());
+        for (FileResource outputFile : ioFiles.outputFiles) {
+            writeFileAsZipEntry("out/" + outputFile.getFileName(), zipos, outputFile.getInputStream());
+        }
+        return new ByteArrayInputStream(baos.toByteArray());
     }
 
     @Override

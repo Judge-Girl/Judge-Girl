@@ -1,0 +1,34 @@
+{
+  "id": 70038,
+  "title": "ProvidedCodesTest",
+  "languageEnvs": [
+    {
+      "name": "C",
+      "language": "C",
+      "compilation": {
+        "script": "gcc main.c"
+      },
+      "resourceSpec": {
+        "cpu": 1,
+        "gpu": 0
+      },
+      "submittedCodeSpecs": [
+        {
+          "format": "C",
+          "fileName": "a.c"
+        }
+      ]
+    }
+  ],
+  "testcases": [
+    {
+      "name": "0",
+      "problemId": 1,
+      "timeLimit": 15000,
+      "memoryLimit": 67108864,
+      "outputLimit": 67108864,
+      "threadNumberLimit": -1,
+      "grade": 100
+    }
+  ]
+}

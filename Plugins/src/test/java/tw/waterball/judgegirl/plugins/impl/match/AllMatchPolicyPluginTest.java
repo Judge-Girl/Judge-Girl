@@ -19,23 +19,23 @@ import tw.waterball.judgegirl.commons.utils.ResourceUtils;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import static java.util.Collections.singletonMap;
 import static java.util.Objects.requireNonNull;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AllMatchPolicyPluginTest {
-    private AllMatchPolicyPlugin policyPlugin = new AllMatchPolicyPlugin();
+    private final AllMatchPolicyPlugin policyPlugin = new AllMatchPolicyPlugin();
 
     @Test
     void testAC() {
         Path fileName = ResourceUtils.getAbsolutePath("/stub/test/file1");
         assertTrue(policyPlugin.isMatch(
                 fileName, fileName,
-                Collections.singletonMap(fileName, fileName)));
+                singletonMap(fileName, fileName)));
     }
 
     @Test
@@ -44,7 +44,7 @@ class AllMatchPolicyPluginTest {
         Path file2 = ResourceUtils.getAbsolutePath("/stub/test/file2");
         assertFalse(policyPlugin.isMatch(
                 file1, file2,
-                Collections.singletonMap(file1, file1)));
+                singletonMap(file1, file1)));
     }
 
     @Test
@@ -52,7 +52,7 @@ class AllMatchPolicyPluginTest {
         Path file1 = ResourceUtils.getAbsolutePath("/stub/test/file1");
         Path file2 = ResourceUtils.getAbsolutePath("/stub/test/file2");
         assertFalse(policyPlugin.isMatch(file1, file1,
-                Collections.singletonMap(file1, file2)));
+                singletonMap(file1, file2)));
     }
 
     @Test

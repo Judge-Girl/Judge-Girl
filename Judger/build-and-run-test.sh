@@ -12,6 +12,6 @@
 #   limitations under the License.
 #
 
-cd .. && ./mvnw clean package -DskipTests && cd Judger && \
+cd .. && ./mvnw clean package -T 4 -DskipTests && cd Judger && \
   docker build . -t judger -f Dockerfile.cqi \
   && sh ccjudger-test.sh
