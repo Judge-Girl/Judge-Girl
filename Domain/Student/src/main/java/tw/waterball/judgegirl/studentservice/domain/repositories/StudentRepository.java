@@ -40,4 +40,6 @@ public interface StudentRepository {
 
     List<Student> findStudents(boolean admin, int skip, int size);
 
+    void deleteStudentById(int studentId);
+
 }

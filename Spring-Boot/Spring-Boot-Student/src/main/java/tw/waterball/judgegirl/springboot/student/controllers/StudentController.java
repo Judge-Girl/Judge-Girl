@@ -45,6 +45,7 @@ public class StudentController {
     private final GetStudentUseCase getStudentUseCase;
     private final GetStudentsByEmailListUseCase getStudentsByEmailListUseCase;
     private final GetStudentsWithFilterUseCase getStudentsWithFilterUseCase;
+    private final DeleteStudentUseCase deleteStudentUseCase;
     private final AuthUseCase authUseCase;
     private final ChangePasswordUseCase changePasswordUseCase;
     private final TokenService tokenService;
@@ -91,6 +92,12 @@ public class StudentController {
         presenter.setToken(tokenService.renewToken(token.getToken()));
         authUseCase.execute(new AuthUseCase.Request(token.getStudentId()), presenter);
         return presenter.present();
+    }
+
+    @DeleteMapping("/{studentId}")
+    public void delete(@PathVariable Integer studentId,
+                       @RequestHeader("Authorization") String authorization) {
+        tokenService.ifAdminToken(authorization, token -> deleteStudentUseCase.execute(studentId));
     }
 
     @PatchMapping("/{studentId}/password")

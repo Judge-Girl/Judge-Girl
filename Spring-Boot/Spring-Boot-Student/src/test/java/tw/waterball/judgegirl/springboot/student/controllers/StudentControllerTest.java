@@ -14,7 +14,9 @@
 package tw.waterball.judgegirl.springboot.student.controllers;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+
 import lombok.SneakyThrows;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,6 +25,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.ResultActions;
+
 import tw.waterball.judgegirl.commons.token.TokenService;
 import tw.waterball.judgegirl.primitives.Admin;
 import tw.waterball.judgegirl.primitives.Student;
@@ -39,8 +42,7 @@ import java.util.List;
 import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.IntStream.range;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static tw.waterball.judgegirl.commons.token.TokenService.Identity.student;
@@ -74,7 +76,7 @@ public class StudentControllerTest extends AbstractSpringBootTest {
 
     @Test
     void WhenStudentSignUpCorrectly_ShouldRespondStudentView() throws Exception {
-        StudentView body = signUpAndGetResponseBody(student);
+        var body = signUpAndGetStudent(student);
         student.setId(body.id);
         assertEquals(toViewModel(student), body);
     }
@@ -113,7 +115,7 @@ public class StudentControllerTest extends AbstractSpringBootTest {
 
     @Test
     void GivenOneStudentSignedUp_WhenStudentLoginCorrectly_ShouldRespondLoginResponseWithCorrectToken() throws Exception {
-        StudentView studentView = signUpAndGetResponseBody(student);
+        var studentView = signUpAndGetStudent(student);
         LoginResponse body = loginAndGetResponseBody(this.student.getEmail(), this.student.getPassword());
 
         verifyStudentLogin(studentView, body);
@@ -147,7 +149,7 @@ public class StudentControllerTest extends AbstractSpringBootTest {
 
     @Test
     void GivenOneStudentSignedUp_WhenGetStudentById_ShouldRespondStudentView() throws Exception {
-        StudentView student = signUpAndGetResponseBody(this.student);
+        var student = signUpAndGetStudent(this.student);
         LoginResponse loginResponse = loginAndGetResponseBody(this.student.getEmail(), this.student.getPassword());
 
         StudentView body = getBody(getStudentById(student.id, loginResponse.token)
@@ -290,7 +292,22 @@ public class StudentControllerTest extends AbstractSpringBootTest {
         assertEquals("admin3", students.get(1).name);
     }
 
-    private StudentView signUpAndGetResponseBody(Student student) throws Exception {
+    @Test
+    void GivenStudentSignedUp_WhenDeleteTheStudent_ShouldSucceed() throws Exception {
+        var student = signUpAndGetStudent(this.student);
+
+        deleteStudent(student.id).andExpect(status().isOk());
+
+        assertTrue(studentRepository.findStudentById(student.id).isEmpty());
+    }
+
+    @Test
+    void WhenDeleteNonExistingStudent_ShouldSucceed() throws Exception {
+        int nonExistingStudentId = 123;
+        deleteStudent(nonExistingStudentId).andExpect(status().isOk());
+    }
+
+    private StudentView signUpAndGetStudent(Student student) throws Exception {
         return getBody(signUp(student).andExpect(status().isOk()), StudentView.class);
     }
 
@@ -381,5 +398,9 @@ public class StudentControllerTest extends AbstractSpringBootTest {
     private void signUp10StudentsAnd4Admins() {
         range(0, 10).forEach(i -> signUp("student" + i, "student" + i + "@example.com", "password"));
         range(0, 4).forEach(i -> signUpAdmin("admin" + i, "admin" + i + "@example.com", "password"));
+    }
+
+    private ResultActions deleteStudent(int studentId) throws Exception {
+        return mockMvc.perform(withAdminToken(delete("/api/students/{studentId}", studentId)));
     }
 }
