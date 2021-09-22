@@ -2,7 +2,6 @@ package tw.waterball.judgegirl.academy.domain.usecases.exam;
 
 import lombok.Value;
 import tw.waterball.judgegirl.academy.domain.repositories.ExamRepository;
-import tw.waterball.judgegirl.commons.utils.functional.GetById;
 import tw.waterball.judgegirl.primitives.Student;
 import tw.waterball.judgegirl.primitives.exam.Exam;
 import tw.waterball.judgegirl.primitives.exam.Examinee;
@@ -16,7 +15,9 @@ import tw.waterball.judgegirl.submissionapi.clients.SubmissionServiceDriver;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 
 import javax.inject.Named;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static java.util.function.Function.identity;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.*;
@@ -72,15 +73,18 @@ public class CreateExamTranscriptUseCase extends AbstractExamUseCase {
                 Record::getSubmissionId).toArray(new String[0]);
     }
 
-    private GetById<Integer, Student> examinees(Exam exam) {
-        var idToExaminee = toMap(studentServiceDriver.getStudentsByIds(
+    private Map<Integer, Student> examinees(Exam exam) {
+        return toMap(studentServiceDriver.getStudentsByIds(
                 mapToList(exam.getExaminees(), Examinee::getStudentId)), Student::getId, identity());
-        return idToExaminee::get;
     }
 
-    private List<ExamineeRecord> examineeRecords(GetById<Integer, Student> examinees, List<QuestionRecord> records) {
-        var examineeToQuestionRecords =
-                groupingBy(records, questionRecord -> examinees.get(questionRecord.getStudentId()));
+    private List<ExamineeRecord> examineeRecords(Map<Integer, Student> examinees, List<QuestionRecord> records) {
+        var examineeToQuestionRecords = new HashMap<Student, List<QuestionRecord>>();
+
+        for (Student student : examinees.values()) {
+            var questionRecords = filterToList(records, questionRecord -> student.getId() == questionRecord.getStudentId());
+            examineeToQuestionRecords.put(student, questionRecords);
+        }
 
         return zipToList(examineeToQuestionRecords, ExamineeRecord::new);
     }
