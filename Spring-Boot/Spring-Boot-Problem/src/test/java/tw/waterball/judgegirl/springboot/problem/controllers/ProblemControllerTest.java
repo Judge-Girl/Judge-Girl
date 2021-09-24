@@ -257,9 +257,10 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         String newTitle = randomUUID().toString();
 
         expectedProblem.setTitle(newTitle);
-        patchProblem(patch -> patch.title(newTitle));
+        int expectedProblemId = expectedProblem.getId();
+        patchProblem(expectedProblemId, patch -> patch.title(newTitle));
 
-        var actualProblem = getProblem(expectedProblem.getId());
+        var actualProblem = getProblem(expectedProblemId);
         assertProblemEquals(toViewModel(expectedProblem), actualProblem);
     }
 
@@ -269,9 +270,10 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         String newDescription = randomUUID().toString();
 
         expectedProblem.setDescription(newDescription);
-        patchProblem(patch -> patch.description(newDescription));
+        int expectedProblemId = expectedProblem.getId();
+        patchProblem(expectedProblemId, patch -> patch.description(newDescription));
 
-        var actualProblem = getProblem(expectedProblem.getId());
+        var actualProblem = getProblem(expectedProblemId);
         assertProblemEquals(toViewModel(expectedProblem), actualProblem);
     }
 
@@ -281,9 +283,10 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         JudgePluginTag pluginMatchTag = new JudgePluginTag(OUTPUT_MATCH_POLICY, "Judge Girl", "Test", "1.0");
 
         expectedProblem.setOutputMatchPolicyPluginTag(pluginMatchTag);
-        patchProblem(patch -> patch.matchPolicyPluginTag(new PatchProblemUseCase.JudgePluginTagItem(pluginMatchTag)));
+        int expectedProblemId = expectedProblem.getId();
+        patchProblem(expectedProblemId, patch -> patch.matchPolicyPluginTag(new PatchProblemUseCase.JudgePluginTagItem(pluginMatchTag)));
 
-        var actualProblem = getProblem(expectedProblem.getId());
+        var actualProblem = getProblem(expectedProblemId);
         assertProblemEquals(toViewModel(expectedProblem), actualProblem);
     }
 
@@ -296,9 +299,10 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         );
 
         expectedProblem.setFilterPluginTags(filterPluginTags);
-        patchProblem(patch -> patch.filterPluginTags(mapToList(filterPluginTags, PatchProblemUseCase.JudgePluginTagItem::new)));
+        int expectedProblemId = expectedProblem.getId();
+        patchProblem(expectedProblemId, patch -> patch.filterPluginTags(mapToList(filterPluginTags, PatchProblemUseCase.JudgePluginTagItem::new)));
 
-        var actualProblem = getProblem(expectedProblem.getId());
+        var actualProblem = getProblem(expectedProblemId);
         assertProblemEquals(toViewModel(expectedProblem), actualProblem);
     }
 
@@ -308,9 +312,10 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
 
         List<String> newTags = asList("newTagA", "newTagB");
         expectedProblem.setTags(newTags);
-        patchProblem(patch -> patch.tags(newTags));
+        int expectedProblemId = expectedProblem.getId();
+        patchProblem(expectedProblemId, patch -> patch.tags(newTags));
 
-        var actualProblem = getProblem(expectedProblem.getId());
+        var actualProblem = getProblem(expectedProblemId);
         assertProblemEquals(toViewModel(expectedProblem), actualProblem);
     }
 
@@ -319,9 +324,10 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         Problem expectedProblem = givenOneProblemSaved();
 
         expectedProblem.setVisible(true);
-        patchProblem(patch -> patch.visible(true));
+        int expectedProblemId = expectedProblem.getId();
+        patchProblem(expectedProblemId, patch -> patch.visible(true));
 
-        var actualProblem = getProblem(expectedProblem.getId());
+        var actualProblem = getProblem(expectedProblemId);
         assertProblemEquals(toViewModel(expectedProblem), actualProblem);
     }
 
@@ -365,7 +371,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    void Given_1_ProbplemSaved_WhenGetProblemsByIds_1_2_ShouldOnlyRespondTheProblem_1() throws Exception {
+    void Given_1_ProblemSaved_WhenGetProblemsByIds_1_2_ShouldOnlyRespondTheProblem_1() throws Exception {
         saveProblems(1);
 
         var actualProblems = getProblems(withToken(adminToken), 1, 2);
@@ -566,17 +572,36 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         assertFalse(actualProblem.isArchived());
     }
 
+    @DisplayName("Given two problems(A, B) saved and problem(A) is invisible" +
+            "When get invisible problems, " +
+            "Then should respond problem(A).")
+    @Test
+    void testGetInvisibleProblems() throws Exception {
+        int problemAId = 1, problemBId = 2;
+        saveProblems(problemAId, problemBId);
+        patchProblem(problemAId, patch -> patch.visible(false));
+
+
+        var expectInvisibleProblems = problemRepository.findAll().stream()
+                .filter(problem -> !problem.getVisible())
+                .map(ProblemItem::toProblemItem)
+                .collect(toList());
+        var actualInvisibleProblems = getInvisibleProblems(adminToken);
+
+        assertEqualsIgnoreOrder(expectInvisibleProblems, actualInvisibleProblems);
+    }
+
     private void deleteTestCase(int problemId, String testCaseId) throws Exception {
         mockMvc.perform(withToken(adminToken,
-                delete(API_PREFIX + "/{problemId}/testcases/{testcaseId}", problemId, testCaseId)))
+                        delete(API_PREFIX + "/{problemId}/testcases/{testcaseId}", problemId, testCaseId)))
                 .andExpect(status().isOk());
     }
 
     private void downloadProvidedCodesShouldRespondContent(int problemId, String languageEnv, String providedCodesFileId,
                                                            byte[] expectedContent) throws Exception {
         byte[] actualContent = mockMvc.perform(withToken(adminToken,
-                get(API_PREFIX + "/{problemId}/{languageEnv}/providedCodes/{providedCodesFileId}",
-                        problemId, languageEnv, providedCodesFileId)))
+                        get(API_PREFIX + "/{problemId}/{languageEnv}/providedCodes/{providedCodesFileId}",
+                                problemId, languageEnv, providedCodesFileId)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/zip"))
                 .andReturn().getResponse().getContentAsByteArray();
@@ -585,8 +610,8 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
 
     private void downloadTestcaseIOsShouldRespondContent(int problemId, String testcaseId, byte[] expectedContent) throws Exception {
         byte[] actualContent = mockMvc.perform(withToken(adminToken,
-                get(API_PREFIX + "/{problemId}/testcases/{testcaseId}/io",
-                        problemId, testcaseId))).andExpect(status().isOk())
+                        get(API_PREFIX + "/{problemId}/testcases/{testcaseId}/io",
+                                problemId, testcaseId))).andExpect(status().isOk())
                 .andExpect(content().contentType("application/zip"))
                 .andReturn().getResponse().getContentAsByteArray();
         assertZipContentEquals(expectedContent, actualContent);
@@ -611,27 +636,27 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
 
     private void archiveOrDeleteProblem(int problemId) throws Exception {
         mockMvc.perform(withToken(adminToken,
-                delete(API_PREFIX + "/{problemId}", problemId)))
+                        delete(API_PREFIX + "/{problemId}", problemId)))
                 .andExpect(status().isOk());
     }
 
     private void restoreProblem(int problemId) throws Exception {
         mockMvc.perform(withToken(adminToken,
-                patch(API_PREFIX + "/{problemId}/restore", problemId)))
+                        patch(API_PREFIX + "/{problemId}/restore", problemId)))
                 .andExpect(status().isOk());
     }
 
-    private void patchProblem(Consumer<PatchProblemUseCase.Request.RequestBuilder> patching) throws Exception {
-        var requestBuilder = PatchProblemUseCase.Request.builder();
+    private void patchProblem(int problemId, Consumer<PatchProblemUseCase.Request.RequestBuilder> patching) throws Exception {
+        var requestBuilder = PatchProblemUseCase.Request.builder().problemId(problemId);
         patching.accept(requestBuilder);
         patchProblem(requestBuilder.build());
     }
 
     private void patchProblem(PatchProblemUseCase.Request request) throws Exception {
         mockMvc.perform(withToken(adminToken,
-                patch(API_PREFIX + "/{problemId}", request.problemId)
-                        .contentType(MediaType.APPLICATION_JSON_VALUE)
-                        .content(objectMapper.writeValueAsString(request))))
+                        patch(API_PREFIX + "/{problemId}", request.problemId)
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .content(objectMapper.writeValueAsString(request))))
                 .andExpect(status().isOk());
     }
 
@@ -641,10 +666,10 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
 
     private void upsertTestCase(int problemId, TestcaseUpsert testcaseUpsert) throws Exception {
         mockMvc.perform(withToken(adminToken,
-                put(API_PREFIX + "/{problemId}/testcases/{testcaseId}",
-                        problemId, testcaseUpsert.getId())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(toJson(testcaseUpsert))))
+                        put(API_PREFIX + "/{problemId}/testcases/{testcaseId}",
+                                problemId, testcaseUpsert.getId())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(toJson(testcaseUpsert))))
                 .andExpect(status().isOk());
     }
 
@@ -706,10 +731,10 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
 
     private void upsertLanguageEnv(Integer problemId, LanguageEnvUpsert languageEnv) throws Exception {
         mockMvc.perform(withToken(adminToken,
-                put(API_PREFIX + "/{problemId}/langEnv/{langEnv}",
-                        problemId, languageEnv.getLanguage())
-                        .contentType(MediaType.APPLICATION_JSON_VALUE)
-                        .content(toJson(languageEnv))))
+                        put(API_PREFIX + "/{problemId}/langEnv/{langEnv}",
+                                problemId, languageEnv.getLanguage())
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .content(toJson(languageEnv))))
                 .andExpect(status().isOk());
     }
 
@@ -721,8 +746,8 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     private int saveProblemWithTitle(String title) throws Exception {
         return parseInt(getContentAsString(
                 mockMvc.perform(withToken(adminToken,
-                        post(API_PREFIX)
-                                .contentType(MediaType.TEXT_PLAIN_VALUE).content(title)))
+                                post(API_PREFIX)
+                                        .contentType(MediaType.TEXT_PLAIN_VALUE).content(title)))
                         .andExpect(status().isOk())));
     }
 
@@ -745,7 +770,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
 
     private List<ProblemItem> getProblemItemsInPage(Token token, int page) throws Exception {
         return getBody(mockMvc.perform(withToken(token, get(API_PREFIX)
-                .queryParam("page", String.valueOf(page))))
+                        .queryParam("page", String.valueOf(page))))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON)), new TypeReference<>() {
         });
@@ -770,20 +795,27 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     private void filterProblemsWithTagsShouldContain(Token token, List<String> tags, List<ProblemItem> problemItems) throws Exception {
         String tagsSplitByCommas = String.join(", ", tags);
         mockMvc.perform(get(API_PREFIX)
-                .header("Authorization", bearerWithToken(token.getToken()))
-                .queryParam("tags", tagsSplitByCommas))
+                        .header("Authorization", bearerWithToken(token.getToken()))
+                        .queryParam("tags", tagsSplitByCommas))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().json(objectMapper.writeValueAsString(problemItems)));
     }
 
-
     private List<ProblemView> getProblemsByTagsAndPage(Token token, int page, String... tags) throws Exception {
         String tagsSplitByCommas = String.join(",", tags);
         return getBody(mockMvc.perform(get(API_PREFIX)
-                .header("Authorization", bearerWithToken(token.getToken()))
-                .queryParam("tags", tagsSplitByCommas)
-                .queryParam("page", String.valueOf(page)))
+                        .header("Authorization", bearerWithToken(token.getToken()))
+                        .queryParam("tags", tagsSplitByCommas)
+                        .queryParam("page", String.valueOf(page)))
+                .andExpect(status().isOk()), new TypeReference<>() {
+        });
+    }
+
+    private List<ProblemItem> getInvisibleProblems(Token token) throws Exception {
+        return getBody(mockMvc.perform(get(API_PREFIX)
+                        .header("Authorization", bearerWithToken(token.getToken()))
+                        .queryParam("visible", String.valueOf(false)))
                 .andExpect(status().isOk()), new TypeReference<>() {
         });
     }

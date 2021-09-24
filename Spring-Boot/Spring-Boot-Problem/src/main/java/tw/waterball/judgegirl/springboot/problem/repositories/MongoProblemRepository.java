@@ -100,10 +100,16 @@ public class MongoProblemRepository implements ProblemRepository {
         if (params.isExcludeArchive()) {
             query.addCriteria(where("archived").is(false));
         }
-        if (!params.isIncludeInvisibleProblems()) {
+
+        if (params.isExcludeVisibleProblems()) {
+            query.addCriteria(where("visible").is(false));
+        } else if (!params.isIncludeInvisibleProblems()) {
             query.addCriteria(where("visible").is(true));
         }
-        params.getPage().map(Integer::longValue).ifPresent(page -> query.skip(page * PAGE_SIZE).limit(PAGE_SIZE));
+
+        params.getPage()
+                .map(Integer::longValue)
+                .ifPresent(page -> query.skip(page * PAGE_SIZE).limit(PAGE_SIZE));
 
         return mapToList(mongoTemplate.find(query, ProblemData.class), ProblemData::toEntity);
     }
