@@ -479,28 +479,28 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
 
         // Example (1)
         String testcaseIoId = patchTestcaseIosAndGetIoId(testcase,
-                getTestcaseIOFiles("example1",
+                testcaseIOPatching("example1",
                         new String[]{"std.in", "I1.in", "I2.in"}, new String[]{"std.out", "O1.out", "O2.out"}), EMPTY, EMPTY);
         testcaseIoFilesShouldBeSavedCorrectly(testcase, testcaseIoId,
                 resourceToByteArray("/testcaseIos/example1/expectedIo.zip"));
 
         // Example (2)
         testcaseIoId = patchTestcaseIosAndGetIoId(testcase,
-                getTestcaseIOFiles("example2", new String[]{"std.in", "I1.in"}, EMPTY),
+                testcaseIOPatching("example2", new String[]{"std.in", "I1.in"}, EMPTY),
                 new String[]{"I2.in"}, new String[]{"O2.out"});
         testcaseIoFilesShouldBeSavedCorrectly(testcase, testcaseIoId,
                 resourceToByteArray("/testcaseIos/example2/expectedIo.zip"));
 
         // Example (3): If the deleted files are not found, the deletion should be ignored.
         testcaseIoId = patchTestcaseIosAndGetIoId(testcase,
-                getTestcaseIOFiles("example3", EMPTY, new String[]{"O3.out"}),
+                testcaseIOPatching("example3", EMPTY, new String[]{"O3.out"}),
                 new String[]{"A", "B"}, new String[]{"B", "C", "D", "E", "F", "G"});
         testcaseIoFilesShouldBeSavedCorrectly(testcase, testcaseIoId,
                 resourceToByteArray("/testcaseIos/example3/expectedIo.zip"));
 
         // Example (4): 1. stdIn and stdOut are not deletable. 2. the deletion will first applied, followed by files upsertion.
         testcaseIoId = patchTestcaseIosAndGetIoId(testcase,
-                getTestcaseIOFiles("example4", EMPTY, new String[]{"O1.out"}),
+                testcaseIOPatching("example4", EMPTY, new String[]{"O1.out"}),
                 new String[]{"std.in"}, new String[]{"O1.out"});
         testcaseIoFilesShouldBeSavedCorrectly(testcase, testcaseIoId,
                 resourceToByteArray("/testcaseIos/example4/expectedIo.zip"));
@@ -934,7 +934,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         return withToken(adminToken, requestBuilder);
     }
 
-    private MockMultipartFile[] getTestcaseIOFiles(String testcaseIoDirName, String[] in, String[] out) throws IOException {
+    private MockMultipartFile[] testcaseIOPatching(String testcaseIoDirName, String[] in, String[] out) throws IOException {
         String CONTENT_TYPE = "text/plain";
         MockMultipartFile[] files = new MockMultipartFile[in.length + out.length];
         for (int i = 0; i < in.length; i++) {
