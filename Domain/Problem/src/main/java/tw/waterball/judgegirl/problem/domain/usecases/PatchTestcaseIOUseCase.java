@@ -15,7 +15,6 @@ package tw.waterball.judgegirl.problem.domain.usecases;
 
 import lombok.Value;
 import tw.waterball.judgegirl.primitives.problem.Problem;
-import tw.waterball.judgegirl.primitives.problem.TestcaseIO;
 import tw.waterball.judgegirl.problem.domain.repositories.ProblemRepository;
 
 import javax.inject.Named;
@@ -24,15 +23,15 @@ import javax.inject.Named;
  * @author chaoyulee chaoyu2330@gmail.com
  */
 @Named
-public class UploadTestcaseIOUseCase extends BaseProblemUseCase {
+public class PatchTestcaseIOUseCase extends BaseProblemUseCase {
 
-    public UploadTestcaseIOUseCase(ProblemRepository problemRepository) {
+    public PatchTestcaseIOUseCase(ProblemRepository problemRepository) {
         super(problemRepository);
     }
 
     public void execute(Request request, Presenter presenter) {
         Problem problem = findProblem(request.problemId);
-        problem = problemRepository.uploadTestcaseIO(problem, request.ioFiles);
+        problem = problemRepository.patchTestcaseIOs(problem, request.testcaseIoPatching);
         presenter.showResult(problem);
     }
 
@@ -43,6 +42,7 @@ public class UploadTestcaseIOUseCase extends BaseProblemUseCase {
     @Value
     public static class Request {
         public int problemId;
-        public TestcaseIO.Files ioFiles;
+        public String testcaseId;
+        public ProblemRepository.TestcaseIoPatching testcaseIoPatching;
     }
 }

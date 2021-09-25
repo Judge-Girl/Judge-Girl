@@ -13,16 +13,17 @@
 
 package tw.waterball.judgegirl.problem.domain.repositories;
 
+import lombok.Value;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
 import tw.waterball.judgegirl.primitives.problem.Language;
 import tw.waterball.judgegirl.primitives.problem.LanguageEnv;
 import tw.waterball.judgegirl.primitives.problem.Problem;
-import tw.waterball.judgegirl.primitives.problem.TestcaseIO;
 
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -64,8 +65,39 @@ public interface ProblemRepository {
 
     void uploadProvidedCodes(Problem problem, Language language, List<FileResource> providedCodes);
 
-    Problem uploadTestcaseIO(Problem problem, TestcaseIO.Files ioFiles);
+    Problem patchTestcaseIOs(Problem problem, TestcaseIoPatching ioPatching);
 
     void restoreProblem(Problem problem);
+
+    @Value
+    class TestcaseIoPatching {
+        String testcaseId;
+        String[] deletedIns;
+        String[] deletedOuts;
+        FileResource stdIn;
+        FileResource stdOut;
+        Set<FileResource> inputFiles;
+        Set<FileResource> outputFiles;
+
+        public TestcaseIoPatching(String testcaseId, String[] deletedIns, String[] deletedOuts,
+                                  FileResource stdIn, FileResource stdOut,
+                                  Set<FileResource> inputFiles, Set<FileResource> outputFiles) {
+            this.testcaseId = testcaseId;
+            this.deletedIns = deletedIns;
+            this.deletedOuts = deletedOuts;
+            this.stdIn = stdIn;
+            this.stdOut = stdOut;
+            this.inputFiles = inputFiles;
+            this.outputFiles = outputFiles;
+        }
+
+        public Optional<FileResource> getStdIn() {
+            return Optional.ofNullable(stdIn);
+        }
+
+        public Optional<FileResource> getStdOut() {
+            return Optional.ofNullable(stdOut);
+        }
+    }
 
 }

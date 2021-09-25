@@ -8,8 +8,10 @@ import tw.waterball.judgegirl.commons.models.files.StreamingResource;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
+import static java.util.Optional.ofNullable;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToSet;
 import static tw.waterball.judgegirl.commons.utils.validations.ValidationUtils.validate;
 
@@ -24,10 +26,8 @@ public class TestcaseIO {
     String id;
     @NotNull
     String testcaseId;
-    @Builder.Default
-    String stdIn = DEFAULT_STD_IN;
-    @Builder.Default
-    String stdOut = DEFAULT_STD_OUT;
+    String stdIn;
+    String stdOut;
     @Builder.Default
     Set<@Size(min = 1, max = 300) String> inputFiles = new HashSet<>();
     @Builder.Default
@@ -45,6 +45,18 @@ public class TestcaseIO {
         this.inputFiles = inputFiles;
         this.outputFiles = outputFiles;
         validate(this);
+    }
+
+    public Optional<String> mayHaveStdIn() {
+        return ofNullable(stdIn);
+    }
+
+    public Optional<String> mayHaveStdOut() {
+        return ofNullable(stdOut);
+    }
+
+    public Optional<String> mayHaveId() {
+        return ofNullable(id);
     }
 
     public void setId(String id) {

@@ -3,7 +3,6 @@ package tw.waterball.judgegirl.submission.domain.usecases;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.jetbrains.annotations.NotNull;
 import tw.waterball.judgegirl.primitives.submission.Submission;
 import tw.waterball.judgegirl.submission.domain.repositories.SubmissionRepository;
 
@@ -29,7 +28,6 @@ public class FindBestRecordUseCase {
         presenter.setSubmission(bestRecord);
     }
 
-    @NotNull
     private List<Submission> findSubmissions(Request request) {
         return submissionRepository.findAllByIds(request.submissionIds);
     }

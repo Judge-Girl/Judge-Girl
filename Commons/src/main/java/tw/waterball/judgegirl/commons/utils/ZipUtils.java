@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -31,7 +32,6 @@ import java.util.zip.ZipOutputStream;
 import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.io.FileUtils.forceMkdir;
-import static tw.waterball.judgegirl.commons.utils.ArrayUtils.contains;
 
 /**
  * TODO: make it cleaner
@@ -156,10 +156,14 @@ public class ZipUtils {
      * ignoredFileNames.
      */
     public static void zipFromFile(File[] files, OutputStream out, String... ignoredFileNames) {
+        zipFromFile(files, out, name -> ArrayUtils.contains(ignoredFileNames, name));
+    }
+
+    public static void zipFromFile(File[] files, OutputStream out, Predicate<String> ignoredFilePredicate) {
         try (ZipOutputStream zos = new ZipOutputStream(out)) {
             for (File file : files) {
-                if (!contains(ignoredFileNames, file.getName())) {
-                    writeZipEntry(file, zos, ignoredFileNames);
+                if (!ignoredFilePredicate.test(file.getName())) {
+                    writeZipEntry(file, zos, ignoredFilePredicate);
                 }
             }
         } catch (IOException e) {
@@ -168,19 +172,19 @@ public class ZipUtils {
     }
 
     private static void writeZipEntry(File file, ZipOutputStream zipos,
-                                      String... ignoredFileNames) throws IOException {
-        writeZipEntry("", file, zipos, ignoredFileNames);
+                                      Predicate<String> ignoredFilePredicate) throws IOException {
+        writeZipEntry("", file, zipos, ignoredFilePredicate);
     }
 
     private static void writeZipEntry(String path, File file,
-                                      ZipOutputStream zipos, String... ignoredFileNames) throws IOException {
-        if (!contains(ignoredFileNames, file.getName())) {
+                                      ZipOutputStream zipos, Predicate<String> ignoredFilePredicate) throws IOException {
+        if (!ignoredFilePredicate.test(file.getName())) {
             if (file.isDirectory()) {
                 String[] files = file.list();
                 if (files != null) {
                     for (String fileName : files) {
                         writeZipEntry(path + file.getName() + "/",
-                                new File(file, fileName), zipos, ignoredFileNames);
+                                new File(file, fileName), zipos, ignoredFilePredicate);
                     }
                 }
 

@@ -15,7 +15,10 @@ package tw.waterball.judgegirl.springboot.problem.controllers;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.SneakyThrows;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.AutoConfigureDataMongo;
 import org.springframework.context.annotation.Bean;
@@ -29,6 +32,7 @@ import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.mock.web.MockPart;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.ResultActions;
@@ -62,6 +66,8 @@ import java.util.function.Consumer;
 
 import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
+import static java.lang.String.join;
+import static java.nio.charset.Charset.defaultCharset;
 import static java.nio.file.Files.createTempDirectory;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
@@ -119,7 +125,6 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     TokenService tokenService;
 
     private static byte[] expectedProvidedCodesZip;
-    private static byte[] expectedTestcaseIOsZip;
     private Token adminToken;
     private Token student1Token;
 
@@ -142,7 +147,6 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     @BeforeAll
     public static void beforeAll() {
         expectedProvidedCodesZip = resourceToByteArray("/providedCodes/providedCodes.zip");
-        expectedTestcaseIOsZip = resourceToByteArray("/testcaseIos/io.zip");
     }
 
     @BeforeEach
@@ -460,37 +464,82 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         assertNotNull(providedCodesId);
         var problem = getProblem(problemId);
         problemShouldHaveProvidedCodesId(problem, providedCodesId, language);
-        assertTrue(existsFile(providedCodesId), "ProvidedCodes haven't been saved.");
+        assertTrue(fileShouldExist(providedCodesId), "ProvidedCodes haven't been saved.");
 
         downloadProvidedCodesShouldRespondContent(problemId, language.toString(), providedCodesId,
                 expectedProvidedCodesZip);
     }
 
-    @DisplayName("Given one problem saved with a testcase, " +
-            "When upload the testcase IO files, " +
-            "should respond a IO FileId and the IO files should be zipped and saved. " +
-            "When upload the testcase IO files again to the same testcase, " +
-            "the firstly saved IO files should be replaced and removed.")
     @Test
-    void testTestcaseIoFilesUploading() throws Exception {
+    void testTestcaseIOsPatching() throws Exception {
         int problemId = 1;
+        String[] EMPTY = {};
         Testcase testcase = new Testcase("ID", "A", problemId, 1000, 1000, 1000, -1, 100);
         givenProblemSavedWithOneTestcase(problemId, testcase);
 
-        String testcaseIosFileId = uploadTestcaseIosAndGetFileId(problemId, testcase.getId(), getTestcaseIOFiles());
+        // Example (1)
+        String testcaseIoId = patchTestcaseIosAndGetIoId(testcase,
+                getTestcaseIOFiles("example1",
+                        new String[]{"std.in", "I1.in", "I2.in"}, new String[]{"std.out", "O1.out", "O2.out"}), EMPTY, EMPTY);
+        testcaseIoFilesShouldBeSavedCorrectly(testcase, testcaseIoId,
+                resourceToByteArray("/testcaseIos/example1/expectedIo.zip"));
 
-        var problem = getProblem(problemId);
+        // Example (2)
+        testcaseIoId = patchTestcaseIosAndGetIoId(testcase,
+                getTestcaseIOFiles("example2", new String[]{"std.in", "I1.in"}, EMPTY),
+                new String[]{"I2.in"}, new String[]{"O2.out"});
+        testcaseIoFilesShouldBeSavedCorrectly(testcase, testcaseIoId,
+                resourceToByteArray("/testcaseIos/example2/expectedIo.zip"));
+
+        // Example (3): If the deleted files are not found, the deletion should be ignored.
+        testcaseIoId = patchTestcaseIosAndGetIoId(testcase,
+                getTestcaseIOFiles("example3", EMPTY, new String[]{"O3.out"}),
+                new String[]{"A", "B"}, new String[]{"B", "C", "D", "E", "F", "G"});
+        testcaseIoFilesShouldBeSavedCorrectly(testcase, testcaseIoId,
+                resourceToByteArray("/testcaseIos/example3/expectedIo.zip"));
+
+        // Example (4): 1. stdIn and stdOut are not deletable. 2. the deletion will first applied, followed by files upsertion.
+        testcaseIoId = patchTestcaseIosAndGetIoId(testcase,
+                getTestcaseIOFiles("example4", EMPTY, new String[]{"O1.out"}),
+                new String[]{"std.in"}, new String[]{"O1.out"});
+        testcaseIoFilesShouldBeSavedCorrectly(testcase, testcaseIoId,
+                resourceToByteArray("/testcaseIos/example4/expectedIo.zip"));
+    }
+
+    private String patchTestcaseIosAndGetIoId(Testcase testcase, MockMultipartFile[] testcaseIoFiles,
+                                              String[] deletedInFiles, String[] deletedOutFiles) throws Exception {
+        var multipart = multipart(API_PREFIX + "/{problemId}/testcases/{testcaseId}/io", testcase.getProblemId(), testcase.getId());
+        multipart.with(request -> {
+            request.setMethod("PATCH");
+            return request;
+        });
+
+        for (MockMultipartFile file : testcaseIoFiles) {
+            multipart = multipart.file(file);
+        }
+        if (deletedInFiles.length > 0) {
+            MockPart mockPart = new MockPart(TESTCASE_DELETE_IN_FILES_MULTIPART_KEY_NAME,
+                    join(",", asList(deletedInFiles)).getBytes(defaultCharset()));
+            mockPart.getHeaders().setContentType(MediaType.TEXT_PLAIN);
+            multipart.part(mockPart);
+        }
+        if (deletedOutFiles.length > 0) {
+            MockPart mockPart = new MockPart(TESTCASE_DELETE_OUT_FILES_MULTIPART_KEY_NAME,
+                    join(",", asList(deletedOutFiles)).getBytes(defaultCharset()));
+            mockPart.getHeaders().setContentType(MediaType.TEXT_PLAIN);
+            multipart.part(mockPart);
+        }
+        String fileId = getContentAsString(mockMvc.perform(withAdminToken(multipart)));
+        assertFalse(fileId.isBlank(), " The fileId responded should not be empty or blank.");
+        return fileId;
+    }
+
+    private void testcaseIoFilesShouldBeSavedCorrectly(Testcase testcase, String testcaseIosFileId, byte[] expectedTestcaseIOsZip) throws Exception {
+        var problem = getProblem(testcase.getProblemId());
         problemShouldHaveTestcaseIoFileId(problem, testcase.getId(), testcaseIosFileId);
         filesShouldBeSaved("TestcaseIoFiles haven't been saved completely.",
                 getAllTestcaseIoFileIds(toEntity(problem)));
-
-        downloadTestcaseIOsShouldRespondContent(problemId, testcase.getId(), expectedTestcaseIOsZip);
-
-        String testcaseIosFileId2 = uploadTestcaseIosAndGetFileId(problemId, testcase.getId(), getTestcaseIOFiles());
-
-        assertNotEquals(testcaseIosFileId, testcaseIosFileId2, "The secondly uploaded file's ID should be different to the first one.");
-        downloadTestcaseIOsShouldRespondContent(problemId, testcase.getId(), expectedTestcaseIOsZip);
-        assertFalse(existsFile(testcaseIosFileId), "The old testcaseIosFile should be removed after the new one is uploaded.");
+        downloadTestcaseIOsShouldRespondContent(problem.id, testcase.getId(), expectedTestcaseIOsZip);
     }
 
     @Test
@@ -640,9 +689,10 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         Path expectTempDir = createTempDirectory("judgegirl");
         unzipToDestination(new ByteArrayInputStream(actualZip), actualTempDir);
         unzipToDestination(new ByteArrayInputStream(expectedZip), expectTempDir);
-        assertTrue(DirectoryUtils.contentEquals(actualTempDir, expectTempDir));
+        boolean contentEquals = DirectoryUtils.contentEquals(actualTempDir, expectTempDir);
         forceDelete(actualTempDir.toFile());
         forceDelete(expectTempDir.toFile());
+        assertTrue(contentEquals);
     }
 
     private Problem givenProblemSavedWithOneTestcase(int problemId, Testcase testcase) throws Exception {
@@ -702,7 +752,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     }
 
     private List<ProblemView> getProblems(WithHeader withHeader, Integer... problemIds) throws Exception {
-        String ids = String.join(", ", mapToList(problemIds, String::valueOf));
+        String ids = join(", ", mapToList(problemIds, String::valueOf));
         var request = get(API_PREFIX).queryParam("ids", ids);
         withHeader.decorate(request);
         return getBody(mockMvc.perform(request).andExpect(status().isOk()), new TypeReference<>() {
@@ -717,7 +767,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         stream(problemIds).forEach(problemId -> {
             Problem problem = problemTemplate().id(problemId).build();
             byte[] providedCodesZip = zipFilesFromResources("/providedCodes/file1.c", "/providedCodes/file2.c");
-            byte[] testcaseIOsZip = zipFilesFromResources("/testcaseIos/in/", "/testcaseIos/out/");
+            byte[] testcaseIOsZip = zipFilesFromResources("/testcaseIos/example1/in/", "/testcaseIos/example1/out/");
             problemRepository.save(problem, singletonMap(problem.getLanguageEnv(Language.C),
                     new ByteArrayInputStream(providedCodesZip)));
         });
@@ -815,7 +865,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     }
 
     private void filterProblemsWithTagsShouldContain(Token token, List<String> tags, List<ProblemItem> problemItems) throws Exception {
-        String tagsSplitByCommas = String.join(", ", tags);
+        String tagsSplitByCommas = join(", ", tags);
         mockMvc.perform(get(API_PREFIX)
                         .header("Authorization", bearerWithToken(token.getToken()))
                         .queryParam("tags", tagsSplitByCommas))
@@ -825,7 +875,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     }
 
     private List<ProblemView> getProblemsByTagsAndPage(Token token, int page, String... tags) throws Exception {
-        String tagsSplitByCommas = String.join(",", tags);
+        String tagsSplitByCommas = join(",", tags);
         return getBody(mockMvc.perform(get(API_PREFIX)
                         .header("Authorization", bearerWithToken(token.getToken()))
                         .queryParam("tags", tagsSplitByCommas)
@@ -884,30 +934,20 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         return withToken(adminToken, requestBuilder);
     }
 
-    private String uploadTestcaseIosAndGetFileId(int problemId, String testcaseId, MockMultipartFile... files) throws Exception {
-        String fileId = getContentAsString(mockMvc.perform(
-                multipartRequestWithFiles("PUT",
-                        multipart(API_PREFIX + "/{problemId}/testcases/{testcaseId}/io", problemId, testcaseId),
-                        files)));
-        assertFalse(fileId.isBlank(), " The fileId responded should not be empty or blank.");
-        return fileId;
-    }
-
-    private MockMultipartFile[] getTestcaseIOFiles() throws IOException {
-        return new MockMultipartFile[]{
-                new MockMultipartFile(TESTCASE_STDIN_MULTIPART_KEY_NAME, "I1.in", "text/plain",
-                        getResourceAsStream("/testcaseIos/in/I1.in")),
-                new MockMultipartFile(TESTCASE_STDOUT_MULTIPART_KEY_NAME, "O1.out", "text/plain",
-                        getResourceAsStream("/testcaseIos/out/O1.out")),
-                new MockMultipartFile(TESTCASE_IN_FILES_MULTIPART_KEY_NAME, "I2.in", "text/plain",
-                        getResourceAsStream("/testcaseIos/in/I2.in")),
-                new MockMultipartFile(TESTCASE_IN_FILES_MULTIPART_KEY_NAME, "I3.in", "text/plain",
-                        getResourceAsStream("/testcaseIos/in/I3.in")),
-                new MockMultipartFile(TESTCASE_OUT_FILES_MULTIPART_KEY_NAME, "O2.out", "text/plain",
-                        getResourceAsStream("/testcaseIos/out/O2.out")),
-                new MockMultipartFile(TESTCASE_OUT_FILES_MULTIPART_KEY_NAME, "O3.out", "text/plain",
-                        getResourceAsStream("/testcaseIos/out/O3.out")),
-        };
+    private MockMultipartFile[] getTestcaseIOFiles(String testcaseIoDirName, String[] in, String[] out) throws IOException {
+        String CONTENT_TYPE = "text/plain";
+        MockMultipartFile[] files = new MockMultipartFile[in.length + out.length];
+        for (int i = 0; i < in.length; i++) {
+            String key = in[i].equals("std.in") ? TESTCASE_STDIN_MULTIPART_KEY_NAME : TESTCASE_IN_FILES_MULTIPART_KEY_NAME;
+            files[i] = new MockMultipartFile(key, in[i], CONTENT_TYPE,
+                    getResourceAsStream("/testcaseIos/" + testcaseIoDirName + "/in/" + in[i]));
+        }
+        for (int i = 0; i < out.length; i++) {
+            String key = out[i].equals("std.out") ? TESTCASE_STDOUT_MULTIPART_KEY_NAME : TESTCASE_OUT_FILES_MULTIPART_KEY_NAME;
+            files[i + in.length] = new MockMultipartFile(key, out[i], CONTENT_TYPE,
+                    getResourceAsStream("/testcaseIos/" + testcaseIoDirName + "/out/" + out[i]));
+        }
+        return files;
     }
 
     private void problemShouldHaveProvidedCodesId(ProblemView problem, String fileId, Language language) {
@@ -924,7 +964,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         List<String> providedCodes = mapToList(problem.getLanguageEnvs().values(), LanguageEnv::getProvidedCodesFileId);
         List<String> fileIds = new LinkedList<>(providedCodes);
         fileIds.addAll(getAllTestcaseIoFileIds(problem));
-        fileIds.forEach(fileId -> assertFalse(existsFile(fileId)));
+        fileIds.forEach(fileId -> assertFalse(fileShouldExist(fileId)));
     }
 
     private List<String> getAllTestcaseIoFileIds(Problem problem) {
@@ -935,11 +975,11 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
 
     private void filesShouldBeSaved(String message, List<String> fileIds) {
         for (String fileId : fileIds) {
-            assertTrue(existsFile(fileId), message);
+            assertTrue(fileShouldExist(fileId), message);
         }
     }
 
-    private boolean existsFile(String fileId) {
+    private boolean fileShouldExist(String fileId) {
         return ofNullable(gridFsTemplate.findOne(new Query(where("_id").is(fileId))))
                 .map(gridFsTemplate::getResource)
                 .map(GridFsResource::exists)
