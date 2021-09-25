@@ -584,11 +584,30 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
 
         var expectInvisibleProblems = problemRepository.findAll().stream()
                 .filter(problem -> !problem.getVisible())
+                .filter(problem -> !problem.isArchived())
                 .map(ProblemItem::toProblemItem)
                 .collect(toList());
         var actualInvisibleProblems = getInvisibleProblems(adminToken);
 
         assertEqualsIgnoreOrder(expectInvisibleProblems, actualInvisibleProblems);
+    }
+
+    @DisplayName("Given two problems(A, B) saved and problem(A) is archived" +
+            "When get archived problems, " +
+            "Then should respond problem(A).")
+    @Test
+    void testGetArchivedProblems() throws Exception {
+        int problemAId = 1, problemBId = 2;
+        saveProblems(problemAId, problemBId);
+        archiveOrDeleteProblem(problemAId);
+
+        var expectArchivedProblems = problemRepository.findAll().stream()
+                .filter(Problem::isArchived)
+                .map(ProblemItem::toProblemItem)
+                .collect(toList());
+        var actualArchivedProblems = getArchivedProblems(adminToken);
+
+        assertEqualsIgnoreOrder(expectArchivedProblems, actualArchivedProblems);
     }
 
     private void deleteTestCase(int problemId, String testCaseId) throws Exception {
@@ -656,7 +675,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         mockMvc.perform(withToken(adminToken,
                         patch(API_PREFIX + "/{problemId}", request.problemId)
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
-                                .content(objectMapper.writeValueAsString(request))))
+                                .content(toJson(request))))
                 .andExpect(status().isOk());
     }
 
@@ -816,6 +835,14 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         return getBody(mockMvc.perform(get(API_PREFIX)
                         .header("Authorization", bearerWithToken(token.getToken()))
                         .queryParam("visible", String.valueOf(false)))
+                .andExpect(status().isOk()), new TypeReference<>() {
+        });
+    }
+
+    private List<ProblemItem> getArchivedProblems(Token token) throws Exception {
+        return getBody(mockMvc.perform(get(API_PREFIX)
+                        .header("Authorization", bearerWithToken(token.getToken()))
+                        .queryParam("archived", String.valueOf(true)))
                 .andExpect(status().isOk()), new TypeReference<>() {
         });
     }

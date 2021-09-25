@@ -22,7 +22,7 @@ import java.util.Optional;
  * @author - johnny850807@gmail.com (Waterball)
  */
 public class ProblemQueryParams {
-    public static final ProblemQueryParams NO_PARAMS = new ProblemQueryParams(null, null, false, false);
+    public static final ProblemQueryParams NO_PARAMS = new ProblemQueryParams(null, null, false, false, false);
 
     private final String[] tags;
 
@@ -31,18 +31,21 @@ public class ProblemQueryParams {
 
     private final boolean excludeArchive;
 
+    private final boolean includeArchive;
+
     private final boolean includeInvisibleProblems;
 
     private final boolean excludeVisibleProblems;
 
-    public ProblemQueryParams(String[] tags, @Nullable Integer page, boolean includeInvisibleProblems, boolean excludeVisibleProblems) {
-        this(tags, page, true, includeInvisibleProblems, excludeVisibleProblems);
+    public ProblemQueryParams(String[] tags, @Nullable Integer page, boolean includeInvisibleProblems, boolean excludeVisibleProblems, boolean includeArchive) {
+        this(tags, page, true, includeInvisibleProblems, excludeVisibleProblems, includeArchive);
     }
 
-    public ProblemQueryParams(String[] tags, @Nullable Integer page, boolean excludeArchive, boolean includeInvisibleProblems, boolean excludeVisibleProblems) {
+    public ProblemQueryParams(String[] tags, @Nullable Integer page, boolean excludeArchive, boolean includeInvisibleProblems, boolean excludeVisibleProblems, boolean includeArchive) {
         this.tags = tags;
         this.page = page;
         this.excludeArchive = excludeArchive;
+        this.includeArchive = includeArchive;
         this.includeInvisibleProblems = includeInvisibleProblems;
         this.excludeVisibleProblems = excludeVisibleProblems;
     }
@@ -65,5 +68,9 @@ public class ProblemQueryParams {
 
     public boolean isExcludeVisibleProblems() {
         return excludeVisibleProblems;
+    }
+
+    public boolean isIncludeArchive() {
+        return includeArchive;
     }
 }

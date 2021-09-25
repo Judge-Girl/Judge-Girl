@@ -97,7 +97,10 @@ public class MongoProblemRepository implements ProblemRepository {
             query.addCriteria(new Criteria("tags")
                     .all((Object[]) params.getTags()));
         }
-        if (params.isExcludeArchive()) {
+
+        if (params.isIncludeArchive()) {
+            query.addCriteria(where("archived").is(true));
+        } else if (params.isExcludeArchive()) {
             query.addCriteria(where("archived").is(false));
         }
 
