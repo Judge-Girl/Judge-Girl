@@ -579,8 +579,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     void testGetInvisibleProblems() throws Exception {
         int problemAId = 1, problemBId = 2;
         saveProblems(problemAId, problemBId);
-        patchProblem(problemAId, patch -> patch.visible(false));
-
+        patchProblem(problemBId, patch -> patch.visible(true));
 
         var expectInvisibleProblems = problemRepository.findAll().stream()
                 .filter(problem -> !problem.getVisible())
@@ -589,6 +588,8 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
                 .collect(toList());
         var actualInvisibleProblems = getInvisibleProblems(adminToken);
 
+        assertEquals(1, actualInvisibleProblems.size());
+        assertTrue(findFirst(actualInvisibleProblems, problem -> problemAId == problem.id).isPresent());
         assertEqualsIgnoreOrder(expectInvisibleProblems, actualInvisibleProblems);
     }
 
@@ -607,6 +608,8 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
                 .collect(toList());
         var actualArchivedProblems = getArchivedProblems(adminToken);
 
+        assertEquals(1, actualArchivedProblems.size());
+        assertTrue(findFirst(actualArchivedProblems, problem -> problemAId == problem.id).isPresent());
         assertEqualsIgnoreOrder(expectArchivedProblems, actualArchivedProblems);
     }
 
