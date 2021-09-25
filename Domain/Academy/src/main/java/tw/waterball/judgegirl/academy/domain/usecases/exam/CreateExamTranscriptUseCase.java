@@ -15,7 +15,7 @@ import tw.waterball.judgegirl.submissionapi.clients.SubmissionServiceDriver;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 
 import javax.inject.Named;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -40,16 +40,17 @@ public class CreateExamTranscriptUseCase extends AbstractExamUseCase {
 
     public void execute(int examId, Presenter presenter) {
         Exam exam = findExam(examId);
-        var examineeRecords = getExamineeRecords(exam);
+        var examinees = examinees(exam);
+        var examineeRecords = getExamineeRecords(exam, examinees);
         presenter.showExam(exam);
         presenter.showRecords(examineeRecords);
         var problems = findProblemsByIds(getProblemIds(exam));
         presenter.showProblems(problems);
+        presenter.showExaminees(new ArrayList<>(examinees.values()));
     }
 
-    private List<ExamineeRecord> getExamineeRecords(Exam exam) {
+    private List<ExamineeRecord> getExamineeRecords(Exam exam, Map<Integer, Student> examinees) {
         var questionRecords = findQuestionRecords(exam);
-        var examinees = examinees(exam);
         return examineeRecords(examinees, questionRecords);
     }
 
@@ -79,13 +80,8 @@ public class CreateExamTranscriptUseCase extends AbstractExamUseCase {
     }
 
     private List<ExamineeRecord> examineeRecords(Map<Integer, Student> examinees, List<QuestionRecord> records) {
-        var examineeToQuestionRecords = new HashMap<Student, List<QuestionRecord>>();
-
-        for (Student student : examinees.values()) {
-            var questionRecords = filterToList(records, questionRecord -> student.getId() == questionRecord.getStudentId());
-            examineeToQuestionRecords.put(student, questionRecords);
-        }
-
+        var examineeToQuestionRecords =
+                groupingBy(records, questionRecord -> examinees.get(questionRecord.getStudentId()));
         return zipToList(examineeToQuestionRecords, ExamineeRecord::new);
     }
 
@@ -103,6 +99,8 @@ public class CreateExamTranscriptUseCase extends AbstractExamUseCase {
         void showRecords(List<ExamineeRecord> examineeRecords);
 
         void showProblems(List<ProblemView> problems);
+
+        void showExaminees(List<Student> students);
     }
 
     @Value

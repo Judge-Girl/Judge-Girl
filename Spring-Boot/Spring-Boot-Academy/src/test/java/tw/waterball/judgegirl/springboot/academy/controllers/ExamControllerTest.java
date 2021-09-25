@@ -635,7 +635,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    void                                                                                                                                                                                                                                                                                                                                                    testProduceCsvFileOfExamTranscript() throws Exception {
+    void testProduceCsvFileOfExamTranscript() throws Exception {
         Integer[] studentIds = {STUDENT_A_ID, STUDENT_B_ID, STUDENT_C_ID, STUDENT_D_ID};
         var exam = createExamAndGet(now(), oneSecondAfter(), "Exam");
         createQuestionAndGet(new CreateQuestionUseCase.Request(exam.id, PROBLEM_ID, 1, 50, 0)).toEntity();
@@ -673,16 +673,20 @@ class ExamControllerTest extends AbstractSpringBootTest {
         var scoreBoard = transcript.scoreBoard;
         for (CSVRecord record : records) {
             String email = record.get(COLUMN_EMAIL);
-            assertTrue(scoreBoard.containsKey(email));
+            if (scoreBoard.containsKey(email)) {
+                var questionScores = scoreBoard.get(email).getQuestionScores();
+                int problemScore = questionScores.getOrDefault(problem.id, 0);
+                int anotherProblemScore = questionScores.getOrDefault(anotherProblem.id, 0);
+                assertEquals(problemScore, Integer.valueOf(record.get(problem.title)));
+                assertEquals(anotherProblemScore, Integer.valueOf(record.get(anotherProblem.title)));
 
-            var questionScores = scoreBoard.get(email).getQuestionScores();
-            int problemScore = questionScores.get(problem.id);
-            int anotherProblemScore = questionScores.get(anotherProblem.id);
-            assertEquals(problemScore, Integer.valueOf(record.get(problem.title)));
-            assertEquals(anotherProblemScore, Integer.valueOf(record.get(anotherProblem.title)));
-
-            int actualTotalScore = problemScore + anotherProblemScore;
-            assertEquals(actualTotalScore, Integer.valueOf(record.get(COLUMN_TOTAL_SCORE)));
+                int actualTotalScore = problemScore + anotherProblemScore;
+                assertEquals(actualTotalScore, Integer.valueOf(record.get(COLUMN_TOTAL_SCORE)));
+            } else {
+                assertEquals(0, Integer.valueOf(record.get(problem.title)));
+                assertEquals(0, Integer.valueOf(record.get(anotherProblem.title)));
+                assertEquals(0, Integer.valueOf(record.get(COLUMN_TOTAL_SCORE)));
+            }
         }
     }
 

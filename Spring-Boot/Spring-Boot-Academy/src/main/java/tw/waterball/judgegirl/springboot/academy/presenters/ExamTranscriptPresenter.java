@@ -2,6 +2,7 @@ package tw.waterball.judgegirl.springboot.academy.presenters;
 
 import tw.waterball.judgegirl.academy.domain.usecases.exam.CreateExamTranscriptUseCase;
 import tw.waterball.judgegirl.academy.domain.usecases.exam.CreateExamTranscriptUseCase.ExamineeRecord;
+import tw.waterball.judgegirl.primitives.Student;
 import tw.waterball.judgegirl.primitives.exam.Exam;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.springboot.academy.view.TranscriptView;
@@ -37,6 +38,10 @@ public class ExamTranscriptPresenter implements CreateExamTranscriptUseCase.Pres
 
     @Override
     public void showProblems(List<ProblemView> problems) {
+    }
+
+    @Override
+    public void showExaminees(List<Student> students) {
     }
 
     private Map<String, TranscriptView.ExamineeRecordView> mapEmailToExamineeRecord(List<ExamineeRecord> examineeRecords) {
