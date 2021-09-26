@@ -100,7 +100,7 @@ public class CreateExamTranscriptUseCase extends AbstractExamUseCase {
 
         void showProblems(List<ProblemView> problems);
 
-        void showExaminees(List<Student> students);
+        void showExaminees(List<Student> examinees);
     }
 
     @Value

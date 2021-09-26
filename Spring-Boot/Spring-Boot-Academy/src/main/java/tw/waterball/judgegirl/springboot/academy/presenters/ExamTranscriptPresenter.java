@@ -41,7 +41,7 @@ public class ExamTranscriptPresenter implements CreateExamTranscriptUseCase.Pres
     }
 
     @Override
-    public void showExaminees(List<Student> students) {
+    public void showExaminees(List<Student> examinees) {
     }
 
     private Map<String, TranscriptView.ExamineeRecordView> mapEmailToExamineeRecord(List<ExamineeRecord> examineeRecords) {
