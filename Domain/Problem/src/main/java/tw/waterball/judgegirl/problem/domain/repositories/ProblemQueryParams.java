@@ -18,6 +18,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
+import static java.util.Optional.ofNullable;
+
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
@@ -29,18 +31,26 @@ public class ProblemQueryParams {
     @Nullable
     private final Integer page;
 
-    private final boolean archive;
+    @Nullable
+    private final Boolean queryArchive;
 
-    private final boolean visible;
+    private final boolean queryVisible;
 
-    private final boolean invisible;
+    private final boolean queryInvisible;
 
-    public ProblemQueryParams(String[] tags, @Nullable Integer page, boolean archive, boolean visible, boolean invisible) {
+    /**
+     * @param tags           query the problems which have the tags
+     * @param page           query the problems in the pages
+     * @param queryArchive   query the archived problems
+     * @param queryVisible   query the visible problems
+     * @param queryInvisible query the invisible problems
+     */
+    public ProblemQueryParams(String[] tags, @Nullable Integer page, @Nullable Boolean queryArchive, boolean queryVisible, boolean queryInvisible) {
         this.tags = tags;
         this.page = page;
-        this.archive = archive;
-        this.visible = visible;
-        this.invisible = invisible;
+        this.queryArchive = queryArchive;
+        this.queryVisible = queryVisible;
+        this.queryInvisible = queryInvisible;
     }
 
     public String[] getTags() {
@@ -48,18 +58,18 @@ public class ProblemQueryParams {
     }
 
     public Optional<Integer> getPage() {
-        return Optional.ofNullable(page);
+        return ofNullable(page);
     }
 
-    public boolean isArchive() {
-        return archive;
+    public Optional<Boolean> queryArchive() {
+        return ofNullable(queryArchive);
     }
 
-    public boolean isVisible() {
-        return visible;
+    public boolean queryVisible() {
+        return queryVisible;
     }
 
-    public boolean isInvisible() {
-        return invisible;
+    public boolean queryInvisible() {
+        return queryInvisible;
     }
 }

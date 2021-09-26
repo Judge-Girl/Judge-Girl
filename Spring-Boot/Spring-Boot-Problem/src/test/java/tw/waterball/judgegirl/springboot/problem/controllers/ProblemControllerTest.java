@@ -67,6 +67,7 @@ import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static java.util.Collections.*;
 import static java.util.Comparator.comparing;
+import static java.util.List.of;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
@@ -398,7 +399,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         givenProblemsSaved(10);
 
         archiveOrDeleteProblem(1);
-        var problems = getProblemItems(withToken(adminToken));
+        var problems = getArchiveProblems(adminToken, false);
 
         assertTrue(problems.stream().allMatch(problem -> problem.id != 1));
     }
@@ -578,14 +579,11 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     @Test
     void testGetInvisibleProblems() throws Exception {
         int problemAId = 1, problemBId = 2;
-        saveProblems(problemAId, problemBId);
-        patchProblem(problemBId, patch -> patch.visible(true));
+        var problemA = problemTemplate().id(problemAId).visible(false).build();
+        var problemB = problemTemplate().id(problemBId).visible(true).build();
+        saveProblems(problemA, problemB);
 
-        var expectInvisibleProblems = problemRepository.findAll().stream()
-                .filter(problem -> !problem.getVisible())
-                .filter(problem -> !problem.isArchived())
-                .map(ProblemItem::toProblemItem)
-                .collect(toList());
+        var expectInvisibleProblems = mapToList(of(problemA), ProblemItem::toProblemItem);
         var actualInvisibleProblems = getInvisibleProblems(adminToken);
 
         assertEquals(1, actualInvisibleProblems.size());
@@ -599,14 +597,12 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     @Test
     void testGetArchiveProblems() throws Exception {
         int problemAId = 1, problemBId = 2;
-        saveProblems(problemAId, problemBId);
-        archiveOrDeleteProblem(problemAId);
+        var problemA = problemTemplate().id(problemAId).archived(true).build();
+        saveProblems(problemA);
+        saveProblems(problemBId);
 
-        var expectArchivedProblems = problemRepository.findAll().stream()
-                .filter(Problem::isArchived)
-                .map(ProblemItem::toProblemItem)
-                .collect(toList());
-        var actualArchivedProblems = getArchiveProblems(adminToken);
+        var expectArchivedProblems = mapToList(of(problemA), ProblemItem::toProblemItem);
+        var actualArchivedProblems = getArchiveProblems(adminToken, true);
 
         assertEquals(1, actualArchivedProblems.size());
         assertTrue(findFirst(actualArchivedProblems, problem -> problemAId == problem.id).isPresent());
@@ -727,6 +723,10 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         });
     }
 
+    private void saveProblems(Problem... problems) {
+        stream(problems).forEach(problemRepository::save);
+    }
+
     private void assertProblemEquals(ProblemView expect, ProblemView actual) {
         expect.judgeFilterPluginTags = sortToList(expect.judgeFilterPluginTags, comparing(JudgePluginTagView::toString));
         actual.judgeFilterPluginTags = sortToList(actual.judgeFilterPluginTags, comparing(JudgePluginTagView::toString));
@@ -837,15 +837,16 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     private List<ProblemItem> getInvisibleProblems(Token token) throws Exception {
         return getBody(mockMvc.perform(get(API_PREFIX)
                         .header("Authorization", bearerWithToken(token.getToken()))
-                        .queryParam("visible", String.valueOf(false)))
+                        .queryParam("visible", String.valueOf(false))
+                        .queryParam("archive", String.valueOf(false)))
                 .andExpect(status().isOk()), new TypeReference<>() {
         });
     }
 
-    private List<ProblemItem> getArchiveProblems(Token token) throws Exception {
+    private List<ProblemItem> getArchiveProblems(Token token, boolean archive) throws Exception {
         return getBody(mockMvc.perform(get(API_PREFIX)
                         .header("Authorization", bearerWithToken(token.getToken()))
-                        .queryParam("archive", String.valueOf(true)))
+                        .queryParam("archive", String.valueOf(archive)))
                 .andExpect(status().isOk()), new TypeReference<>() {
         });
     }
