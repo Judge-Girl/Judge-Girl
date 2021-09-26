@@ -39,9 +39,18 @@ public class ProblemQueryParams {
     private final boolean queryInvisible;
 
     /**
+     * To query the problems with the tags, then provide the tags of a not empty string array.
+     * To query the problems in the pages, then provide the page of an Integer, its default value is 0,
+     * and it will return pages of the problems with page size.
+     * To query the archived problems, then provide queryArchive of a boolean with true
+     * To query the non archived problems, then provide queryArchive of a boolean with false.
+     * To query the archived and non archived problems, then not provide queryArchive.
+     * To query the visible problems, then provide queryVisible of a boolean with true and queryInvisible of a boolean with false.
+     * To query the invisible problems, then provide queryInvisible of a boolean with true and queryVisible of a boolean with false.
+     *
      * @param tags           query the problems which have the tags
      * @param page           query the problems in the pages
-     * @param queryArchive   query the archived problems
+     * @param queryArchive   query the archived problems if parameter exists
      * @param queryVisible   query the visible problems
      * @param queryInvisible query the invisible problems
      */

@@ -574,7 +574,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     }
 
     @DisplayName("Given two problems(A, B) saved and problem(A) is invisible" +
-            "When get invisible problems, " +
+            "When get non archived and invisible problems, " +
             "Then should respond problem(A).")
     @Test
     void testGetInvisibleProblems() throws Exception {
@@ -583,12 +583,12 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         var problemB = problemTemplate().id(problemBId).visible(true).build();
         saveProblems(problemA, problemB);
 
-        var expectInvisibleProblems = mapToList(of(problemA), ProblemItem::toProblemItem);
-        var actualInvisibleProblems = getInvisibleProblems(adminToken);
+        var expectNonArchivedAndInvisibleProblems = mapToList(of(problemA), ProblemItem::toProblemItem);
+        var actualNonArchivedAndInvisibleProblems = getNonArchivedAndInvisibleProblems(adminToken);
 
-        assertEquals(1, actualInvisibleProblems.size());
-        assertTrue(findFirst(actualInvisibleProblems, problem -> problemAId == problem.id).isPresent());
-        assertEqualsIgnoreOrder(expectInvisibleProblems, actualInvisibleProblems);
+        assertEquals(1, actualNonArchivedAndInvisibleProblems.size());
+        assertTrue(findFirst(actualNonArchivedAndInvisibleProblems, problem -> problemAId == problem.id).isPresent());
+        assertEqualsIgnoreOrder(expectNonArchivedAndInvisibleProblems, actualNonArchivedAndInvisibleProblems);
     }
 
     @DisplayName("Given two problems(A, B) saved and problem(A) is archived" +
@@ -834,7 +834,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         });
     }
 
-    private List<ProblemItem> getInvisibleProblems(Token token) throws Exception {
+    private List<ProblemItem> getNonArchivedAndInvisibleProblems(Token token) throws Exception {
         return getBody(mockMvc.perform(get(API_PREFIX)
                         .header("Authorization", bearerWithToken(token.getToken()))
                         .queryParam("visible", String.valueOf(false))
