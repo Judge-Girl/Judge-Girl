@@ -6,6 +6,7 @@ import org.apache.commons.csv.CSVPrinter;
 import tw.waterball.judgegirl.academy.domain.usecases.exam.CreateExamTranscriptUseCase;
 import tw.waterball.judgegirl.academy.domain.usecases.exam.CreateExamTranscriptUseCase.ExamineeRecord;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
+import tw.waterball.judgegirl.primitives.Student;
 import tw.waterball.judgegirl.primitives.exam.Exam;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
 
@@ -18,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Collections.EMPTY_LIST;
 import static java.util.List.of;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.*;
 
@@ -27,6 +29,7 @@ import static tw.waterball.judgegirl.commons.utils.StreamUtils.*;
 public class ExamTranscriptCsvFilePresenter implements CreateExamTranscriptUseCase.Presenter {
     private List<ProblemView> problems;
     private List<ExamineeRecord> examineeRecords;
+    private List<Student> examinees;
     private static final String EXAM_TRANSCRIPT_FILE_NAME = "ExamTranscript.csv";
     private static final String COLUMN_NAME = "Name";
     private static final String COLUMN_EMAIL = "Email";
@@ -46,13 +49,24 @@ public class ExamTranscriptCsvFilePresenter implements CreateExamTranscriptUseCa
         this.problems = problems;
     }
 
+    @Override
+    public void showExaminees(List<Student> examinees) {
+        this.examinees = examinees;
+    }
+
     @SneakyThrows
     public FileResource present() {
         var out = new ByteArrayOutputStream();
         var csvPrinter = new CSVPrinter(new PrintWriter(out, false, UTF_8),
                 CSVFormat.DEFAULT.withHeader(createExamTranscriptCsvHeader(problems)));
 
-        var csvBody = createExamTranscriptCsvBody(examineeRecords);
+        var examineeRecords = toMap(this.examineeRecords,
+                examineeRecord -> examineeRecord.getExaminee().getId(),
+                examineeRecord -> examineeRecord);
+
+        var newExamineeRecords = mapToList(examinees, examinee -> examineeRecords.getOrDefault(examinee.getId(), new ExamineeRecord(examinee, EMPTY_LIST)));
+
+        var csvBody = createExamTranscriptCsvBody(newExamineeRecords);
         for (List<String> record : csvBody) {
             csvPrinter.printRecord(record);
         }
