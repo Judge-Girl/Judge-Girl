@@ -78,7 +78,8 @@ public class ProblemController {
                                @RequestParam(value = "tags", required = false) String[] tags,
                                @RequestParam(value = "page", defaultValue = "0") int page,
                                @RequestParam(value = "visible", defaultValue = "true") boolean visible,
-                               @RequestParam(value = "archived", defaultValue = "false") boolean archived,
+                               @RequestParam(value = "invisible", defaultValue = "true") boolean invisible,
+                               @RequestParam(value = "archive", defaultValue = "false") boolean archive,
                                @RequestParam(required = false) int[] ids) {
         var token = tokenService.parseBearerTokenAndValidate(authorization);
         boolean includeInvisibleProblems = token.isAdmin();
@@ -87,10 +88,10 @@ public class ProblemController {
             getProblemsUseCase.execute(new GetProblemsUseCase.Request(includeInvisibleProblems, ids), presenter);
             return presenter.present();
         } else {
-            boolean includeArchive = archived && includeInvisibleProblems;
-            boolean excludeVisibleProblems = !visible && includeInvisibleProblems;
+            archive = archive && token.isAdmin();
+            invisible = invisible && includeInvisibleProblems;
             var presenter = new GetProblemItemsPresenter();
-            getProblemsUseCase.execute(new ProblemQueryParams(tags == null ? new String[0] : tags, page, includeInvisibleProblems, excludeVisibleProblems, includeArchive), presenter);
+            getProblemsUseCase.execute(new ProblemQueryParams(tags == null ? new String[0] : tags, page, archive, visible, invisible), presenter);
             return presenter.present();
         }
     }

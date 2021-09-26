@@ -597,7 +597,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
             "When get archived problems, " +
             "Then should respond problem(A).")
     @Test
-    void testGetArchivedProblems() throws Exception {
+    void testGetArchiveProblems() throws Exception {
         int problemAId = 1, problemBId = 2;
         saveProblems(problemAId, problemBId);
         archiveOrDeleteProblem(problemAId);
@@ -606,7 +606,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
                 .filter(Problem::isArchived)
                 .map(ProblemItem::toProblemItem)
                 .collect(toList());
-        var actualArchivedProblems = getArchivedProblems(adminToken);
+        var actualArchivedProblems = getArchiveProblems(adminToken);
 
         assertEquals(1, actualArchivedProblems.size());
         assertTrue(findFirst(actualArchivedProblems, problem -> problemAId == problem.id).isPresent());
@@ -842,10 +842,10 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         });
     }
 
-    private List<ProblemItem> getArchivedProblems(Token token) throws Exception {
+    private List<ProblemItem> getArchiveProblems(Token token) throws Exception {
         return getBody(mockMvc.perform(get(API_PREFIX)
                         .header("Authorization", bearerWithToken(token.getToken()))
-                        .queryParam("archived", String.valueOf(true)))
+                        .queryParam("archive", String.valueOf(true)))
                 .andExpect(status().isOk()), new TypeReference<>() {
         });
     }

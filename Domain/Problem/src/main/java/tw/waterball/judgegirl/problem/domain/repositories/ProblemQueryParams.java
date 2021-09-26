@@ -22,32 +22,25 @@ import java.util.Optional;
  * @author - johnny850807@gmail.com (Waterball)
  */
 public class ProblemQueryParams {
-    public static final ProblemQueryParams NO_PARAMS = new ProblemQueryParams(null, null, false, false, false);
+    public static final ProblemQueryParams NO_PARAMS = new ProblemQueryParams(null, null, false, true, true);
 
     private final String[] tags;
 
     @Nullable
     private final Integer page;
 
-    private final boolean excludeArchive;
+    private final boolean archive;
 
-    private final boolean includeArchive;
+    private final boolean visible;
 
-    private final boolean includeInvisibleProblems;
+    private final boolean invisible;
 
-    private final boolean excludeVisibleProblems;
-
-    public ProblemQueryParams(String[] tags, @Nullable Integer page, boolean includeInvisibleProblems, boolean excludeVisibleProblems, boolean includeArchive) {
-        this(tags, page, true, includeInvisibleProblems, excludeVisibleProblems, includeArchive);
-    }
-
-    public ProblemQueryParams(String[] tags, @Nullable Integer page, boolean excludeArchive, boolean includeInvisibleProblems, boolean excludeVisibleProblems, boolean includeArchive) {
+    public ProblemQueryParams(String[] tags, @Nullable Integer page, boolean archive, boolean visible, boolean invisible) {
         this.tags = tags;
         this.page = page;
-        this.excludeArchive = excludeArchive;
-        this.includeArchive = includeArchive;
-        this.includeInvisibleProblems = includeInvisibleProblems;
-        this.excludeVisibleProblems = excludeVisibleProblems;
+        this.archive = archive;
+        this.visible = visible;
+        this.invisible = invisible;
     }
 
     public String[] getTags() {
@@ -58,19 +51,15 @@ public class ProblemQueryParams {
         return Optional.ofNullable(page);
     }
 
-    public boolean isExcludeArchive() {
-        return excludeArchive;
+    public boolean isArchive() {
+        return archive;
     }
 
-    public boolean isIncludeInvisibleProblems() {
-        return includeInvisibleProblems;
+    public boolean isVisible() {
+        return visible;
     }
 
-    public boolean isExcludeVisibleProblems() {
-        return excludeVisibleProblems;
-    }
-
-    public boolean isIncludeArchive() {
-        return includeArchive;
+    public boolean isInvisible() {
+        return invisible;
     }
 }

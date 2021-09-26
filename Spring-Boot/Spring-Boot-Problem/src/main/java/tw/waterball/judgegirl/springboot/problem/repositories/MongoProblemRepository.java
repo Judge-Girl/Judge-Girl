@@ -98,16 +98,14 @@ public class MongoProblemRepository implements ProblemRepository {
                     .all((Object[]) params.getTags()));
         }
 
-        if (params.isIncludeArchive()) {
-            query.addCriteria(where("archived").is(true));
-        } else if (params.isExcludeArchive()) {
-            query.addCriteria(where("archived").is(false));
-        }
+        query.addCriteria(where("archived").is(params.isArchive()));
 
-        if (params.isExcludeVisibleProblems()) {
-            query.addCriteria(where("visible").is(false));
-        } else if (!params.isIncludeInvisibleProblems()) {
+        boolean visible = params.isVisible();
+        boolean invisible = params.isInvisible();
+        if (visible && !invisible) {
             query.addCriteria(where("visible").is(true));
+        } else if (!visible && invisible) {
+            query.addCriteria(where("visible").is(false));
         }
 
         params.getPage()
