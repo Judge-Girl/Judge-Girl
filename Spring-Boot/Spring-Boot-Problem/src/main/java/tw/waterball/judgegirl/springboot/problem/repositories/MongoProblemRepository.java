@@ -18,6 +18,7 @@ import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -268,8 +269,10 @@ public class MongoProblemRepository implements ProblemRepository {
         applyDeletions(inDirPath, ioPatching.getDeletedIns(), testcaseIO.mayHaveStdIn());
         applyDeletions(outDirPath, ioPatching.getDeletedOuts(), testcaseIO.mayHaveStdOut());
 
-        patchStandardFile(inDirPath, ioPatching.getStdIn(), testcaseIO.getStdIn());
-        patchStandardFile(outDirPath, ioPatching.getStdOut(), testcaseIO.getStdOut());
+        patchStandardFile(inDirPath, ioPatching.getStdIn(),
+                testcase.getTestcaseIO().map(TestcaseIO::getStdIn).orElse(null), testcaseIO.getStdIn());
+        patchStandardFile(outDirPath, ioPatching.getStdOut(),
+                testcase.getTestcaseIO().map(TestcaseIO::getStdOut).orElse(null), testcaseIO.getStdOut());
 
         patchIoFiles(inDirPath, ioPatching.getInputFiles());
         patchIoFiles(outDirPath, ioPatching.getOutputFiles());
@@ -284,11 +287,11 @@ public class MongoProblemRepository implements ProblemRepository {
 
     @NotNull
     private TestcaseIO deduceTestcaseIoAfterPatching(Testcase testcase, TestcaseIoPatching ioPatching) {
-        // keep the current standard file's name or take the patched one's (if exists)
-        Optional<String> stdInName = testcase.getTestcaseIO()
-                .map(TestcaseIO::getStdIn).or(() -> ioPatching.getStdIn().map(StreamingResource::getFileName));
-        Optional<String> stdOutName = testcase.getTestcaseIO()
-                .map(TestcaseIO::getStdOut).or(() -> ioPatching.getStdOut().map(StreamingResource::getFileName));
+        // replace with the patched standard file's name if exists, otherwise keep the original name
+        Optional<String> stdInName = ioPatching.getStdIn()
+                .map(StreamingResource::getFileName).or(() -> testcase.getTestcaseIO().map(TestcaseIO::getStdIn));
+        Optional<String> stdOutName = ioPatching.getStdOut()
+                .map(StreamingResource::getFileName).or(() -> testcase.getTestcaseIO().map(TestcaseIO::getStdOut));
 
         // filter off the deleted IO Files
         Set<String> inputFileNames = testcase.getTestcaseIO().stream()
@@ -329,11 +332,15 @@ public class MongoProblemRepository implements ProblemRepository {
         }
     }
 
-    private void patchStandardFile(Path dir, Optional<FileResource> patchedStandardFile, String standardFileName) {
+    private void patchStandardFile(Path dir, Optional<FileResource> patchedStandardFile,
+                                   @Nullable String oldStandardFileName, String newStandardFileName) {
         patchedStandardFile.ifPresent(stdFile -> {
             try {
+                if (oldStandardFileName != null) {
+                    forceDelete(dir.resolve(oldStandardFileName).toFile());
+                }
                 copyToFile(stdFile.getInputStream(),
-                        dir.resolve(standardFileName).toFile());
+                        dir.resolve(newStandardFileName).toFile());
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

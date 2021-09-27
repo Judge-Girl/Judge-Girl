@@ -33,6 +33,7 @@ import tw.waterball.judgegirl.problem.domain.usecases.*;
 import tw.waterball.judgegirl.problem.domain.usecases.PatchProblemUseCase.LanguageEnvUpsert;
 import tw.waterball.judgegirl.problemapi.views.ProblemItem;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
+import tw.waterball.judgegirl.problemapi.views.TestcaseView;
 import tw.waterball.judgegirl.springboot.utils.ResponseEntityUtils;
 
 import javax.servlet.http.Part;
@@ -40,6 +41,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
 import static tw.waterball.judgegirl.springboot.utils.MultipartFileUtils.convertMultipartFileToFileResource;
@@ -211,33 +213,33 @@ public class ProblemController {
     }
 
     @PatchMapping("/{problemId}/testcases/{testcaseId}/io")
-    public String patchTestcaseIO(@RequestHeader("Authorization") String authorization,
-                                  @PathVariable int problemId,
-                                  @PathVariable String testcaseId,
-                                  @RequestParam(value = TESTCASE_DELETE_IN_FILES_MULTIPART_KEY_NAME, required = false) Part insDeletion,
-                                  @RequestParam(value = TESTCASE_DELETE_OUT_FILES_MULTIPART_KEY_NAME, required = false) Part outsDeletion,
-                                  @RequestParam(value = TESTCASE_STDIN_MULTIPART_KEY_NAME, required = false) MultipartFile stdIn,
-                                  @RequestParam(value = TESTCASE_STDOUT_MULTIPART_KEY_NAME, required = false) MultipartFile stdOut,
-                                  @RequestParam(TESTCASE_IN_FILES_MULTIPART_KEY_NAME) MultipartFile[] inFiles,
-                                  @RequestParam(TESTCASE_OUT_FILES_MULTIPART_KEY_NAME) MultipartFile[] outFiles) throws IOException {
+    public TestcaseView patchTestcaseIO(@RequestHeader("Authorization") String authorization,
+                                        @PathVariable int problemId,
+                                        @PathVariable String testcaseId,
+                                        @RequestParam(value = TESTCASE_DELETE_IN_FILES_MULTIPART_KEY_NAME, required = false) Part insDeletion,
+                                        @RequestParam(value = TESTCASE_DELETE_OUT_FILES_MULTIPART_KEY_NAME, required = false) Part outsDeletion,
+                                        @RequestParam(value = TESTCASE_STDIN_MULTIPART_KEY_NAME, required = false) MultipartFile stdIn,
+                                        @RequestParam(value = TESTCASE_STDOUT_MULTIPART_KEY_NAME, required = false) MultipartFile stdOut,
+                                        @RequestParam(TESTCASE_IN_FILES_MULTIPART_KEY_NAME) MultipartFile[] inFiles,
+                                        @RequestParam(TESTCASE_OUT_FILES_MULTIPART_KEY_NAME) MultipartFile[] outFiles) throws IOException {
         String[] deletedIns = insDeletion == null ? new String[0] : IOUtils.toString(insDeletion.getInputStream(), StandardCharsets.UTF_8).split("\\s*,\\s*");
         String[] deletedOuts = outsDeletion == null ? new String[0] : IOUtils.toString(outsDeletion.getInputStream(), StandardCharsets.UTF_8).split("\\s*,\\s*");
         return tokenService.returnIfAdmin(authorization, token -> {
-            var presenter = new UploadTestcaseIoPresenter(testcaseId);
+            var presenter = new PatchTestcaseIoPresenter(testcaseId);
             patchTestcaseIOUseCase.execute(new PatchTestcaseIOUseCase.Request(
                     problemId, testcaseId,
                     testcaseIoPatching(testcaseId, stdIn, stdOut, inFiles, outFiles, deletedIns, deletedOuts)), presenter);
             return presenter.present();
         });
     }
-    
+
     private ProblemRepository.TestcaseIoPatching testcaseIoPatching(String testcaseId, MultipartFile stdIn, MultipartFile stdOut, MultipartFile[] inFiles, MultipartFile[] outFiles, String[] deletedIns, String[] deletedOuts) {
         return new ProblemRepository.TestcaseIoPatching(
                 testcaseId, deletedIns, deletedOuts,
                 stdIn == null ? null : convertMultipartFileToFileResource(stdIn),
                 stdOut == null ? null : convertMultipartFileToFileResource(stdOut),
-                new HashSet<>(convertMultipartFilesToFileResources(inFiles)),
-                new HashSet<>(convertMultipartFilesToFileResources(outFiles))
+                Set.copyOf(convertMultipartFilesToFileResources(inFiles)),
+                Set.copyOf(convertMultipartFilesToFileResources(outFiles))
         );
     }
 
@@ -345,7 +347,7 @@ class UploadProvidedCodesPresenter implements UploadProvidedCodeUseCase.Presente
 }
 
 @RequiredArgsConstructor
-class UploadTestcaseIoPresenter implements PatchTestcaseIOUseCase.Presenter {
+class PatchTestcaseIoPresenter implements PatchTestcaseIOUseCase.Presenter {
     private Problem problem;
     private final String testcaseId;
 
@@ -354,10 +356,9 @@ class UploadTestcaseIoPresenter implements PatchTestcaseIOUseCase.Presenter {
         this.problem = problem;
     }
 
-    String present() {
+    TestcaseView present() {
         return problem.getTestcaseById(testcaseId)
-                .orElseThrow(() -> new RuntimeException("Presentation error."))
-                .getTestcaseIO().orElseThrow(() -> new RuntimeException("Presentation error."))
-                .getId();
+                .map(TestcaseView::toViewModel)
+                .orElseThrow(() -> new RuntimeException("Presentation error."));
     }
 }

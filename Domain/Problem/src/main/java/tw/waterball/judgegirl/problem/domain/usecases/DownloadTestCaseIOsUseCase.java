@@ -16,12 +16,9 @@ package tw.waterball.judgegirl.problem.domain.usecases;
 import lombok.Value;
 import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
-import tw.waterball.judgegirl.primitives.problem.Problem;
 import tw.waterball.judgegirl.problem.domain.repositories.ProblemRepository;
 
 import javax.inject.Named;
-
-import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -35,7 +32,9 @@ public class DownloadTestCaseIOsUseCase extends BaseProblemUseCase {
 
     public FileResource execute(Request request) throws NotFoundException {
         return problemRepository.downloadTestCaseIOs(request.problemId, request.testcaseId)
-                .orElseThrow(() -> notFound(Problem.class).id(request.problemId));
+                .orElseThrow(() -> new NotFoundException(String.format("The testcase's IO is not found. (problemId=%d, testcaseId=%s) " +
+                                "The problem or the testcase does not exist or the IO files has not been uploaded.",
+                        request.problemId, request.testcaseId)));
     }
 
     @Value

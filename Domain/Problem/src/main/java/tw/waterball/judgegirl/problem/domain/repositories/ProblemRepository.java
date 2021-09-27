@@ -25,6 +25,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import static java.util.Optional.ofNullable;
+
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
@@ -92,11 +94,11 @@ public interface ProblemRepository {
         }
 
         public Optional<FileResource> getStdIn() {
-            return Optional.ofNullable(stdIn);
+            return ofNullable(stdIn);
         }
 
         public Optional<FileResource> getStdOut() {
-            return Optional.ofNullable(stdOut);
+            return ofNullable(stdOut);
         }
     }
 

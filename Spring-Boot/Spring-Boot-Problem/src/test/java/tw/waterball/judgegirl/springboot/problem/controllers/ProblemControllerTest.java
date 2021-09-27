@@ -14,7 +14,10 @@ package tw.waterball.judgegirl.springboot.problem.controllers;
 
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import lombok.Builder;
 import lombok.SneakyThrows;
+import lombok.Value;
+import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,7 +27,6 @@ import org.springframework.boot.test.autoconfigure.data.mongo.AutoConfigureDataM
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.gridfs.GridFsResource;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -80,6 +82,7 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.IntStream.range;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
+import static org.springframework.data.mongodb.core.query.Query.query;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -88,6 +91,7 @@ import static org.testcontainers.shaded.org.apache.commons.io.IOUtils.resourceTo
 import static tw.waterball.judgegirl.commons.utils.HttpHeaderUtils.bearerWithToken;
 import static tw.waterball.judgegirl.commons.utils.ResourceUtils.getResourceAsStream;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.*;
+import static tw.waterball.judgegirl.commons.utils.StringUtils.isNullOrBlank;
 import static tw.waterball.judgegirl.commons.utils.ZipUtils.unzipToDestination;
 import static tw.waterball.judgegirl.commons.utils.ZipUtils.zipFilesFromResources;
 import static tw.waterball.judgegirl.primitives.problem.JudgePluginTag.Type.OUTPUT_MATCH_POLICY;
@@ -97,6 +101,7 @@ import static tw.waterball.judgegirl.problem.domain.usecases.PatchProblemUseCase
 import static tw.waterball.judgegirl.problemapi.views.ProblemItem.toProblemItem;
 import static tw.waterball.judgegirl.problemapi.views.ProblemView.toEntity;
 import static tw.waterball.judgegirl.springboot.problem.controllers.ProblemController.*;
+import static tw.waterball.judgegirl.springboot.problem.controllers.ProblemControllerTest.TestcaseIoPatchingFilesParameters.patchTestcaseIOs;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -478,60 +483,73 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         givenProblemSavedWithOneTestcase(problemId, testcase);
 
         // Example (1)
-        String testcaseIoId = patchTestcaseIosAndGetIoId(testcase,
-                testcaseIoPatchingFiles("example1",
-                        new String[]{"std.in", "I1.in", "I2.in"}, new String[]{"std.out", "O1.out", "O2.out"}), EMPTY, EMPTY);
+        String testcaseIoId = patchTestcaseIosAndGetIoId(patchTestcaseIOs(testcase).resourceDirName("example1")
+                .stdIn("std.in").stdOut("std.out")
+                .inFiles(asList("I1.in", "I2.in"))
+                .outFiles(asList("O1.out", "O2.out")).build());
         testcaseIoFilesShouldBeSavedCorrectly(testcase, testcaseIoId,
                 resourceToByteArray("/testcaseIos/example1/expectedIo.zip"));
 
         // Example (2)
-        testcaseIoId = patchTestcaseIosAndGetIoId(testcase,
-                testcaseIoPatchingFiles("example2", new String[]{"std.in", "I1.in"}, EMPTY),
-                new String[]{"I2.in"}, new String[]{"O2.out"});
+        testcaseIoId = patchTestcaseIosAndGetIoId(patchTestcaseIOs(testcase)
+                .resourceDirName("example2")
+                .stdIn("std.in").inFiles(singletonList("I1.in"))
+                .deletedInFiles(singletonList("I2.in"))
+                .deletedOutFiles(singletonList("O2.out")).build());
         testcaseIoFilesShouldBeSavedCorrectly(testcase, testcaseIoId,
                 resourceToByteArray("/testcaseIos/example2/expectedIo.zip"));
 
         // Example (3): If the deleted files are not found, the deletion should be ignored.
-        testcaseIoId = patchTestcaseIosAndGetIoId(testcase,
-                testcaseIoPatchingFiles("example3", EMPTY, new String[]{"O3.out"}),
-                new String[]{"A", "B"}, new String[]{"B", "C", "D", "E", "F", "G"});
+        testcaseIoId = patchTestcaseIosAndGetIoId(patchTestcaseIOs(testcase)
+                .resourceDirName("example3")
+                .outFiles(singletonList("O3.out"))
+                .deletedInFiles(asList("A", "B")).deletedOutFiles(asList("B", "C", "D", "E", "F", "G"))
+                .build());
         testcaseIoFilesShouldBeSavedCorrectly(testcase, testcaseIoId,
                 resourceToByteArray("/testcaseIos/example3/expectedIo.zip"));
 
         // Example (4): 1. stdIn and stdOut are not deletable. 2. the deletion will first applied, followed by files upsertion.
-        testcaseIoId = patchTestcaseIosAndGetIoId(testcase,
-                testcaseIoPatchingFiles("example4", EMPTY, new String[]{"O1.out"}),
-                new String[]{"std.in"}, new String[]{"O1.out"});
+        testcaseIoId = patchTestcaseIosAndGetIoId(patchTestcaseIOs(testcase)
+                .resourceDirName("example4").outFiles(singletonList("O1.out"))
+                .deletedInFiles(singletonList("std.in"))
+                .deletedOutFiles(singletonList("O1.out")).build());
         testcaseIoFilesShouldBeSavedCorrectly(testcase, testcaseIoId,
                 resourceToByteArray("/testcaseIos/example4/expectedIo.zip"));
+
+        // Example (5): When replace with a new std-file with different name, the old std-file should be deleted.
+        testcaseIoId = patchTestcaseIosAndGetIoId(patchTestcaseIOs(testcase)
+                .resourceDirName("example5")
+                .stdIn("new-std.in").build());
+        testcaseIoFilesShouldBeSavedCorrectly(testcase, testcaseIoId,
+                resourceToByteArray("/testcaseIos/example5/expectedIo.zip"));
     }
 
-    private String patchTestcaseIosAndGetIoId(Testcase testcase, MockMultipartFile[] testcaseIoFiles,
-                                              String[] deletedInFiles, String[] deletedOutFiles) throws Exception {
-        var multipart = multipart(API_PREFIX + "/{problemId}/testcases/{testcaseId}/io", testcase.getProblemId(), testcase.getId());
+    private String patchTestcaseIosAndGetIoId(TestcaseIoPatchingFilesParameters params) throws Exception {
+        var multipart = multipart(API_PREFIX + "/{problemId}/testcases/{testcaseId}/io",
+                params.testcase.getProblemId(), params.testcase.getId());
         multipart.with(request -> {
             request.setMethod("PATCH");
             return request;
         });
-
-        for (MockMultipartFile file : testcaseIoFiles) {
+        for (MockMultipartFile file : testcaseIoPatchingFiles(params)) {
             multipart = multipart.file(file);
         }
-        if (deletedInFiles.length > 0) {
+        if (!params.deletedInFiles.isEmpty()) {
             MockPart mockPart = new MockPart(TESTCASE_DELETE_IN_FILES_MULTIPART_KEY_NAME,
-                    join(",", asList(deletedInFiles)).getBytes(defaultCharset()));
+                    join(",", params.deletedInFiles).getBytes(defaultCharset()));
             mockPart.getHeaders().setContentType(MediaType.TEXT_PLAIN);
             multipart.part(mockPart);
         }
-        if (deletedOutFiles.length > 0) {
+        if (!params.deletedOutFiles.isEmpty()) {
             MockPart mockPart = new MockPart(TESTCASE_DELETE_OUT_FILES_MULTIPART_KEY_NAME,
-                    join(",", asList(deletedOutFiles)).getBytes(defaultCharset()));
+                    join(",", params.deletedOutFiles).getBytes(defaultCharset()));
             mockPart.getHeaders().setContentType(MediaType.TEXT_PLAIN);
             multipart.part(mockPart);
         }
-        String fileId = getContentAsString(mockMvc.perform(withAdminToken(multipart)));
-        assertFalse(fileId.isBlank(), " The fileId responded should not be empty or blank.");
-        return fileId;
+        var patchedTestcase = getBody(mockMvc.perform(withAdminToken(multipart)).andExpect(status().isOk()),
+                TestcaseView.class);
+        assertFalse(isNullOrBlank(patchedTestcase.getIoFileId()), " The fileId responded should not be empty or blank.");
+        return patchedTestcase.getIoFileId();
     }
 
     private void testcaseIoFilesShouldBeSavedCorrectly(Testcase testcase, String testcaseIosFileId, byte[] expectedTestcaseIOsZip) throws Exception {
@@ -767,7 +785,6 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         stream(problemIds).forEach(problemId -> {
             Problem problem = problemTemplate().id(problemId).build();
             byte[] providedCodesZip = zipFilesFromResources("/providedCodes/file1.c", "/providedCodes/file2.c");
-            byte[] testcaseIOsZip = zipFilesFromResources("/testcaseIos/example1/in/", "/testcaseIos/example1/out/");
             problemRepository.save(problem, singletonMap(problem.getLanguageEnv(Language.C),
                     new ByteArrayInputStream(providedCodesZip)));
         });
@@ -934,20 +951,51 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         return withToken(adminToken, requestBuilder);
     }
 
-    private MockMultipartFile[] testcaseIoPatchingFiles(String testcaseIoDirName, String[] in, String[] out) throws IOException {
+    private List<MockMultipartFile> testcaseIoPatchingFiles(TestcaseIoPatchingFilesParameters params) throws IOException {
         String CONTENT_TYPE = "text/plain";
-        MockMultipartFile[] files = new MockMultipartFile[in.length + out.length];
-        for (int i = 0; i < in.length; i++) {
-            String key = in[i].equals("std.in") ? TESTCASE_STDIN_MULTIPART_KEY_NAME : TESTCASE_IN_FILES_MULTIPART_KEY_NAME;
-            files[i] = new MockMultipartFile(key, in[i], CONTENT_TYPE,
-                    getResourceAsStream("/testcaseIos/" + testcaseIoDirName + "/in/" + in[i]));
+        List<MockMultipartFile> files = new ArrayList<>(params.inFiles.size() + params.outFiles.size() + 2);
+        if (params.stdIn != null) {
+            files.add(new MockMultipartFile(TESTCASE_STDIN_MULTIPART_KEY_NAME, params.stdIn, CONTENT_TYPE,
+                    getResourceAsStream("/testcaseIos/" + params.resourceDirName + "/in/" + params.stdIn)));
         }
-        for (int i = 0; i < out.length; i++) {
-            String key = out[i].equals("std.out") ? TESTCASE_STDOUT_MULTIPART_KEY_NAME : TESTCASE_OUT_FILES_MULTIPART_KEY_NAME;
-            files[i + in.length] = new MockMultipartFile(key, out[i], CONTENT_TYPE,
-                    getResourceAsStream("/testcaseIos/" + testcaseIoDirName + "/out/" + out[i]));
+        if (params.stdOut != null) {
+            files.add(new MockMultipartFile(TESTCASE_STDOUT_MULTIPART_KEY_NAME, params.stdOut, CONTENT_TYPE,
+                    getResourceAsStream("/testcaseIos/" + params.resourceDirName + "/out/" + params.stdOut)));
+        }
+        for (String inFile : params.inFiles) {
+            files.add(new MockMultipartFile(TESTCASE_IN_FILES_MULTIPART_KEY_NAME, inFile, CONTENT_TYPE,
+                    getResourceAsStream("/testcaseIos/" + params.resourceDirName + "/in/" + inFile)));
+        }
+        for (String outFile : params.outFiles) {
+            files.add(new MockMultipartFile(TESTCASE_OUT_FILES_MULTIPART_KEY_NAME, outFile, CONTENT_TYPE,
+                    getResourceAsStream("/testcaseIos/" + params.resourceDirName + "/out/" + outFile)));
         }
         return files;
+    }
+
+    @Value
+    @Builder
+    public static class TestcaseIoPatchingFilesParameters {
+        private static final String[] EMPTY = new String[0];
+        Testcase testcase;
+        String resourceDirName;
+        @Nullable
+        String stdIn;
+        @Nullable
+        String stdOut;
+        @Builder.Default
+        List<String> inFiles = Collections.emptyList();
+        @Builder.Default
+        List<String> outFiles = Collections.emptyList();
+        @Builder.Default
+        List<String> deletedInFiles = Collections.emptyList();
+        @Builder.Default
+        List<String> deletedOutFiles = Collections.emptyList();
+
+        public static TestcaseIoPatchingFilesParameters.TestcaseIoPatchingFilesParametersBuilder
+        patchTestcaseIOs(Testcase testcase) {
+            return TestcaseIoPatchingFilesParameters.builder().testcase(testcase);
+        }
     }
 
     private void problemShouldHaveProvidedCodesId(ProblemView problem, String fileId, Language language) {
@@ -980,7 +1028,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     }
 
     private boolean fileShouldExist(String fileId) {
-        return ofNullable(gridFsTemplate.findOne(new Query(where("_id").is(fileId))))
+        return ofNullable(gridFsTemplate.findOne(query(where("_id").is(fileId))))
                 .map(gridFsTemplate::getResource)
                 .map(GridFsResource::exists)
                 .orElse(false);

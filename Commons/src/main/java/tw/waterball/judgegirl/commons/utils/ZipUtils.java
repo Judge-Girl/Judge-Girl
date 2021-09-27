@@ -135,7 +135,7 @@ public class ZipUtils {
         }
     }
 
-    public static void zipDirectoryContents(File directory, OutputStream out, String... ignoredFileNames) {
+    public static void zipDirectoryContents(File directory, OutputStream out, String... ignoredFileNames) throws IOException {
         if (!directory.isDirectory()) {
             throw new IllegalArgumentException("The file " + directory.getAbsolutePath() + " is not a directory.");
         }
@@ -146,7 +146,7 @@ public class ZipUtils {
 
     }
 
-    public static void zipFromFile(File file, OutputStream out, String... ignoredFileNames) {
+    public static void zipFromFile(File file, OutputStream out, String... ignoredFileNames) throws IOException {
         zipFromFile(new File[]{file}, out, ignoredFileNames);
     }
 
@@ -155,19 +155,17 @@ public class ZipUtils {
      * through the given FileOutputStream, except those whose file names are contained in
      * ignoredFileNames.
      */
-    public static void zipFromFile(File[] files, OutputStream out, String... ignoredFileNames) {
+    public static void zipFromFile(File[] files, OutputStream out, String... ignoredFileNames) throws IOException {
         zipFromFile(files, out, name -> ArrayUtils.contains(ignoredFileNames, name));
     }
 
-    public static void zipFromFile(File[] files, OutputStream out, Predicate<String> ignoredFilePredicate) {
+    public static void zipFromFile(File[] files, OutputStream out, Predicate<String> ignoredFilePredicate) throws IOException {
         try (ZipOutputStream zos = new ZipOutputStream(out)) {
             for (File file : files) {
                 if (!ignoredFilePredicate.test(file.getName())) {
                     writeZipEntry(file, zos, ignoredFilePredicate);
                 }
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 
