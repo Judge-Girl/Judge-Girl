@@ -89,8 +89,11 @@ public class ProblemController {
             getProblemsUseCase.execute(new GetProblemsUseCase.Request(includeInvisibleProblems, ids), presenter);
             return presenter.present();
         } else {
+            // only admin can view the archived problems
             archive = archive == null ? null : archive && token.isAdmin();
-            invisible = invisible && includeInvisibleProblems;
+
+            // only admin can view the invisible problems
+            invisible = invisible && token.isAdmin();
             var presenter = new GetProblemItemsPresenter();
             getProblemsUseCase.execute(new ProblemQueryParams(tags == null ? new String[0] : tags, page, archive, visible, invisible), presenter);
             return presenter.present();
