@@ -18,29 +18,31 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
+import static java.util.Optional.ofNullable;
+
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
 public class ProblemQueryParams {
-    public static final ProblemQueryParams NO_PARAMS = new ProblemQueryParams(null, null, false);
+    public static final ProblemQueryParams NO_PARAMS = new ProblemQueryParams(null, null, false, true, true);
 
     private final String[] tags;
 
     @Nullable
     private final Integer page;
 
-    private final boolean excludeArchive;
+    @Nullable
+    private final Boolean archivedFlag;
+
+    private final boolean includeVisibleProblems;
 
     private final boolean includeInvisibleProblems;
 
-    public ProblemQueryParams(String[] tags, @Nullable Integer page, boolean includeInvisibleProblems) {
-        this(tags, page, true, includeInvisibleProblems);
-    }
-
-    public ProblemQueryParams(String[] tags, @Nullable Integer page, boolean excludeArchive, boolean includeInvisibleProblems) {
+    public ProblemQueryParams(String[] tags, @Nullable Integer page, @Nullable Boolean archivedFlag, boolean includeVisibleProblems, boolean includeInvisibleProblems) {
         this.tags = tags;
         this.page = page;
-        this.excludeArchive = excludeArchive;
+        this.archivedFlag = archivedFlag;
+        this.includeVisibleProblems = includeVisibleProblems;
         this.includeInvisibleProblems = includeInvisibleProblems;
     }
 
@@ -49,14 +51,18 @@ public class ProblemQueryParams {
     }
 
     public Optional<Integer> getPage() {
-        return Optional.ofNullable(page);
+        return ofNullable(page);
     }
 
-    public boolean isExcludeArchive() {
-        return excludeArchive;
+    public Optional<Boolean> archivedFlag() {
+        return ofNullable(archivedFlag);
     }
 
-    public boolean isIncludeInvisibleProblems() {
+    public boolean includeVisibleProblems() {
+        return includeVisibleProblems;
+    }
+
+    public boolean includeInvisibleProblems() {
         return includeInvisibleProblems;
     }
 }

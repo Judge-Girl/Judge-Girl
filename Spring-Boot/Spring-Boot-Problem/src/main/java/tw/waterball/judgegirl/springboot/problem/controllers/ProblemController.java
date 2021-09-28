@@ -77,16 +77,25 @@ public class ProblemController {
     public List<?> getProblems(@RequestHeader(value = "Authorization", required = false) String authorization,
                                @RequestParam(value = "tags", required = false) String[] tags,
                                @RequestParam(value = "page", defaultValue = "0") int page,
+                               @RequestParam(value = "visible", defaultValue = "true") boolean visible,
+                               @RequestParam(value = "invisible", defaultValue = "true") boolean invisible,
+                               @RequestParam(value = "archive", required = false) Boolean archive,
                                @RequestParam(required = false) int[] ids) {
         var token = tokenService.parseBearerTokenAndValidate(authorization);
+        // only admin can view the invisible problems
         boolean includeInvisibleProblems = token.isAdmin();
         if (ids != null) {
             var presenter = new GetProblemsPresenter();
             getProblemsUseCase.execute(new GetProblemsUseCase.Request(includeInvisibleProblems, ids), presenter);
             return presenter.present();
         } else {
+            // only admin can view the archived problems
+            archive = archive == null ? null : archive && token.isAdmin();
+
+            // only admin can view the invisible problems
+            invisible = invisible && token.isAdmin();
             var presenter = new GetProblemItemsPresenter();
-            getProblemsUseCase.execute(new ProblemQueryParams(tags == null ? new String[0] : tags, page, includeInvisibleProblems), presenter);
+            getProblemsUseCase.execute(new ProblemQueryParams(tags == null ? new String[0] : tags, page, archive, visible, invisible), presenter);
             return presenter.present();
         }
     }
