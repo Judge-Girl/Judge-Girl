@@ -32,34 +32,18 @@ public class ProblemQueryParams {
     private final Integer page;
 
     @Nullable
-    private final Boolean queryArchive;
+    private final Boolean archivedFlag;
 
-    private final boolean queryVisible;
+    private final boolean includeVisibleProblems;
 
-    private final boolean queryInvisible;
+    private final boolean includeInvisibleProblems;
 
-    /**
-     * To query the problems with the tags, then provide the tags of a not empty string array.
-     * To query the problems in the pages, then provide the page of an Integer, its default value is 0,
-     * and it will return pages of the problems with page size.
-     * To query the archived problems, then provide queryArchive of a boolean with true
-     * To query the non archived problems, then provide queryArchive of a boolean with false.
-     * To query the archived and non archived problems, then not provide queryArchive.
-     * To query the visible problems, then provide queryVisible of a boolean with true and queryInvisible of a boolean with false.
-     * To query the invisible problems, then provide queryInvisible of a boolean with true and queryVisible of a boolean with false.
-     *
-     * @param tags           query the problems which have the tags
-     * @param page           query the problems in the pages
-     * @param queryArchive   query the archived problems if parameter exists
-     * @param queryVisible   query the visible problems
-     * @param queryInvisible query the invisible problems
-     */
-    public ProblemQueryParams(String[] tags, @Nullable Integer page, @Nullable Boolean queryArchive, boolean queryVisible, boolean queryInvisible) {
+    public ProblemQueryParams(String[] tags, @Nullable Integer page, @Nullable Boolean archivedFlag, boolean includeVisibleProblems, boolean includeInvisibleProblems) {
         this.tags = tags;
         this.page = page;
-        this.queryArchive = queryArchive;
-        this.queryVisible = queryVisible;
-        this.queryInvisible = queryInvisible;
+        this.archivedFlag = archivedFlag;
+        this.includeVisibleProblems = includeVisibleProblems;
+        this.includeInvisibleProblems = includeInvisibleProblems;
     }
 
     public String[] getTags() {
@@ -70,15 +54,15 @@ public class ProblemQueryParams {
         return ofNullable(page);
     }
 
-    public Optional<Boolean> queryArchive() {
-        return ofNullable(queryArchive);
+    public Optional<Boolean> archivedFlag() {
+        return ofNullable(archivedFlag);
     }
 
-    public boolean queryVisible() {
-        return queryVisible;
+    public boolean includeVisibleProblems() {
+        return includeVisibleProblems;
     }
 
-    public boolean queryInvisible() {
-        return queryInvisible;
+    public boolean includeInvisibleProblems() {
+        return includeInvisibleProblems;
     }
 }
