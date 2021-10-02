@@ -341,7 +341,7 @@ class UploadProvidedCodesPresenter implements UploadProvidedCodeUseCase.Presente
     }
 
     String present() {
-        return problem.getLanguageEnv(language).getProvidedCodesFileId();
+        return problem.getLanguageEnv(language).getProvidedCodesFileId().orElse(null);
     }
 }
 

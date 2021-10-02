@@ -44,7 +44,7 @@ public interface ProblemRepository {
 
     List<String> getTags();
 
-    Problem save(Problem problem, Map<LanguageEnv, InputStream> providedCodesZipMap);
+    Problem save(Problem problem, Map<LanguageEnv, InputStream> providedCodesZipMap, List<String> fileNames);
 
     Problem save(Problem problem);
 

@@ -8,10 +8,7 @@ import tw.waterball.judgegirl.commons.models.files.FileResource;
 import tw.waterball.judgegirl.judger.CCJudger;
 import tw.waterball.judgegirl.judger.DefaultCCJudgerFactory;
 import tw.waterball.judgegirl.plugins.impl.match.AllMatchPolicyPlugin;
-import tw.waterball.judgegirl.primitives.problem.JudgeStatus;
-import tw.waterball.judgegirl.primitives.problem.Language;
-import tw.waterball.judgegirl.primitives.problem.Problem;
-import tw.waterball.judgegirl.primitives.problem.Testcase;
+import tw.waterball.judgegirl.primitives.problem.*;
 import tw.waterball.judgegirl.primitives.submission.Submission;
 import tw.waterball.judgegirl.primitives.submission.events.VerdictIssuedEvent;
 import tw.waterball.judgegirl.primitives.submission.verdict.Judge;
@@ -31,6 +28,7 @@ import java.nio.file.Paths;
 
 import static java.io.File.createTempFile;
 import static java.lang.String.format;
+import static java.util.Collections.singletonList;
 import static java.util.Optional.of;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -71,7 +69,9 @@ public abstract class AbstractJudgerTest {
     void setup() {
         problem = getProblem();
         problem.setOutputMatchPolicyPluginTag(AllMatchPolicyPlugin.TAG);
-        problem.getLanguageEnvs().values().forEach(languageEnv -> languageEnv.setProvidedCodesFileId("providedCodesFileId"));
+        problem.getLanguageEnvs().values()
+                .forEach(languageEnv ->
+                        languageEnv.setProvidedCodes(new ProvidedCodes("providedCodesFileId", singletonList("providedCodesFileName"))));
         problemId = problem.getId();
         submission = new Submission(studentId, problem.getId(), CURRENTLY_ONLY_SUPPORT_C.toString(), "fileId");
 
@@ -223,7 +223,7 @@ public abstract class AbstractJudgerTest {
         String providedCodesHomePath = format(providedCodesHomeFormat, problem.getId());
         byte[] zippedProvidedCodesBytes = zipDirectory(providedCodesHomePath);
         var languageEnv = problem.getLanguageEnv(CURRENTLY_ONLY_SUPPORT_C);
-        when(problemServiceDriver.downloadProvidedCodes(problem.getId(), languageEnv.getName(), languageEnv.getProvidedCodesFileId()))
+        when(problemServiceDriver.downloadProvidedCodes(problem.getId(), languageEnv.getName(), languageEnv.getProvidedCodesFileId().orElse(null)))
                 .thenReturn(new FileResource(providedCodesHomePath, zippedProvidedCodesBytes.length,
                         new ByteArrayInputStream(zippedProvidedCodesBytes)));
     }

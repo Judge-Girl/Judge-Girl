@@ -69,8 +69,8 @@ public class CacheProblemRepository implements ProblemRepository {
     }
 
     @Override
-    public Problem save(Problem problem, Map<LanguageEnv, InputStream> providedCodesZipMap) {
-        return cacheProblem(problemRepository.save(problem, providedCodesZipMap));
+    public Problem save(Problem problem, Map<LanguageEnv, InputStream> providedCodesZipMap, List<String> fileNames) {
+        return cacheProblem(problemRepository.save(problem, providedCodesZipMap, fileNames));
     }
 
     @Override

@@ -28,6 +28,7 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.stereotype.Component;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
+import tw.waterball.judgegirl.commons.models.files.StreamingResource;
 import tw.waterball.judgegirl.primitives.problem.*;
 import tw.waterball.judgegirl.problem.domain.repositories.ProblemQueryParams;
 import tw.waterball.judgegirl.problem.domain.repositories.ProblemRepository;
@@ -48,8 +49,8 @@ import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
 import static org.springframework.data.mongodb.core.query.Update.update;
 import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
+import static tw.waterball.judgegirl.commons.utils.StreamUtils.flatMapToList;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
-import static tw.waterball.judgegirl.commons.utils.StringUtils.isNullOrEmpty;
 import static tw.waterball.judgegirl.commons.utils.ZipUtils.*;
 import static tw.waterball.judgegirl.springboot.mongo.utils.MongoUtils.downloadFileResourceByFileId;
 import static tw.waterball.judgegirl.springboot.problem.repositories.data.LanguageEnvData.toData;
@@ -189,8 +190,7 @@ public class MongoProblemRepository implements ProblemRepository {
 
     private void deleteProvidedCodesAndTestcaseIOs(Problem problem) {
         var languageEnvs = problem.getLanguageEnvs();
-
-        List<String> providedCodesFileIds = mapToList(languageEnvs.values(), LanguageEnv::getProvidedCodesFileId);
+        List<String> providedCodesFileIds = flatMapToList(languageEnvs.values(), languageEnv -> languageEnv.getProvidedCodesFileId().stream());
         List<String> fileIds = new LinkedList<>(providedCodesFileIds);
 
         var testcaseIOsFileIds = problem.getTestcases().stream()
@@ -209,12 +209,12 @@ public class MongoProblemRepository implements ProblemRepository {
     }
 
     @Override
-    public Problem save(Problem problem, Map<LanguageEnv, InputStream> providedCodesZipMap) {
+    public Problem save(Problem problem, Map<LanguageEnv, InputStream> providedCodesZipMap, List<String> fileNames) {
         // TODO atomicity problem
         providedCodesZipMap.forEach((langEnv, zip) -> {
             String providedCodesName = format("%d-%s-provided.zip", problem.getId(), langEnv.getName());
-            langEnv.setProvidedCodesFileId(
-                    gridFsTemplate.store(zip, providedCodesName).toString());
+            String providedCodesFileId = gridFsTemplate.store(zip, providedCodesName).toString();
+            langEnv.setProvidedCodes(new ProvidedCodes(providedCodesFileId, fileNames));
         });
         return mongoTemplate.save(toData(problem)).toEntity();
     }
@@ -336,8 +336,13 @@ public class MongoProblemRepository implements ProblemRepository {
 
     @Override
     public void uploadProvidedCodes(Problem problem, Language language, List<FileResource> providedCodes) {
+        var langEnv = problem.mayHaveLanguageEnv(language)
+                .orElseThrow(() -> notFound(LanguageEnv.class).identifiedBy("language", language));
+
         String fileId = saveProvidedCodesAndGetFileId(problem.getId(), language, providedCodes);
-        updateProvidedCodesFileIdInProblem(problem, language, fileId);
+        List<String> fileNames = providedCodes.stream().map(StreamingResource::getFileName).collect(toList());
+        ProvidedCodes updatedProvidedCodes = new ProvidedCodes(fileId, fileNames);
+        updateProvidedCodesInProblem(problem, langEnv, updatedProvidedCodes);
     }
 
     private String saveProvidedCodesAndGetFileId(int problemId, Language language, List<FileResource> providedCodes) {
@@ -346,15 +351,10 @@ public class MongoProblemRepository implements ProblemRepository {
         return gridFsTemplate.store(zip, fileName).toString();
     }
 
-    private void updateProvidedCodesFileIdInProblem(Problem problem, Language language, String fileId) {
-        var langEnv = problem.mayHaveLanguageEnv(language)
-                .orElseThrow(() -> notFound(LanguageEnv.class).identifiedBy("language", language));
-        String originalProvidedCodesFileId = langEnv.getProvidedCodesFileId();
-
-        langEnv.setProvidedCodesFileId(fileId);
+    private void updateProvidedCodesInProblem(Problem problem, LanguageEnv langEnv, ProvidedCodes providedCodes) {
+        langEnv.getProvidedCodesFileId().ifPresent(this::removeFileByFileId);
+        langEnv.setProvidedCodes(providedCodes);
         updateLanguageEnv(problem.getId(), langEnv);
-
-        removeFileByFileId(originalProvidedCodesFileId);
     }
 
     private void updateLanguageEnv(int problemId, LanguageEnv langEnv) {
@@ -365,12 +365,10 @@ public class MongoProblemRepository implements ProblemRepository {
     }
 
     private void removeFileByFileId(String fileId) {
-        if (!isNullOrEmpty(fileId)) {
-            try {
-                gridFsTemplate.delete(new Query(where("_id").is(fileId)));
-            } catch (Exception err) {
-                log.error("Error during removing a file from gridFs", err);
-            }
+        try {
+            gridFsTemplate.delete(new Query(where("_id").is(fileId)));
+        } catch (Exception err) {
+            log.error("Error during removing a file from gridFs", err);
         }
     }
 

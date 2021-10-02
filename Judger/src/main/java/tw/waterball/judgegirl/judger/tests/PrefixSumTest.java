@@ -19,6 +19,7 @@ import tw.waterball.judgegirl.primitives.problem.*;
 import java.util.List;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 
 @SuppressWarnings("SameParameterValue")
 public class PrefixSumTest extends AbstractJudgerTest {
@@ -37,7 +38,7 @@ public class PrefixSumTest extends AbstractJudgerTest {
             .language(Language.C)
             .resourceSpec(new ResourceSpec(2f, 0))
             .submittedCodeSpec(new SubmittedCodeSpec(Language.C, "prefixsum-seq.c"))
-            .providedCodesFileId("providedCodesFileId")
+            .providedCodes(new ProvidedCodes("providedCodesFileId", singletonList("providedCodesFileName")))
             .compilation(new Compilation(COMPILATION_SCRIPT)).build();
 
 

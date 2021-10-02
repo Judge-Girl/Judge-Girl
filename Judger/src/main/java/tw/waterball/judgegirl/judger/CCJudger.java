@@ -143,9 +143,9 @@ public class CCJudger extends PluginExtendedJudger {
     @Override
     protected void downloadProvidedCodes() throws IOException {
         LanguageEnv languageEnv = getLanguageEnv();
-        if (languageEnv.getProvidedCodesFileId() != null) {
+        if (languageEnv.getProvidedCodesFileId().isPresent()) {
             try (FileResource zip = problemServiceDriver.downloadProvidedCodes(
-                    getProblem().getId(), languageEnv.getName(), languageEnv.getProvidedCodesFileId())) {
+                    getProblem().getId(), languageEnv.getName(), languageEnv.getProvidedCodesFileId().get())) {
                 ZipUtils.unzipToDestination(zip.getInputStream(), getSourceRootPath());
             } catch (NotFoundException ignored) {
                 logger.info("No providedCodes.");

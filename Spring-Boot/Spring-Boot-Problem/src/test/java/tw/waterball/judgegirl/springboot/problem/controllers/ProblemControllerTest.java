@@ -126,6 +126,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     @Autowired
     TokenService tokenService;
 
+    private static List<String> expectedProvidedCodesFileNames;
     private static byte[] expectedProvidedCodesZip;
     private Token adminToken;
     private Token student1Token;
@@ -148,6 +149,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     @SneakyThrows
     @BeforeAll
     public static void beforeAll() {
+        expectedProvidedCodesFileNames = singletonList("providedCodes");
         expectedProvidedCodesZip = resourceToByteArray("/providedCodes/providedCodes.zip");
     }
 
@@ -422,7 +424,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         var actualProblem = getProblem(problemId);
         var actualLangEnv = actualProblem.getLanguageEnvs().get(0);
         var expectedLangEnv = langEnvUpdate.toValue();
-        expectedLangEnv.setProvidedCodesFileId(languageEnv.getProvidedCodesFileId());
+        expectedLangEnv.setProvidedCodes(languageEnv.getProvidedCodes().get());
         assertEquals(toViewModel(expectedLangEnv), actualLangEnv);
     }
 
@@ -809,7 +811,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
             Problem problem = problemTemplate().id(problemId).build();
             byte[] providedCodesZip = zipFilesFromResources("/providedCodes/file1.c", "/providedCodes/file2.c");
             problemRepository.save(problem, singletonMap(problem.getLanguageEnv(Language.C),
-                    new ByteArrayInputStream(providedCodesZip)));
+                    new ByteArrayInputStream(providedCodesZip)), List.of("file1.c", "file2.c"));
         });
     }
 
@@ -867,8 +869,8 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     private Problem givenProblemSavedWithProvidedCodesAndTestcaseIOs() {
         Problem problem = problemTemplate().build();
         return problemRepository.save(problem,
-                singletonMap(problem.getLanguageEnv(Language.C), new ByteArrayInputStream(expectedProvidedCodesZip))
-        );
+                singletonMap(problem.getLanguageEnv(Language.C), new ByteArrayInputStream(expectedProvidedCodesZip)),
+                expectedProvidedCodesFileNames);
     }
 
     private List<ProblemItem> getProblemItems(WithHeader withHeader) throws Exception {
@@ -1023,7 +1025,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
 
     private void problemShouldHaveProvidedCodesId(ProblemView problem, String fileId, Language language) {
         var langEnv = findFirst(problem.languageEnvs, lg -> lg.getLanguage().equals(language)).orElseThrow();
-        assertEquals(fileId, langEnv.getProvidedCodesFileId());
+        assertEquals(fileId, langEnv.getProvidedCodes().getProvidedCodesFileId());
     }
 
     private void problemShouldHaveTestcaseIoFileId(ProblemView problem, String testcaseId, String testcaseIoId) {
@@ -1032,8 +1034,8 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     }
 
     private void problemProvidedCodesAndTestcaseIOsShouldBeDeleted(Problem problem) {
-        List<String> providedCodes = mapToList(problem.getLanguageEnvs().values(), LanguageEnv::getProvidedCodesFileId);
-        List<String> fileIds = new LinkedList<>(providedCodes);
+        List<String> providedCodeFileIds = flatMapToList(problem.getLanguageEnvs().values(), languageEnv -> languageEnv.getProvidedCodesFileId().stream());
+        List<String> fileIds = new LinkedList<>(providedCodeFileIds);
         fileIds.addAll(getAllTestcaseIoFileIds(problem));
         fileIds.forEach(fileId -> assertFalse(fileShouldExist(fileId)));
     }
