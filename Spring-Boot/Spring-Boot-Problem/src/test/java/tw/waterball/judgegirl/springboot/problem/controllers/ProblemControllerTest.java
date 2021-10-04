@@ -18,10 +18,7 @@ import lombok.Builder;
 import lombok.SneakyThrows;
 import lombok.Value;
 import org.jetbrains.annotations.Nullable;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.AutoConfigureDataMongo;
 import org.springframework.context.annotation.Bean;
@@ -678,15 +675,15 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
 
     private void deleteTestCase(int problemId, String testCaseId) throws Exception {
         mockMvc.perform(withToken(adminToken,
-                        delete(API_PREFIX + "/{problemId}/testcases/{testcaseId}", problemId, testCaseId)))
+                delete(API_PREFIX + "/{problemId}/testcases/{testcaseId}", problemId, testCaseId)))
                 .andExpect(status().isOk());
     }
 
     private void downloadProvidedCodesShouldRespondContent(int problemId, String languageEnv, String providedCodesFileId,
                                                            byte[] expectedContent) throws Exception {
         byte[] actualContent = mockMvc.perform(withToken(adminToken,
-                        get(API_PREFIX + "/{problemId}/{languageEnv}/providedCodes/{providedCodesFileId}",
-                                problemId, languageEnv, providedCodesFileId)))
+                get(API_PREFIX + "/{problemId}/{languageEnv}/providedCodes/{providedCodesFileId}",
+                        problemId, languageEnv, providedCodesFileId)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/zip"))
                 .andReturn().getResponse().getContentAsByteArray();
@@ -695,8 +692,8 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
 
     private void downloadTestcaseIOsShouldRespondContent(int problemId, String testcaseId, byte[] expectedContent) throws Exception {
         byte[] actualContent = mockMvc.perform(withToken(adminToken,
-                        get(API_PREFIX + "/{problemId}/testcases/{testcaseId}/io",
-                                problemId, testcaseId))).andExpect(status().isOk())
+                get(API_PREFIX + "/{problemId}/testcases/{testcaseId}/io",
+                        problemId, testcaseId))).andExpect(status().isOk())
                 .andExpect(content().contentType("application/zip"))
                 .andReturn().getResponse().getContentAsByteArray();
         assertZipContentEquals(expectedContent, actualContent);
@@ -722,13 +719,13 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
 
     private void archiveOrDeleteProblem(int problemId) throws Exception {
         mockMvc.perform(withToken(adminToken,
-                        delete(API_PREFIX + "/{problemId}", problemId)))
+                delete(API_PREFIX + "/{problemId}", problemId)))
                 .andExpect(status().isOk());
     }
 
     private void restoreProblem(int problemId) throws Exception {
         mockMvc.perform(withToken(adminToken,
-                        patch(API_PREFIX + "/{problemId}/restore", problemId)))
+                patch(API_PREFIX + "/{problemId}/restore", problemId)))
                 .andExpect(status().isOk());
     }
 
@@ -740,9 +737,9 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
 
     private void patchProblem(PatchProblemUseCase.Request request) throws Exception {
         mockMvc.perform(withToken(adminToken,
-                        patch(API_PREFIX + "/{problemId}", request.problemId)
-                                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                                .content(toJson(request))))
+                patch(API_PREFIX + "/{problemId}", request.problemId)
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .content(toJson(request))))
                 .andExpect(status().isOk());
     }
 
@@ -752,10 +749,10 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
 
     private void upsertTestCase(int problemId, TestcaseUpsert testcaseUpsert) throws Exception {
         mockMvc.perform(withToken(adminToken,
-                        put(API_PREFIX + "/{problemId}/testcases/{testcaseId}",
-                                problemId, testcaseUpsert.getId())
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(toJson(testcaseUpsert))))
+                put(API_PREFIX + "/{problemId}/testcases/{testcaseId}",
+                        problemId, testcaseUpsert.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(toJson(testcaseUpsert))))
                 .andExpect(status().isOk());
     }
 
@@ -820,10 +817,10 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
 
     private void upsertLanguageEnv(Integer problemId, LanguageEnvUpsert languageEnv) throws Exception {
         mockMvc.perform(withToken(adminToken,
-                        put(API_PREFIX + "/{problemId}/langEnv/{langEnv}",
-                                problemId, languageEnv.getLanguage())
-                                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                                .content(toJson(languageEnv))))
+                put(API_PREFIX + "/{problemId}/langEnv/{langEnv}",
+                        problemId, languageEnv.getLanguage())
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .content(toJson(languageEnv))))
                 .andExpect(status().isOk());
     }
 
@@ -835,8 +832,8 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     private int saveProblemWithTitle(String title) throws Exception {
         return parseInt(getContentAsString(
                 mockMvc.perform(withToken(adminToken,
-                                post(API_PREFIX)
-                                        .contentType(MediaType.TEXT_PLAIN_VALUE).content(title)))
+                        post(API_PREFIX)
+                                .contentType(MediaType.TEXT_PLAIN_VALUE).content(title)))
                         .andExpect(status().isOk())));
     }
 
@@ -859,7 +856,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
 
     private List<ProblemItem> getProblemItemsInPage(Token token, int page) throws Exception {
         return getBody(mockMvc.perform(withToken(token, get(API_PREFIX)
-                        .queryParam("page", String.valueOf(page))))
+                .queryParam("page", String.valueOf(page))))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON)), new TypeReference<>() {
         });
@@ -884,8 +881,8 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     private void filterProblemsWithTagsShouldContain(Token token, List<String> tags, List<ProblemItem> problemItems) throws Exception {
         String tagsSplitByCommas = join(", ", tags);
         mockMvc.perform(get(API_PREFIX)
-                        .header("Authorization", bearerWithToken(token.getToken()))
-                        .queryParam("tags", tagsSplitByCommas))
+                .header("Authorization", bearerWithToken(token.getToken()))
+                .queryParam("tags", tagsSplitByCommas))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().json(objectMapper.writeValueAsString(problemItems)));
@@ -894,26 +891,26 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     private List<ProblemView> getProblemsByTagsAndPage(Token token, int page, String... tags) throws Exception {
         String tagsSplitByCommas = join(",", tags);
         return getBody(mockMvc.perform(get(API_PREFIX)
-                        .header("Authorization", bearerWithToken(token.getToken()))
-                        .queryParam("tags", tagsSplitByCommas)
-                        .queryParam("page", String.valueOf(page)))
+                .header("Authorization", bearerWithToken(token.getToken()))
+                .queryParam("tags", tagsSplitByCommas)
+                .queryParam("page", String.valueOf(page)))
                 .andExpect(status().isOk()), new TypeReference<>() {
         });
     }
 
     private List<ProblemItem> getNonArchivedAndInvisibleProblems(Token token) throws Exception {
         return getBody(mockMvc.perform(get(API_PREFIX)
-                        .header("Authorization", bearerWithToken(token.getToken()))
-                        .queryParam("visible", String.valueOf(false))
-                        .queryParam("archive", String.valueOf(false)))
+                .header("Authorization", bearerWithToken(token.getToken()))
+                .queryParam("visible", String.valueOf(false))
+                .queryParam("archive", String.valueOf(false)))
                 .andExpect(status().isOk()), new TypeReference<>() {
         });
     }
 
     private List<ProblemItem> getArchiveProblems(Token token, boolean archive) throws Exception {
         return getBody(mockMvc.perform(get(API_PREFIX)
-                        .header("Authorization", bearerWithToken(token.getToken()))
-                        .queryParam("archive", String.valueOf(archive)))
+                .header("Authorization", bearerWithToken(token.getToken()))
+                .queryParam("archive", String.valueOf(archive)))
                 .andExpect(status().isOk()), new TypeReference<>() {
         });
     }
@@ -1022,9 +1019,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     }
 
     private void filesShouldBeSaved(String message, List<String> fileIds) {
-        for (String fileId : fileIds) {
-            assertTrue(fileShouldExist(fileId), message);
-        }
+        fileIds.forEach(fileId -> assertTrue(fileShouldExist(fileId), message));
     }
 
     private boolean fileShouldExist(String fileId) {
