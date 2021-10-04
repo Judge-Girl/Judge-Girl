@@ -17,6 +17,8 @@ import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -26,6 +28,7 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.stereotype.Component;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
+import tw.waterball.judgegirl.commons.models.files.StreamingResource;
 import tw.waterball.judgegirl.primitives.problem.*;
 import tw.waterball.judgegirl.problem.domain.repositories.ProblemQueryParams;
 import tw.waterball.judgegirl.problem.domain.repositories.ProblemRepository;
@@ -33,24 +36,24 @@ import tw.waterball.judgegirl.springboot.mongo.utils.MongoUtils;
 import tw.waterball.judgegirl.springboot.problem.repositories.data.ProblemData;
 import tw.waterball.judgegirl.springboot.profiles.productions.Mongo;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.nio.file.Path;
 import java.util.*;
-import java.util.zip.ZipOutputStream;
 
 import static java.lang.String.format;
+import static java.nio.file.Files.createTempDirectory;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
+import static org.apache.commons.io.FileUtils.*;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
 import static org.springframework.data.mongodb.core.query.Update.update;
 import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
+import static tw.waterball.judgegirl.commons.utils.ArrayUtils.contains;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
 import static tw.waterball.judgegirl.commons.utils.StringUtils.isNullOrEmpty;
-import static tw.waterball.judgegirl.commons.utils.ZipUtils.writeFileAsZipEntry;
-import static tw.waterball.judgegirl.commons.utils.ZipUtils.zipToStream;
+import static tw.waterball.judgegirl.commons.utils.ZipUtils.*;
 import static tw.waterball.judgegirl.springboot.mongo.utils.MongoUtils.downloadFileResourceByFileId;
 import static tw.waterball.judgegirl.springboot.problem.repositories.data.LanguageEnvData.toData;
 import static tw.waterball.judgegirl.springboot.problem.repositories.data.ProblemData.toData;
@@ -229,23 +232,22 @@ public class MongoProblemRepository implements ProblemRepository {
                 .map(fileId -> downloadFileResourceByFileId(gridFsTemplate, fileId));
     }
 
-
     @SneakyThrows
     @Override
-    public Problem uploadTestcaseIO(Problem problem, TestcaseIO.Files ioFiles) {
-        Testcase testcase = problem.getTestcaseById(ioFiles.testcaseId)
-                .orElseThrow(() -> notFound(Testcase.class).id(ioFiles.testcaseId));
+    public Problem patchTestcaseIOs(Problem problem, TestcaseIoPatching ioPatching) {
+        Testcase testcase = problem.getTestcaseById(ioPatching.getTestcaseId())
+                .orElseThrow(() -> notFound(Testcase.class).id(ioPatching.getTestcaseId()));
         String originalIoFileId = testcase.getTestcaseIO().map(TestcaseIO::getId).orElse(null);
 
-        InputStream zip = compressTestcaseIoFiles(ioFiles);
+        InputStream zip = applyTestcaseIoPatching(testcase, ioPatching);
         String testcaseIOsName = format("%d-testcases-%s.zip", problem.getId(), testcase.getId());
-        String newIoFileId = gridFsTemplate.store(zip, testcaseIOsName).toString();
-
-        ioFiles.setId(newIoFileId);
-        testcase.setTestcaseIO(ioFiles);
-        Problem savedProblem = save(problem);
+        testcase.getTestcaseIO()
+                .ifPresent(io -> {
+                    String newIoFileId = gridFsTemplate.store(zip, testcaseIOsName).toString();
+                    io.setId(newIoFileId);
+                });
         removeFileByFileId(originalIoFileId);
-        return savedProblem;
+        return save(problem);
     }
 
     @Override
@@ -255,20 +257,102 @@ public class MongoProblemRepository implements ProblemRepository {
         mongoTemplate.updateFirst(query, update, ProblemData.class);
     }
 
-    private InputStream compressTestcaseIoFiles(TestcaseIO.Files ioFiles) throws IOException {
+    private InputStream applyTestcaseIoPatching(Testcase testcase,
+                                                TestcaseIoPatching ioPatching) throws IOException {
+        Path tempDirPath = createTempDirectory("judgegirl");
+        Path inDirPath = tempDirPath.resolve("in");
+        Path outDirPath = tempDirPath.resolve("out");
+        TestcaseIO testcaseIO = deduceTestcaseIoAfterPatching(testcase, ioPatching);
+
+        setupTestcaseIoDir(testcase, tempDirPath, inDirPath, outDirPath);
+
+        applyDeletions(inDirPath, ioPatching.getDeletedIns(), testcaseIO.mayHaveStdIn());
+        applyDeletions(outDirPath, ioPatching.getDeletedOuts(), testcaseIO.mayHaveStdOut());
+
+        patchStandardFile(inDirPath, ioPatching.getStdIn(),
+                testcase.getTestcaseIO().map(TestcaseIO::getStdIn).orElse(null), testcaseIO.getStdIn());
+        patchStandardFile(outDirPath, ioPatching.getStdOut(),
+                testcase.getTestcaseIO().map(TestcaseIO::getStdOut).orElse(null), testcaseIO.getStdOut());
+
+        patchIoFiles(inDirPath, ioPatching.getInputFiles());
+        patchIoFiles(outDirPath, ioPatching.getOutputFiles());
+
         var baos = new ByteArrayOutputStream();
-        var zipos = new ZipOutputStream(baos);
-        // organize in and out under the two entry in/ and out/
-        writeFileAsZipEntry("in/" + ioFiles.stdIn.getFileName(), zipos, ioFiles.stdIn.getInputStream());
-        for (FileResource inputFile : ioFiles.inputFiles) {
-            writeFileAsZipEntry("in/" + inputFile.getFileName(), zipos, inputFile.getInputStream());
-        }
-        writeFileAsZipEntry("out/" + ioFiles.stdOut.getFileName(), zipos, ioFiles.stdOut.getInputStream());
-        for (FileResource outputFile : ioFiles.outputFiles) {
-            writeFileAsZipEntry("out/" + outputFile.getFileName(), zipos, outputFile.getInputStream());
-        }
+        zipFromFile(new File[]{inDirPath.toFile(), outDirPath.toFile()}, baos,
+                name -> name.startsWith(".") /*ignore hidden files automatically generated by os*/);
+        forceDelete(tempDirPath.toFile());
+        testcase.setTestcaseIO(testcaseIO);
         return new ByteArrayInputStream(baos.toByteArray());
     }
+
+    @NotNull
+    private TestcaseIO deduceTestcaseIoAfterPatching(Testcase testcase, TestcaseIoPatching ioPatching) {
+        // replace with the patched standard file's name if exists, otherwise keep the original name
+        Optional<String> stdInName = ioPatching.getStdIn()
+                .map(StreamingResource::getFileName).or(() -> testcase.getTestcaseIO().map(TestcaseIO::getStdIn));
+        Optional<String> stdOutName = ioPatching.getStdOut()
+                .map(StreamingResource::getFileName).or(() -> testcase.getTestcaseIO().map(TestcaseIO::getStdOut));
+
+        // filter off the deleted IO Files
+        Set<String> inputFileNames = testcase.getTestcaseIO().stream()
+                .flatMap(io -> io.getInputFiles().stream())
+                .filter(inputFile -> !contains(ioPatching.getDeletedIns(), inputFile)).collect(toSet());
+        inputFileNames.addAll(mapToList(ioPatching.getInputFiles(), StreamingResource::getFileName));
+        Set<String> outputFileNames = testcase.getTestcaseIO().stream()
+                .flatMap(io -> io.getOutputFiles().stream())
+                .filter(outputFile -> !contains(ioPatching.getDeletedOuts(), outputFile)).collect(toSet());
+        outputFileNames.addAll(mapToList(ioPatching.getOutputFiles(), StreamingResource::getFileName));
+
+        return new TestcaseIO(testcase.getTestcaseIO().map(TestcaseIO::getId).orElse(null),
+                testcase.getId(),
+                stdInName.orElse(null), stdOutName.orElse(null),
+                inputFileNames, outputFileNames);
+    }
+
+    private void setupTestcaseIoDir(Testcase testcase, Path testcaseIoHomeDir, Path inDirPath, Path outDirPath) throws IOException {
+        var oldTestcaseIoOptional = downloadTestCaseIOs(testcase.getProblemId(), testcase.getId());
+
+        if (oldTestcaseIoOptional.isPresent()) {
+            unzipToDestination(oldTestcaseIoOptional.get().getInputStream(), testcaseIoHomeDir);
+        } else {
+            forceMkdir(inDirPath.toFile());
+            forceMkdir(outDirPath.toFile());
+        }
+    }
+
+    private void applyDeletions(Path dir, String[] deletedFileNames, Optional<String> standardFileName) throws IOException {
+        for (String deletedIn : deletedFileNames) {
+            // ignore the deletion of standard I/O
+            if (!standardFileName.map(deletedIn::equals).orElse(false)) {
+                try {
+                    forceDelete(dir.resolve(deletedIn).toFile());
+                } catch (FileNotFoundException ignored) {
+                }
+            }
+        }
+    }
+
+    private void patchStandardFile(Path dir, Optional<FileResource> patchedStandardFile,
+                                   @Nullable String oldStandardFileName, String newStandardFileName) {
+        patchedStandardFile.ifPresent(stdFile -> {
+            try {
+                if (oldStandardFileName != null) {
+                    forceDelete(dir.resolve(oldStandardFileName).toFile());
+                }
+                copyToFile(stdFile.getInputStream(),
+                        dir.resolve(newStandardFileName).toFile());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    private void patchIoFiles(Path dir, Set<FileResource> ioFiles) throws IOException {
+        for (FileResource file : ioFiles) {
+            copyToFile(file.getInputStream(), dir.resolve(file.getFileName()).toFile());
+        }
+    }
+
 
     @Override
     public void uploadProvidedCodes(Problem problem, Language language, List<FileResource> providedCodes) {
