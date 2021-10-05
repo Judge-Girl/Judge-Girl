@@ -98,7 +98,7 @@ import static tw.waterball.judgegirl.problem.domain.usecases.PatchProblemUseCase
 import static tw.waterball.judgegirl.problemapi.views.ProblemItem.toProblemItem;
 import static tw.waterball.judgegirl.problemapi.views.ProblemView.toEntity;
 import static tw.waterball.judgegirl.springboot.problem.controllers.ProblemController.*;
-import static tw.waterball.judgegirl.springboot.problem.controllers.ProblemControllerTest.TestcaseIoPatchingFilesParameters.patchTestcaseIOs;
+import static tw.waterball.judgegirl.springboot.problem.controllers.ProblemControllerTest.TestcaseIoPatchingFilesParameters.patchTestcaseIOsParams;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -475,12 +475,11 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     @Test
     void testTestcaseIOsPatching() throws Exception {
         int problemId = 1;
-        String[] EMPTY = {};
         Testcase testcase = new Testcase("ID", "A", problemId, 1000, 1000, 1000, -1, 100);
         givenProblemSavedWithOneTestcase(problemId, testcase);
 
         // Example (1)
-        String testcaseIoId = patchTestcaseIosAndGetIoId(patchTestcaseIOs(testcase).resourceDirName("example1")
+        String testcaseIoId = patchTestcaseIOsAndGetIoId(patchTestcaseIOsParams(testcase).resourceDirName("example1")
                 .stdIn("std.in").stdOut("std.out")
                 .inFiles(asList("I1.in", "I2.in"))
                 .outFiles(asList("O1.out", "O2.out")).build());
@@ -488,7 +487,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
                 resourceToByteArray("/testcaseIos/example1/expectedIo.zip"));
 
         // Example (2)
-        testcaseIoId = patchTestcaseIosAndGetIoId(patchTestcaseIOs(testcase)
+        testcaseIoId = patchTestcaseIOsAndGetIoId(patchTestcaseIOsParams(testcase)
                 .resourceDirName("example2")
                 .stdIn("std.in").inFiles(singletonList("I1.in"))
                 .deletedInFiles(singletonList("I2.in"))
@@ -497,7 +496,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
                 resourceToByteArray("/testcaseIos/example2/expectedIo.zip"));
 
         // Example (3): If the deleted files are not found, the deletion should be ignored.
-        testcaseIoId = patchTestcaseIosAndGetIoId(patchTestcaseIOs(testcase)
+        testcaseIoId = patchTestcaseIOsAndGetIoId(patchTestcaseIOsParams(testcase)
                 .resourceDirName("example3")
                 .outFiles(singletonList("O3.out"))
                 .deletedInFiles(asList("A", "B")).deletedOutFiles(asList("B", "C", "D", "E", "F", "G"))
@@ -506,7 +505,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
                 resourceToByteArray("/testcaseIos/example3/expectedIo.zip"));
 
         // Example (4): 1. stdIn and stdOut are not deletable. 2. the deletion will first applied, followed by files upsertion.
-        testcaseIoId = patchTestcaseIosAndGetIoId(patchTestcaseIOs(testcase)
+        testcaseIoId = patchTestcaseIOsAndGetIoId(patchTestcaseIOsParams(testcase)
                 .resourceDirName("example4").outFiles(singletonList("O1.out"))
                 .deletedInFiles(singletonList("std.in"))
                 .deletedOutFiles(singletonList("O1.out")).build());
@@ -514,14 +513,37 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
                 resourceToByteArray("/testcaseIos/example4/expectedIo.zip"));
 
         // Example (5): When replace with a new std-file with different name, the old std-file should be deleted.
-        testcaseIoId = patchTestcaseIosAndGetIoId(patchTestcaseIOs(testcase)
+        testcaseIoId = patchTestcaseIOsAndGetIoId(patchTestcaseIOsParams(testcase)
                 .resourceDirName("example5")
                 .stdIn("new-std.in").build());
         testcaseIoFilesShouldBeSavedCorrectly(testcase, testcaseIoId,
                 resourceToByteArray("/testcaseIos/example5/expectedIo.zip"));
     }
 
-    private String patchTestcaseIosAndGetIoId(TestcaseIoPatchingFilesParameters params) throws Exception {
+    @Test
+    void whenPatchTestcaseIOs_whereInputFileNameDuplicatesToStandardInName_shouldBeInvalid() throws Exception {
+        int problemId = 1;
+        Testcase testcase = new Testcase("ID", "A", 1, 1000, 1000, 1000, -1, 100);
+        givenProblemSavedWithOneTestcase(problemId, testcase);
+
+        patchTestcaseIOs(patchTestcaseIOsParams(testcase).resourceDirName("example1")
+                .stdIn("std.in").inFiles(asList("I1.in", "std.in", "I2.in")).build())
+                .andExpect(status().isBadRequest());
+    }
+
+
+    @Test
+    void whenPatchTestcaseIOs_whereOutputFileNameDuplicatesToStandardOutName_shouldBeInvalid() throws Exception {
+        int problemId = 1;
+        Testcase testcase = new Testcase("ID", "A", 1, 1000, 1000, 1000, -1, 100);
+        givenProblemSavedWithOneTestcase(problemId, testcase);
+
+        patchTestcaseIOs(patchTestcaseIOsParams(testcase).resourceDirName("example1")
+                .stdOut("std.out").outFiles(asList("O1.out", "std.out", "O2.out")).build())
+                .andExpect(status().isBadRequest());
+    }
+
+    private ResultActions patchTestcaseIOs(TestcaseIoPatchingFilesParameters params) throws Exception {
         var multipart = multipart(API_PREFIX + "/{problemId}/testcases/{testcaseId}/io",
                 params.testcase.getProblemId(), params.testcase.getId());
         multipart.with(request -> {
@@ -543,7 +565,11 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
             mockPart.getHeaders().setContentType(MediaType.TEXT_PLAIN);
             multipart.part(mockPart);
         }
-        var patchedTestcase = getBody(mockMvc.perform(withAdminToken(multipart)).andExpect(status().isOk()),
+        return mockMvc.perform(withAdminToken(multipart));
+    }
+
+    private String patchTestcaseIOsAndGetIoId(TestcaseIoPatchingFilesParameters params) throws Exception {
+        var patchedTestcase = getBody(patchTestcaseIOs(params).andExpect(status().isOk()),
                 TestcaseView.class);
         assertFalse(isNullOrBlank(patchedTestcase.getIoFileId()), " The fileId responded should not be empty or blank.");
         return patchedTestcase.getIoFileId();
@@ -990,7 +1016,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         List<String> deletedOutFiles = Collections.emptyList();
 
         public static TestcaseIoPatchingFilesParameters.TestcaseIoPatchingFilesParametersBuilder
-        patchTestcaseIOs(Testcase testcase) {
+        patchTestcaseIOsParams(Testcase testcase) {
             return TestcaseIoPatchingFilesParameters.builder().testcase(testcase);
         }
     }
