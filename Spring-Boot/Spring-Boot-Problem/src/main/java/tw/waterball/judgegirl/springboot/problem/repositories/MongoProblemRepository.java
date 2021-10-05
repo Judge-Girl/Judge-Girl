@@ -340,7 +340,7 @@ public class MongoProblemRepository implements ProblemRepository {
                 .orElseThrow(() -> notFound(LanguageEnv.class).identifiedBy("language", language));
 
         String fileId = saveProvidedCodesAndGetFileId(problem.getId(), language, providedCodes);
-        List<String> fileNames = providedCodes.stream().map(StreamingResource::getFileName).collect(toList());
+        List<String> fileNames = mapToList(providedCodes, StreamingResource::getFileName);
         ProvidedCodes updatedProvidedCodes = new ProvidedCodes(fileId, fileNames);
         updateProvidedCodesInProblem(problem, langEnv, updatedProvidedCodes);
     }
