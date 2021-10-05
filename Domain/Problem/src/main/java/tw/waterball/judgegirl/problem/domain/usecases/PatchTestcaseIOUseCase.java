@@ -15,10 +15,13 @@ package tw.waterball.judgegirl.problem.domain.usecases;
 
 import lombok.Value;
 import tw.waterball.judgegirl.primitives.problem.Problem;
+import tw.waterball.judgegirl.primitives.problem.Testcase;
+import tw.waterball.judgegirl.primitives.problem.TestcaseIO;
 import tw.waterball.judgegirl.problem.domain.repositories.ProblemRepository;
-import tw.waterball.judgegirl.problem.domain.repositories.ProblemRepository.TestcaseIoPatching;
 
 import javax.inject.Named;
+
+import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
 
 /**
  * @author chaoyulee chaoyu2330@gmail.com
@@ -32,37 +35,21 @@ public class PatchTestcaseIOUseCase extends BaseProblemUseCase {
 
     public void execute(Request request, Presenter presenter) {
         Problem problem = findProblem(request.problemId);
-        inputFileNameMustNotDuplicateToStdInName(request.testcaseIoPatching);
-        outputFileNameMustNotDuplicateToStdOutName(request.testcaseIoPatching);
+        validate(request, problem);
 
         problem = problemRepository.patchTestcaseIOs(problem, request.testcaseIoPatching);
 
         presenter.showResult(problem);
     }
 
-    private void inputFileNameMustNotDuplicateToStdInName(TestcaseIoPatching patching) {
-        patching.getStdIn()
-                .ifPresent(stdIn -> {
-                            if (patching.getInputFiles()
-                                    .stream().anyMatch(in -> in.getFileName().equals(stdIn.getFileName()))) {
-                                throw new IllegalArgumentException("The stdIn's file name must not be duplicate to any of the input file's name.");
-                            }
-                        }
-                );
-    }
-
-    private void outputFileNameMustNotDuplicateToStdOutName(TestcaseIoPatching patching) {
-        patching.getStdOut()
-                .ifPresent(stdOut -> {
-                            if (patching.getOutputFiles()
-                                    .stream().anyMatch(out -> out.getFileName().equals(stdOut.getFileName()))) {
-                                throw new IllegalArgumentException("The stdOut's file name must not be duplicate to any of the output file's name.");
-                            }
-                        }
-                );
+    private void validate(Request request, Problem problem) {
+        Testcase testcase = problem.getTestcaseById(request.testcaseId)
+                .orElseThrow(() -> notFound(Testcase.class).id(request.testcaseId));
+        testcase.getTestcaseIO().ifPresent(io -> io.validate(request.testcaseIoPatching));
     }
 
     public interface Presenter {
+
         void showResult(Problem problem);
     }
 
@@ -70,6 +57,6 @@ public class PatchTestcaseIOUseCase extends BaseProblemUseCase {
     public static class Request {
         public int problemId;
         public String testcaseId;
-        public TestcaseIoPatching testcaseIoPatching;
+        public TestcaseIO.IoPatching testcaseIoPatching;
     }
 }

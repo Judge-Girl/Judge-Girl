@@ -49,6 +49,6 @@ public class TestcaseView {
 
     public Testcase toValue() {
         return new Testcase(id, name, problemId, timeLimit, memoryLimit, outputLimit, threadNumberLimit, grade,
-                new TestcaseIO(ioFileId, id, stdIn, stdOut, inputFiles, outputFiles));
+                ioFileId == null ? null : new TestcaseIO(ioFileId, id, stdIn, stdOut, inputFiles, outputFiles));
     }
 }

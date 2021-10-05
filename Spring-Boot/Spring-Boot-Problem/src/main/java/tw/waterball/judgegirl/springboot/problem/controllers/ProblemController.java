@@ -28,7 +28,6 @@ import tw.waterball.judgegirl.primitives.problem.Problem;
 import tw.waterball.judgegirl.primitives.problem.Testcase;
 import tw.waterball.judgegirl.primitives.problem.TestcaseIO;
 import tw.waterball.judgegirl.problem.domain.repositories.ProblemQueryParams;
-import tw.waterball.judgegirl.problem.domain.repositories.ProblemRepository;
 import tw.waterball.judgegirl.problem.domain.usecases.*;
 import tw.waterball.judgegirl.problem.domain.usecases.PatchProblemUseCase.LanguageEnvUpsert;
 import tw.waterball.judgegirl.problemapi.views.ProblemItem;
@@ -233,8 +232,8 @@ public class ProblemController {
         });
     }
 
-    private ProblemRepository.TestcaseIoPatching testcaseIoPatching(String testcaseId, MultipartFile stdIn, MultipartFile stdOut, MultipartFile[] inFiles, MultipartFile[] outFiles, String[] deletedIns, String[] deletedOuts) {
-        return new ProblemRepository.TestcaseIoPatching(
+    private TestcaseIO.IoPatching testcaseIoPatching(String testcaseId, MultipartFile stdIn, MultipartFile stdOut, MultipartFile[] inFiles, MultipartFile[] outFiles, String[] deletedIns, String[] deletedOuts) {
+        return new TestcaseIO.IoPatching(
                 testcaseId, deletedIns, deletedOuts,
                 stdIn == null ? null : convertMultipartFileToFileResource(stdIn),
                 stdOut == null ? null : convertMultipartFileToFileResource(stdOut),
