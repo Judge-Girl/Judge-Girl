@@ -45,7 +45,7 @@ public class PatchTestcaseIOUseCase extends BaseProblemUseCase {
     private void validate(Request request, Problem problem) {
         Testcase testcase = problem.getTestcaseById(request.testcaseId)
                 .orElseThrow(() -> notFound(Testcase.class).id(request.testcaseId));
-        testcase.getTestcaseIO().ifPresent(io -> io.apply(request.testcaseIoPatching));
+        testcase.getTestcaseIO().ifPresent(io -> io.validate(request.testcaseIoPatching));
     }
 
     public interface Presenter {

@@ -77,6 +77,10 @@ public class TestcaseIO {
         this.id = id;
     }
 
+    public void validate(IoPatching patching) {
+        assert apply(patching) != null;
+    }
+
     public TestcaseIO apply(IoPatching patching) {
         // replace with the patched standard file's name if exists, otherwise keep the original name
         Optional<String> stdInName = patching.getStdIn()
