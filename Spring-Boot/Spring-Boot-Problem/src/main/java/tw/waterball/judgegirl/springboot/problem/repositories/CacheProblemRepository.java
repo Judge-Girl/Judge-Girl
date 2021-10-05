@@ -9,6 +9,7 @@ import tw.waterball.judgegirl.commons.utils.functional.GetById;
 import tw.waterball.judgegirl.primitives.problem.Language;
 import tw.waterball.judgegirl.primitives.problem.LanguageEnv;
 import tw.waterball.judgegirl.primitives.problem.Problem;
+import tw.waterball.judgegirl.primitives.problem.TestcaseIO;
 import tw.waterball.judgegirl.problem.domain.repositories.ProblemQueryParams;
 import tw.waterball.judgegirl.problem.domain.repositories.ProblemRepository;
 import tw.waterball.judgegirl.springboot.problem.repositories.data.ProblemData;
@@ -84,7 +85,7 @@ public class CacheProblemRepository implements ProblemRepository {
     }
 
     @Override
-    public Problem patchTestcaseIOs(Problem problem, TestcaseIoPatching ioPatching) {
+    public Problem patchTestcaseIOs(Problem problem, TestcaseIO.IoPatching ioPatching) {
         invalidateProblemCache(problem.getId());
         return problemRepository.patchTestcaseIOs(problem, ioPatching);
     }

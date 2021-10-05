@@ -28,7 +28,6 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.stereotype.Component;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
-import tw.waterball.judgegirl.commons.models.files.StreamingResource;
 import tw.waterball.judgegirl.primitives.problem.*;
 import tw.waterball.judgegirl.problem.domain.repositories.ProblemQueryParams;
 import tw.waterball.judgegirl.problem.domain.repositories.ProblemRepository;
@@ -44,13 +43,11 @@ import static java.lang.String.format;
 import static java.nio.file.Files.createTempDirectory;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.io.FileUtils.*;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
 import static org.springframework.data.mongodb.core.query.Update.update;
 import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
-import static tw.waterball.judgegirl.commons.utils.ArrayUtils.contains;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
 import static tw.waterball.judgegirl.commons.utils.StringUtils.isNullOrEmpty;
 import static tw.waterball.judgegirl.commons.utils.ZipUtils.*;
@@ -234,7 +231,7 @@ public class MongoProblemRepository implements ProblemRepository {
 
     @SneakyThrows
     @Override
-    public Problem patchTestcaseIOs(Problem problem, TestcaseIoPatching ioPatching) {
+    public Problem patchTestcaseIOs(Problem problem, TestcaseIO.IoPatching ioPatching) {
         Testcase testcase = problem.getTestcaseById(ioPatching.getTestcaseId())
                 .orElseThrow(() -> notFound(Testcase.class).id(ioPatching.getTestcaseId()));
         String originalIoFileId = testcase.getTestcaseIO().map(TestcaseIO::getId).orElse(null);
@@ -258,7 +255,7 @@ public class MongoProblemRepository implements ProblemRepository {
     }
 
     private InputStream applyTestcaseIoPatching(Testcase testcase,
-                                                TestcaseIoPatching ioPatching) throws IOException {
+                                                TestcaseIO.IoPatching ioPatching) throws IOException {
         Path tempDirPath = createTempDirectory("judgegirl");
         Path inDirPath = tempDirPath.resolve("in");
         Path outDirPath = tempDirPath.resolve("out");
@@ -286,27 +283,10 @@ public class MongoProblemRepository implements ProblemRepository {
     }
 
     @NotNull
-    private TestcaseIO deduceTestcaseIoAfterPatching(Testcase testcase, TestcaseIoPatching ioPatching) {
-        // replace with the patched standard file's name if exists, otherwise keep the original name
-        Optional<String> stdInName = ioPatching.getStdIn()
-                .map(StreamingResource::getFileName).or(() -> testcase.getTestcaseIO().map(TestcaseIO::getStdIn));
-        Optional<String> stdOutName = ioPatching.getStdOut()
-                .map(StreamingResource::getFileName).or(() -> testcase.getTestcaseIO().map(TestcaseIO::getStdOut));
-
-        // filter off the deleted IO Files
-        Set<String> inputFileNames = testcase.getTestcaseIO().stream()
-                .flatMap(io -> io.getInputFiles().stream())
-                .filter(inputFile -> !contains(ioPatching.getDeletedIns(), inputFile)).collect(toSet());
-        inputFileNames.addAll(mapToList(ioPatching.getInputFiles(), StreamingResource::getFileName));
-        Set<String> outputFileNames = testcase.getTestcaseIO().stream()
-                .flatMap(io -> io.getOutputFiles().stream())
-                .filter(outputFile -> !contains(ioPatching.getDeletedOuts(), outputFile)).collect(toSet());
-        outputFileNames.addAll(mapToList(ioPatching.getOutputFiles(), StreamingResource::getFileName));
-
-        return new TestcaseIO(testcase.getTestcaseIO().map(TestcaseIO::getId).orElse(null),
-                testcase.getId(),
-                stdInName.orElse(null), stdOutName.orElse(null),
-                inputFileNames, outputFileNames);
+    private TestcaseIO deduceTestcaseIoAfterPatching(Testcase testcase, TestcaseIO.IoPatching ioPatching) {
+        return testcase.getTestcaseIO()
+                .map(io -> io.apply(ioPatching))
+                .orElseGet(ioPatching::toTestcaseIo);
     }
 
     private void setupTestcaseIoDir(Testcase testcase, Path testcaseIoHomeDir, Path inDirPath, Path outDirPath) throws IOException {
