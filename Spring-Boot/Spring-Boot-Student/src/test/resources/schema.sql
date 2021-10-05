@@ -1,8 +1,7 @@
-/* Schema used for testing
-   Before commit any modifications to this file,
-   first check if the modifications should also be done in etc/init-databases.sql
+/*  Schema used for testing
+   In case you want to modify the schema below,
+    you should also modify "etc/init-databases.sql" correspondingly
  */
-
 
 create table students
 (

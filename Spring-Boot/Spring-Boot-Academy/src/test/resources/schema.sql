@@ -1,6 +1,6 @@
-/* Schema used for testing
-   Before commit any modifications to this file,
-   first check if the modifications should also be done in etc/init-databases.sql
+/*  Schema used for testing
+   In case you want to modify the schema below,
+    you should also modify "etc/init-databases.sql" correspondingly
  */
 
 create table exams
@@ -41,8 +41,7 @@ create table answers
     answer_time   datetime     null,
     primary key (number, exam_id, problem_id, student_id),
     foreign key (exam_id) references exams (id) on delete cascade,
-    foreign key (exam_id, problem_id) references questions (exam_id, problem_id) on delete cascade,
-    foreign key (exam_id, student_id) references examinees (exam_id, student_id) on delete cascade
+    foreign key (exam_id, problem_id) references questions (exam_id, problem_id) on delete cascade
 );
 
 create table best_records
@@ -59,8 +58,7 @@ create table best_records
     submission_time      datetime                                                               null,
     primary key (exam_id, problem_id, student_id),
     foreign key (exam_id) references exams (id) on delete cascade,
-    foreign key (exam_id, problem_id) references questions (exam_id, problem_id) on delete cascade,
-    foreign key (exam_id, student_id) references examinees (exam_id, student_id) on delete cascade
+    foreign key (exam_id, problem_id) references questions (exam_id, problem_id) on delete cascade
 );
 
 create table homework

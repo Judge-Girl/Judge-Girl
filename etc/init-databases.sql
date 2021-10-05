@@ -2,9 +2,9 @@ CREATE DATABASE IF NOT EXISTS judgegirl;
 USE judgegirl;
 
 
-/*  Exam Service's schema definition
-   If the schema below is modified,
-   then you should also update "Spring-Boot/Spring-Boot-Academy/src/test/resources/schema.sql"
+/*  Academy Service's schema definition
+   In case you want to modify the schema below,
+   you should also modify "Spring-Boot/Spring-Boot-Academy/src/test/resources/schema.sql" correspondingly
  */
 
 create table if not exists exams
@@ -45,8 +45,7 @@ create table if not exists answers
     answer_time   datetime     null,
     primary key (number, exam_id, problem_id, student_id),
     foreign key (exam_id) references exams (id) on delete cascade,
-    foreign key (exam_id, problem_id) references questions (exam_id, problem_id) on delete cascade,
-    foreign key (exam_id, student_id) references examinees (exam_id, student_id) on delete cascade
+    foreign key (exam_id, problem_id) references questions (exam_id, problem_id) on delete cascade
 );
 
 create table if not exists best_records
@@ -63,8 +62,7 @@ create table if not exists best_records
     submission_time      datetime                                                               null,
     primary key (exam_id, problem_id, student_id),
     foreign key (exam_id) references exams (id) on delete cascade,
-    foreign key (exam_id, problem_id) references questions (exam_id, problem_id) on delete cascade,
-    foreign key (exam_id, student_id) references examinees (exam_id, student_id) on delete cascade
+    foreign key (exam_id, problem_id) references questions (exam_id, problem_id) on delete cascade
 );
 
 create table if not exists homework
@@ -94,8 +92,8 @@ create table membership
 
 
 /*  Student Service's schema definition
-   If the schema below is modified,
-   then you should also update "Spring-Boot/Spring-Boot-Student/src/test/resources/schema.sql"
+   In case you want to modify the schema below,
+     you should also modify "Spring-Boot/Spring-Boot-Student/src/test/resources/schema.sql" correspondingly
  */
 
 create table if not exists students
