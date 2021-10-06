@@ -41,6 +41,7 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
+import tw.waterball.judgegirl.commons.models.files.StreamingResource;
 import tw.waterball.judgegirl.commons.token.TokenService;
 import tw.waterball.judgegirl.commons.token.TokenService.Identity;
 import tw.waterball.judgegirl.commons.token.TokenService.Token;
@@ -89,8 +90,8 @@ import static tw.waterball.judgegirl.commons.utils.HttpHeaderUtils.bearerWithTok
 import static tw.waterball.judgegirl.commons.utils.ResourceUtils.getResourceAsStream;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.*;
 import static tw.waterball.judgegirl.commons.utils.StringUtils.isNullOrBlank;
+import static tw.waterball.judgegirl.commons.utils.ZipUtils.getStreamResourcesFromResources;
 import static tw.waterball.judgegirl.commons.utils.ZipUtils.unzipToDestination;
-import static tw.waterball.judgegirl.commons.utils.ZipUtils.zipFilesFromResources;
 import static tw.waterball.judgegirl.primitives.problem.JudgePluginTag.Type.OUTPUT_MATCH_POLICY;
 import static tw.waterball.judgegirl.primitives.stubs.ProblemStubs.languageEnvTemplate;
 import static tw.waterball.judgegirl.primitives.stubs.ProblemStubs.problemTemplate;
@@ -126,7 +127,6 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     @Autowired
     TokenService tokenService;
 
-    private static List<String> expectedProvidedCodesFileNames;
     private static byte[] expectedProvidedCodesZip;
     private Token adminToken;
     private Token student1Token;
@@ -149,7 +149,6 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     @SneakyThrows
     @BeforeAll
     public static void beforeAll() {
-        expectedProvidedCodesFileNames = singletonList("providedCodes");
         expectedProvidedCodesZip = resourceToByteArray("/providedCodes/providedCodes.zip");
     }
 
@@ -809,9 +808,8 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     private void saveProblems(Integer... problemIds) {
         stream(problemIds).forEach(problemId -> {
             Problem problem = problemTemplate().id(problemId).build();
-            byte[] providedCodesZip = zipFilesFromResources("/providedCodes/file1.c", "/providedCodes/file2.c");
-            problemRepository.save(problem, singletonMap(problem.getLanguageEnv(Language.C),
-                    new ByteArrayInputStream(providedCodesZip)), List.of("file1.c", "file2.c"));
+            List<StreamingResource> providedCodesFiles = getStreamResourcesFromResources("/providedCodes/file1.c", "/providedCodes/file2.c");
+            problemRepository.save(problem, singletonMap(problem.getLanguageEnv(Language.C), providedCodesFiles));
         });
     }
 
@@ -863,14 +861,6 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
                         post(API_PREFIX)
                                 .contentType(MediaType.TEXT_PLAIN_VALUE).content(title)))
                         .andExpect(status().isOk())));
-    }
-
-    //TODO
-    private Problem givenProblemSavedWithProvidedCodesAndTestcaseIOs() {
-        Problem problem = problemTemplate().build();
-        return problemRepository.save(problem,
-                singletonMap(problem.getLanguageEnv(Language.C), new ByteArrayInputStream(expectedProvidedCodesZip)),
-                expectedProvidedCodesFileNames);
     }
 
     private List<ProblemItem> getProblemItems(WithHeader withHeader) throws Exception {

@@ -223,7 +223,7 @@ public abstract class AbstractJudgerTest {
         String providedCodesHomePath = format(providedCodesHomeFormat, problem.getId());
         byte[] zippedProvidedCodesBytes = zipDirectory(providedCodesHomePath);
         var languageEnv = problem.getLanguageEnv(CURRENTLY_ONLY_SUPPORT_C);
-        when(problemServiceDriver.downloadProvidedCodes(problem.getId(), languageEnv.getName(), languageEnv.getProvidedCodesFileId().orElse(null)))
+        when(problemServiceDriver.downloadProvidedCodes(problem.getId(), languageEnv.getName(), languageEnv.getProvidedCodesFileId().orElseThrow()))
                 .thenReturn(new FileResource(providedCodesHomePath, zippedProvidedCodesBytes.length,
                         new ByteArrayInputStream(zippedProvidedCodesBytes)));
     }

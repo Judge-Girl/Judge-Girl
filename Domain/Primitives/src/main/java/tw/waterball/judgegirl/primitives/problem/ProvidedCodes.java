@@ -15,31 +15,26 @@ package tw.waterball.judgegirl.primitives.problem;
 
 import lombok.Getter;
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.List;
+
+import static tw.waterball.judgegirl.commons.utils.validations.ValidationUtils.validate;
 
 /**
  * @author chaoyulee chaoyu2330@gmail.com
  */
 @Getter
 public class ProvidedCodes {
-    @NotNull
-    private final String providedCodesFileId;
+    @NotBlank
+    private final @Size(min = 1, max = 300) String providedCodesFileId;
     @NotNull
     private final List<@Size(min = 1, max = 300) String> providedCodesFileName;
 
     public ProvidedCodes(String providedCodesFileId, List<String> providedCodesFileName) {
-        validateProvidedCodesFileId(providedCodesFileId);
         this.providedCodesFileId = providedCodesFileId;
         this.providedCodesFileName = providedCodesFileName;
-    }
-
-    private void validateProvidedCodesFileId(String providedCodesFileId) {
-        if (providedCodesFileId != null &&
-                (providedCodesFileId.isEmpty() ||
-                        providedCodesFileId.length() > 300)) {
-            throw new IllegalStateException("The providedCodesFileId's length must be > 0 and <= 300");
-        }
+        validate(this);
     }
 }

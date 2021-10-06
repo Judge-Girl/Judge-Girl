@@ -40,6 +40,13 @@ import static org.apache.commons.io.FileUtils.forceMkdir;
  */
 public class ZipUtils {
 
+    public static List<StreamingResource> getStreamResourcesFromResources(String... resourcePaths) {
+        return stream(resourcePaths)
+                .map(path -> new StreamingResource(PathUtils.getFileName(path),
+                        ResourceUtils.getResourceAsStream(path)))
+                .collect(toList());
+    }
+
     public static byte[] zipFilesFromResources(String... resourcePaths) {
         return zip(stream(resourcePaths)
                 .map(path -> new StreamingResource(PathUtils.getFileName(path),

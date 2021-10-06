@@ -209,16 +209,16 @@ public class MongoProblemRepository implements ProblemRepository {
     }
 
     @Override
-    public Problem save(Problem problem, Map<LanguageEnv, InputStream> providedCodesZipMap, List<String> fileNames) {
+    public Problem save(Problem problem, Map<LanguageEnv, List<StreamingResource>> providedCodesMap) {
         // TODO atomicity problem
-        providedCodesZipMap.forEach((langEnv, zip) -> {
+        providedCodesMap.forEach((langEnv, providedCodes) -> {
             String providedCodesName = format("%d-%s-provided.zip", problem.getId(), langEnv.getName());
-            String providedCodesFileId = gridFsTemplate.store(zip, providedCodesName).toString();
-            langEnv.setProvidedCodes(new ProvidedCodes(providedCodesFileId, fileNames));
+            String providedCodesFileId = gridFsTemplate.store(zipToStream(providedCodes), providedCodesName).toString();
+            List<String> providedCodesFileNames = providedCodes.stream().map(StreamingResource::getFileName).collect(toList());
+            langEnv.setProvidedCodes(new ProvidedCodes(providedCodesFileId, providedCodesFileNames));
         });
         return mongoTemplate.save(toData(problem)).toEntity();
     }
-
 
     @Override
     public Optional<FileResource> downloadTestCaseIOs(int problemId, String testcaseId) {
