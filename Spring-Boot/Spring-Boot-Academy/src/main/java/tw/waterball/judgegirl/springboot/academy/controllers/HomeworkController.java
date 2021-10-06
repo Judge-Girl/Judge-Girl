@@ -28,6 +28,8 @@ public class HomeworkController {
     private final GetHomeworkProgressUseCase getHomeworkProgressUseCase;
     private final GetAllHomeworkUseCase getAllHomeworkUseCase;
     private final DeleteHomeworkUseCase deleteHomeworkUseCase;
+    private final AddHomeworkProblemsUseCase addHomeworkProblemUseCase;
+    private final DeleteHomeworkProblemsUseCase deleteHomeworkProblemsUseCase;
 
     @PostMapping("/homework")
     public HomeworkView createHomework(@RequestHeader("Authorization") String authorization,
@@ -76,6 +78,19 @@ public class HomeworkController {
         });
     }
 
+    @PostMapping("/homework/{homeworkId}/problems")
+    public void addProblemsIntoHomework(@RequestHeader("Authorization") String authorization,
+                                        @PathVariable int homeworkId, @RequestBody Integer[] problemIds) {
+        tokenService.ifAdminToken(authorization,
+                token -> addHomeworkProblemUseCase.execute(new AddHomeworkProblemsUseCase.Request(homeworkId, problemIds)));
+    }
+
+    @DeleteMapping("/homework/{homeworkId}/problems")
+    public void deleteProblemsFromTheHomework(@RequestHeader("Authorization") String authorization,
+                                              @PathVariable int homeworkId, @RequestBody Integer[] problemIds) {
+        tokenService.ifAdminToken(authorization,
+                token -> deleteHomeworkProblemsUseCase.execute(new DeleteHomeworkProblemsUseCase.Request(homeworkId, problemIds)));
+    }
 }
 
 class CreateHomeworkPresenter implements CreateHomeworkUseCase.Presenter {

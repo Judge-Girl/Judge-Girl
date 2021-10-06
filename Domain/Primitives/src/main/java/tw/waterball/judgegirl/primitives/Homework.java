@@ -34,4 +34,17 @@ public class Homework {
         ValidationUtils.validate(this);
     }
 
+    public void addProblemIds(List<Integer> problemIds) {
+        this.problemIds.addAll(problemIds);
+    }
+
+
+    public boolean containsProblemId(Integer problemId) {
+        return this.problemIds.contains(problemId);
+    }
+
+    public void deleteProblemIds(List<Integer> problemIds) {
+        this.problemIds.removeAll(problemIds);
+    }
+
 }

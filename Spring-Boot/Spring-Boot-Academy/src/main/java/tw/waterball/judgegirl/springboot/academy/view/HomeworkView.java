@@ -26,4 +26,7 @@ public class HomeworkView {
         return new HomeworkView(homework.getId(), homework.getName(), homework.getProblemIds());
     }
 
+    public boolean containProblems(List<Integer> problemIds) {
+        return this.problemIds.containsAll(problemIds);
+    }
 }
