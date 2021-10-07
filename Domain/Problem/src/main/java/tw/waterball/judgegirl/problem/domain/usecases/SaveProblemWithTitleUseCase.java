@@ -12,11 +12,16 @@ public class SaveProblemWithTitleUseCase extends BaseProblemUseCase {
         super(problemRepository);
     }
 
-    public int execute(String title) {
+    public void execute(String title, Presenter presenter) {
         Problem problem = Problem.builder()
                 .title(title)
                 .outputMatchPolicyPluginTag(AllMatchPolicyPlugin.TAG)
                 .build();
-        return problemRepository.save(problem).getId();
+        presenter.setProblem(problemRepository.save(problem));
     }
+
+    public interface Presenter {
+        void setProblem(Problem problem);
+    }
+
 }
