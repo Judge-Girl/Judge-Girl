@@ -18,7 +18,7 @@ public class CompilationView {
         return new CompilationView(compilation.getScript());
     }
 
-    public Compilation toEntity() {
+    public Compilation toValue() {
         return new Compilation(script);
     }
 }

@@ -72,12 +72,12 @@ public class ProblemView {
                 .id(view.getId())
                 .title(view.getTitle())
                 .description(view.description)
-                .outputMatchPolicyPluginTag(view.judgeMatchPolicyPluginTag.toEntity())
+                .outputMatchPolicyPluginTag(view.judgeMatchPolicyPluginTag.toValue())
                 .tags(requireNonNullElse(view.tags, emptyList()))
                 .testcases(mapToList(view.testcases, TestcaseView::toEntity))
                 .archived(view.archived);
         if (view.judgeFilterPluginTags != null) {
-            builder.filterPluginTags(mapToList(view.judgeFilterPluginTags, JudgePluginTagView::toEntity));
+            builder.filterPluginTags(mapToList(view.judgeFilterPluginTags, JudgePluginTagView::toValue));
         }
         view.languageEnvs.stream()
                 .map(LanguageEnvView::toEntity)

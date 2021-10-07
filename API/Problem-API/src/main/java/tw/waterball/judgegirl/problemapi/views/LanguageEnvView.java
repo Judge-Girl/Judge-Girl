@@ -37,12 +37,12 @@ public class LanguageEnvView {
     public LanguageEnv toEntity() {
         ProvidedCodes providedCodes = null;
         if (this.providedCodes != null) {
-            providedCodes = this.providedCodes.toEntity();
+            providedCodes = this.providedCodes.toValue();
         }
         return new LanguageEnv(language,
-                compilation.toEntity(),
-                resourceSpec.toEntity(),
-                mapToList(submittedCodeSpecs, SubmittedCodeSpecView::toEntity),
+                compilation.toValue(),
+                resourceSpec.toValue(),
+                mapToList(submittedCodeSpecs, SubmittedCodeSpecView::toValue),
                 providedCodes);
     }
 }

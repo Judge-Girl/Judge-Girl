@@ -20,7 +20,7 @@ public class SubmittedCodeSpecView {
         return new SubmittedCodeSpecView(spec.getFormat(), spec.getFileName());
     }
 
-    public SubmittedCodeSpec toEntity() {
+    public SubmittedCodeSpec toValue() {
         return new SubmittedCodeSpec(format, fileName);
     }
 }

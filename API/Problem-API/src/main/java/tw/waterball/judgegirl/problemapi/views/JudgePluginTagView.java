@@ -21,7 +21,7 @@ public class JudgePluginTagView {
         return new JudgePluginTagView(tag.getType(), tag.getGroup(), tag.getName(), tag.getVersion());
     }
 
-    public JudgePluginTag toEntity() {
+    public JudgePluginTag toValue() {
         return new JudgePluginTag(type, group, name, version);
     }
 }

@@ -34,7 +34,7 @@ public class ProvidedCodeView {
         return new ProvidedCodeView(providedCodes.getProvidedCodesFileId(), providedCodes.getProvidedCodesFileName());
     }
 
-    public ProvidedCodes toEntity() {
+    public ProvidedCodes toValue() {
         return new ProvidedCodes(providedCodesFileId, providedCodesFileNames);
     }
 }
