@@ -16,11 +16,11 @@ public class SubmittedCodeSpecView {
     public Language format;
     public String fileName;
 
-    public static SubmittedCodeSpecView toData(SubmittedCodeSpec spec) {
+    public static SubmittedCodeSpecView toViewModel(SubmittedCodeSpec spec) {
         return new SubmittedCodeSpecView(spec.getFormat(), spec.getFileName());
     }
 
-    public SubmittedCodeSpec toValue() {
+    public SubmittedCodeSpec toEntity() {
         return new SubmittedCodeSpec(format, fileName);
     }
 }

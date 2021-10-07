@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import tw.waterball.judgegirl.primitives.problem.Language;
 import tw.waterball.judgegirl.primitives.problem.LanguageEnv;
+import tw.waterball.judgegirl.primitives.problem.ProvidedCodes;
 
 import java.util.List;
 
@@ -29,15 +30,19 @@ public class LanguageEnvView {
         return new LanguageEnvView(env.getName(), env.getLanguage(),
                 CompilationView.toViewModel(env.getCompilation()),
                 ResourceSpecView.toViewModel(env.getResourceSpec()),
-                mapToList(env.getSubmittedCodeSpecs(), SubmittedCodeSpecView::toData),
+                mapToList(env.getSubmittedCodeSpecs(), SubmittedCodeSpecView::toViewModel),
                 providedCodes.map(ProvidedCodeView::toViewModel).orElse(null));
     }
 
-    public LanguageEnv toValue() {
+    public LanguageEnv toEntity() {
+        ProvidedCodes providedCodes = null;
+        if (this.providedCodes != null) {
+            providedCodes = this.providedCodes.toEntity();
+        }
         return new LanguageEnv(language,
-                compilation.toValue(),
-                resourceSpec.toValue(),
-                mapToList(submittedCodeSpecs, SubmittedCodeSpecView::toValue),
-                providedCodes.toValue());
+                compilation.toEntity(),
+                resourceSpec.toEntity(),
+                mapToList(submittedCodeSpecs, SubmittedCodeSpecView::toEntity),
+                providedCodes);
     }
 }

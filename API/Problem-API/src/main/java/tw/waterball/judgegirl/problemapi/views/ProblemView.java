@@ -72,15 +72,15 @@ public class ProblemView {
                 .id(view.getId())
                 .title(view.getTitle())
                 .description(view.description)
-                .outputMatchPolicyPluginTag(view.judgeMatchPolicyPluginTag.toValue())
+                .outputMatchPolicyPluginTag(view.judgeMatchPolicyPluginTag.toEntity())
                 .tags(requireNonNullElse(view.tags, emptyList()))
-                .testcases(mapToList(view.testcases, TestcaseView::toValue))
+                .testcases(mapToList(view.testcases, TestcaseView::toEntity))
                 .archived(view.archived);
         if (view.judgeFilterPluginTags != null) {
-            builder.filterPluginTags(mapToList(view.judgeFilterPluginTags, JudgePluginTagView::toValue));
+            builder.filterPluginTags(mapToList(view.judgeFilterPluginTags, JudgePluginTagView::toEntity));
         }
         view.languageEnvs.stream()
-                .map(LanguageEnvView::toValue)
+                .map(LanguageEnvView::toEntity)
                 .forEach(languageEnv -> builder.languageEnv(languageEnv.getName(), languageEnv));
         return builder.build();
     }

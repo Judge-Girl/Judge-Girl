@@ -19,7 +19,7 @@ public class ResourceSpecView {
         return new ResourceSpecView(spec.getCpu(), spec.getGpu());
     }
 
-    public ResourceSpec toValue() {
+    public ResourceSpec toEntity() {
         return new ResourceSpec(cpu, gpu);
     }
 }

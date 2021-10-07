@@ -47,7 +47,7 @@ public class TestcaseView {
                 io.map(TestcaseIO::getOutputFiles).orElse(null));
     }
 
-    public Testcase toValue() {
+    public Testcase toEntity() {
         return new Testcase(id, name, problemId, timeLimit, memoryLimit, outputLimit, threadNumberLimit, grade,
                 ioFileId == null ? null : new TestcaseIO(ioFileId, id, stdIn, stdOut, inputFiles, outputFiles));
     }
