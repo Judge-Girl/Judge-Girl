@@ -212,8 +212,8 @@ public class MongoProblemRepository implements ProblemRepository {
     public Problem save(Problem problem, Map<LanguageEnv, List<StreamingResource>> providedCodesMap) {
         // TODO atomicity problem
         providedCodesMap.forEach((langEnv, providedCodes) -> {
-            String providedCodesName = format("%d-%s-provided.zip", problem.getId(), langEnv.getName());
-            String providedCodesFileId = gridFsTemplate.store(zipToStream(providedCodes), providedCodesName).toString();
+            String providedCodesZipName = format("%d-%s-provided.zip", problem.getId(), langEnv.getName());
+            String providedCodesFileId = gridFsTemplate.store(zipToStream(providedCodes), providedCodesZipName).toString();
             List<String> providedCodesFileNames = providedCodes.stream().map(StreamingResource::getFileName).collect(toList());
             langEnv.setProvidedCodes(new ProvidedCodes(providedCodesFileId, providedCodesFileNames));
         });

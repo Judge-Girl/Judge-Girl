@@ -90,7 +90,7 @@ import static tw.waterball.judgegirl.commons.utils.HttpHeaderUtils.bearerWithTok
 import static tw.waterball.judgegirl.commons.utils.ResourceUtils.getResourceAsStream;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.*;
 import static tw.waterball.judgegirl.commons.utils.StringUtils.isNullOrBlank;
-import static tw.waterball.judgegirl.commons.utils.ZipUtils.getStreamResourcesFromResources;
+import static tw.waterball.judgegirl.commons.utils.ZipUtils.getStreamResources;
 import static tw.waterball.judgegirl.commons.utils.ZipUtils.unzipToDestination;
 import static tw.waterball.judgegirl.primitives.problem.JudgePluginTag.Type.OUTPUT_MATCH_POLICY;
 import static tw.waterball.judgegirl.primitives.stubs.ProblemStubs.languageEnvTemplate;
@@ -808,7 +808,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     private void saveProblems(Integer... problemIds) {
         stream(problemIds).forEach(problemId -> {
             Problem problem = problemTemplate().id(problemId).build();
-            List<StreamingResource> providedCodesFiles = getStreamResourcesFromResources("/providedCodes/file1.c", "/providedCodes/file2.c");
+            List<StreamingResource> providedCodesFiles = getStreamResources("/providedCodes/file1.c", "/providedCodes/file2.c");
             problemRepository.save(problem, singletonMap(problem.getLanguageEnv(Language.C), providedCodesFiles));
         });
     }
