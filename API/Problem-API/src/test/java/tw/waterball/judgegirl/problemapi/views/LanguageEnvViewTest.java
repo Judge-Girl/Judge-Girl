@@ -49,7 +49,7 @@ class LanguageEnvViewTest {
 
     private void testMapping(LanguageEnv languageEnv) {
         LanguageEnvView view = toViewModel(languageEnv);
-        LanguageEnv mappedLanguageEnv = view.toEntity();
+        LanguageEnv mappedLanguageEnv = view.toValue();
         assertEquals(view, toViewModel(mappedLanguageEnv));
         assertLanguageEnvEquals(languageEnv, mappedLanguageEnv);
     }

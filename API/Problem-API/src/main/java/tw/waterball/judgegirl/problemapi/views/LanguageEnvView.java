@@ -34,7 +34,7 @@ public class LanguageEnvView {
                 providedCodes.map(ProvidedCodeView::toViewModel).orElse(null));
     }
 
-    public LanguageEnv toEntity() {
+    public LanguageEnv toValue() {
         ProvidedCodes providedCodes = null;
         if (this.providedCodes != null) {
             providedCodes = this.providedCodes.toValue();

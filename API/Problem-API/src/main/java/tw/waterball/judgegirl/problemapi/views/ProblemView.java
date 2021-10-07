@@ -80,7 +80,7 @@ public class ProblemView {
             builder.filterPluginTags(mapToList(view.judgeFilterPluginTags, JudgePluginTagView::toValue));
         }
         view.languageEnvs.stream()
-                .map(LanguageEnvView::toEntity)
+                .map(LanguageEnvView::toValue)
                 .forEach(languageEnv -> builder.languageEnv(languageEnv.getName(), languageEnv));
         return builder.build();
     }
