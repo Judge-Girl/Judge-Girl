@@ -22,14 +22,15 @@ public class LanguageEnvView {
     public CompilationView compilation;
     public ResourceSpecView resourceSpec;
     public List<SubmittedCodeSpecView> submittedCodeSpecs;
-    public String providedCodesFileId;
+    public ProvidedCodeView providedCodes;
 
     public static LanguageEnvView toViewModel(LanguageEnv env) {
+        var providedCodes = env.getProvidedCodes();
         return new LanguageEnvView(env.getName(), env.getLanguage(),
                 CompilationView.toViewModel(env.getCompilation()),
                 ResourceSpecView.toViewModel(env.getResourceSpec()),
                 mapToList(env.getSubmittedCodeSpecs(), SubmittedCodeSpecView::toData),
-                env.getProvidedCodesFileId());
+                providedCodes.map(ProvidedCodeView::toViewModel).orElse(null));
     }
 
     public LanguageEnv toValue() {
@@ -37,6 +38,6 @@ public class LanguageEnvView {
                 compilation.toValue(),
                 resourceSpec.toValue(),
                 mapToList(submittedCodeSpecs, SubmittedCodeSpecView::toValue),
-                providedCodesFileId);
+                providedCodes.toValue());
     }
 }

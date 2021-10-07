@@ -21,8 +21,10 @@ import org.jetbrains.annotations.Nullable;
 import javax.validation.constraints.NotNull;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
 import static java.util.Objects.requireNonNullElseGet;
+import static java.util.Optional.ofNullable;
 import static tw.waterball.judgegirl.commons.utils.validations.ValidationUtils.validate;
 
 /**
@@ -47,7 +49,7 @@ public class LanguageEnv {
     private List<SubmittedCodeSpec> submittedCodeSpecs;
 
     @Nullable
-    private String providedCodesFileId;
+    private ProvidedCodes providedCodes;
 
     public LanguageEnv(Language language,
                        Compilation compilation,
@@ -60,13 +62,12 @@ public class LanguageEnv {
                        Compilation compilation,
                        ResourceSpec resourceSpec,
                        List<SubmittedCodeSpec> submittedCodeSpecs,
-                       @Nullable String providedCodesFileId) {
+                       @Nullable ProvidedCodes providedCodes) {
         this.language = language;
         this.compilation = compilation;
         this.resourceSpec = resourceSpec;
         this.submittedCodeSpecs = submittedCodeSpecs;
-        this.providedCodesFileId = providedCodesFileId;
-        validateProvidedCodesFileId(providedCodesFileId);
+        this.providedCodes = providedCodes;
         validate(this);
     }
 
@@ -76,19 +77,6 @@ public class LanguageEnv {
 
     public String getName() {
         return language.toString();
-    }
-
-    public void setProvidedCodesFileId(@Nullable String providedCodesFileId) {
-        validateProvidedCodesFileId(providedCodesFileId);
-        this.providedCodesFileId = providedCodesFileId;
-    }
-
-    private void validateProvidedCodesFileId(String providedCodesFileId) {
-        if (providedCodesFileId != null &&
-                (providedCodesFileId.isEmpty() ||
-                        providedCodesFileId.length() > 300)) {
-            throw new IllegalStateException("The providedCodesFileId's length must be > 0 and <= 300");
-        }
     }
 
     public void setResourceSpec(ResourceSpec resourceSpec) {
@@ -101,6 +89,18 @@ public class LanguageEnv {
 
     public List<SubmittedCodeSpec> getSubmittedCodeSpecs() {
         return submittedCodeSpecs = requireNonNullElseGet(submittedCodeSpecs, LinkedList::new);
+    }
+
+    public Optional<ProvidedCodes> getProvidedCodes() {
+        return ofNullable(providedCodes);
+    }
+
+    public void setProvidedCodes(@Nullable ProvidedCodes providedCodes) {
+        this.providedCodes = providedCodes;
+    }
+
+    public Optional<String> getProvidedCodesFileId() {
+        return getProvidedCodes().map(ProvidedCodes::getProvidedCodesFileId);
     }
 
     @Override

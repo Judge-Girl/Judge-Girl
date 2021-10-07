@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
+import tw.waterball.judgegirl.commons.models.files.StreamingResource;
 import tw.waterball.judgegirl.commons.utils.functional.GetById;
 import tw.waterball.judgegirl.primitives.problem.Language;
 import tw.waterball.judgegirl.primitives.problem.LanguageEnv;
@@ -14,7 +15,6 @@ import tw.waterball.judgegirl.problem.domain.repositories.ProblemQueryParams;
 import tw.waterball.judgegirl.problem.domain.repositories.ProblemRepository;
 import tw.waterball.judgegirl.springboot.problem.repositories.data.ProblemData;
 
-import java.io.InputStream;
 import java.time.Duration;
 import java.util.*;
 
@@ -69,8 +69,8 @@ public class CacheProblemRepository implements ProblemRepository {
     }
 
     @Override
-    public Problem save(Problem problem, Map<LanguageEnv, InputStream> providedCodesZipMap) {
-        return cacheProblem(problemRepository.save(problem, providedCodesZipMap));
+    public Problem save(Problem problem, Map<LanguageEnv, List<StreamingResource>> providedCodesMap) {
+        return cacheProblem(problemRepository.save(problem, providedCodesMap));
     }
 
     @Override

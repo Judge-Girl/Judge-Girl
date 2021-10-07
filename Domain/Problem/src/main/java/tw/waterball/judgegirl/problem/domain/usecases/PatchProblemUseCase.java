@@ -62,7 +62,7 @@ public class PatchProblemUseCase extends BaseProblemUseCase {
                 LanguageEnv languageEnv = this.languageEnv.toValue();
                 // providedCodes should be inherited from the old one
                 problem.mayHaveLanguageEnv(languageEnv.getLanguage())
-                        .ifPresent(l -> languageEnv.setProvidedCodesFileId(l.getProvidedCodesFileId()));
+                        .ifPresent(l -> languageEnv.setProvidedCodes(l.getProvidedCodes().orElse(null)));
                 problem.putLanguageEnv(languageEnv);
             }
             if (testcase != null) {

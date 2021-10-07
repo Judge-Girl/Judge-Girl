@@ -20,6 +20,7 @@ import tw.waterball.judgegirl.primitives.submission.report.Report;
 
 import java.util.UUID;
 
+import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static tw.waterball.judgegirl.primitives.problem.JudgePluginTag.Type.OUTPUT_MATCH_POLICY;
 import static tw.waterball.judgegirl.primitives.problem.Language.C;
@@ -45,7 +46,7 @@ public class ProblemStubs {
                                 .compilation(new Compilation("Compilation Script"))
                                 .resourceSpec(new ResourceSpec(0.5f, 0))
                                 .submittedCodeSpec(new SubmittedCodeSpec(C, "main.c"))
-                                .providedCodesFileId("providedCodesFileId")
+                                .providedCodes(new ProvidedCodes("providedCodesFileId", singletonList("providedCodesFileName")))
                                 .build());
         for (int i = 0; i < testcaseGrades.length; i++) {
             builder.testcase(new Testcase(UUID.randomUUID().toString(), String.valueOf(i), PROBLEM_ID,
@@ -68,6 +69,6 @@ public class ProblemStubs {
                 .compilation(new Compilation("Script"))
                 .resourceSpec(new ResourceSpec(2, 0))
                 .submittedCodeSpec(new SubmittedCodeSpec(language, "a"))
-                .providedCodesFileId("providedCodesFileId");
+                .providedCodes(new ProvidedCodes("providedCodesFileId", singletonList("providedCodesFileName")));
     }
 }

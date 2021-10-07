@@ -14,12 +14,12 @@
 package tw.waterball.judgegirl.problem.domain.repositories;
 
 import tw.waterball.judgegirl.commons.models.files.FileResource;
+import tw.waterball.judgegirl.commons.models.files.StreamingResource;
 import tw.waterball.judgegirl.primitives.problem.Language;
 import tw.waterball.judgegirl.primitives.problem.LanguageEnv;
 import tw.waterball.judgegirl.primitives.problem.Problem;
 import tw.waterball.judgegirl.primitives.problem.TestcaseIO;
 
-import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -44,7 +44,7 @@ public interface ProblemRepository {
 
     List<String> getTags();
 
-    Problem save(Problem problem, Map<LanguageEnv, InputStream> providedCodesZipMap);
+    Problem save(Problem problem, Map<LanguageEnv, List<StreamingResource>> providedCodesMap);
 
     Problem save(Problem problem);
 

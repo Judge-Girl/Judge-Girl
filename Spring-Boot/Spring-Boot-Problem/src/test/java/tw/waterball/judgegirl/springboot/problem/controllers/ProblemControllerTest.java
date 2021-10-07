@@ -41,6 +41,7 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
+import tw.waterball.judgegirl.commons.models.files.StreamingResource;
 import tw.waterball.judgegirl.commons.token.TokenService;
 import tw.waterball.judgegirl.commons.token.TokenService.Identity;
 import tw.waterball.judgegirl.commons.token.TokenService.Token;
@@ -89,8 +90,8 @@ import static tw.waterball.judgegirl.commons.utils.HttpHeaderUtils.bearerWithTok
 import static tw.waterball.judgegirl.commons.utils.ResourceUtils.getResourceAsStream;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.*;
 import static tw.waterball.judgegirl.commons.utils.StringUtils.isNullOrBlank;
+import static tw.waterball.judgegirl.commons.utils.ZipUtils.getStreamResources;
 import static tw.waterball.judgegirl.commons.utils.ZipUtils.unzipToDestination;
-import static tw.waterball.judgegirl.commons.utils.ZipUtils.zipFilesFromResources;
 import static tw.waterball.judgegirl.primitives.problem.JudgePluginTag.Type.OUTPUT_MATCH_POLICY;
 import static tw.waterball.judgegirl.primitives.stubs.ProblemStubs.languageEnvTemplate;
 import static tw.waterball.judgegirl.primitives.stubs.ProblemStubs.problemTemplate;
@@ -422,7 +423,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         var actualProblem = getProblem(problemId);
         var actualLangEnv = actualProblem.getLanguageEnvs().get(0);
         var expectedLangEnv = langEnvUpdate.toValue();
-        expectedLangEnv.setProvidedCodesFileId(languageEnv.getProvidedCodesFileId());
+        expectedLangEnv.setProvidedCodes(languageEnv.getProvidedCodes().get());
         assertEquals(toViewModel(expectedLangEnv), actualLangEnv);
     }
 
@@ -807,9 +808,8 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     private void saveProblems(Integer... problemIds) {
         stream(problemIds).forEach(problemId -> {
             Problem problem = problemTemplate().id(problemId).build();
-            byte[] providedCodesZip = zipFilesFromResources("/providedCodes/file1.c", "/providedCodes/file2.c");
-            problemRepository.save(problem, singletonMap(problem.getLanguageEnv(Language.C),
-                    new ByteArrayInputStream(providedCodesZip)));
+            List<StreamingResource> providedCodesFiles = getStreamResources("/providedCodes/file1.c", "/providedCodes/file2.c");
+            problemRepository.save(problem, singletonMap(problem.getLanguageEnv(Language.C), providedCodesFiles));
         });
     }
 
@@ -861,14 +861,6 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
                         post(API_PREFIX)
                                 .contentType(MediaType.TEXT_PLAIN_VALUE).content(title)))
                         .andExpect(status().isOk())));
-    }
-
-    //TODO
-    private Problem givenProblemSavedWithProvidedCodesAndTestcaseIOs() {
-        Problem problem = problemTemplate().build();
-        return problemRepository.save(problem,
-                singletonMap(problem.getLanguageEnv(Language.C), new ByteArrayInputStream(expectedProvidedCodesZip))
-        );
     }
 
     private List<ProblemItem> getProblemItems(WithHeader withHeader) throws Exception {
@@ -1023,7 +1015,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
 
     private void problemShouldHaveProvidedCodesId(ProblemView problem, String fileId, Language language) {
         var langEnv = findFirst(problem.languageEnvs, lg -> lg.getLanguage().equals(language)).orElseThrow();
-        assertEquals(fileId, langEnv.getProvidedCodesFileId());
+        assertEquals(fileId, langEnv.getProvidedCodes().getProvidedCodesFileId());
     }
 
     private void problemShouldHaveTestcaseIoFileId(ProblemView problem, String testcaseId, String testcaseIoId) {
@@ -1032,8 +1024,8 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     }
 
     private void problemProvidedCodesAndTestcaseIOsShouldBeDeleted(Problem problem) {
-        List<String> providedCodes = mapToList(problem.getLanguageEnvs().values(), LanguageEnv::getProvidedCodesFileId);
-        List<String> fileIds = new LinkedList<>(providedCodes);
+        List<String> providedCodeFileIds = flatMapToList(problem.getLanguageEnvs().values(), languageEnv -> languageEnv.getProvidedCodesFileId().stream());
+        List<String> fileIds = new LinkedList<>(providedCodeFileIds);
         fileIds.addAll(getAllTestcaseIoFileIds(problem));
         fileIds.forEach(fileId -> assertFalse(fileShouldExist(fileId)));
     }
