@@ -25,8 +25,7 @@ import java.util.Optional;
 
 import static java.util.Collections.emptyList;
 import static java.util.Objects.requireNonNullElse;
-import static tw.waterball.judgegirl.commons.utils.StreamUtils.findFirst;
-import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
+import static tw.waterball.judgegirl.commons.utils.StreamUtils.*;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -74,14 +73,13 @@ public class ProblemView {
                 .description(view.description)
                 .outputMatchPolicyPluginTag(view.judgeMatchPolicyPluginTag.toValue())
                 .tags(requireNonNullElse(view.tags, emptyList()))
-                .testcases(mapToList(view.testcases, TestcaseView::toValue))
-                .archived(view.archived);
+                .testcases(mapToList(view.testcases, TestcaseView::toEntity))
+                .archived(view.archived)
+                .languageEnvs(toMap(view.languageEnvs, LanguageEnvView::getName, LanguageEnvView::toValue));
+
         if (view.judgeFilterPluginTags != null) {
             builder.filterPluginTags(mapToList(view.judgeFilterPluginTags, JudgePluginTagView::toValue));
         }
-        view.languageEnvs.stream()
-                .map(LanguageEnvView::toValue)
-                .forEach(languageEnv -> builder.languageEnv(languageEnv.getName(), languageEnv));
         return builder.build();
     }
 }
