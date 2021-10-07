@@ -64,7 +64,6 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Consumer;
 
-import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
 import static java.lang.String.join;
 import static java.nio.charset.Charset.defaultCharset;
@@ -252,11 +251,20 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    void WhenSaveProblemWithTitle_ProblemShouldBeSavedAndItsIdShouldBeResponded() throws Exception {
+    void WhenSaveProblemWithTitle_ProblemShouldBeSavedSuccessfully() throws Exception {
         String randomTitle = randomUUID().toString();
-        int id = saveProblemWithTitle(randomTitle);
+        var problem = saveProblemWithTitle(randomTitle);
 
-        assertEquals(randomTitle, getProblem(id).getTitle());
+        assertEquals(randomTitle, problem.getTitle());
+        // also test default problem's invariants
+        assertNotNull(problem.description);
+        assertTrue(problem.languageEnvs.isEmpty());
+        assertTrue(problem.tags.isEmpty());
+        assertFalse(problem.archived);
+        assertFalse(problem.visible);
+
+        // should be saved
+        assertTrue(problemRepository.findProblemById(problem.id).isPresent(), "The problem is not saved.");
     }
 
     @Test
@@ -423,7 +431,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         var actualProblem = getProblem(problemId);
         var actualLangEnv = actualProblem.getLanguageEnvs().get(0);
         var expectedLangEnv = langEnvUpdate.toValue();
-        expectedLangEnv.setProvidedCodes(languageEnv.getProvidedCodes().get());
+        expectedLangEnv.setProvidedCodes(languageEnv.getProvidedCodes().orElseThrow());
         assertEquals(toViewModel(expectedLangEnv), actualLangEnv);
     }
 
@@ -594,9 +602,9 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
     @Test
     void GivenOneProblemSavedWithoutLanguageEnv_WhenUploadProvidedCodes_ShouldRespondBadRequest() throws Exception {
         Language language = Language.C;
-        int problemId = saveProblemWithTitle("problemTitle");
+        var problem = saveProblemWithTitle("problemTitle");
 
-        uploadProvidedCodes(problemId, language, getProvidedCodes())
+        uploadProvidedCodes(problem.id, language, getProvidedCodes())
                 .andExpect(status().isBadRequest());
     }
 
@@ -855,12 +863,11 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
         return problemRepository.findProblemById(problemId).orElseThrow();
     }
 
-    private int saveProblemWithTitle(String title) throws Exception {
-        return parseInt(getContentAsString(
-                mockMvc.perform(withToken(adminToken,
-                        post(API_PREFIX)
-                                .contentType(MediaType.TEXT_PLAIN_VALUE).content(title)))
-                        .andExpect(status().isOk())));
+    private ProblemView saveProblemWithTitle(String title) throws Exception {
+        return getBody(mockMvc.perform(withToken(adminToken,
+                post(API_PREFIX)
+                        .contentType(MediaType.TEXT_PLAIN_VALUE).content(title)))
+                .andExpect(status().isOk()), ProblemView.class);
     }
 
     private List<ProblemItem> getProblemItems(WithHeader withHeader) throws Exception {

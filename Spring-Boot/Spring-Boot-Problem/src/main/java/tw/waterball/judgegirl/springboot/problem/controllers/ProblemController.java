@@ -159,10 +159,13 @@ public class ProblemController {
     }
 
     @PostMapping(consumes = "text/plain")
-    public int saveProblemWithTitleAndGetId(@RequestHeader("Authorization") String authorization,
-                                            @RequestBody String title) {
-        return tokenService.returnIfAdmin(authorization, token ->
-                saveProblemWithTitleUseCase.execute(title));
+    public ProblemView saveProblemWithTitleAndGetId(@RequestHeader("Authorization") String authorization,
+                                                    @RequestBody String title) {
+        return tokenService.returnIfAdmin(authorization, token -> {
+            var presenter = new GetProblemPresenter();
+            saveProblemWithTitleUseCase.execute(title, presenter);
+            return presenter.present();
+        });
     }
 
     @PatchMapping("/{problemId}")
@@ -275,7 +278,8 @@ public class ProblemController {
     }
 }
 
-class GetProblemPresenter implements GetProblemUseCase.Presenter {
+class GetProblemPresenter implements SaveProblemWithTitleUseCase.Presenter,
+        GetProblemUseCase.Presenter {
     private Problem problem;
 
     @Override
