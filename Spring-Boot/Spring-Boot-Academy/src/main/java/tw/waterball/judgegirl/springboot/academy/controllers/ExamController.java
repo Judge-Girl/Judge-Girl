@@ -50,7 +50,7 @@ public class ExamController {
     private final AddExamineesUseCase addExamineesUseCase;
     private final CreateExamTranscriptUseCase createExamTranscriptUseCase;
     private final CreateQuestionUseCase createQuestionUseCase;
-    private final UpdateQuestionUseCase updateQuestionUseCase;
+    private final UpdateQuestionsUseCase updateQuestionsUseCase;
     private final DeleteQuestionUseCase deleteQuestionUseCase;
     private final AnswerQuestionUseCase answerQuestionUseCase;
 
@@ -102,11 +102,23 @@ public class ExamController {
     @PutMapping("/exams/{examId}/problems/{problemId}")
     public void updateQuestion(@RequestHeader("Authorization") String authorization,
                                @PathVariable int examId, @PathVariable int problemId,
-                               @RequestBody UpdateQuestionUseCase.Request request) {
+                               @RequestBody UpdateQuestionsUseCase.QuestionUpsert questionUpsert) {
         tokenService.ifAdminToken(authorization, token -> {
-            request.setExamId(examId);
-            request.setProblemId(problemId);
-            updateQuestionUseCase.execute(request);
+            questionUpsert.examId = examId;
+            questionUpsert.problemId = problemId;
+            var request = new UpdateQuestionsUseCase.Request(examId, questionUpsert);
+            updateQuestionsUseCase.execute(request);
+        });
+    }
+
+    @PutMapping("/exams/{examId}/problems")
+    public void updateQuestions(@RequestHeader("Authorization") String authorization,
+                                @PathVariable int examId,
+                                @RequestBody UpdateQuestionsUseCase.Request request) {
+        tokenService.ifAdminToken(authorization, token -> {
+            request.examId = examId;
+            request.questions.forEach(question -> question.examId = examId);
+            updateQuestionsUseCase.execute(request);
         });
     }
 

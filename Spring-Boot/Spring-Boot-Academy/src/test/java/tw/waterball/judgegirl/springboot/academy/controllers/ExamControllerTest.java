@@ -77,9 +77,9 @@ import static tw.waterball.judgegirl.testkit.stubs.MultipartFileStubs.codes;
 @ActiveProfiles({Profiles.JWT, Profiles.AMQP})
 @ContextConfiguration(classes = SpringBootAcademyApplication.class)
 class ExamControllerTest extends AbstractSpringBootTest {
+    public static final int EXAM_ID = 1;
     public static final int PROBLEM_ID = 2;
     public static final int ANOTHER_PROBLEM_ID = 300;
-
     public static final int NONEXISTING_EXAM_ID = 9999;
     public static final int NONEXISTING_PROBLEM_ID = 9999;
     public static final int STUDENT_A_ID = 1;
@@ -333,7 +333,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
         createQuestion(new CreateQuestionUseCase.Request(exam.getId(), 2, 5, 100, 1));
 
         anotherTransaction(() ->
-                updateQuestion(new UpdateQuestionUseCase.Request(exam.id, PROBLEM_ID, 6, 150, 2))
+                updateQuestion(new UpdateQuestionsUseCase.QuestionUpsert(exam.id, PROBLEM_ID, 6, 150, 2))
                         .andExpect(status().isOk()));
 
         anotherTransaction(() -> {
@@ -654,13 +654,13 @@ class ExamControllerTest extends AbstractSpringBootTest {
 
         final String COLUMN_NAME = "Name";
         final String COLUMN_EMAIL = "Email";
-        final String COLUMN_PROBLEM_1_TITLE = problem.title;
-        final String COLUMN_PROBLEM_2_TITLE = anotherProblem.title;
+        String COLUMN_PROBLEM_1_TITLE = problem.title;
+        String COLUMN_PROBLEM_2_TITLE = anotherProblem.title;
         final String COLUMN_TOTAL_SCORE = "Total Score";
 
         Reader in = new InputStreamReader(new ByteArrayInputStream(response.getContentAsByteArray()));
         var records = CSVFormat.DEFAULT.withHeader
-                (COLUMN_NAME, COLUMN_EMAIL, COLUMN_PROBLEM_1_TITLE, COLUMN_PROBLEM_2_TITLE, COLUMN_TOTAL_SCORE)
+                        (COLUMN_NAME, COLUMN_EMAIL, COLUMN_PROBLEM_1_TITLE, COLUMN_PROBLEM_2_TITLE, COLUMN_TOTAL_SCORE)
                 .parse(in);
 
         CSVRecord csvHeader = records.iterator().next();
@@ -690,17 +690,57 @@ class ExamControllerTest extends AbstractSpringBootTest {
         }
     }
 
+    @DisplayName("Given one exam created with two questions(A, B)" +
+            "When update question's (A) question order to 3 " +
+            "and update question's (B) quota to 50" +
+            "Then question's (A) question order should be 3 " +
+            "and question's (B) quota should be 50")
+    @Test
+    void testUpdateMultipleQuestions() throws Exception {
+        var expectedExam = givenOneExamCreatedWithTwoQuestionsAndGet();
+        var expectedQuestions = expectedExam.getQuestions();
+        var expectedQuestionA = expectedQuestions.get(0);
+        var expectedQuestionB = expectedQuestions.get(1);
+        expectedQuestionA.setQuestionOrder(3);
+        expectedQuestionB.setQuota(50);
+
+        int examId = expectedExam.getId();
+        updateMultipleQuestions(examId, expectedQuestionA, expectedQuestionB);
+
+        var actualExam = getExamById(examId);
+        var actualQuestions = actualExam.getQuestions();
+        assertEqualsIgnoreOrder(expectedQuestions, actualQuestions);
+    }
+
+    private ExamView givenOneExamCreatedWithTwoQuestionsAndGet() throws Exception {
+        int examId = createExamAndGet(during(oneSecondAgo(), oneSecondAfter()), "name").getId();
+        createQuestion(new CreateQuestionUseCase.Request(examId, PROBLEM_ID, 30, 100, 1))
+                .andExpect(status().isOk());
+        createQuestion(new CreateQuestionUseCase.Request(examId, ANOTHER_PROBLEM_ID, 5, 100, 2))
+                .andExpect(status().isOk());
+        return getExamById(examId);
+    }
+
+    private void updateMultipleQuestions(int examId, QuestionView... questions) throws Exception {
+        var questionUpserts = mapToList(questions, question -> new UpdateQuestionsUseCase.QuestionUpsert(question.examId, question.problemId, question.quota, question.score, question.questionOrder));
+        var request = new UpdateQuestionsUseCase.Request(examId, questionUpserts);
+        mockMvc.perform(withAdminToken(put("/api/exams/{examId}/problems", examId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(toJson(request))))
+                .andExpect(status().isOk());
+    }
+
     @SneakyThrows
     private TranscriptView produceExamTranscript(ExamView exam) {
         return getBody(mockMvc.perform(withAdminToken(
-                get("/api/exams/{examId}/transcript", exam.getId())))
+                        get("/api/exams/{examId}/transcript", exam.getId())))
                 .andExpect(status().isOk()), TranscriptView.class);
     }
 
     @SneakyThrows
     private MockHttpServletResponse produceCsvFileExamTranscript(ExamView exam) {
         return mockMvc.perform(withAdminToken(
-                get("/api/exams/{examId}/transcript/csv", exam.getId())))
+                        get("/api/exams/{examId}/transcript/csv", exam.getId())))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_OCTET_STREAM_VALUE))
                 .andReturn().getResponse();
@@ -736,15 +776,15 @@ class ExamControllerTest extends AbstractSpringBootTest {
 
     private void addGroupsOfExaminees(ExamView exam, Group... groups) throws Exception {
         mockMvc.perform(withAdminToken(
-                post("/api/exams/{examId}/groups", exam.getId())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(toJson(new AddGroupOfExamineesUseCase.Request(exam.getId(), mapToList(groups, Group::getName))))))
+                        post("/api/exams/{examId}/groups", exam.getId())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(toJson(new AddGroupOfExamineesUseCase.Request(exam.getId(), mapToList(groups, Group::getName))))))
                 .andExpect(status().isOk());
     }
 
     private List<Student> getExaminees(ExamView exam) throws Exception {
         return getBody(mockMvc.perform(withAdminToken(
-                get("/api/exams/{examId}/students", exam.id)))
+                        get("/api/exams/{examId}/students", exam.id)))
                 .andExpect(status().isOk()), new TypeReference<>() {
         });
     }
@@ -894,10 +934,10 @@ class ExamControllerTest extends AbstractSpringBootTest {
     @SneakyThrows
     private List<ExamView> getStudentExams(int studentId, ExamFilter.Status status, int skip, int size) {
         return getBody(mockMvc.perform(
-                withStudentToken(studentId, get("/api/students/{studentId}/exams", studentId)
-                        .queryParam("status", String.valueOf(status))
-                        .queryParam("skip", String.valueOf(skip))
-                        .queryParam("size", String.valueOf(size))))
+                        withStudentToken(studentId, get("/api/students/{studentId}/exams", studentId)
+                                .queryParam("status", String.valueOf(status))
+                                .queryParam("skip", String.valueOf(skip))
+                                .queryParam("size", String.valueOf(size))))
                 .andExpect(status().isOk()), new TypeReference<>() {
         });
     }
@@ -905,8 +945,8 @@ class ExamControllerTest extends AbstractSpringBootTest {
     @SneakyThrows
     private List<ExamView> getStudentExams(int studentId, ExamFilter.Status status) {
         return getBody(mockMvc.perform(
-                withStudentToken(studentId, get("/api/students/{studentId}/exams", studentId)
-                        .queryParam("status", String.valueOf(status))))
+                        withStudentToken(studentId, get("/api/students/{studentId}/exams", studentId)
+                                .queryParam("status", String.valueOf(status))))
                 .andExpect(status().isOk()), new TypeReference<>() {
         });
     }
@@ -914,22 +954,22 @@ class ExamControllerTest extends AbstractSpringBootTest {
     @SneakyThrows
     private ExamView getExamById(int examId) {
         return getBody(mockMvc.perform(withAdminToken(
-                get("/api/exams/{examId}", examId)))
+                        get("/api/exams/{examId}", examId)))
                 .andExpect(status().isOk()), ExamView.class);
     }
 
     @SneakyThrows
     private ExamHome getExamProgressOverview(int examId) {
         return getBody(mockMvc.perform(
-                withStudentToken(STUDENT_A_ID,
-                        get("/api/exams/{examId}/students/{studentId}/overview", examId, STUDENT_A_ID)))
+                        withStudentToken(STUDENT_A_ID,
+                                get("/api/exams/{examId}/students/{studentId}/overview", examId, STUDENT_A_ID)))
                 .andExpect(status().isOk()), ExamHome.class);
     }
 
     @SneakyThrows
     private ExamOverview getExamOverview(int examId) {
         return getBody(mockMvc.perform(withAdminToken(
-                get("/api/exams/{examId}/overview", examId)))
+                        get("/api/exams/{examId}/overview", examId)))
                 .andExpect(status().isOk()), ExamOverview.class);
     }
 
@@ -968,10 +1008,10 @@ class ExamControllerTest extends AbstractSpringBootTest {
     }
 
     @SneakyThrows
-    private ResultActions updateQuestion(UpdateQuestionUseCase.Request request) {
+    private ResultActions updateQuestion(UpdateQuestionsUseCase.QuestionUpsert questionUpsert) {
         return mockMvc.perform(withAdminToken(
-                put("/api/exams/{examId}/problems/{problemId}", request.examId, request.problemId)
-                        .contentType(MediaType.APPLICATION_JSON).content(toJson(request))));
+                put("/api/exams/{examId}/problems/{problemId}", questionUpsert.examId, questionUpsert.problemId)
+                        .contentType(MediaType.APPLICATION_JSON).content(toJson(questionUpsert))));
     }
 
     @SneakyThrows
