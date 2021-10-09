@@ -109,7 +109,7 @@ public class ExamController {
         });
     }
 
-    @PutMapping("/exams/{examId}/problems/reorder")
+    @PatchMapping("/exams/{examId}/problems/reorder")
     public void reorderQuestions(@RequestHeader("Authorization") String authorization,
                                  @PathVariable int examId,
                                  @RequestBody ReorderQuestionsUseCase.Request request) {

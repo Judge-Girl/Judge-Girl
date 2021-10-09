@@ -698,7 +698,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
         var exam = givenOneExamCreatedWithTwoQuestionsAndGet();
 
         int examId = exam.getId();
-        updateMultipleQuestions(examId, 2, 1);
+        reorderQuestions(examId, 2, 1);
 
         var actualExam = getExamById(examId);
         var actualQuestions = mapToList(actualExam.getQuestions(), QuestionView::toEntity);
@@ -717,9 +717,9 @@ class ExamControllerTest extends AbstractSpringBootTest {
         return getExamById(examId);
     }
 
-    private void updateMultipleQuestions(int examId, int... reorders) throws Exception {
+    private void reorderQuestions(int examId, int... reorders) throws Exception {
         var request = new ReorderQuestionsUseCase.Request(examId, reorders);
-        mockMvc.perform(withAdminToken(put("/api/exams/{examId}/problems/reorder", examId)
+        mockMvc.perform(withAdminToken(patch("/api/exams/{examId}/problems/reorder", examId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(toJson(request))))
                 .andExpect(status().isOk());
