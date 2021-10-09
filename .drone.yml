@@ -10,6 +10,9 @@ steps:
       - "echo Maven: $(mvn -v)"
       - "echo JAVA_HOME: $JAVA_HOME"
       - printenv
+    when:
+      event:
+        - push
   - name: Prepare
     commands:
       - git submodule update --recursive --init
@@ -18,6 +21,9 @@ steps:
       - echo `pwd`
       - cp -r ./* $workspace
       - cd $workspace
+    when:
+      event:
+        - push
   - name: Integration
     commands:
       - export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
