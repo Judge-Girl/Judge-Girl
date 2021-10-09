@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ExamView {
-    public Integer id;
+    public int id;
     public String name;
     public Date startTime;
     public Date endTime;

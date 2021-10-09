@@ -15,6 +15,8 @@ import tw.waterball.judgegirl.primitives.exam.ExamHasNotBeenStartedOrHasBeenClos
 import tw.waterball.judgegirl.primitives.exam.NoSubmissionQuotaException;
 import tw.waterball.judgegirl.primitives.submission.SubmissionThrottlingException;
 
+import java.util.Arrays;
+
 import static java.lang.String.join;
 import static tw.waterball.judgegirl.commons.utils.DateUtils.format;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.sum;
@@ -36,6 +38,7 @@ public class LoggingAspect {
     private static final Logger CREATE_EXAM_TRANSCRIPT_USE_CASE_LOGGER = LoggerFactory.getLogger(CreateExamTranscriptUseCase.class);
     private static final Logger CREATE_QUESTION_USE_CASE_LOGGER = LoggerFactory.getLogger(CreateQuestionUseCase.class);
     private static final Logger UPDATE_QUESTION_USE_CASE_LOGGER = LoggerFactory.getLogger(UpdateQuestionUseCase.class);
+    private static final Logger REORDER_QUESTIONS_USE_CASE_LOGGER = LoggerFactory.getLogger(ReorderQuestionsUseCase.class);
     private static final Logger DELETE_QUESTION_USE_CASE_LOGGER = LoggerFactory.getLogger(DeleteQuestionUseCase.class);
 
     @Around("execution(* tw.waterball.judgegirl.academy.domain.usecases.exam.AnswerQuestionUseCase.execute(" +
@@ -131,6 +134,14 @@ public class LoggingAspect {
         var request = (UpdateQuestionUseCase.Request) args[0];
         UPDATE_QUESTION_USE_CASE_LOGGER.info("[Update Question] examId={} problemId={} quota={} score={} questionOrder={}",
                 request.getExamId(), request.getProblemId(), request.getQuota(), request.getScore(), request.getQuestionOrder());
+    }
+
+    @Before("bean(reorderQuestionsUseCase)")
+    public void logReorderQuestionsUseCase(JoinPoint joinPoint) {
+        var args = joinPoint.getArgs();
+        var request = (ReorderQuestionsUseCase.Request) args[0];
+        REORDER_QUESTIONS_USE_CASE_LOGGER.info("[Reorder Questions] examId={} reorders={}",
+                request.getExamId(), Arrays.toString(request.getReorders()));
     }
 
     @Before("bean(deleteQuestionUseCase)")

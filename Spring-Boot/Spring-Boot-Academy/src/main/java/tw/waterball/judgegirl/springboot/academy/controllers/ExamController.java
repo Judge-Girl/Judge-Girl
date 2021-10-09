@@ -1,7 +1,6 @@
 package tw.waterball.judgegirl.springboot.academy.controllers;
 
 import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -30,7 +29,6 @@ import static tw.waterball.judgegirl.springboot.utils.ResponseEntityUtils.respon
 import static tw.waterball.judgegirl.submissionapi.clients.SubmissionApiClient.SUBMIT_CODE_MULTIPART_KEY_NAME;
 
 @CrossOrigin
-@Slf4j
 @RequestMapping("/api")
 @AllArgsConstructor
 @RestController
@@ -51,6 +49,7 @@ public class ExamController {
     private final CreateExamTranscriptUseCase createExamTranscriptUseCase;
     private final CreateQuestionUseCase createQuestionUseCase;
     private final UpdateQuestionUseCase updateQuestionUseCase;
+    private final ReorderQuestionsUseCase reorderQuestionsUseCase;
     private final DeleteQuestionUseCase deleteQuestionUseCase;
     private final AnswerQuestionUseCase answerQuestionUseCase;
 
@@ -104,9 +103,19 @@ public class ExamController {
                                @PathVariable int examId, @PathVariable int problemId,
                                @RequestBody UpdateQuestionUseCase.Request request) {
         tokenService.ifAdminToken(authorization, token -> {
-            request.setExamId(examId);
-            request.setProblemId(problemId);
+            request.examId = examId;
+            request.problemId = problemId;
             updateQuestionUseCase.execute(request);
+        });
+    }
+
+    @PatchMapping("/exams/{examId}/problems/reorder")
+    public void reorderQuestions(@RequestHeader("Authorization") String authorization,
+                                 @PathVariable int examId,
+                                 @RequestBody ReorderQuestionsUseCase.Request request) {
+        tokenService.ifAdminToken(authorization, token -> {
+            request.examId = examId;
+            reorderQuestionsUseCase.execute(request);
         });
     }
 
