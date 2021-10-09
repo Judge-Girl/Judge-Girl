@@ -103,6 +103,15 @@ public class Exam {
         updatedQuestion.setScore(question.getScore());
     }
 
+    public void reorderQuestions(int... reorders) {
+        if (questions.size() < reorders.length) {
+            throw new IllegalArgumentException("Reorders amount can't over than questions amount");
+        }
+        for (int index = 0; index < questions.size(); index++) {
+            questions.get(index).setQuestionOrder(reorders[index]);
+        }
+    }
+
     public void addQuestion(Question question) {
         questions.add(question);
     }

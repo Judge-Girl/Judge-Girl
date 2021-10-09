@@ -1,7 +1,6 @@
 package tw.waterball.judgegirl.springboot.academy.controllers;
 
 import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -30,7 +29,6 @@ import static tw.waterball.judgegirl.springboot.utils.ResponseEntityUtils.respon
 import static tw.waterball.judgegirl.submissionapi.clients.SubmissionApiClient.SUBMIT_CODE_MULTIPART_KEY_NAME;
 
 @CrossOrigin
-@Slf4j
 @RequestMapping("/api")
 @AllArgsConstructor
 @RestController
@@ -51,7 +49,7 @@ public class ExamController {
     private final CreateExamTranscriptUseCase createExamTranscriptUseCase;
     private final CreateQuestionUseCase createQuestionUseCase;
     private final UpdateQuestionUseCase updateQuestionUseCase;
-    private final UpdateMultipleQuestionOrdersUseCase updateMultipleQuestionOrdersUseCase;
+    private final ReorderQuestionsUseCase reorderQuestionsUseCase;
     private final DeleteQuestionUseCase deleteQuestionUseCase;
     private final AnswerQuestionUseCase answerQuestionUseCase;
 
@@ -111,14 +109,13 @@ public class ExamController {
         });
     }
 
-    @PutMapping("/exams/{examId}/problems")
-    public void updateMultipleQuestionOrders(@RequestHeader("Authorization") String authorization,
-                                             @PathVariable int examId,
-                                             @RequestBody UpdateMultipleQuestionOrdersUseCase.Request request) {
+    @PutMapping("/exams/{examId}/problems/reorder")
+    public void reorderQuestions(@RequestHeader("Authorization") String authorization,
+                                 @PathVariable int examId,
+                                 @RequestBody ReorderQuestionsUseCase.Request request) {
         tokenService.ifAdminToken(authorization, token -> {
             request.examId = examId;
-            request.questions.forEach(question -> question.examId = examId);
-            updateMultipleQuestionOrdersUseCase.execute(request);
+            reorderQuestionsUseCase.execute(request);
         });
     }
 
