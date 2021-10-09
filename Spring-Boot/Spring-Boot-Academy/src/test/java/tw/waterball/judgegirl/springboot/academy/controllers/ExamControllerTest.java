@@ -77,9 +77,9 @@ import static tw.waterball.judgegirl.testkit.stubs.MultipartFileStubs.codes;
 @ActiveProfiles({Profiles.JWT, Profiles.AMQP})
 @ContextConfiguration(classes = SpringBootAcademyApplication.class)
 class ExamControllerTest extends AbstractSpringBootTest {
-    public static final int EXAM_ID = 1;
     public static final int PROBLEM_ID = 2;
     public static final int ANOTHER_PROBLEM_ID = 300;
+
     public static final int NONEXISTING_EXAM_ID = 9999;
     public static final int NONEXISTING_PROBLEM_ID = 9999;
     public static final int STUDENT_A_ID = 1;
@@ -333,7 +333,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
         createQuestion(new CreateQuestionUseCase.Request(exam.getId(), 2, 5, 100, 1));
 
         anotherTransaction(() ->
-                updateQuestion(new UpdateQuestionsUseCase.QuestionUpsert(exam.id, PROBLEM_ID, 6, 150, 2))
+                updateQuestion(new UpdateQuestionUseCase.Request(exam.id, PROBLEM_ID, 6, 150, 2))
                         .andExpect(status().isOk()));
 
         anotherTransaction(() -> {
@@ -692,24 +692,27 @@ class ExamControllerTest extends AbstractSpringBootTest {
 
     @DisplayName("Given one exam created with two questions(A, B)" +
             "When update question's (A) question order to 3 " +
-            "and update question's (B) quota to 50" +
+            "and update question's (B) question order to 1" +
             "Then question's (A) question order should be 3 " +
-            "and question's (B) quota should be 50")
+            "and question's (B) question order should be 1")
     @Test
-    void testUpdateMultipleQuestions() throws Exception {
-        var expectedExam = givenOneExamCreatedWithTwoQuestionsAndGet();
-        var expectedQuestions = expectedExam.getQuestions();
-        var expectedQuestionA = expectedQuestions.get(0);
-        var expectedQuestionB = expectedQuestions.get(1);
-        expectedQuestionA.setQuestionOrder(3);
-        expectedQuestionB.setQuota(50);
+    void testUpdateMultipleQuestionOrders() throws Exception {
+        var exam = givenOneExamCreatedWithTwoQuestionsAndGet();
+        var questions = mapToList(exam.getQuestions(), QuestionView::toEntity);
+        Question questionA = questions.get(0);
+        Question questionB = questions.get(1);
 
-        int examId = expectedExam.getId();
-        updateMultipleQuestions(examId, expectedQuestionA, expectedQuestionB);
+        int examId = exam.getId();
+        var questionAOrderUpsert = new UpdateMultipleQuestionOrdersUseCase.QuestionOrderUpsert(examId, questionA.getProblemId(), 3);
+        var questionBOrderUpsert = new UpdateMultipleQuestionOrdersUseCase.QuestionOrderUpsert(examId, questionB.getProblemId(), 1);
+        updateMultipleQuestions(examId, questionAOrderUpsert, questionBOrderUpsert);
 
         var actualExam = getExamById(examId);
-        var actualQuestions = actualExam.getQuestions();
-        assertEqualsIgnoreOrder(expectedQuestions, actualQuestions);
+        var actualQuestions = mapToList(actualExam.getQuestions(), QuestionView::toEntity);
+        Question actualQuestionA = actualQuestions.get(0);
+        Question actualQuestionB = actualQuestions.get(1);
+        assertEquals(3, actualQuestionA.getQuestionOrder());
+        assertEquals(1, actualQuestionB.getQuestionOrder());
     }
 
     private ExamView givenOneExamCreatedWithTwoQuestionsAndGet() throws Exception {
@@ -721,9 +724,8 @@ class ExamControllerTest extends AbstractSpringBootTest {
         return getExamById(examId);
     }
 
-    private void updateMultipleQuestions(int examId, QuestionView... questions) throws Exception {
-        var questionUpserts = mapToList(questions, question -> new UpdateQuestionsUseCase.QuestionUpsert(question.examId, question.problemId, question.quota, question.score, question.questionOrder));
-        var request = new UpdateQuestionsUseCase.Request(examId, questionUpserts);
+    private void updateMultipleQuestions(int examId, UpdateMultipleQuestionOrdersUseCase.QuestionOrderUpsert... questionOrderUpserts) throws Exception {
+        var request = new UpdateMultipleQuestionOrdersUseCase.Request(examId, questionOrderUpserts);
         mockMvc.perform(withAdminToken(put("/api/exams/{examId}/problems", examId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(toJson(request))))
@@ -1008,10 +1010,10 @@ class ExamControllerTest extends AbstractSpringBootTest {
     }
 
     @SneakyThrows
-    private ResultActions updateQuestion(UpdateQuestionsUseCase.QuestionUpsert questionUpsert) {
+    private ResultActions updateQuestion(UpdateQuestionUseCase.Request request) {
         return mockMvc.perform(withAdminToken(
-                put("/api/exams/{examId}/problems/{problemId}", questionUpsert.examId, questionUpsert.problemId)
-                        .contentType(MediaType.APPLICATION_JSON).content(toJson(questionUpsert))));
+                put("/api/exams/{examId}/problems/{problemId}", request.examId, request.problemId)
+                        .contentType(MediaType.APPLICATION_JSON).content(toJson(request))));
     }
 
     @SneakyThrows

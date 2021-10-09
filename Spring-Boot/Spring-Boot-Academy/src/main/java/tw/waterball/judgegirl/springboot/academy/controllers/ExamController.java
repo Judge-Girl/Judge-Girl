@@ -50,7 +50,8 @@ public class ExamController {
     private final AddExamineesUseCase addExamineesUseCase;
     private final CreateExamTranscriptUseCase createExamTranscriptUseCase;
     private final CreateQuestionUseCase createQuestionUseCase;
-    private final UpdateQuestionsUseCase updateQuestionsUseCase;
+    private final UpdateQuestionUseCase updateQuestionUseCase;
+    private final UpdateMultipleQuestionOrdersUseCase updateMultipleQuestionOrdersUseCase;
     private final DeleteQuestionUseCase deleteQuestionUseCase;
     private final AnswerQuestionUseCase answerQuestionUseCase;
 
@@ -102,23 +103,22 @@ public class ExamController {
     @PutMapping("/exams/{examId}/problems/{problemId}")
     public void updateQuestion(@RequestHeader("Authorization") String authorization,
                                @PathVariable int examId, @PathVariable int problemId,
-                               @RequestBody UpdateQuestionsUseCase.QuestionUpsert questionUpsert) {
+                               @RequestBody UpdateQuestionUseCase.Request request) {
         tokenService.ifAdminToken(authorization, token -> {
-            questionUpsert.examId = examId;
-            questionUpsert.problemId = problemId;
-            var request = new UpdateQuestionsUseCase.Request(examId, questionUpsert);
-            updateQuestionsUseCase.execute(request);
+            request.examId = examId;
+            request.problemId = problemId;
+            updateQuestionUseCase.execute(request);
         });
     }
 
     @PutMapping("/exams/{examId}/problems")
-    public void updateQuestions(@RequestHeader("Authorization") String authorization,
-                                @PathVariable int examId,
-                                @RequestBody UpdateQuestionsUseCase.Request request) {
+    public void updateMultipleQuestionOrders(@RequestHeader("Authorization") String authorization,
+                                             @PathVariable int examId,
+                                             @RequestBody UpdateMultipleQuestionOrdersUseCase.Request request) {
         tokenService.ifAdminToken(authorization, token -> {
             request.examId = examId;
             request.questions.forEach(question -> question.examId = examId);
-            updateQuestionsUseCase.execute(request);
+            updateMultipleQuestionOrdersUseCase.execute(request);
         });
     }
 

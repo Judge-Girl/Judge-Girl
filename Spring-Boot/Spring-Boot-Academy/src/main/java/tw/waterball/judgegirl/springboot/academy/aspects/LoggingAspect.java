@@ -35,7 +35,8 @@ public class LoggingAspect {
     private static final Logger ADD_EXAMINEES_USE_CASE_LOGGER = LoggerFactory.getLogger(AddExamineesUseCase.class);
     private static final Logger CREATE_EXAM_TRANSCRIPT_USE_CASE_LOGGER = LoggerFactory.getLogger(CreateExamTranscriptUseCase.class);
     private static final Logger CREATE_QUESTION_USE_CASE_LOGGER = LoggerFactory.getLogger(CreateQuestionUseCase.class);
-    private static final Logger UPDATE_QUESTIONS_USE_CASE_LOGGER = LoggerFactory.getLogger(UpdateQuestionsUseCase.class);
+    private static final Logger UPDATE_QUESTION_USE_CASE_LOGGER = LoggerFactory.getLogger(UpdateQuestionUseCase.class);
+    private static final Logger UPDATE_MULTIPLE_QUESTION_ORDERS_USE_CASE_LOGGER = LoggerFactory.getLogger(UpdateMultipleQuestionOrdersUseCase.class);
     private static final Logger DELETE_QUESTION_USE_CASE_LOGGER = LoggerFactory.getLogger(DeleteQuestionUseCase.class);
 
     @Around("execution(* tw.waterball.judgegirl.academy.domain.usecases.exam.AnswerQuestionUseCase.execute(" +
@@ -125,13 +126,21 @@ public class LoggingAspect {
                 request.getExamId(), request.getProblemId(), request.getQuota(), request.getScore(), request.getQuestionOrder());
     }
 
-    @Before("bean(updateQuestionsUseCase)")
-    public void logUpdateQuestionsUseCase(JoinPoint joinPoint) {
+    @Before("bean(updateQuestionUseCase)")
+    public void logUpdateQuestionUseCase(JoinPoint joinPoint) {
         var args = joinPoint.getArgs();
-        var request = (UpdateQuestionsUseCase.Request) args[0];
-        request.getQuestions().forEach(
-                question -> UPDATE_QUESTIONS_USE_CASE_LOGGER.info("[Update Questions] examId={} problemId={} quota={} score={} questionOrder={}",
-                        question.getExamId(), question.getProblemId(), question.getQuota(), question.getScore(), question.getQuestionOrder()));
+        var request = (UpdateQuestionUseCase.Request) args[0];
+        UPDATE_QUESTION_USE_CASE_LOGGER.info("[Update Question] examId={} problemId={} quota={} score={} questionOrder={}",
+                request.getExamId(), request.getProblemId(), request.getQuota(), request.getScore(), request.getQuestionOrder());
+    }
+
+    @Before("bean(updateMultipleQuestionOrdersUseCase)")
+    public void logUpdateMultipleQuestionOrdersUseCase(JoinPoint joinPoint) {
+        var args = joinPoint.getArgs();
+        var request = (UpdateMultipleQuestionOrdersUseCase.Request) args[0];
+        request.getQuestions().forEach(question ->
+                UPDATE_MULTIPLE_QUESTION_ORDERS_USE_CASE_LOGGER.info("[Update Multiple QuestionOrder] examId={} problemId={} questionOrder={}",
+                        question.getExamId(), question.getProblemId(), question.getQuestionOrder()));
     }
 
     @Before("bean(deleteQuestionUseCase)")

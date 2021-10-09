@@ -12,21 +12,20 @@ import javax.inject.Named;
 import java.util.List;
 
 import static java.util.List.of;
-import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
 
 /**
  * @author - wally55077@gmail.com
  */
 @Named
-public class UpdateQuestionsUseCase extends AbstractExamUseCase {
+public class UpdateMultipleQuestionOrdersUseCase extends AbstractExamUseCase {
 
-    public UpdateQuestionsUseCase(ExamRepository examRepository) {
+    public UpdateMultipleQuestionOrdersUseCase(ExamRepository examRepository) {
         super(examRepository);
     }
 
     public void execute(Request request) throws NotFoundException {
         Exam exam = findExam(request.examId);
-        request.updateQuestion(exam);
+        request.updateQuestionOrders(exam);
         examRepository.save(exam);
     }
 
@@ -35,30 +34,29 @@ public class UpdateQuestionsUseCase extends AbstractExamUseCase {
     @AllArgsConstructor
     public static class Request {
         public int examId;
-        public List<QuestionUpsert> questions;
+        public List<QuestionOrderUpsert> questions;
 
-        public Request(int examId, QuestionUpsert questionUpsert) {
-            this(examId, of(questionUpsert));
+        public Request(int examId, QuestionOrderUpsert... questionOrderUpserts) {
+            this(examId, of(questionOrderUpserts));
         }
 
-        public void updateQuestion(Exam exam) {
-            mapToList(questions, QuestionUpsert::toValue)
-                    .forEach(exam::updateQuestion);
+        public void updateQuestionOrders(Exam exam) {
+            questions.forEach(question -> question.updateQuestionOrder(exam));
         }
     }
 
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class QuestionUpsert {
+    public static class QuestionOrderUpsert {
         public int examId;
         public int problemId;
-        public int quota;
-        public int score;
         public int questionOrder;
 
-        public Question toValue() {
-            return new Question(examId, problemId, quota, score, questionOrder);
+        public void updateQuestionOrder(Exam exam) {
+            Question question = exam.getQuestionById(new Question.Id(examId, problemId));
+            question.setQuestionOrder(questionOrder);
+            exam.updateQuestion(question);
         }
     }
 }
