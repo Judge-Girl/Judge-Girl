@@ -105,7 +105,7 @@ public class Exam {
 
     public void reorderQuestions(int... reorders) {
         if (questions.size() != reorders.length) {
-            throw new IllegalArgumentException("Reorders amount can't over than questions amount");
+            throw new IllegalArgumentException("Reorders amount should be same as questions amount");
         }
         for (int index = 0; index < questions.size(); index++) {
             questions.get(index).setQuestionOrder(reorders[index]);
