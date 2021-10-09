@@ -690,11 +690,8 @@ class ExamControllerTest extends AbstractSpringBootTest {
         }
     }
 
-    @DisplayName("Given one exam created with two questions(A, B)" +
-            "When reorder question (A) to 2 and reorder question (B) to 1" +
-            "Then question's (A) order should be 2 and question's (B) order should be 1")
     @Test
-    void testReorderQuestions() throws Exception {
+    void givenExamWithQuestions_ABC_whenReorderQuestionsWith_213_thenQuestionsOrderShouldBe_BAC() throws Exception {
         var exam = givenOneExamCreatedWithTwoQuestionsAndGet();
 
         int examId = exam.getId();
