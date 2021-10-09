@@ -1,7 +1,7 @@
 kind: pipeline
 type: exec
 name: Judge-Girl/Judge-Girl
-
+ 
 steps:
   - name: Info
     commands:
