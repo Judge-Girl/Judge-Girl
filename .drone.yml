@@ -3,7 +3,7 @@ type: exec
 name: Judge-Girl/Judge-Girl
 
 steps:
-  - name: Info
+  - name: In_fo
     commands:
       - "echo $(whoami)"
       - "echo Workspace: $(pwd)"
