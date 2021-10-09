@@ -78,6 +78,7 @@ import static tw.waterball.judgegirl.testkit.stubs.MultipartFileStubs.codes;
 @ContextConfiguration(classes = SpringBootAcademyApplication.class)
 class ExamControllerTest extends AbstractSpringBootTest {
     public static final int PROBLEM_ID = 2;
+    public static final int OTHER_PROBLEM_ID = 150;
     public static final int ANOTHER_PROBLEM_ID = 300;
 
     public static final int NONEXISTING_EXAM_ID = 9999;
@@ -120,6 +121,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
     private final int numOfTestcases = testcaseGrades.length;
     private ProblemView problem;
     private Submission submissionWith2ACs;
+    private ProblemView otherProblem;
     private ProblemView anotherProblem;
 
     private final MockMultipartFile[] mockFiles = codes(SUBMIT_CODE_MULTIPART_KEY_NAME, 2);
@@ -133,11 +135,14 @@ class ExamControllerTest extends AbstractSpringBootTest {
 
     private void fakeProblemServiceDriver() {
         Problem p1 = problemTemplate(testcaseGrades).id(PROBLEM_ID).title("Title_1").build(),
-                p2 = problemTemplate(testcaseGrades).id(ANOTHER_PROBLEM_ID).title("Title_2").build();
+                p2 = problemTemplate(testcaseGrades).id(OTHER_PROBLEM_ID).title("Title_2").build(),
+                p3 = problemTemplate(testcaseGrades).id(ANOTHER_PROBLEM_ID).title("Title_3").build();
         problem = toViewModel(p1);
         submissionWith2ACs = randomizedSubmission(p1, STUDENT_A_ID, 2);
         problemServiceDriver.addProblemView(problem);
-        anotherProblem = toViewModel(p2);
+        otherProblem = toViewModel(p2);
+        problemServiceDriver.addProblemView(otherProblem);
+        anotherProblem = toViewModel(p3);
         problemServiceDriver.addProblemView(anotherProblem);
     }
 
@@ -435,7 +440,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
     void testGetExamById() {
         var exam = createExamAndGet(ONGOING_DURATION, "exam");
         var q1 = createQuestionAndGet(new CreateQuestionUseCase.Request(exam.id, PROBLEM_ID, 3, 50, 1));
-        var q2 = createQuestionAndGet(new CreateQuestionUseCase.Request(exam.id, ANOTHER_PROBLEM_ID, 3, 50, 2));
+        var q2 = createQuestionAndGet(new CreateQuestionUseCase.Request(exam.id, OTHER_PROBLEM_ID, 3, 50, 2));
         exam.questions.add(q1);
         exam.questions.add(q2);
 
@@ -511,7 +516,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
         Date start = beforeCurrentTime(1, HOURS), end = afterCurrentTime(1, HOURS);
         ExamView exam = createExamAndGet(start, end, "sample-exam");
         var q1 = createQuestionAndGet(new CreateQuestionUseCase.Request(exam.getId(), PROBLEM_ID, QUOTA, 50, 1)).toEntity();
-        var q2 = createQuestionAndGet(new CreateQuestionUseCase.Request(exam.getId(), ANOTHER_PROBLEM_ID, QUOTA, 50, 2)).toEntity();
+        var q2 = createQuestionAndGet(new CreateQuestionUseCase.Request(exam.getId(), OTHER_PROBLEM_ID, QUOTA, 50, 2)).toEntity();
         givenStudentParticipatingExam(STUDENT_A_ID, exam);
         answerQuestion(STUDENT_A_ID, exam).andExpect(status().isOk());
         publishVerdict(problem, exam, submissionWith2ACs);
@@ -536,7 +541,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
         assertEquals(expectedQ1Score, firstQuestion.getYourScore());
         assertEquals(0, secondQuestion.getYourScore());
         assertEquals(firstQuestion.getProblemTitle(), problem.getTitle());
-        assertEquals(secondQuestion.getProblemTitle(), anotherProblem.getTitle());
+        assertEquals(secondQuestion.getProblemTitle(), otherProblem.getTitle());
     }
 
     @Test
@@ -545,7 +550,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
         Date start = beforeCurrentTime(1, HOURS), end = afterCurrentTime(1, HOURS);
         ExamView exam = createExamAndGet(start, end, "exam");
         QuestionView q1 = createQuestionAndGet(new CreateQuestionUseCase.Request(exam.getId(), PROBLEM_ID, QUOTA, 50, 1));
-        QuestionView q2 = createQuestionAndGet(new CreateQuestionUseCase.Request(exam.getId(), ANOTHER_PROBLEM_ID, QUOTA, 50, 2));
+        QuestionView q2 = createQuestionAndGet(new CreateQuestionUseCase.Request(exam.getId(), OTHER_PROBLEM_ID, QUOTA, 50, 2));
 
         ExamOverview examOverview = getExamOverview(exam.getId());
         ExamOverview.QuestionItem firstQuestion = examOverview.getQuestionById(new Question.Id(q1.examId, q1.problemId)).orElseThrow();
@@ -559,7 +564,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
         assertEquals(2, examOverview.getQuestions().size());
 
         assertQuestionEquals(q1, firstQuestion, problem);
-        assertQuestionEquals(q2, secondQuestion, anotherProblem);
+        assertQuestionEquals(q2, secondQuestion, otherProblem);
     }
 
     @DisplayName("Give 8 students participating a ongoing exam, one question in the exam with submission quota = 3, " +
@@ -606,14 +611,14 @@ class ExamControllerTest extends AbstractSpringBootTest {
         Integer[] studentIds = {STUDENT_A_ID, STUDENT_B_ID, STUDENT_C_ID, STUDENT_D_ID};
         var exam = createExamAndGet(now(), oneSecondAfter(), "Exam");
         var q1 = createQuestionAndGet(new CreateQuestionUseCase.Request(exam.id, PROBLEM_ID, 1, 50, 0)).toEntity();
-        var q2 = createQuestionAndGet(new CreateQuestionUseCase.Request(exam.id, ANOTHER_PROBLEM_ID, 1, 50, 1)).toEntity();
+        var q2 = createQuestionAndGet(new CreateQuestionUseCase.Request(exam.id, OTHER_PROBLEM_ID, 1, 50, 1)).toEntity();
         givenStudentsParticipatingExam(studentIds, exam);
         var sA1 = publishVerdictAndAwait(problem, exam, randomizedSubmission(toEntity(problem), STUDENT_A_ID, 3));
-        var sA2 = publishVerdictAndAwait(anotherProblem, exam, randomizedSubmission(toEntity(anotherProblem), STUDENT_A_ID, 3));
+        var sA2 = publishVerdictAndAwait(otherProblem, exam, randomizedSubmission(toEntity(otherProblem), STUDENT_A_ID, 3));
         var sB1 = publishVerdictAndAwait(problem, exam, randomizedSubmission(toEntity(problem), STUDENT_B_ID, 2));
-        var sB2 = publishVerdictAndAwait(anotherProblem, exam, randomizedSubmission(toEntity(anotherProblem), STUDENT_B_ID, 1));
+        var sB2 = publishVerdictAndAwait(otherProblem, exam, randomizedSubmission(toEntity(otherProblem), STUDENT_B_ID, 1));
         var sC1 = publishVerdictAndAwait(problem, exam, submission(randomUUID().toString()).CE(problem.totalGrade).build(STUDENT_C_ID, PROBLEM_ID, CURRENTLY_ONLY_SUPPORT_C));
-        var sC2 = publishVerdictAndAwait(anotherProblem, exam, randomizedSubmission(toEntity(anotherProblem), STUDENT_C_ID, 1));
+        var sC2 = publishVerdictAndAwait(otherProblem, exam, randomizedSubmission(toEntity(otherProblem), STUDENT_C_ID, 1));
 
         var transcript = produceExamTranscript(exam);
 
@@ -624,9 +629,9 @@ class ExamControllerTest extends AbstractSpringBootTest {
         int scoreB1 = q1.calculateScore(sB1), scoreB2 = q2.calculateScore(sB2);
         int scoreC1 = q1.calculateScore(sC1), scoreC2 = q2.calculateScore(sC2);
 
-        examineeShouldHaveScores(examineeRecordA, map(PROBLEM_ID, ANOTHER_PROBLEM_ID).to(scoreA1, scoreA2));
-        examineeShouldHaveScores(examineeRecordB, map(PROBLEM_ID, ANOTHER_PROBLEM_ID).to(scoreB1, scoreB2));
-        examineeShouldHaveScores(examineeRecordC, map(PROBLEM_ID, ANOTHER_PROBLEM_ID).to(scoreC1, scoreC2));
+        examineeShouldHaveScores(examineeRecordA, map(PROBLEM_ID, OTHER_PROBLEM_ID).to(scoreA1, scoreA2));
+        examineeShouldHaveScores(examineeRecordB, map(PROBLEM_ID, OTHER_PROBLEM_ID).to(scoreB1, scoreB2));
+        examineeShouldHaveScores(examineeRecordC, map(PROBLEM_ID, OTHER_PROBLEM_ID).to(scoreC1, scoreC2));
         assertFalse(transcript.scoreBoard.containsKey(STUDENT_D_EMAIL),
                 "Student D doesn't participate the exam, should not include hos record.");
 
@@ -639,14 +644,14 @@ class ExamControllerTest extends AbstractSpringBootTest {
         Integer[] studentIds = {STUDENT_A_ID, STUDENT_B_ID, STUDENT_C_ID, STUDENT_D_ID};
         var exam = createExamAndGet(now(), oneSecondAfter(), "Exam");
         createQuestionAndGet(new CreateQuestionUseCase.Request(exam.id, PROBLEM_ID, 1, 50, 0)).toEntity();
-        createQuestionAndGet(new CreateQuestionUseCase.Request(exam.id, ANOTHER_PROBLEM_ID, 1, 50, 1)).toEntity();
+        createQuestionAndGet(new CreateQuestionUseCase.Request(exam.id, OTHER_PROBLEM_ID, 1, 50, 1)).toEntity();
         givenStudentsParticipatingExam(studentIds, exam);
         publishVerdictAndAwait(problem, exam, randomizedSubmission(toEntity(problem), STUDENT_A_ID, 3));
-        publishVerdictAndAwait(anotherProblem, exam, randomizedSubmission(toEntity(anotherProblem), STUDENT_A_ID, 3));
+        publishVerdictAndAwait(otherProblem, exam, randomizedSubmission(toEntity(otherProblem), STUDENT_A_ID, 3));
         publishVerdictAndAwait(problem, exam, randomizedSubmission(toEntity(problem), STUDENT_B_ID, 2));
-        publishVerdictAndAwait(anotherProblem, exam, randomizedSubmission(toEntity(anotherProblem), STUDENT_B_ID, 1));
+        publishVerdictAndAwait(otherProblem, exam, randomizedSubmission(toEntity(otherProblem), STUDENT_B_ID, 1));
         publishVerdictAndAwait(problem, exam, submission(randomUUID().toString()).CE(problem.totalGrade).build(STUDENT_C_ID, PROBLEM_ID, CURRENTLY_ONLY_SUPPORT_C));
-        publishVerdictAndAwait(anotherProblem, exam, randomizedSubmission(toEntity(anotherProblem), STUDENT_C_ID, 1));
+        publishVerdictAndAwait(otherProblem, exam, randomizedSubmission(toEntity(otherProblem), STUDENT_C_ID, 1));
 
         var transcript = produceExamTranscript(exam);
 
@@ -655,7 +660,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
         final String COLUMN_NAME = "Name";
         final String COLUMN_EMAIL = "Email";
         String COLUMN_PROBLEM_1_TITLE = problem.title;
-        String COLUMN_PROBLEM_2_TITLE = anotherProblem.title;
+        String COLUMN_PROBLEM_2_TITLE = otherProblem.title;
         final String COLUMN_TOTAL_SCORE = "Total Score";
 
         Reader in = new InputStreamReader(new ByteArrayInputStream(response.getContentAsByteArray()));
@@ -676,15 +681,15 @@ class ExamControllerTest extends AbstractSpringBootTest {
             if (scoreBoard.containsKey(email)) {
                 var questionScores = scoreBoard.get(email).getQuestionScores();
                 int problemScore = questionScores.getOrDefault(problem.id, 0);
-                int anotherProblemScore = questionScores.getOrDefault(anotherProblem.id, 0);
+                int anotherProblemScore = questionScores.getOrDefault(otherProblem.id, 0);
                 assertEquals(problemScore, Integer.valueOf(record.get(problem.title)));
-                assertEquals(anotherProblemScore, Integer.valueOf(record.get(anotherProblem.title)));
+                assertEquals(anotherProblemScore, Integer.valueOf(record.get(otherProblem.title)));
 
                 int actualTotalScore = problemScore + anotherProblemScore;
                 assertEquals(actualTotalScore, Integer.valueOf(record.get(COLUMN_TOTAL_SCORE)));
             } else {
                 assertEquals(0, Integer.valueOf(record.get(problem.title)));
-                assertEquals(0, Integer.valueOf(record.get(anotherProblem.title)));
+                assertEquals(0, Integer.valueOf(record.get(otherProblem.title)));
                 assertEquals(0, Integer.valueOf(record.get(COLUMN_TOTAL_SCORE)));
             }
         }
@@ -692,24 +697,28 @@ class ExamControllerTest extends AbstractSpringBootTest {
 
     @Test
     void givenExamWithQuestions_ABC_whenReorderQuestionsWith_213_thenQuestionsOrderShouldBe_BAC() throws Exception {
-        var exam = givenOneExamCreatedWithTwoQuestionsAndGet();
+        var exam = givenOneExamCreatedWithTQuestions_ABC_AndGet();
 
         int examId = exam.getId();
-        reorderQuestions(examId, 2, 1);
+        reorderQuestions(examId, 2, 1, 3);
 
         var actualExam = getExamById(examId);
         var actualQuestions = mapToList(actualExam.getQuestions(), QuestionView::toEntity);
         Question A = actualQuestions.get(0);
         Question B = actualQuestions.get(1);
-        assertEquals(2, A.getQuestionOrder());
+        Question C = actualQuestions.get(2);
         assertEquals(1, B.getQuestionOrder());
+        assertEquals(2, A.getQuestionOrder());
+        assertEquals(3, C.getQuestionOrder());
     }
 
-    private ExamView givenOneExamCreatedWithTwoQuestionsAndGet() throws Exception {
+    private ExamView givenOneExamCreatedWithTQuestions_ABC_AndGet() throws Exception {
         int examId = createExamAndGet(during(oneSecondAgo(), oneSecondAfter()), "name").getId();
         createQuestion(new CreateQuestionUseCase.Request(examId, PROBLEM_ID, 30, 100, 1))
                 .andExpect(status().isOk());
-        createQuestion(new CreateQuestionUseCase.Request(examId, ANOTHER_PROBLEM_ID, 5, 100, 2))
+        createQuestion(new CreateQuestionUseCase.Request(examId, OTHER_PROBLEM_ID, 5, 100, 2))
+                .andExpect(status().isOk());
+        createQuestion(new CreateQuestionUseCase.Request(examId, ANOTHER_PROBLEM_ID, 20, 100, 3))
                 .andExpect(status().isOk());
         return getExamById(examId);
     }
