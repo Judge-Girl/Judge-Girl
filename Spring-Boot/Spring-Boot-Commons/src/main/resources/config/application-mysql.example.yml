@@ -1,0 +1,14 @@
+spring:
+  datasource:
+    url: jdbc:mysql://${judge-girl.mysql.host}:${judge-girl.mysql.port}/${judge-girl.mysql.database}
+    username: PLACEHOLDER
+    password: PLACEHOLDER
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.MySQL5Dialect
+
+judge-girl:
+  mysql:
+    database: judgegirl
+    host: ${MYSQL_HOST:localhost}
+    port: ${MYSQL_PORT:3306}
