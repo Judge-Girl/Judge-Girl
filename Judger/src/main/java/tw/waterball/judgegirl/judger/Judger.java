@@ -45,6 +45,8 @@ public abstract class Judger {
             downloadProvidedCodes();
             downloadTestcaseIOs();
 
+            problemShouldContainAtLeastOneTestcase();
+
             CompileResult compileResult = CompileResult.success();
             if (isCompiledLanguage()) {
                 compileResult = doCompile();
@@ -63,6 +65,7 @@ public abstract class Judger {
 
             publishVerdict(verdict);
         } catch (Exception err) {
+            err.printStackTrace();
             publishVerdict(issueSystemErrorVerdict(err));
         }
     }
@@ -88,6 +91,12 @@ public abstract class Judger {
     protected abstract void downloadSubmittedCodes() throws IOException;
 
     protected abstract void downloadTestcaseIOs() throws IOException;
+
+    protected void problemShouldContainAtLeastOneTestcase() {
+        if (getProblem().getTestcases().isEmpty()) {
+            throw new IllegalStateException("The problem does not contain any testcase.");
+        }
+    }
 
     protected abstract CompileResult doCompile();
 

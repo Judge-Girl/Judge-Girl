@@ -144,14 +144,14 @@ public class Verdict implements Comparable<Verdict> {
                 .max().orElseThrow(() -> new IllegalStateException("A verdict that doesn't have judges."));
     }
 
-    public Judge getWorstJudge() {
+    public Judge worstJudge() {
         if (isError()) {
             throw new IllegalStateException("The verdict with error status does not have any judges.");
         }
         return Collections.min(judges);
     }
 
-    public Judge getBestJudge() {
+    public Judge bestJudge() {
         if (isError()) {
             throw new IllegalStateException("The verdict with error status does not have any judges.");
         }
@@ -183,12 +183,13 @@ public class Verdict implements Comparable<Verdict> {
     }
 
     @Nullable
-    public String getErrorMessage() {
-        return errorMessage;
+    public ErrorType getErrorType() {
+        return errorType;
     }
 
-    public void setErrorMessage(@Nullable String errorMessage) {
-        this.errorMessage = errorMessage;
+    @Nullable
+    public String getErrorMessage() {
+        return errorMessage;
     }
 
     public Report getReport() {
@@ -222,7 +223,7 @@ public class Verdict implements Comparable<Verdict> {
             return 1;
         }
         if (myGrade == hisGrade) {
-            return getBestJudge().compareTo(verdict.getBestJudge());
+            return bestJudge().compareTo(verdict.bestJudge());
         }
         return myGrade - hisGrade;
     }

@@ -114,8 +114,6 @@ public class SubmitCodeUseCase implements VerdictIssuedEventHandler {
                     submission.getId(), verdict, submission.getSubmissionTime(), submission.getBag()));
         }
         judgerDeployer.deployJudger(problem, submission.getStudentId(), submission);
-
-        log.trace("[Judger Deployed] submissionId=\"{}\"", submission.getId());
         return empty();
     }
 
