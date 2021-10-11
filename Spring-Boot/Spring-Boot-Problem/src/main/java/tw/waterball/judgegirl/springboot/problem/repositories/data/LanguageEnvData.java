@@ -31,8 +31,8 @@ public class LanguageEnvData {
                 env.getResourceSpec().getCpu(),
                 env.getResourceSpec().getGpu(),
                 mapToList(env.getSubmittedCodeSpecs(), SubmittedCodeSpecData::toData),
-                providedCodes.map(ProvidedCodes::getProvidedCodesFileId).orElse(null),
-                providedCodes.map(ProvidedCodes::getProvidedCodesFileName).orElse(null));
+                providedCodes.map(ProvidedCodes::getFileId).orElse(null),
+                providedCodes.map(ProvidedCodes::getFileName).orElse(null));
     }
 
     public LanguageEnv toValue() {

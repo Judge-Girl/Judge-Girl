@@ -38,8 +38,8 @@ public class DownloadProvidedCodesUseCase extends BaseProblemUseCase {
         Problem problem = findProblem(request.problemId);
         LanguageEnv languageEnv = problem.getLanguageEnv(request.langEnvName);
         return languageEnv.getProvidedCodesFileId()
-                .filter(providedCodesFileId -> providedCodesFileId.equals(request.providedCodesFileId))
-                .flatMap(providedCodesFileId -> problemRepository.downloadProvidedCodes(request.problemId, request.langEnvName))
+                .filter(fileId -> fileId.equals(request.providedCodesFileId))
+                .flatMap(fileId -> problemRepository.downloadProvidedCodes(request.problemId, request.langEnvName))
                 .orElseThrow(() -> new IllegalArgumentException(
                         format("Invalid provided codes' file id: %s.", request.providedCodesFileId)));
     }

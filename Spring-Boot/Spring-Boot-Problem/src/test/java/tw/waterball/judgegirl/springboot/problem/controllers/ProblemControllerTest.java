@@ -1022,7 +1022,7 @@ public class ProblemControllerTest extends AbstractSpringBootTest {
 
     private void problemShouldHaveProvidedCodesId(ProblemView problem, String fileId, Language language) {
         var langEnv = findFirst(problem.languageEnvs, lg -> lg.getLanguage().equals(language)).orElseThrow();
-        assertEquals(fileId, langEnv.getProvidedCodes().getProvidedCodesFileId());
+        assertEquals(fileId, langEnv.getProvidedCodes().getFileId());
     }
 
     private void problemShouldHaveTestcaseIoFileId(ProblemView problem, String testcaseId, String testcaseIoId) {

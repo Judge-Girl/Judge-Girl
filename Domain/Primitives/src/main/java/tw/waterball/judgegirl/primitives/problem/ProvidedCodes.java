@@ -28,13 +28,13 @@ import static tw.waterball.judgegirl.commons.utils.validations.ValidationUtils.v
 @Getter
 public class ProvidedCodes {
     @NotBlank
-    private final @Size(min = 1, max = 300) String providedCodesFileId;
+    private final @Size(min = 1, max = 300) String fileId;
     @NotNull
-    private final List<@Size(min = 1, max = 300) String> providedCodesFileName;
+    private final List<@Size(min = 1, max = 300) String> fileName;
 
-    public ProvidedCodes(String providedCodesFileId, List<String> providedCodesFileName) {
-        this.providedCodesFileId = providedCodesFileId;
-        this.providedCodesFileName = providedCodesFileName;
+    public ProvidedCodes(String fileId, List<String> fileName) {
+        this.fileId = fileId;
+        this.fileName = fileName;
         validate(this);
     }
 }

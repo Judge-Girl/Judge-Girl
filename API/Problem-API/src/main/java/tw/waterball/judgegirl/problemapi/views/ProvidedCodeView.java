@@ -27,15 +27,15 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ProvidedCodeView {
-    public String providedCodesFileId;
-    public List<String> providedCodesFileNames;
+    public String fileId;
+    public List<String> fileNames;
 
     public static ProvidedCodeView toViewModel(ProvidedCodes providedCodes) {
-        return new ProvidedCodeView(providedCodes.getProvidedCodesFileId(), providedCodes.getProvidedCodesFileName());
+        return new ProvidedCodeView(providedCodes.getFileId(), providedCodes.getFileName());
     }
 
     public ProvidedCodes toValue() {
-        return new ProvidedCodes(providedCodesFileId, providedCodesFileNames);
+        return new ProvidedCodes(fileId, fileNames);
     }
 }
 
