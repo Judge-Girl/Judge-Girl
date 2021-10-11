@@ -26,6 +26,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
+import static java.util.Collections.emptyList;
 import static tw.waterball.judgegirl.primitives.submission.verdict.Verdict.ErrorType.COMPILE_ERROR;
 import static tw.waterball.judgegirl.primitives.submission.verdict.Verdict.ErrorType.SYSTEM_ERROR;
 import static tw.waterball.judgegirl.primitives.time.DateProvider.now;
@@ -59,7 +60,7 @@ public class Verdict implements Comparable<Verdict> {
         this.errorMessage = errorMessage;
         this.grade = new Grade(0, maxGrade);
         this.issueTime = issueTime;
-        this.judges = Collections.emptyList();
+        this.judges = emptyList();
     }
 
     public Verdict(List<Judge> judges, Date issueTime) throws InvalidVerdictException {
