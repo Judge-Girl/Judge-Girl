@@ -8,35 +8,37 @@ spring:
     host: ${judge-girl.amqp.host}
     port: ${judge-girl.amqp.port}
 
-  data:
-    mongodb:
-      # TODO should be turned up after figured out how to avoid authentication in embedded mongo tests
-      # authentication-database: admin
-      # username: tony
-      # password: tony3345678
-      database: ${judge-girl.mongo.database}
-      host: ${judge-girl.mongo.host:localhost}
+logging:
+  level:
+    org:
+      springframework:
+        web:
+          filter:
+            CommonsRequestLoggingFilter: info
 
 judge-girl:
-  mongo:
-    database: judge-girl
-    host: ${MONGO_HOST:localhost}
-    port: 27017
   amqp:
     virtual-host: /judge-girl
-    username: judge-girl-service
-    password: service-girl-judge
+    username: PLACEHOLDER
+    password: PLACEHOLDER
     host: ${RABBIT_HOST:localhost}
     port: 5672
+    academy-service-queue: Academy-Service
     submission-service-queue: Submission-Service
     broker-queue-format: Broker-%s-%s  # Broker-<event>-<UUID>
     submissions-exchange-name: Submissions
     verdict-issued-routing-key-format: submissions.%s.verdict
     live-submissions-routing-key: submissions
+  submission-service:
+    save-strategy: copy-on-write # (verdict-shortcut | copy-on-write)
   client:
     problem-service:
       scheme: http
       host: problem-service
+      port: 80
+    student-service:
+      scheme: http
+      host: student-service
       port: 80
     submission-service:
       scheme: http
@@ -45,33 +47,47 @@ judge-girl:
   judger:
     # (docker | kubernetes)
     strategy: docker
-    jwt-token: PLACEHOLDER
     job:
       name-format: judge-girl-judger-%s
     image:
-      # Note: the judger's image should be deployed to your **PRIVATE** registry
-      # since it contains confidential properties files
-      name: judger
+      name: johnny850807/judger:3.0.0
     container:
       name-format: judge-girl-judger-%s
     docker:
-      # corresponding to the network defined in docker-compose.yaml
-      network: judge-girl_services
+      # corresponding to the network defined in docker-compose.yml
+      network: judge-girl
+      # By enabling the log-volume, the Judger container will place its log files in a mounted volume,
+      # so that you can bring the log files back from the container to the host.
+      # Therefore, you need to specify 'log-volume-host' -- the volume's directory path on the host.
+      log-volume-enable: false
+      log-volume-host: PLACEHOLDER  # only if you enable the log-volume
+      # The interval time of Judge Girl cleaning up the Judger containers that already exited.
+      dockerRemovalIntervalInMs: 10000
     kubernetes:
       # the secret can be created following the instructions: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
       # you can replace it according to your secret's name
       image-pull-secret: regcred
+      namespace: judgegirl
 
+    amqp:
+      host: ${judge-girl.amqp.host}
+      port: ${judge-girl.amqp.port}
+
+    # the client configuration that Judger relies on.
+    client:
+      problem-service:
+        scheme: http
+        host: problem-service
+        port: 80
+      student-service:
+        scheme: http
+        host: student-service
+        port: 80
+      submission-service:
+        scheme: http
+        host: submission-service
+        port: 80
 
 jwt:
-  secret: PLACEHOLDER
+  secret: PLACEHOLDER  # replace with your own jwt secret (at least 30 characters)
   exp: 14400000
-  token-admin: PLACEHOLDER
-  test:
-    student1:
-      id: 1234
-      token: PLACEHOLDER
-    student2:
-      id: 2000
-      token: PLACEHOLDER
-

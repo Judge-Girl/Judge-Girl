@@ -1,0 +1,14 @@
+spring:
+  data:
+    mongodb:
+      authentication-database: admin
+      username: PLACEHOLDER
+      password: PLACEHOLDER
+      database: ${judge-girl.mongo.database}
+      host: ${judge-girl.mongo.host:localhost}
+
+judge-girl:
+  mongo:
+    database: judge-girl
+    host: ${MONGO_HOST:localhost}
+    port: 27017

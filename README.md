@@ -3,18 +3,18 @@
 Judge Girl is under incubation and is [actively developed (here to see the Scrum kanban)](https://github.com/orgs/Judge-Girl/projects/3). The document may be obsolete. Feel free to contact `johnny850807@gmail.com` or leave
 issues, open a thread in the discussions page if you are interested in any apsect.
 
+
 ## Setup & Build
 
 Clone the project (must include the submodule):
-`git clone --recursive` (This repository depends on the submodule Judge-Girl/Code-Quality-Inspection)
+`git clone --recursive` (This repository depends on the submodule Judge-Girl/Code-Quality-Inspection so the `--recursive` flag is needed)
 
-1. Rename `application.example.yml`, `application-mysql.example.yml` and `application-mongo.example.yml` under the `Spring-Boot/Spring-Boot-Commons/src/main/resources/config/` folder to `application.yml`, `application-mysql.yml` and `application-mongo.yml`, respectively.
-   and replace the PLACEHOLDERs with the values according to your environment.
-2. Rename `infra.example.yml` to `infra.yml` and replace the PLACEHOLDERs with the values according to your environment.
+1. Rename `application.example.yml`, `application-mysql.example.yml`, `application-mongo.example.yml` and `application-redis.example.yml` under the `Spring-Boot/Spring-Boot-Commons/src/main/resources/config/` folder to `application.yml`, `application-mysql.yml`, `application-mongo.yml` and `application-redis.yml`  respectively, and then replace the PLACEHOLDERs in these files with the values to fit your need.
+2. Rename `infra.example.yml` to `infra.yml` and replace the PLACEHOLDERs with the values in the file to fit your need.
 
-## Run Judge-Girl's backend locally
+## Run the entire Judge-Girl's backend locally
 
-For those who wants to run all-in-one deployment locally, please do the following:
+For those who wants to run _all-in-one deployment_ locally, please do the following:
 
 1. Create a judge-girl network by `docker network create judge-girl`
 1. Run the infra component by `docker-compose -f infra.yml`
@@ -32,18 +32,18 @@ Thanks to all the people who already contributed!
 
 ### Software Design (Clean Architecture/DDD)
 
-**This project is a taste of the practicality of the (Topological) Microservice, Clean Architecture and Domain-Driven Design**.
-Topological Microservice emphasizes that Judge-Girl is capable of being deployed in a form of **both monoliths or microservices**.
+**This project is a taste of the practicality of (Topological) Microservice, Clean Architecture and Domain-Driven Design (DDD)**.
+Topological Microservice emphasizes that Judge-Girl should be capable of being deployed in a form of **both monoliths or microservices**. (Currently, we only support the microservices option)
 
 Here are some overview introductions of our software design. For more details, please navigate to the `docs/` folder.
 
-Judge Girl follows clean-architecture and DDD. The package structure is based on **four subdomains (Student, Problem,
-Submission, Exam)** and **four design forces (Domain Logic, Tech Stack, View Model, Judger)**.
+Judge Girl follows clean-architecture and DDD. The package structure is based on **four bounded context (Student, Problem,
+Submission, Academy)** with **three design forces (Domain Logic, Tech Stack, Client)**.
 
-The following represents our primary package structure that **entirely practices [clean architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)**.  <br>
+The following represents our primary package structure that **practices [clean architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)**.  <br>
 
 ```
-├── API (Force: Client / View Model)
+├── API (Force: Client)
 │   ├── API-Commons
 │   ├── Judger-API
 │   ├── Student-API
@@ -74,19 +74,12 @@ with 100% respect to the following diagram from Uncle Bob:
 
 #### Domain
 
-In every domain package, there are application **use cases** (request + presenters), **domain services** and **
-repositories**. Every repository encapsulates the persistency of an aggregate root (e.g., Student/Problem/Submission) and every use case
-represents a feature.
-
-##### Bounded Contexts
-
-Currently, four bounded-context lives in the Judge-Girl application: **Student / Problem / Submission / Academy**
-Each of them can be deployed as a microservice.
-
+In every domain package, there are application **use cases** (request + presenters), **domain services** and **repositories**. Every repository encapsulates the persistency of an aggregate root (e.g., Student/Problem/Submission) and every use case
+represents an application feature.
 
 #### Tech Stack & System Architecture
 
-![image](https://user-images.githubusercontent.com/23109467/113490957-fb61e400-94ff-11eb-9607-b61615328936.png)
+![image](docs/images/system-architecture.png)
 
 **Spring Boot** is used to run our Judge Girl application.
 

@@ -1,0 +1,14 @@
+spring:
+  redis:
+    timeout: 6000
+    host: ${judge-girl.redis.host:localhost}
+    port: ${judge-girl.redis.port:6379}
+    password: ${judge-girl.redis.password:userpassword}
+    key-prefix: ${judge-girl.redis.key-prefix:judgegirl:}
+
+judge-girl:
+  redis:
+    host: ${REDIS_HOST:localhost}
+    port: 6379
+    password: PLACEHOLDER
+    key-prefix: 'judgegirl:'
