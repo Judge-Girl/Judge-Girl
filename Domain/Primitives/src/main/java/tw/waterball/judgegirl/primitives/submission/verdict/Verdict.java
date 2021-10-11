@@ -32,10 +32,15 @@ import static tw.waterball.judgegirl.primitives.time.DateProvider.now;
  * @author - johnny850807@gmail.com (Waterball)
  */
 public class Verdict implements Comparable<Verdict> {
+    private static final String COMPILE_ERROR = "compile-error";
+    private static final String SYSTEM_ERROR = "system-error";
+
     @Singular
     private final List<Judge> judges;
     @Nullable
     private String compileErrorMessage;
+    @Nullable
+    private String systemErrorMessage;
     private Date issueTime;
     private Report report = Report.EMPTY;
 
@@ -45,12 +50,18 @@ public class Verdict implements Comparable<Verdict> {
         this(judges, now());
     }
 
-    // Summary Status: CE, the maxGrade is sourced here.
-    public Verdict(String compileErrorMessage, int maxGrade, Date issueTime) throws InvalidVerdictException {
+    private Verdict(String errorType, String errorMessage, int maxGrade, Date issueTime) throws InvalidVerdictException {
+        if (errorType.equals(COMPILE_ERROR)) {
+            setCompileErrorMessage(errorMessage);
+        } else if (errorType.equals(SYSTEM_ERROR)) {
+            setSystemErrorMessage(errorMessage);
+        } else {
+            throw new InvalidVerdictException("Error type (" + errorType + ") not supported.");
+        }
         this.issueTime = issueTime;
         this.judges = Collections.emptyList();
         this.grade = new Grade(0, maxGrade);
-        setCompileErrorMessage(compileErrorMessage);
+
     }
 
     public Verdict(List<Judge> judges, Date issueTime) throws InvalidVerdictException {
@@ -74,12 +85,20 @@ public class Verdict implements Comparable<Verdict> {
         }
     }
 
+    public static Verdict systemError(String errorMessage, int maxGrade) {
+        return new Verdict(SYSTEM_ERROR, errorMessage, maxGrade, now());
+    }
+
+    public static Verdict systemError(String errorMessage, int maxGrade, Date issueTime) {
+        return new Verdict(SYSTEM_ERROR, errorMessage, maxGrade, issueTime);
+    }
+
     public static Verdict compileError(String compileErrorMessage, int maxGrade) {
-        return new Verdict(compileErrorMessage.trim(), maxGrade, now());
+        return new Verdict(COMPILE_ERROR, compileErrorMessage.trim(), maxGrade, now());
     }
 
     public static Verdict compileError(String compileErrorMessage, int maxGrade, Date issueTime) {
-        return new Verdict(compileErrorMessage.trim(), maxGrade, issueTime);
+        return new Verdict(COMPILE_ERROR, compileErrorMessage.trim(), maxGrade, issueTime);
     }
 
     public int getMaxGrade() {
@@ -163,6 +182,10 @@ public class Verdict implements Comparable<Verdict> {
         this.compileErrorMessage = compileErrorMessage;
     }
 
+    public void setSystemErrorMessage(@Nullable String systemErrorMessage) {
+        this.systemErrorMessage = systemErrorMessage;
+    }
+
     public Report getReport() {
         return report;
     }
@@ -175,7 +198,7 @@ public class Verdict implements Comparable<Verdict> {
         if (this.report == Report.EMPTY) {
             this.report = new CompositeReport();
         }
-        if (this.report instanceof CompositeReport){
+        if (this.report instanceof CompositeReport) {
             ((CompositeReport) this.report).addReport(report);
         }
     }
