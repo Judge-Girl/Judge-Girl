@@ -31,7 +31,7 @@ public class ProvidedCodeView {
     public List<String> fileNames;
 
     public static ProvidedCodeView toViewModel(ProvidedCodes providedCodes) {
-        return new ProvidedCodeView(providedCodes.getFileId(), providedCodes.getFileName());
+        return new ProvidedCodeView(providedCodes.getFileId(), providedCodes.getFileNames());
     }
 
     public ProvidedCodes toValue() {

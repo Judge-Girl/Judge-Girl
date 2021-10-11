@@ -30,11 +30,11 @@ public class ProvidedCodes {
     @NotBlank
     private final @Size(min = 1, max = 300) String fileId;
     @NotNull
-    private final List<@Size(min = 1, max = 300) String> fileName;
+    private final List<@Size(min = 1, max = 300) String> fileNames;
 
-    public ProvidedCodes(String fileId, List<String> fileName) {
+    public ProvidedCodes(String fileId, List<String> fileNames) {
         this.fileId = fileId;
-        this.fileName = fileName;
+        this.fileNames = fileNames;
         validate(this);
     }
 }

@@ -32,7 +32,7 @@ public class LanguageEnvData {
                 env.getResourceSpec().getGpu(),
                 mapToList(env.getSubmittedCodeSpecs(), SubmittedCodeSpecData::toData),
                 providedCodes.map(ProvidedCodes::getFileId).orElse(null),
-                providedCodes.map(ProvidedCodes::getFileName).orElse(null));
+                providedCodes.map(ProvidedCodes::getFileNames).orElse(null));
     }
 
     public LanguageEnv toValue() {

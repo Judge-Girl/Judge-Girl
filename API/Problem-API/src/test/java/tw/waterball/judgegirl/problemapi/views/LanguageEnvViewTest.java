@@ -62,7 +62,7 @@ class LanguageEnvViewTest {
         assertEquals(expected.getProvidedCodes().isPresent(), actual.getProvidedCodes().isPresent());
         if (expected.getProvidedCodes().isPresent()) {
             assertEquals(expected.getProvidedCodes().get().getFileId(), actual.getProvidedCodes().get().getFileId());
-            assertEquals(expected.getProvidedCodes().get().getFileName(), actual.getProvidedCodes().get().getFileName());
+            assertEquals(expected.getProvidedCodes().get().getFileNames(), actual.getProvidedCodes().get().getFileNames());
         }
     }
 }
