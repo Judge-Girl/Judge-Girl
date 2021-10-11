@@ -142,7 +142,7 @@ public abstract class AbstractJudgerTest {
         assertEquals(problemId, event.getProblemId());
         assertEquals(problem.getTitle(), event.getProblemTitle());
         assertEquals(submission.getId(), event.getSubmissionId());
-        assertNull(verdict.getCompileErrorMessage(), "Compile error message should be null if the compile succeeded.");
+        assertNull(verdict.getErrorMessage(), "Compile error message should be null if the compile succeeded.");
     }
 
     private void verifyCEPublished() {
@@ -152,7 +152,7 @@ public abstract class AbstractJudgerTest {
         assertEquals(problem.getTitle(), event.getProblemTitle());
         assertEquals(submission.getId(), event.getSubmissionId());
         assertTrue(verdict.isCompileError());
-        assertNotNull(verdict.getCompileErrorMessage(), "Compile error message should not be null if the compile failed.");
+        assertNotNull(verdict.getErrorMessage(), "Compile error message should not be null if the compile failed.");
     }
 
     private void verifyTLEPublished() {
@@ -170,7 +170,7 @@ public abstract class AbstractJudgerTest {
         assertEquals(problemId, event.getProblemId());
         assertEquals(problem.getTitle(), event.getProblemTitle());
         assertEquals(submission.getId(), event.getSubmissionId());
-        assertNull(verdict.getCompileErrorMessage(), "Compile error message should be null if the compile succeeded.");
+        assertNull(verdict.getErrorMessage(), "Compile error message should be null if the compile succeeded.");
     }
 
     private void verifyWAPublished() {
@@ -186,7 +186,7 @@ public abstract class AbstractJudgerTest {
         assertEquals(problemId, event.getProblemId());
         assertEquals(problem.getTitle(), event.getProblemTitle());
         assertEquals(submission.getId(), event.getSubmissionId());
-        assertNull(verdict.getCompileErrorMessage(), "Compile error message should be null if the compile succeeded.");
+        assertNull(verdict.getErrorMessage(), "Compile error message should be null if the compile succeeded.");
     }
 
     private boolean submittedCodeExists(JudgeStatus status) {

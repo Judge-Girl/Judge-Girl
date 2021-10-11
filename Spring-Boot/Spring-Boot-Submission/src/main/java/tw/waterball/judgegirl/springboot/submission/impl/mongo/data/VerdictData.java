@@ -36,6 +36,7 @@ public class VerdictData {
     private int maxGrade;
     private JudgeStatus summaryStatus;
     private String compileErrorMessage;
+    private String systemErrorMessage;
     private String reportName;
     private Map<String, ?> reportData;
 }

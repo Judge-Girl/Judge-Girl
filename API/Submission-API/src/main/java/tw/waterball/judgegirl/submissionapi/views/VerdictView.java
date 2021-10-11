@@ -50,7 +50,7 @@ public class VerdictView {
                 verdict.getSummaryStatus(),
                 verdict.getGrade(),
                 verdict.getMaxGrade(),
-                verdict.getCompileErrorMessage(),
+                verdict.getErrorMessage(),
                 verdict.getMaximumRuntime(),
                 verdict.getMaximumMemoryUsage(),
                 ReportView.toViewModel(verdict.getReport()),

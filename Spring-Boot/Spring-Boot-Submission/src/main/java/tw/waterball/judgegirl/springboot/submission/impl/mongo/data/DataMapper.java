@@ -66,7 +66,7 @@ public class DataMapper {
                 verdict.getGrade(),
                 verdict.getMaxGrade(),
                 verdict.getSummaryStatus(),
-                verdict.getCompileErrorMessage(),
+                verdict.getErrorMessage(),
                 verdict.getReport().getName(),
                 verdict.getReport().getRawData()
         );
@@ -95,6 +95,9 @@ public class DataMapper {
             return null;
         }
 
+        if (data.getCompileErrorMessage() != null) {
+            Verdict.compileError(data.getCompileErrorMessage(), data.getMaxGrade(), data.getIssueTime())
+        } else if (data.get)
         Verdict verdict = isNullOrEmpty(data.getCompileErrorMessage()) ?
                 new Verdict(mapToList(data.getJudges(), DataMapper::toEntity), data.getIssueTime()) :
                 Verdict.compileError(data.getCompileErrorMessage(), data.getMaxGrade(), data.getIssueTime());
