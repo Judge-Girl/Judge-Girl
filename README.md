@@ -79,7 +79,7 @@ represents an application feature.
 
 #### Tech Stack & System Architecture
 
-![image](../docs/images/Domain%20Class%20Diagram.png)
+![image](docs/images/system-architecture.png)
 
 **Spring Boot** is used to run our Judge Girl application.
 
