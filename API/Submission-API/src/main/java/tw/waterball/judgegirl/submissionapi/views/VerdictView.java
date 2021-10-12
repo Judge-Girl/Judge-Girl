@@ -36,7 +36,7 @@ public class VerdictView {
     private JudgeStatus summaryStatus;
     private int totalGrade;
     private int maxGrade;
-    private String compileErrorMessage;
+    private String errorMessage;
     private long maximumRuntime;
     private long maximumMemoryUsage;
     private ReportView report;
@@ -50,7 +50,7 @@ public class VerdictView {
                 verdict.getSummaryStatus(),
                 verdict.getGrade(),
                 verdict.getMaxGrade(),
-                verdict.getCompileErrorMessage(),
+                verdict.getErrorMessage(),
                 verdict.getMaximumRuntime(),
                 verdict.getMaximumMemoryUsage(),
                 ReportView.toViewModel(verdict.getReport()),
@@ -62,8 +62,11 @@ public class VerdictView {
         if (verdictView == null) {
             return null;
         }
-        if (verdictView.getSummaryStatus() == JudgeStatus.CE) {
-            verdict = Verdict.compileError(verdictView.compileErrorMessage,
+        if (verdictView.getSummaryStatus() == JudgeStatus.SYSTEM_ERR) {
+            verdict = Verdict.systemError(verdictView.errorMessage,
+                    verdictView.maxGrade, verdictView.issueTime);
+        } else if (verdictView.getSummaryStatus() == JudgeStatus.CE) {
+            verdict = Verdict.compileError(verdictView.errorMessage,
                     verdictView.maxGrade, verdictView.issueTime);
         } else {
             verdict = new Verdict(

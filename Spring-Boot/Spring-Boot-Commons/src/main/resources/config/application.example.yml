@@ -50,7 +50,7 @@ judge-girl:
     job:
       name-format: judge-girl-judger-%s
     image:
-      name: johnny850807/judger:3.0.0
+      name: johnny850807/judger:3.0.1
     container:
       name-format: judge-girl-judger-%s
     docker:

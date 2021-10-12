@@ -26,16 +26,26 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
+import static java.util.Collections.emptyList;
+import static tw.waterball.judgegirl.primitives.submission.verdict.Verdict.ErrorType.COMPILE_ERROR;
+import static tw.waterball.judgegirl.primitives.submission.verdict.Verdict.ErrorType.SYSTEM_ERROR;
 import static tw.waterball.judgegirl.primitives.time.DateProvider.now;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
  */
 public class Verdict implements Comparable<Verdict> {
+
+    public enum ErrorType {
+        COMPILE_ERROR, SYSTEM_ERROR
+    }
+
     @Singular
     private final List<Judge> judges;
     @Nullable
-    private String compileErrorMessage;
+    private ErrorType errorType;
+    @Nullable
+    private String errorMessage;
     private Date issueTime;
     private Report report = Report.EMPTY;
 
@@ -45,12 +55,12 @@ public class Verdict implements Comparable<Verdict> {
         this(judges, now());
     }
 
-    // Summary Status: CE, the maxGrade is sourced here.
-    public Verdict(String compileErrorMessage, int maxGrade, Date issueTime) throws InvalidVerdictException {
-        this.issueTime = issueTime;
-        this.judges = Collections.emptyList();
+    private Verdict(@NotNull ErrorType errorType, @NotNull String errorMessage, int maxGrade, Date issueTime) throws InvalidVerdictException {
+        this.errorType = errorType;
+        this.errorMessage = errorMessage;
         this.grade = new Grade(0, maxGrade);
-        setCompileErrorMessage(compileErrorMessage);
+        this.issueTime = issueTime;
+        this.judges = emptyList();
     }
 
     public Verdict(List<Judge> judges, Date issueTime) throws InvalidVerdictException {
@@ -74,12 +84,20 @@ public class Verdict implements Comparable<Verdict> {
         }
     }
 
+    public static Verdict systemError(String errorMessage, int maxGrade) {
+        return new Verdict(SYSTEM_ERROR, errorMessage, maxGrade, now());
+    }
+
+    public static Verdict systemError(String errorMessage, int maxGrade, Date issueTime) {
+        return new Verdict(SYSTEM_ERROR, errorMessage, maxGrade, issueTime);
+    }
+
     public static Verdict compileError(String compileErrorMessage, int maxGrade) {
-        return new Verdict(compileErrorMessage.trim(), maxGrade, now());
+        return new Verdict(COMPILE_ERROR, compileErrorMessage.trim(), maxGrade, now());
     }
 
     public static Verdict compileError(String compileErrorMessage, int maxGrade, Date issueTime) {
-        return new Verdict(compileErrorMessage.trim(), maxGrade, issueTime);
+        return new Verdict(COMPILE_ERROR, compileErrorMessage.trim(), maxGrade, issueTime);
     }
 
     public int getMaxGrade() {
@@ -94,6 +112,9 @@ public class Verdict implements Comparable<Verdict> {
         if (isCompileError()) {
             return JudgeStatus.CE;
         }
+        if (isSystemError()) {
+            return JudgeStatus.SYSTEM_ERR;
+        }
         return judges.stream().map(Judge::getStatus)
                 .min((s1, s2) -> {
                     if (s1 == JudgeStatus.AC) {
@@ -107,7 +128,7 @@ public class Verdict implements Comparable<Verdict> {
     }
 
     public long getMaximumRuntime() {
-        if (isCompileError()) {
+        if (isError()) {
             return 0;
         }
         return judges.stream()
@@ -116,7 +137,7 @@ public class Verdict implements Comparable<Verdict> {
     }
 
     public long getMaximumMemoryUsage() {
-        if (isCompileError()) {
+        if (isError()) {
             return 0;
         }
         return judges.stream()
@@ -124,16 +145,16 @@ public class Verdict implements Comparable<Verdict> {
                 .max().orElseThrow(() -> new IllegalStateException("A verdict that doesn't have judges."));
     }
 
-    public Judge getWorseJudge() {
-        if (isCompileError()) {
-            return null;
+    public Judge worstJudge() {
+        if (isError()) {
+            throw new IllegalStateException("The verdict with error status does not have any judges.");
         }
         return Collections.min(judges);
     }
 
-    public Judge getBestJudge() {
-        if (isCompileError()) {
-            return null;
+    public Judge bestJudge() {
+        if (isError()) {
+            throw new IllegalStateException("The verdict with error status does not have any judges.");
         }
         return Collections.max(judges);
     }
@@ -150,17 +171,26 @@ public class Verdict implements Comparable<Verdict> {
         return issueTime;
     }
 
+    public boolean isError() {
+        return errorType != null;
+    }
+
+    public boolean isSystemError() {
+        return errorType == SYSTEM_ERROR;
+    }
+
     public boolean isCompileError() {
-        return compileErrorMessage != null;
+        return errorType == COMPILE_ERROR;
     }
 
     @Nullable
-    public String getCompileErrorMessage() {
-        return compileErrorMessage;
+    public ErrorType getErrorType() {
+        return errorType;
     }
 
-    public void setCompileErrorMessage(@Nullable String compileErrorMessage) {
-        this.compileErrorMessage = compileErrorMessage;
+    @Nullable
+    public String getErrorMessage() {
+        return errorMessage;
     }
 
     public Report getReport() {
@@ -175,7 +205,7 @@ public class Verdict implements Comparable<Verdict> {
         if (this.report == Report.EMPTY) {
             this.report = new CompositeReport();
         }
-        if (this.report instanceof CompositeReport){
+        if (this.report instanceof CompositeReport) {
             ((CompositeReport) this.report).addReport(report);
         }
     }
@@ -184,17 +214,17 @@ public class Verdict implements Comparable<Verdict> {
     public int compareTo(@NotNull Verdict verdict) {
         int myGrade = getGrade();
         int hisGrade = verdict.getGrade();
-        if (this.isCompileError() && verdict.isCompileError()) {
+        if (this.isError() && verdict.isError()) {
             return 0;
         }
-        if (this.isCompileError()) {
+        if (this.isError()) {
             return -1;
         }
-        if (verdict.isCompileError()) {
+        if (verdict.isError()) {
             return 1;
         }
         if (myGrade == hisGrade) {
-            return getBestJudge().compareTo(verdict.getBestJudge());
+            return bestJudge().compareTo(verdict.bestJudge());
         }
         return myGrade - hisGrade;
     }
@@ -206,6 +236,6 @@ public class Verdict implements Comparable<Verdict> {
 
     @Override
     public int hashCode() {
-        return Objects.hash(judges, compileErrorMessage, issueTime, report, grade);
+        return Objects.hash(judges, errorMessage, issueTime, report, grade);
     }
 }

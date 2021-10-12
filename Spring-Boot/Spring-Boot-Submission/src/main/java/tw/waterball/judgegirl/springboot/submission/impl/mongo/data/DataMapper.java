@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
-import static tw.waterball.judgegirl.commons.utils.StringUtils.isNullOrEmpty;
 
 /**
  * A Data Mapper that maps Data Models to Entities and vice verse.
@@ -66,7 +65,8 @@ public class DataMapper {
                 verdict.getGrade(),
                 verdict.getMaxGrade(),
                 verdict.getSummaryStatus(),
-                verdict.getCompileErrorMessage(),
+                verdict.getErrorType(),
+                verdict.getErrorMessage(),
                 verdict.getReport().getName(),
                 verdict.getReport().getRawData()
         );
@@ -95,9 +95,14 @@ public class DataMapper {
             return null;
         }
 
-        Verdict verdict = isNullOrEmpty(data.getCompileErrorMessage()) ?
-                new Verdict(mapToList(data.getJudges(), DataMapper::toEntity), data.getIssueTime()) :
-                Verdict.compileError(data.getCompileErrorMessage(), data.getMaxGrade(), data.getIssueTime());
+        Verdict verdict;
+        if (data.getErrorType() == Verdict.ErrorType.COMPILE_ERROR) {
+            verdict = Verdict.compileError(data.getErrorMessage(), data.getMaxGrade(), data.getIssueTime());
+        } else if (data.getErrorType() == Verdict.ErrorType.SYSTEM_ERROR) {
+            verdict = Verdict.systemError(data.getErrorMessage(), data.getMaxGrade(), data.getIssueTime());
+        } else {
+            verdict = new Verdict(mapToList(data.getJudges(), DataMapper::toEntity), data.getIssueTime());
+        }
 
         verdict.setReport(Report.fromData(data.getReportName(), data.getReportData()));
         return verdict;

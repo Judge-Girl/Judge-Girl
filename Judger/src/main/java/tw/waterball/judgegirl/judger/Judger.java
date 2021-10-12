@@ -36,31 +36,38 @@ import java.util.stream.Collectors;
 public abstract class Judger {
     protected JudgeContext context;
 
-    public void judge(int studentId, int problemId, String submissionId) throws IOException {
-        retrieveEntities(studentId, problemId, submissionId);
-        setupJudgerFileLayout();
-        // the download's order should be fixed
-        downloadSubmittedCodes();
-        downloadProvidedCodes();
-        downloadTestcaseIOs();
+    public void judge(int studentId, int problemId, String submissionId) {
+        try {
+            retrieveEntities(studentId, problemId, submissionId);
+            setupJudgerFileLayout();
+            // the download's order should be fixed
+            downloadSubmittedCodes();
+            downloadProvidedCodes();
+            downloadTestcaseIOs();
 
-        CompileResult compileResult = CompileResult.success();
-        if (isCompiledLanguage()) {
-            compileResult = doCompile();
+            problemShouldContainAtLeastOneTestcase();
+
+            CompileResult compileResult = CompileResult.success();
+            if (isCompiledLanguage()) {
+                compileResult = doCompile();
+            }
+
+            Verdict verdict;
+            if (compileResult.isSuccessful()) {
+                doSourceCodeFiltering();
+                List<Judge> judges = runAndJudgeAllTestcases();
+                VerdictIssuer verdictIssuer = VerdictIssuer.fromJudges(judges);
+                doVerdictFiltering(verdictIssuer);
+                verdict = verdictIssuer.issue();
+            } else {
+                verdict = issueCompileErrorVerdict(compileResult);
+            }
+
+            publishVerdict(verdict);
+        } catch (Exception err) {
+            err.printStackTrace();
+            publishVerdict(issueSystemErrorVerdict(err));
         }
-
-        Verdict verdict;
-        if (compileResult.isSuccessful()) {
-            doSourceCodeFiltering();
-            List<Judge> judges = runAndJudgeAllTestcases();
-            VerdictIssuer verdictIssuer = VerdictIssuer.fromJudges(judges);
-            doVerdictFiltering(verdictIssuer);
-            verdict = verdictIssuer.issue();
-        } else {
-            verdict = issueCompileErrorVerdict(compileResult);
-        }
-
-        publishVerdict(verdict);
     }
 
     private void retrieveEntities(int studentId, int problemId, String submissionId) {
@@ -85,7 +92,18 @@ public abstract class Judger {
 
     protected abstract void downloadTestcaseIOs() throws IOException;
 
+    protected void problemShouldContainAtLeastOneTestcase() {
+        if (getProblem().getTestcases().isEmpty()) {
+            throw new IllegalStateException("The problem does not contain any testcase.");
+        }
+    }
+
     protected abstract CompileResult doCompile();
+
+    protected Verdict issueSystemErrorVerdict(Exception err) {
+        int maxGrade = getProblem().getTotalGrade();
+        return Verdict.systemError(err.getMessage(), maxGrade);
+    }
 
     protected Verdict issueCompileErrorVerdict(CompileResult compileResult) {
         int maxGrade = getProblem().getTotalGrade();

@@ -29,17 +29,20 @@ public class Main {
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
     public static void main(String[] args) throws IOException {
-        var values = JudgerEnvVariables.fromSystemEnvs();
-        logger.info("CCJudger is running...");
-        logger.info(values.toString());
-        MDC.put("traceId", values.traceId);
+        try {
+            var values = JudgerEnvVariables.fromSystemEnvs();
+            logger.info("CCJudger is running...");
+            logger.info(values.toString());
+            MDC.put("traceId", values.traceId);
 
-        CCJudger judger = DefaultCCJudgerFactory.create(values,
-                "/judger-layout.yaml");
-        logger.info("CCJudger has been instantiated.");
-        judger.judge(values.studentId, values.problemId, values.submissionId);
-        logger.info("CCJudger has completed the judge.");
-        System.exit(0);
+            CCJudger judger = DefaultCCJudgerFactory.create(values,
+                    "/judger-layout.yaml");
+            logger.info("CCJudger has been instantiated.");
+            judger.judge(values.studentId, values.problemId, values.submissionId);
+            logger.info("CCJudger has completed the judge.");
+        } finally {
+            System.exit(0);
+        }
     }
 
 }
