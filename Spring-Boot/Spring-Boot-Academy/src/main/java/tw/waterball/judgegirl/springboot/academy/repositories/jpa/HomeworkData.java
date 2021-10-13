@@ -15,6 +15,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static tw.waterball.judgegirl.commons.utils.StreamUtils.join;
+
 /**
  * @author - wally55077@gmail.com
  */
@@ -40,11 +42,8 @@ public class HomeworkData {
     }
 
     public static HomeworkData toData(Homework homework) {
-        String problemIds = homework.getProblemIds()
-                .stream()
-                .map(String::valueOf)
-                .collect(Collectors.joining(","));
-        return new HomeworkData(homework.getName(), problemIds);
+        String problemIds = join(homework.getProblemIds(), ",");
+        return new HomeworkData(homework.getId(), homework.getName(), problemIds);
     }
 
     public static Homework toEntity(HomeworkData homeworkData) {

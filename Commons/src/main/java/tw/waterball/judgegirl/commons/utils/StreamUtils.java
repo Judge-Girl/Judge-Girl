@@ -149,6 +149,9 @@ public abstract class StreamUtils {
         return collection.stream().filter(predicate).collect(toList());
     }
 
+    public static <T> List<T> filterToList(T[] array, Predicate<T> predicate) {
+        return stream(array).filter(predicate).collect(toList());
+    }
 
     public static <T, K> Map<K, List<T>> groupingBy(Collection<T> collection, Function<? super T, ? extends K> classifier) {
         return collection.stream().collect(Collectors.groupingBy(classifier));
