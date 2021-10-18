@@ -5,8 +5,10 @@ import org.springframework.web.bind.annotation.*;
 import tw.waterball.judgegirl.academy.domain.usecases.homework.*;
 import tw.waterball.judgegirl.commons.token.TokenService;
 import tw.waterball.judgegirl.primitives.Homework;
+import tw.waterball.judgegirl.springboot.academy.presenters.StudentsHomeworkProgressPresenter;
 import tw.waterball.judgegirl.springboot.academy.view.HomeworkProgress;
 import tw.waterball.judgegirl.springboot.academy.view.HomeworkView;
+import tw.waterball.judgegirl.springboot.academy.view.StudentsHomeworkProgress;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 
 import java.util.LinkedList;
@@ -30,6 +32,8 @@ public class HomeworkController {
     private final DeleteHomeworkUseCase deleteHomeworkUseCase;
     private final AddHomeworkProblemsUseCase addHomeworkProblemUseCase;
     private final DeleteHomeworkProblemsUseCase deleteHomeworkProblemsUseCase;
+    private final GetStudentsHomeworkProgressUseCase getStudentsHomeworkProgressUseCase;
+    private final GetGroupsHomeworkProgressUseCase getGroupsHomeworkProgressUseCase;
 
     @PostMapping("/homework")
     public HomeworkView createHomework(@RequestHeader("Authorization") String authorization,
@@ -90,6 +94,28 @@ public class HomeworkController {
                                               @PathVariable int homeworkId, @RequestBody Integer[] problemIds) {
         tokenService.ifAdminToken(authorization,
                 token -> deleteHomeworkProblemsUseCase.execute(new DeleteHomeworkProblemsUseCase.Request(homeworkId, problemIds)));
+    }
+
+    @PostMapping("/students/homework/{homeworkId}/progress")
+    public StudentsHomeworkProgress getStudentsHomeworkProgress(@RequestHeader("Authorization") String authorization,
+                                                                @PathVariable int homeworkId,
+                                                                @RequestBody List<String> emails) {
+        return tokenService.returnIfAdmin(authorization, token -> {
+            var presenter = new StudentsHomeworkProgressPresenter();
+            getStudentsHomeworkProgressUseCase.execute(new GetStudentsHomeworkProgressUseCase.Request(homeworkId, emails), presenter);
+            return presenter.present();
+        });
+    }
+
+    @PostMapping("/groups/homework/{homeworkId}/progress")
+    public StudentsHomeworkProgress getGroupsHomeworkProgress(@RequestHeader("Authorization") String authorization,
+                                                              @PathVariable int homeworkId,
+                                                              @RequestBody List<String> groupNames) {
+        return tokenService.returnIfAdmin(authorization, token -> {
+            var presenter = new StudentsHomeworkProgressPresenter();
+            getGroupsHomeworkProgressUseCase.execute(new GetGroupsHomeworkProgressUseCase.Request(homeworkId, groupNames), presenter);
+            return presenter.present();
+        });
     }
 }
 
@@ -155,4 +181,5 @@ class GetHomeworkProgressPresenter implements GetHomeworkProgressUseCase.Present
     }
 
 }
+
 
