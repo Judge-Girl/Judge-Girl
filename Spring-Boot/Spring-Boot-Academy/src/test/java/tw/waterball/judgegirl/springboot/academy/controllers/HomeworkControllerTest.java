@@ -1,7 +1,9 @@
 package tw.waterball.judgegirl.springboot.academy.controllers;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+
 import lombok.SneakyThrows;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -11,8 +13,13 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.ResultActions;
+
+import tw.waterball.judgegirl.academy.domain.repositories.GroupRepository;
 import tw.waterball.judgegirl.academy.domain.repositories.HomeworkRepository;
 import tw.waterball.judgegirl.academy.domain.usecases.homework.CreateHomeworkUseCase;
+import tw.waterball.judgegirl.primitives.Student;
+import tw.waterball.judgegirl.primitives.exam.Group;
+import tw.waterball.judgegirl.primitives.exam.MemberId;
 import tw.waterball.judgegirl.primitives.problem.JudgeStatus;
 import tw.waterball.judgegirl.primitives.problem.Problem;
 import tw.waterball.judgegirl.primitives.stubs.ProblemStubs;
@@ -20,17 +27,23 @@ import tw.waterball.judgegirl.primitives.submission.Submission;
 import tw.waterball.judgegirl.problemapi.clients.FakeProblemServiceDriver;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.springboot.academy.SpringBootAcademyApplication;
+import tw.waterball.judgegirl.springboot.academy.view.GroupsHomeworkProgressView;
 import tw.waterball.judgegirl.springboot.academy.view.HomeworkProgress;
 import tw.waterball.judgegirl.springboot.academy.view.HomeworkProgress.BestRecord;
 import tw.waterball.judgegirl.springboot.academy.view.HomeworkView;
+import tw.waterball.judgegirl.springboot.academy.view.StudentsHomeworkProgressView;
 import tw.waterball.judgegirl.springboot.profiles.Profiles;
+import tw.waterball.judgegirl.studentapi.clients.FakeStudentServiceDriver;
+import tw.waterball.judgegirl.studentapi.clients.view.StudentView;
 import tw.waterball.judgegirl.submissionapi.clients.SubmissionServiceDriver;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.IntStream.range;
@@ -39,8 +52,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static tw.waterball.judgegirl.commons.utils.MapUtils.map;
+import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToSet;
+import static tw.waterball.judgegirl.commons.utils.StreamUtils.toMap;
 import static tw.waterball.judgegirl.primitives.stubs.SubmissionStubBuilder.submission;
 import static tw.waterball.judgegirl.springboot.academy.controllers.ExamControllerTest.LANG_ENV;
+import static tw.waterball.judgegirl.studentapi.clients.view.StudentView.toViewModel;
 
 @ActiveProfiles(Profiles.JWT)
 @ContextConfiguration(classes = SpringBootAcademyApplication.class)
@@ -48,19 +65,29 @@ public class HomeworkControllerTest extends AbstractSpringBootTest {
 
     public static final int PROBLEM1_ID = 1;
     public static final int PROBLEM2_ID = 2;
+    private static final String GROUP_A_NAME = "groupA";
+    private static final String GROUP_B_NAME = "groupB";
     private static final String HOMEWORK_NAME = "homeworkName";
     public static final int STUDENT_ID = 11;
     private static final String HOMEWORK_PATH = "/api/homework";
     private static final String HOMEWORK_PROGRESS_PATH = "/api/students/{studentId}/homework/{homeworkId}/progress";
+    private static final String GET_STUDENTS_HOMEWORK_PROGRESS_PATH = "/api/students/homework/{homeworkId}/progress";
+    private static final String GET_GROUPS_HOMEWORK_PROGRESS_PATH = "/api/groups/homework/{homeworkId}/progress";
 
     @Autowired
     private FakeProblemServiceDriver problemServiceDriver;
+
+    @Autowired
+    private FakeStudentServiceDriver studentServiceDriver;
 
     @MockBean
     private SubmissionServiceDriver submissionServiceDriver;
 
     @Autowired
     private HomeworkRepository homeworkRepository;
+
+    @Autowired
+    private GroupRepository groupRepository;
 
     @AfterEach
     void cleanUp() {
@@ -158,6 +185,74 @@ public class HomeworkControllerTest extends AbstractSpringBootTest {
         assertEquals(homework, homeworkProgress.homework);
         homeworkProgressShouldIncludeTwoBestRecords(homework, homeworkProgress, bestRecord1, bestRecord2);
     }
+
+    @DisplayName("Given a homework consists of two problems [1, 2] and these students achieved AC in 1 and CE in 2," +
+            "When get these students homework progress, " +
+            "Should respond these students best records [AC, CE] within the homework progress")
+    @Test
+    public void testGetStudentsHomeworkProgress() throws Exception {
+        var studentA = signUpStudent("studentA", "studentA@example.com", "password");
+        var studentB = signUpStudent("studentB", "studentB@example.com", "password");
+        var homework = createHomeworkConsistsOfProblems(PROBLEM1_ID, PROBLEM2_ID);
+        var bestRecord1 = achieveBestRecord(PROBLEM1_ID, submission("AC").AC(1, 1, 100).build(studentA.id, PROBLEM1_ID, LANG_ENV));
+        var bestRecord2 = achieveBestRecord(PROBLEM2_ID, submission("CE").CE(100).build(studentA.id, PROBLEM2_ID, LANG_ENV));
+        var bestRecord3 = achieveBestRecord(PROBLEM1_ID, submission("AC").AC(1, 1, 100).build(studentB.id, PROBLEM1_ID, LANG_ENV));
+        var bestRecord4 = achieveBestRecord(PROBLEM2_ID, submission("CE").CE(100).build(studentB.id, PROBLEM2_ID, LANG_ENV));
+
+        var homeworkProgress = getStudentsHomeworkProgress(homework.id, studentA.email, studentB.email);
+
+        assertTrue(homeworkProgress.getScoreBoard().containsKey(studentA.email));
+        assertTrue(homeworkProgress.getScoreBoard().containsKey(studentB.email));
+        var progressA = homeworkProgress.scoreBoard.get(studentA.email);
+        var progressB = homeworkProgress.scoreBoard.get(studentB.email);
+        var submissionViewsA = asList(bestRecord1, bestRecord2);
+        var submissionViewsB = asList(bestRecord3, bestRecord4);
+        progressShouldHaveGrade(progressA, submissionViewsA);
+        progressShouldHaveGrade(progressB, submissionViewsB);
+
+    }
+
+    @DisplayName("Given a homework consists of two problems [1, 2] and these students achieved AC in 1 and CE in 2" +
+            "When get the groups homework progress, " +
+            "Should respond these students best records within the homework progress")
+    @Test
+    public void testGetGroupsHomeworkProgress() throws Exception {
+        var studentA = signUpStudent("studentA", "studentA@example.com", "password");
+        var studentB = signUpStudent("studentB", "studentB@example.com", "password");
+        var studentC = signUpStudent("studentC", "studentC@example.com", "password");
+        var homework = createHomeworkConsistsOfProblems(PROBLEM1_ID, PROBLEM2_ID);
+        var bestRecord1 = achieveBestRecord(PROBLEM1_ID, submission("AC").AC(1, 1, 100).build(studentA.id, PROBLEM1_ID, LANG_ENV));
+        var bestRecord2 = achieveBestRecord(PROBLEM2_ID, submission("CE").CE(100).build(studentA.id, PROBLEM2_ID, LANG_ENV));
+        var bestRecord3 = achieveBestRecord(PROBLEM1_ID, submission("AC").AC(1, 1, 100).build(studentB.id, PROBLEM1_ID, LANG_ENV));
+        var bestRecord4 = achieveBestRecord(PROBLEM2_ID, submission("CE").CE(100).build(studentB.id, PROBLEM2_ID, LANG_ENV));
+        var bestRecord5 = achieveBestRecord(PROBLEM2_ID, submission("CE").CE(100).build(studentC.id, PROBLEM2_ID, LANG_ENV));
+        givenGroupWithMembers(GROUP_A_NAME, studentA.id, studentB.id);
+        givenGroupWithMembers(GROUP_B_NAME, studentC.id);
+
+        var groupsHomeworkProgress = getGroupsHomeworkProgress(homework.id, GROUP_A_NAME, GROUP_B_NAME);
+
+        var progressA = groupsHomeworkProgress.groupsHomeworkProgress.get(studentA.email);
+        var progressB = groupsHomeworkProgress.groupsHomeworkProgress.get(studentB.email);
+        var progressC = groupsHomeworkProgress.groupsHomeworkProgress.get(studentC.email);
+        var submissionViewsA = asList(bestRecord1, bestRecord2);
+        var submissionViewsB = asList(bestRecord3, bestRecord4);
+        var submissionViewsC = asList(bestRecord5);
+        progressShouldHaveGrade(progressA, submissionViewsA);
+        progressShouldHaveGrade(progressB, submissionViewsB);
+        progressShouldHaveGrade(progressC, submissionViewsC);
+
+    }
+
+    private void progressShouldHaveGrade(StudentsHomeworkProgressView.StudentProgress studentProgress, List<SubmissionView> submissionViews) {
+        var problemIdToExpectedScore = toMap(submissionViews, SubmissionView::getProblemId, submissionView -> submissionView.getVerdict().getTotalGrade());
+        assertEquals(studentProgress.getQuestionScores(), problemIdToExpectedScore);
+    }
+
+    private void progressShouldHaveGrade(GroupsHomeworkProgressView.StudentProgress studentProgress, List<SubmissionView> submissionViews) {
+        var problemIdToExpectedScore = toMap(submissionViews, SubmissionView::getProblemId, submissionView -> submissionView.getVerdict().getTotalGrade());
+        assertEquals(studentProgress.getQuestionScores(), problemIdToExpectedScore);
+    }
+
 
     private HomeworkView createHomeworkWithProblems(String homeworkName, int... problemIds) {
         createProblems(problemIds);
@@ -276,5 +371,32 @@ public class HomeworkControllerTest extends AbstractSpringBootTest {
                 .andExpect(status().isOk()), HomeworkProgress.class);
     }
 
+    private StudentsHomeworkProgressView getStudentsHomeworkProgress(int homeworkId, String... studentEmails) throws Exception {
+        return getBody(mockMvc.perform(
+                        withAdminToken(post(GET_STUDENTS_HOMEWORK_PROGRESS_PATH, homeworkId))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(toJson(studentEmails)))
+                .andExpect(status().isOk()), StudentsHomeworkProgressView.class);
+    }
 
+
+    private GroupsHomeworkProgressView getGroupsHomeworkProgress(int homeworkId, String... groupNames) throws Exception {
+        return getBody(mockMvc.perform(
+                        withAdminToken(post(GET_GROUPS_HOMEWORK_PROGRESS_PATH, homeworkId))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(toJson(groupNames)))
+                .andExpect(status().isOk()), GroupsHomeworkProgressView.class);
+    }
+
+    private StudentView signUpStudent(String name, String email, String password) {
+        Student newStudent = new Student(name, email, password);
+        studentServiceDriver.addStudent(newStudent);
+        return toViewModel(newStudent);
+    }
+
+    private Group givenGroupWithMembers(String name, Integer... studentIds) {
+        Group group = groupRepository.save(new Group(name));
+        group.addMembers(mapToSet(studentIds, MemberId::new));
+        return groupRepository.save(group);
+    }
 }
