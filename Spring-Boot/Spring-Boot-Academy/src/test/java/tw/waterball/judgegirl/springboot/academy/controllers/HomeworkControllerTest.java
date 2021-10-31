@@ -39,11 +39,9 @@ import tw.waterball.judgegirl.submissionapi.clients.SubmissionServiceDriver;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 import tw.waterball.judgegirl.testkit.AbstractSpringBootTest;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.IntStream.range;
@@ -52,9 +50,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static tw.waterball.judgegirl.commons.utils.MapUtils.map;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToSet;
-import static tw.waterball.judgegirl.commons.utils.StreamUtils.toMap;
 import static tw.waterball.judgegirl.primitives.stubs.SubmissionStubBuilder.submission;
 import static tw.waterball.judgegirl.springboot.academy.controllers.ExamControllerTest.LANG_ENV;
 import static tw.waterball.judgegirl.studentapi.clients.view.StudentView.toViewModel;
@@ -176,7 +172,7 @@ public class HomeworkControllerTest extends AbstractSpringBootTest {
             "Should respond the two best records [AC, CE] within the homework progress")
     @Test
     public void testGetHomeworkProgress() throws Exception {
-        var homework = createHomeworkConsistsOfProblems(PROBLEM1_ID, PROBLEM2_ID);
+        var homework = createHomeworkWithProblems(PROBLEM1_ID, PROBLEM2_ID);
         var bestRecord1 = achieveBestRecord(PROBLEM1_ID, submission("AC").AC(1, 1, 100).build(STUDENT_ID, PROBLEM1_ID, LANG_ENV));
         var bestRecord2 = achieveBestRecord(PROBLEM2_ID, submission("CE").CE(100).build(STUDENT_ID, PROBLEM2_ID, LANG_ENV));
 
@@ -193,7 +189,7 @@ public class HomeworkControllerTest extends AbstractSpringBootTest {
     public void testGetStudentsHomeworkProgress() throws Exception {
         var studentA = signUpStudent("studentA", "studentA@example.com", "password");
         var studentB = signUpStudent("studentB", "studentB@example.com", "password");
-        var homework = createHomeworkConsistsOfProblems(PROBLEM1_ID, PROBLEM2_ID);
+        var homework = createHomeworkWithProblems(PROBLEM1_ID, PROBLEM2_ID);
         var bestRecord1 = achieveBestRecord(PROBLEM1_ID, submission("AC").AC(1, 1, 100).build(studentA.id, PROBLEM1_ID, LANG_ENV));
         var bestRecord2 = achieveBestRecord(PROBLEM2_ID, submission("CE").CE(100).build(studentA.id, PROBLEM2_ID, LANG_ENV));
         var bestRecord3 = achieveBestRecord(PROBLEM1_ID, submission("AC").AC(1, 1, 100).build(studentB.id, PROBLEM1_ID, LANG_ENV));
@@ -205,10 +201,8 @@ public class HomeworkControllerTest extends AbstractSpringBootTest {
         assertTrue(homeworkProgress.getScoreBoard().containsKey(studentB.email));
         var progressA = homeworkProgress.scoreBoard.get(studentA.email);
         var progressB = homeworkProgress.scoreBoard.get(studentB.email);
-        var submissionViewsA = asList(bestRecord1, bestRecord2);
-        var submissionViewsB = asList(bestRecord3, bestRecord4);
-        progressShouldHaveGrade(progressA, submissionViewsA);
-        progressShouldHaveGrade(progressB, submissionViewsB);
+        progressShouldHaveGrade(progressA, bestRecord1, bestRecord2);
+        progressShouldHaveGrade(progressA, bestRecord3, bestRecord4);
 
     }
 
@@ -220,7 +214,7 @@ public class HomeworkControllerTest extends AbstractSpringBootTest {
         var studentA = signUpStudent("studentA", "studentA@example.com", "password");
         var studentB = signUpStudent("studentB", "studentB@example.com", "password");
         var studentC = signUpStudent("studentC", "studentC@example.com", "password");
-        var homework = createHomeworkConsistsOfProblems(PROBLEM1_ID, PROBLEM2_ID);
+        var homework = createHomeworkWithProblems(PROBLEM1_ID, PROBLEM2_ID);
         var bestRecord1 = achieveBestRecord(PROBLEM1_ID, submission("AC").AC(1, 1, 100).build(studentA.id, PROBLEM1_ID, LANG_ENV));
         var bestRecord2 = achieveBestRecord(PROBLEM2_ID, submission("CE").CE(100).build(studentA.id, PROBLEM2_ID, LANG_ENV));
         var bestRecord3 = achieveBestRecord(PROBLEM1_ID, submission("AC").AC(1, 1, 100).build(studentB.id, PROBLEM1_ID, LANG_ENV));
@@ -234,23 +228,26 @@ public class HomeworkControllerTest extends AbstractSpringBootTest {
         var progressA = groupsHomeworkProgress.groupsHomeworkProgress.get(studentA.email);
         var progressB = groupsHomeworkProgress.groupsHomeworkProgress.get(studentB.email);
         var progressC = groupsHomeworkProgress.groupsHomeworkProgress.get(studentC.email);
-        var submissionViewsA = asList(bestRecord1, bestRecord2);
-        var submissionViewsB = asList(bestRecord3, bestRecord4);
-        var submissionViewsC = asList(bestRecord5);
-        progressShouldHaveGrade(progressA, submissionViewsA);
-        progressShouldHaveGrade(progressB, submissionViewsB);
-        progressShouldHaveGrade(progressC, submissionViewsC);
+        progressShouldHaveGrade(progressA, bestRecord1, bestRecord2);
+        progressShouldHaveGrade(progressA, bestRecord3, bestRecord4);
+        progressShouldHaveGrade(progressC, bestRecord5);
 
     }
 
-    private void progressShouldHaveGrade(StudentsHomeworkProgressView.StudentProgress studentProgress, List<SubmissionView> submissionViews) {
-        var problemIdToExpectedScore = toMap(submissionViews, SubmissionView::getProblemId, submissionView -> submissionView.getVerdict().getTotalGrade());
-        assertEquals(studentProgress.getQuestionScores(), problemIdToExpectedScore);
+    private void progressShouldHaveGrade(StudentsHomeworkProgressView.StudentProgress progress, SubmissionView... bestRecords) {
+        for (SubmissionView bestRecord : bestRecords) {
+            var actualQuestionScores = bestRecord.getVerdict().getTotalGrade();
+            var expectedQuestionScores = progress.getQuestionScores().get(bestRecord.getProblemId());
+            assertEquals(expectedQuestionScores, actualQuestionScores);
+        }
     }
 
-    private void progressShouldHaveGrade(GroupsHomeworkProgressView.StudentProgress studentProgress, List<SubmissionView> submissionViews) {
-        var problemIdToExpectedScore = toMap(submissionViews, SubmissionView::getProblemId, submissionView -> submissionView.getVerdict().getTotalGrade());
-        assertEquals(studentProgress.getQuestionScores(), problemIdToExpectedScore);
+    private void progressShouldHaveGrade(GroupsHomeworkProgressView.StudentProgress progress, SubmissionView... bestRecords) {
+        for (SubmissionView bestRecord : bestRecords) {
+            var actualQuestionScores = bestRecord.getVerdict().getTotalGrade();
+            var expectedQuestionScores = progress.getQuestionScores().get(bestRecord.getProblemId());
+            assertEquals(expectedQuestionScores, actualQuestionScores);
+        }
     }
 
 
@@ -259,7 +256,7 @@ public class HomeworkControllerTest extends AbstractSpringBootTest {
         return createHomeworkAndGet(homeworkName, problemIds);
     }
 
-    private HomeworkView createHomeworkConsistsOfProblems(int... problemIds) {
+    private HomeworkView createHomeworkWithProblems(int... problemIds) {
         createProblems(problemIds);
         return createHomeworkAndGet(HOMEWORK_NAME, problemIds);
     }
@@ -395,8 +392,6 @@ public class HomeworkControllerTest extends AbstractSpringBootTest {
     }
 
     private Group givenGroupWithMembers(String name, Integer... studentIds) {
-        Group group = groupRepository.save(new Group(name));
-        group.addMembers(mapToSet(studentIds, MemberId::new));
-        return groupRepository.save(group);
+        return groupRepository.save(new Group(name, mapToSet(studentIds, MemberId::new)));
     }
 }

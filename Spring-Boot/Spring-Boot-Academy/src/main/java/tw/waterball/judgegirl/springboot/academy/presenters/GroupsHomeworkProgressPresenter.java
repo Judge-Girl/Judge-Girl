@@ -1,5 +1,6 @@
 package tw.waterball.judgegirl.springboot.academy.presenters;
 
+import org.jetbrains.annotations.NotNull;
 import tw.waterball.judgegirl.academy.domain.usecases.homework.GetGroupsHomeworkProgressUseCase;
 import tw.waterball.judgegirl.springboot.academy.view.GroupsHomeworkProgressView;
 
@@ -20,11 +21,16 @@ public class GroupsHomeworkProgressPresenter implements GetGroupsHomeworkProgres
     }
 
     private Map<String, GroupsHomeworkProgressView.StudentProgress> getGroupsHomeworkProgress(List<GetGroupsHomeworkProgressUseCase.StudentSubmissionRecord> records) {
-        return toMap(records, record -> record.getStudent().getEmail(), record -> new GroupsHomeworkProgressView.StudentProgress(record.getStudent().getId(), record.getStudent().getName(), getQuestionScores(record)));
+        return toMap(records, record -> record.getStudent().getEmail(), this::getStudentProgress);
     }
 
+    private GroupsHomeworkProgressView.StudentProgress getStudentProgress(GetGroupsHomeworkProgressUseCase.StudentSubmissionRecord record) {
+        return new GroupsHomeworkProgressView.StudentProgress(record.getStudent().getId(), record.getStudent().getName(), getQuestionScores(record));
+    }
+
+
     private Map<Integer, Integer> getQuestionScores(GetGroupsHomeworkProgressUseCase.StudentSubmissionRecord questionRecord) {
-        return toMap(questionRecord.getRecord(), record -> record.getProblemId(), record -> record.getVerdict().getTotalGrade());
+        return toMap(questionRecord.getRecords(), record -> record.getProblemId(), record -> record.getVerdict().getTotalGrade());
     }
 
     public GroupsHomeworkProgressView present() {

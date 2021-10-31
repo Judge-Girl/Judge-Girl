@@ -21,7 +21,7 @@ public class StudentsHomeworkProgressPresenter implements GetStudentsHomeworkPro
     }
 
     private Map<String, StudentsHomeworkProgressView.StudentProgress> getScoreBoard(List<GetStudentsHomeworkProgressUseCase.StudentSubmissionRecord> records) {
-        return toMap(records, record -> record.getStudent().getEmail(), record -> getStudentProgress(record));
+        return toMap(records, record -> record.getStudent().getEmail(), this::getStudentProgress);
     }
 
     @NotNull
@@ -30,7 +30,7 @@ public class StudentsHomeworkProgressPresenter implements GetStudentsHomeworkPro
     }
 
     private Map<Integer, Integer> getQuestionScores(GetStudentsHomeworkProgressUseCase.StudentSubmissionRecord questionRecord) {
-        return toMap(questionRecord.getRecord(), record -> record.getProblemId(), record -> record.getVerdict().getTotalGrade());
+        return toMap(questionRecord.getRecords(), record -> record.getProblemId(), record -> record.getVerdict().getTotalGrade());
     }
 
     public StudentsHomeworkProgressView present() {

@@ -82,7 +82,7 @@ public class GetStudentsHomeworkProgressUseCase extends AbstractHomeworkUseCase 
     @AllArgsConstructor
     public static class StudentSubmissionRecord {
         Student student;
-        List<SubmissionView> record;
+        List<SubmissionView> records;
 
     }
 }

@@ -102,10 +102,9 @@ public class HomeworkController {
     public StudentsHomeworkProgressView getStudentsHomeworkProgress(@RequestHeader("Authorization") String authorization,
                                                                     @PathVariable int homeworkId,
                                                                     @RequestBody List<String> emails) {
-        var request = new GetStudentsHomeworkProgressUseCase.Request(homeworkId, emails);
         return tokenService.returnIfAdmin(authorization, token -> {
             var presenter = new StudentsHomeworkProgressPresenter();
-            getStudentsHomeworkProgressUseCase.execute(request, presenter);
+            getStudentsHomeworkProgressUseCase.execute(new GetStudentsHomeworkProgressUseCase.Request(homeworkId, emails), presenter);
             return presenter.present();
         });
     }
@@ -114,10 +113,9 @@ public class HomeworkController {
     public GroupsHomeworkProgressView getGroupsHomeworkProgress(@RequestHeader("Authorization") String authorization,
                                                                 @PathVariable int homeworkId,
                                                                 @RequestBody List<String> groupNames) {
-        var request = new GetGroupsHomeworkProgressUseCase.Request(homeworkId, groupNames);
         return tokenService.returnIfAdmin(authorization, token -> {
             var presenter = new GroupsHomeworkProgressPresenter();
-            getGroupsHomeworkProgressUseCase.execute(request, presenter);
+            getGroupsHomeworkProgressUseCase.execute(new GetGroupsHomeworkProgressUseCase.Request(homeworkId, groupNames), presenter);
             return presenter.present();
         });
     }

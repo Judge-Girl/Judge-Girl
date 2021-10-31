@@ -16,6 +16,8 @@ import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 import javax.inject.Named;
 import java.util.*;
 
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.flatMapToList;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
 
@@ -46,8 +48,7 @@ public class GetGroupsHomeworkProgressUseCase extends AbstractHomeworkUseCase {
 
     private List<Student> getGroupMembers(List<String> groupNames) {
         var groups = groupRepository.findGroupsByNames(groupNames);
-        var students = findStudents(getStudentIds(groups));
-        return students;
+        return findStudents(getStudentIds(groups));
     }
 
     private List<StudentSubmissionRecord> getQuestionRecords(Homework homework, List<Student> students) {
@@ -64,16 +65,15 @@ public class GetGroupsHomeworkProgressUseCase extends AbstractHomeworkUseCase {
 
 
     private StudentSubmissionRecord showBestRecords(Student student, Homework homework) {
-        var submissionViews = flatMapToList(homework.getProblemIds(), problemId -> findBestRecord(student.getId(), problemId).stream());
-        return new StudentSubmissionRecord(student, submissionViews);
+        var bestRecords = flatMapToList(homework.getProblemIds(), problemId -> findBestRecord(student.getId(), problemId).stream());
+        return new StudentSubmissionRecord(student, bestRecords);
     }
 
     private Optional<SubmissionView> findBestRecord(int studentId, int problemId) {
         try {
-            SubmissionView bestRecord = submissionServiceDriver.findBestRecord(problemId, studentId);
-            return bestRecord != null ? Optional.of(submissionServiceDriver.findBestRecord(problemId, studentId)) : Optional.empty();
+            return of(submissionServiceDriver.findBestRecord(problemId, studentId));
         } catch (NotFoundException e) {
-            return Optional.empty();
+            return empty();
         }
     }
 
@@ -95,7 +95,7 @@ public class GetGroupsHomeworkProgressUseCase extends AbstractHomeworkUseCase {
     @AllArgsConstructor
     public static class StudentSubmissionRecord {
         public Student student;
-        public List<SubmissionView> record;
+        public List<SubmissionView> records;
 
     }
 }
