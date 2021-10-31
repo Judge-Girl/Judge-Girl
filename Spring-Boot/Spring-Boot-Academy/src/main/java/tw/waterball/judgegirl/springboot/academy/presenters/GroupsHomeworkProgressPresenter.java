@@ -1,6 +1,5 @@
 package tw.waterball.judgegirl.springboot.academy.presenters;
 
-import org.jetbrains.annotations.NotNull;
 import tw.waterball.judgegirl.academy.domain.usecases.homework.GetGroupsHomeworkProgressUseCase;
 import tw.waterball.judgegirl.springboot.academy.view.GroupsHomeworkProgressView;
 
