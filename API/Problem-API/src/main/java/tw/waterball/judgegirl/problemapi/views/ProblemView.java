@@ -75,6 +75,7 @@ public class ProblemView {
                 .tags(requireNonNullElse(view.tags, emptyList()))
                 .testcases(mapToList(view.testcases, TestcaseView::toEntity))
                 .archived(view.archived)
+                .visible(view.visible)
                 .languageEnvs(toMap(view.languageEnvs, LanguageEnvView::getName, LanguageEnvView::toValue));
 
         if (view.judgeFilterPluginTags != null) {
