@@ -80,6 +80,8 @@ class ExamControllerTest extends AbstractSpringBootTest {
     public static final int PROBLEM_ID = 2;
     public static final int OTHER_PROBLEM_ID = 150;
     public static final int ANOTHER_PROBLEM_ID = 300;
+    public static final int VISIBLE_PROBLEM_ID = 450;
+    public static final int ARCHIVE_PROBLEM_ID = 500;
 
     public static final int NONEXISTING_EXAM_ID = 9999;
     public static final int NONEXISTING_PROBLEM_ID = 9999;
@@ -123,6 +125,8 @@ class ExamControllerTest extends AbstractSpringBootTest {
     private Submission submissionWith2ACs;
     private ProblemView otherProblem;
     private ProblemView anotherProblem;
+    private ProblemView visibleProblem;
+    private ProblemView archivedProblem;
 
     private final MockMultipartFile[] mockFiles = codes(SUBMIT_CODE_MULTIPART_KEY_NAME, 2);
 
@@ -136,7 +140,9 @@ class ExamControllerTest extends AbstractSpringBootTest {
     private void fakeProblemServiceDriver() {
         Problem p1 = problemTemplate(testcaseGrades).id(PROBLEM_ID).title("Title_1").build(),
                 p2 = problemTemplate(testcaseGrades).id(OTHER_PROBLEM_ID).title("Title_2").build(),
-                p3 = problemTemplate(testcaseGrades).id(ANOTHER_PROBLEM_ID).title("Title_3").build();
+                p3 = problemTemplate(testcaseGrades).id(ANOTHER_PROBLEM_ID).title("Title_3").build(),
+                p4 = problemTemplate(testcaseGrades).id(VISIBLE_PROBLEM_ID).title("Title_4").visible(true).build(),
+                p5 = problemTemplate(testcaseGrades).id(ARCHIVE_PROBLEM_ID).title("Title_5").archived(true).build();
         problem = toViewModel(p1);
         submissionWith2ACs = randomizedSubmission(p1, STUDENT_A_ID, 2);
         problemServiceDriver.addProblemView(problem);
@@ -144,6 +150,10 @@ class ExamControllerTest extends AbstractSpringBootTest {
         problemServiceDriver.addProblemView(otherProblem);
         anotherProblem = toViewModel(p3);
         problemServiceDriver.addProblemView(anotherProblem);
+        visibleProblem = toViewModel(p4);
+        problemServiceDriver.addProblemView(visibleProblem);
+        archivedProblem = toViewModel(p5);
+        problemServiceDriver.addProblemView(archivedProblem);
     }
 
     private void fakeStudentServiceDriver() {
@@ -205,6 +215,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
     void testAddTwoGroupsOfExamineesFrom() throws Exception {
         var exam = createExamAndGet(now(), now(), "Exam");
         Group G1 = givenGroupWithMembers("G1", STUDENT_A_ID);
+
         Group G2 = givenGroupWithMembers("G2", STUDENT_B_ID, STUDENT_C_ID);
 
         addGroupsOfExaminees(exam, G1, G2);
@@ -449,6 +460,50 @@ class ExamControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
+    void GivenExamWithInvisibleProblem_WhenGetQuestion_ShouldSucceed() throws Exception {
+        ExamView exam = createExamAndGet(now(), now(), "sample-exam");
+        createQuestion(exam.id, PROBLEM_ID);
+        addExaminees(exam.id, STUDENT_A_EMAIL);
+
+        ProblemView exceptedProblem = getBody(getQuestion(exam.id, STUDENT_A_ID, PROBLEM_ID)
+                .andExpect(status().isOk()), ProblemView.class);
+
+        assertEquals(problem, exceptedProblem);
+    }
+
+    @Test
+    void GivenExamWithVisibleProblem_WhenGetQuestion_ShouldSucceed() throws Exception {
+        ExamView exam = createExamAndGet(now(), now(), "sample-exam");
+        createQuestion(exam.id, VISIBLE_PROBLEM_ID);
+        addExaminees(exam.id, STUDENT_A_EMAIL);
+
+        ProblemView problem = getBody(getQuestion(exam.id, STUDENT_A_ID, VISIBLE_PROBLEM_ID)
+                .andExpect(status().isOk()), ProblemView.class);
+
+        assertEquals(visibleProblem, problem);
+    }
+
+    @Test
+    void GivenExamWithArchivedProblem_WhenGetQuestion_ShouldRespondNotFound() throws Exception {
+        ExamView exam = createExamAndGet(now(), now(), "sample-exam");
+        createQuestion(exam.id, ARCHIVE_PROBLEM_ID);
+        addExaminees(exam.id, STUDENT_A_EMAIL);
+
+        getQuestion(exam.id, STUDENT_A_ID, ARCHIVE_PROBLEM_ID)
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void GivenExamWithProblem_WhenGetQuestionWithStudentNotExaminee_ShouldRespondNotFound() throws Exception {
+        ExamView exam = createExamAndGet(now(), now(), "sample-exam");
+        createQuestion(exam.id, PROBLEM_ID);
+        int nonExamineeStudentId = 123;
+
+        getQuestion(exam.id, nonExamineeStudentId, PROBLEM_ID)
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
     void GivenIAmNotAnExaminee_WhenAnswerExamQuestion_ShouldBeForbidden() throws Exception {
         ExamView currentExam = createExamAndGet(beforeCurrentTime(1, HOURS), afterCurrentTime(1, HOURS), "A");
         createQuestion(new CreateQuestionUseCase.Request(currentExam.getId(), PROBLEM_ID, NO_QUOTA_LIMITATION, 100, 1));
@@ -665,7 +720,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
 
         Reader in = new InputStreamReader(new ByteArrayInputStream(response.getContentAsByteArray()));
         var records = CSVFormat.DEFAULT.withHeader
-                        (COLUMN_NAME, COLUMN_EMAIL, COLUMN_PROBLEM_1_TITLE, COLUMN_PROBLEM_2_TITLE, COLUMN_TOTAL_SCORE)
+                (COLUMN_NAME, COLUMN_EMAIL, COLUMN_PROBLEM_1_TITLE, COLUMN_PROBLEM_2_TITLE, COLUMN_TOTAL_SCORE)
                 .parse(in);
 
         CSVRecord csvHeader = records.iterator().next();
@@ -726,22 +781,22 @@ class ExamControllerTest extends AbstractSpringBootTest {
     private void reorderQuestions(int examId, int... reorders) throws Exception {
         var request = new ReorderQuestionsUseCase.Request(examId, reorders);
         mockMvc.perform(withAdminToken(patch("/api/exams/{examId}/problems/reorder", examId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(toJson(request))))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(toJson(request))))
                 .andExpect(status().isOk());
     }
 
     @SneakyThrows
     private TranscriptView produceExamTranscript(ExamView exam) {
         return getBody(mockMvc.perform(withAdminToken(
-                        get("/api/exams/{examId}/transcript", exam.getId())))
+                get("/api/exams/{examId}/transcript", exam.getId())))
                 .andExpect(status().isOk()), TranscriptView.class);
     }
 
     @SneakyThrows
     private MockHttpServletResponse produceCsvFileExamTranscript(ExamView exam) {
         return mockMvc.perform(withAdminToken(
-                        get("/api/exams/{examId}/transcript/csv", exam.getId())))
+                get("/api/exams/{examId}/transcript/csv", exam.getId())))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_OCTET_STREAM_VALUE))
                 .andReturn().getResponse();
@@ -777,15 +832,15 @@ class ExamControllerTest extends AbstractSpringBootTest {
 
     private void addGroupsOfExaminees(ExamView exam, Group... groups) throws Exception {
         mockMvc.perform(withAdminToken(
-                        post("/api/exams/{examId}/groups", exam.getId())
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(toJson(new AddGroupOfExamineesUseCase.Request(exam.getId(), mapToList(groups, Group::getName))))))
+                post("/api/exams/{examId}/groups", exam.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(toJson(new AddGroupOfExamineesUseCase.Request(exam.getId(), mapToList(groups, Group::getName))))))
                 .andExpect(status().isOk());
     }
 
     private List<Student> getExaminees(ExamView exam) throws Exception {
         return getBody(mockMvc.perform(withAdminToken(
-                        get("/api/exams/{examId}/students", exam.id)))
+                get("/api/exams/{examId}/students", exam.id)))
                 .andExpect(status().isOk()), new TypeReference<>() {
         });
     }
@@ -935,10 +990,10 @@ class ExamControllerTest extends AbstractSpringBootTest {
     @SneakyThrows
     private List<ExamView> getStudentExams(int studentId, ExamFilter.Status status, int skip, int size) {
         return getBody(mockMvc.perform(
-                        withStudentToken(studentId, get("/api/students/{studentId}/exams", studentId)
-                                .queryParam("status", String.valueOf(status))
-                                .queryParam("skip", String.valueOf(skip))
-                                .queryParam("size", String.valueOf(size))))
+                withStudentToken(studentId, get("/api/students/{studentId}/exams", studentId)
+                        .queryParam("status", String.valueOf(status))
+                        .queryParam("skip", String.valueOf(skip))
+                        .queryParam("size", String.valueOf(size))))
                 .andExpect(status().isOk()), new TypeReference<>() {
         });
     }
@@ -946,8 +1001,8 @@ class ExamControllerTest extends AbstractSpringBootTest {
     @SneakyThrows
     private List<ExamView> getStudentExams(int studentId, ExamFilter.Status status) {
         return getBody(mockMvc.perform(
-                        withStudentToken(studentId, get("/api/students/{studentId}/exams", studentId)
-                                .queryParam("status", String.valueOf(status))))
+                withStudentToken(studentId, get("/api/students/{studentId}/exams", studentId)
+                        .queryParam("status", String.valueOf(status))))
                 .andExpect(status().isOk()), new TypeReference<>() {
         });
     }
@@ -955,23 +1010,29 @@ class ExamControllerTest extends AbstractSpringBootTest {
     @SneakyThrows
     private ExamView getExamById(int examId) {
         return getBody(mockMvc.perform(withAdminToken(
-                        get("/api/exams/{examId}", examId)))
+                get("/api/exams/{examId}", examId)))
                 .andExpect(status().isOk()), ExamView.class);
     }
 
     @SneakyThrows
     private ExamHome getExamProgressOverview(int examId) {
         return getBody(mockMvc.perform(
-                        withStudentToken(STUDENT_A_ID,
-                                get("/api/exams/{examId}/students/{studentId}/overview", examId, STUDENT_A_ID)))
+                withStudentToken(STUDENT_A_ID,
+                        get("/api/exams/{examId}/students/{studentId}/overview", examId, STUDENT_A_ID)))
                 .andExpect(status().isOk()), ExamHome.class);
     }
 
     @SneakyThrows
     private ExamOverview getExamOverview(int examId) {
         return getBody(mockMvc.perform(withAdminToken(
-                        get("/api/exams/{examId}/overview", examId)))
+                get("/api/exams/{examId}/overview", examId)))
                 .andExpect(status().isOk()), ExamOverview.class);
+    }
+
+    @SneakyThrows
+    private ResultActions getQuestion(int examId, int examineeId, int problemId) {
+        return mockMvc.perform(withStudentToken(examineeId,
+                get("/api/exams/{examId}/problems/{problemId}", examId, problemId)));
     }
 
     private void addExaminee(int examId, int studentId) {
@@ -992,6 +1053,12 @@ class ExamControllerTest extends AbstractSpringBootTest {
                 delete("/api/exams/{examId}/students", examId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(toJson(emails))));
+    }
+
+    @SneakyThrows
+    private void createQuestion(int examId, int problemId) {
+        createQuestion(new CreateQuestionUseCase.Request(examId, problemId, 5, 100, 1))
+                .andExpect(status().isOk());
     }
 
     @SneakyThrows

@@ -14,6 +14,7 @@ import tw.waterball.judgegirl.commons.token.TokenService.Token;
 import tw.waterball.judgegirl.primitives.Student;
 import tw.waterball.judgegirl.primitives.exam.Exam;
 import tw.waterball.judgegirl.primitives.exam.Question;
+import tw.waterball.judgegirl.primitives.problem.Problem;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
 import tw.waterball.judgegirl.springboot.academy.presenters.ExamPresenter;
 import tw.waterball.judgegirl.springboot.academy.presenters.*;
@@ -39,6 +40,7 @@ public class ExamController {
     private final GetExamsUseCase getExamsUseCase;
     private final GetStudentExamOverviewUseCase getStudentExamOverviewUseCase;
     private final GetExamOverviewUseCase getExamOverviewUseCase;
+    private final GetQuestionUseCase getQuestionUseCase;
     private final UpdateExamUseCase updateExamUseCase;
     private final GetExamUseCase getExamUseCase;
     private final DeleteExamineesUseCase deleteExamineesUseCase;
@@ -167,6 +169,16 @@ public class ExamController {
             getExamOverviewUseCase.execute(examId, presenter);
             return presenter.present();
         });
+    }
+
+    @GetMapping("/exams/{examId}/problems/{problemId}")
+    public ProblemView getQuestion(@RequestHeader("Authorization") String authorization,
+                                   @PathVariable int examId,
+                                   @PathVariable int problemId) {
+        Token token = tokenService.parseBearerTokenAndValidate(authorization);
+        GetQuestionPresenter presenter = new GetQuestionPresenter();
+        getQuestionUseCase.execute(new GetQuestionUseCase.Request(examId, problemId, token.getStudentId()), presenter);
+        return presenter.present();
     }
 
     @GetMapping("/exams/{examId}/transcript")
@@ -308,5 +320,18 @@ class AddExamineesPresenter implements AddExamineesUseCase.Presenter {
 
     public List<String> present() {
         return errorList;
+    }
+}
+
+class GetQuestionPresenter implements GetQuestionUseCase.Presenter {
+    private Problem problem;
+
+    @Override
+    public void showProblem(Problem problem) {
+        this.problem = problem;
+    }
+
+    public ProblemView present() {
+        return ProblemView.toViewModel(problem);
     }
 }
