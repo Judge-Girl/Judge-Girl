@@ -49,16 +49,9 @@ public class GetQuestionUseCase extends AbstractExamUseCase {
     }
 
     private Problem findNonArchivedProblem(int problemId) {
-        Problem problem = findProblem(problemId);
-        if (problem.isArchived()) {
-            throw notFound(Problem.class).id(problem.getId());
-        }
-        return problem;
-    }
-    
-    private Problem findProblem(int problemId) {
         return problemService.getProblem(problemId)
                 .map(ProblemView::toEntity)
+                .filter(p -> !p.isArchived())
                 .orElseThrow(() -> notFound(Problem.class).id(problemId));
     }
 
