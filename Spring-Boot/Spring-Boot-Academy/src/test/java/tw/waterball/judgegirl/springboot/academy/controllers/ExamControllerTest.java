@@ -460,46 +460,46 @@ class ExamControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    void GivenExamWithInvisibleProblem_WhenGetProblem_ShouldSucceed() throws Exception {
+    void GivenExamWithInvisibleProblem_WhenGetQuestion_ShouldSucceed() throws Exception {
         ExamView exam = createExamAndGet(now(), now(), "sample-exam");
         createQuestion(exam.id, PROBLEM_ID);
         addExaminees(exam.id, STUDENT_A_EMAIL);
 
-        ProblemView exceptedProblem = getBody(getExamProblem(exam.id, STUDENT_A_ID, PROBLEM_ID)
+        ProblemView exceptedProblem = getBody(getQuestion(exam.id, STUDENT_A_ID, PROBLEM_ID)
                 .andExpect(status().isOk()), ProblemView.class);
 
         assertEquals(problem, exceptedProblem);
     }
 
     @Test
-    void GivenExamWithVisibleProblem_WhenGetProblem_ShouldSucceed() throws Exception {
+    void GivenExamWithVisibleProblem_WhenGetQuestion_ShouldSucceed() throws Exception {
         ExamView exam = createExamAndGet(now(), now(), "sample-exam");
         createQuestion(exam.id, VISIBLE_PROBLEM_ID);
         addExaminees(exam.id, STUDENT_A_EMAIL);
 
-        ProblemView problem = getBody(getExamProblem(exam.id, STUDENT_A_ID, VISIBLE_PROBLEM_ID)
+        ProblemView problem = getBody(getQuestion(exam.id, STUDENT_A_ID, VISIBLE_PROBLEM_ID)
                 .andExpect(status().isOk()), ProblemView.class);
 
         assertEquals(visibleProblem, problem);
     }
 
     @Test
-    void GivenExamWithArchivedProblem_WhenGetProblem_ShouldRespond404() throws Exception {
+    void GivenExamWithArchivedProblem_WhenGetQuestion_ShouldRespondNotFound() throws Exception {
         ExamView exam = createExamAndGet(now(), now(), "sample-exam");
         createQuestion(exam.id, ARCHIVE_PROBLEM_ID);
         addExaminees(exam.id, STUDENT_A_EMAIL);
 
-        getExamProblem(exam.id, STUDENT_A_ID, ARCHIVE_PROBLEM_ID)
+        getQuestion(exam.id, STUDENT_A_ID, ARCHIVE_PROBLEM_ID)
                 .andExpect(status().isNotFound());
     }
 
     @Test
-    void GivenExamWithProblem_WhenGetProblemWithStudentNotExaminee_ShouldRespond404() throws Exception {
+    void GivenExamWithProblem_WhenGetQuestionWithStudentNotExaminee_ShouldRespondNotFound() throws Exception {
         ExamView exam = createExamAndGet(now(), now(), "sample-exam");
         createQuestion(exam.id, PROBLEM_ID);
         int nonExamineeStudentId = 123;
 
-        getExamProblem(exam.id, nonExamineeStudentId, PROBLEM_ID)
+        getQuestion(exam.id, nonExamineeStudentId, PROBLEM_ID)
                 .andExpect(status().isNotFound());
     }
 
@@ -1030,7 +1030,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
     }
 
     @SneakyThrows
-    ResultActions getExamProblem(int examId, int examineeId, int problemId) {
+    private ResultActions getQuestion(int examId, int examineeId, int problemId) {
         return mockMvc.perform(withStudentToken(examineeId,
                 get("/api/exams/{examId}/problems/{problemId}", examId, problemId)));
     }
@@ -1056,8 +1056,8 @@ class ExamControllerTest extends AbstractSpringBootTest {
     }
 
     @SneakyThrows
-    private ResultActions createQuestion(int examId, int problemId) {
-        return createQuestion(new CreateQuestionUseCase.Request(examId, problemId, 5, 100, 1))
+    private void createQuestion(int examId, int problemId) {
+        createQuestion(new CreateQuestionUseCase.Request(examId, problemId, 5, 100, 1))
                 .andExpect(status().isOk());
     }
 

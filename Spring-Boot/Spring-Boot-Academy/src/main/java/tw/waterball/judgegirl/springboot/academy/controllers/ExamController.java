@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
-import static tw.waterball.judgegirl.problemapi.views.ProblemView.toViewModel;
 import static tw.waterball.judgegirl.springboot.utils.MultipartFileUtils.convertMultipartFilesToFileResources;
 import static tw.waterball.judgegirl.springboot.utils.ResponseEntityUtils.respondInputStreamResource;
 import static tw.waterball.judgegirl.submissionapi.clients.SubmissionApiClient.SUBMIT_CODE_MULTIPART_KEY_NAME;
@@ -41,7 +40,7 @@ public class ExamController {
     private final GetExamsUseCase getExamsUseCase;
     private final GetStudentExamOverviewUseCase getStudentExamOverviewUseCase;
     private final GetExamOverviewUseCase getExamOverviewUseCase;
-    private final GetExamProblemUseCase getExamProblemUseCase;
+    private final GetQuestionUseCase getQuestionUseCase;
     private final UpdateExamUseCase updateExamUseCase;
     private final GetExamUseCase getExamUseCase;
     private final DeleteExamineesUseCase deleteExamineesUseCase;
@@ -173,12 +172,12 @@ public class ExamController {
     }
 
     @GetMapping("/exams/{examId}/problems/{problemId}")
-    public ProblemView getExamProblem(@RequestHeader("Authorization") String authorization,
-                                      @PathVariable int examId,
-                                      @PathVariable int problemId) {
-        GetExamProblemPresenter presenter = new GetExamProblemPresenter();
+    public ProblemView getQuestion(@RequestHeader("Authorization") String authorization,
+                                   @PathVariable int examId,
+                                   @PathVariable int problemId) {
         Token token = tokenService.parseBearerTokenAndValidate(authorization);
-        getExamProblemUseCase.execute(examId, problemId, token.getStudentId(), presenter);
+        GetQuestionPresenter presenter = new GetQuestionPresenter();
+        getQuestionUseCase.execute(new GetQuestionUseCase.Request(examId, problemId, token.getStudentId()), presenter);
         return presenter.present();
     }
 
@@ -324,7 +323,7 @@ class AddExamineesPresenter implements AddExamineesUseCase.Presenter {
     }
 }
 
-class GetExamProblemPresenter implements GetExamProblemUseCase.Presenter {
+class GetQuestionPresenter implements GetQuestionUseCase.Presenter {
     private Problem problem;
 
     @Override
@@ -333,6 +332,6 @@ class GetExamProblemPresenter implements GetExamProblemUseCase.Presenter {
     }
 
     public ProblemView present() {
-        return toViewModel(problem);
+        return ProblemView.toViewModel(problem);
     }
 }

@@ -14,16 +14,14 @@
 package tw.waterball.judgegirl.academy.domain.usecases.exam;
 
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import tw.waterball.judgegirl.academy.domain.repositories.ExamRepository;
 import tw.waterball.judgegirl.primitives.exam.Exam;
-import tw.waterball.judgegirl.primitives.exam.Examinee;
-import tw.waterball.judgegirl.primitives.exam.Question;
 import tw.waterball.judgegirl.primitives.problem.Problem;
 import tw.waterball.judgegirl.problemapi.clients.ProblemServiceDriver;
 import tw.waterball.judgegirl.problemapi.views.ProblemView;
 
 import javax.inject.Named;
-import java.util.Optional;
 
 import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
 
@@ -31,33 +29,45 @@ import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFou
  * @author chaoyulee chaoyu2330@gmail.com
  */
 @Named
-@AllArgsConstructor
-public class GetExamProblemUseCase {
-    private final ExamRepository examRepository;
+public class GetQuestionUseCase extends AbstractExamUseCase {
     private final ProblemServiceDriver problemService;
 
-    public void execute(int examId, int problemId, int studentId, Presenter presenter) {
-        Exam exam = findExam(examId);
-        Problem problem = findProblem(problemId);
-        Optional<Question> question = exam.getQuestionByProblemId(problemId);
-        Optional<Examinee> examinee = exam.getExaminee(studentId);
+    public GetQuestionUseCase(ExamRepository examRepository, ProblemServiceDriver problemService) {
+        super(examRepository);
+        this.problemService = problemService;
+    }
 
-        if (question.isPresent() && examinee.isPresent() && !problem.isArchived()) {
+    public void execute(Request request, Presenter presenter) {
+        Exam exam = findExam(request.examId);
+
+        if (exam.containQuestion(request.problemId) && exam.hasExaminee(request.studentId)) {
+            Problem problem = findNonArchivedProblem(request.problemId);
             presenter.showProblem(problem);
         } else {
-            throw notFound(Problem.class).id(problemId);
+            throw notFound(Problem.class).id(request.problemId);
         }
     }
 
-    private Exam findExam(int examId) {
-        return examRepository.findById(examId)
-                .orElseThrow(() -> notFound(Exam.class).id(examId));
+    private Problem findNonArchivedProblem(int problemId) {
+        Problem problem = findProblem(problemId);
+        if (problem.isArchived()) {
+            throw notFound(Problem.class).id(problem.getId());
+        }
+        return problem;
     }
-
+    
     private Problem findProblem(int problemId) {
         return problemService.getProblem(problemId)
                 .map(ProblemView::toEntity)
                 .orElseThrow(() -> notFound(Problem.class).id(problemId));
+    }
+
+    @Data
+    @AllArgsConstructor
+    public static class Request {
+        private int examId;
+        private int problemId;
+        private int studentId;
     }
 
     public interface Presenter {
