@@ -14,6 +14,8 @@ steps:
       path: /var/run
     - name: maven-cache
       path: /root/.m2
+    - name: testcontainer-config
+      path: /root/.testcontainers.properties
   commands:
     - apt update && apt install git -y
     - git submodule update --recursive --init
@@ -63,3 +65,6 @@ volumes:
 - name: maven-cache
   host:
     path: /root/.m2
+- name: testcontainer-config
+  host:
+    path: /root/.testcontainers.properties
