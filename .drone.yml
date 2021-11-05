@@ -1,45 +1,65 @@
 kind: pipeline
-type: exec
+type: docker
 name: Judge-Girl/Judge-Girl
 
 steps:
-  - name: Info
-    commands:
-      - "echo $(whoami)"
-      - "echo Workspace: $(pwd)"
-      - "echo Maven: $(mvn -v)"
-      - "echo JAVA_HOME: $JAVA_HOME"
-      - printenv
-  - name: Prepare
-    commands:
-      - git submodule update --recursive --init
-      - export workspace=$(pwd)
-      - cd /root/drone/judgegirl/judge-girl-secrets/
-      - echo `pwd`
-      - cp -r ./* $workspace
-      - cd $workspace
-  - name: Integration
-    commands:
-      - export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
-      - ./mvnw package --quiet
-  - name: Build Docker Image
-    commands:
-      - cd Judger/ && docker build . -t judger -f Dockerfile.cqi && cd ..
-      - docker-compose -f services.yml build
-    when:
-      branch:
-        - master
-      event:
-        - push
-  - name: Deploy
-    commands:
-      - docker network create judge-girl || echo "Network 'judge-girl' already exists"
-      - docker-compose -f infra.yml up -d
-      - sleep 10
-      - docker-compose -f services.yml down
-      - docker-compose -f services.yml up -d
-    when:
-      branch:
-        - master
-      event:
-        - push
+- name: Integration
+  image: openjdk:11-jdk-slim-buster
+  volumes:
+    - name: shared-folder
+      path: /drone/src/target
+    - name: secret
+      path: /tmp/secret
+    - name: dockersock
+      path: /var/run
+    - name: maven-cache
+      path: /root/.m2
+  commands:
+    - apt update && apt install git -y
+    - git submodule update --recursive --init
+    - cp -r /tmp/secret/* ./
+    - ./mvnw package  
+
+- name: Image Building
+  image: docker/compose:1.29.2
+  volumes:
+    - name: dockersock
+      path: /var/run
+    - name: shared-folder 
+      path: /drone/src/target
+  commands:
+    - cd Judger && docker build . -t judger -f Dockerfile.cqi && cd .. && docker-compose -f services.yml build
+  when:
+    branch:
+      - master
+    event:
+      - push
+
+- name: Deploy
+  image: docker/compose:1.29.2
+  volumes:
+    - name: dockersock
+      path: /var/run
+  commands:
+    - docker network create judge-girl || echo 'Docker Network "judge-girl" already exists'
+    - docker-compose --project-name judge-girl-infra -f infra.yml up -d && sleep 10
+    - docker-compose --project-name judge-girl -f services.yml down 
+    - docker-compose --project-name judge-girl -f services.yml up -d 
+  when:
+    branch:
+      - master
+    event:
+      - push
+
+volumes:
+- name: dockersock
+  host:
+    path: /var/run/
+- name: secret
+  host: 
+    path: /root/drone/judgegirl/judge-girl-secrets/
+- name: shared-folder
+  temp: {}
+- name: maven-cache
+  host:
+    path: /root/.m2
