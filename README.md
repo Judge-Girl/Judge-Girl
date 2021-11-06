@@ -26,8 +26,8 @@ Contributions are welcome, especially 'software-design' nerds are welcomed to ta
 
 Thanks to all the people who already contributed!
 
-<a href="https://github.com/Judge-Girl/Judge-Girl/graphs/contributors">
-  <img src="https://contributors-img.web.app/image?repo=Judge-Girl/Judge-Girl" />
+<a href="https://github.com/judge-girl/Judge-Girl/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=judge-girl/Judge-Girl" />
 </a>
 
 ### Software Design (Clean Architecture/DDD)
