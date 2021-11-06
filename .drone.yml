@@ -3,21 +3,21 @@ type: docker
 name: Judge-Girl/Judge-Girl
 
 steps:
-# - name: Integration
-#   image: openjdk:11-jdk-slim-buster
-#   volumes:
-#     - name: shared-folder
-#       path: /drone/src/target
-#     - name: secret
-#       path: /tmp/secret
-#     - name: dockersock
-#       path: /var/run
-#     - name: maven-cache
-#       path: /root/.m2
-#   commands:
+- name: Integration
+  image: openjdk:11-jdk-slim-buster
+  volumes:
+    - name: shared-folder
+      path: /drone/src/target
+    - name: secret
+      path: /tmp/secret
+    - name: dockersock
+      path: /var/run
+    - name: maven-cache
+      path: /root/.m2
+  commands:
 #     - apt update && apt install git -y
 #     - git submodule update --recursive --init
-#     - cp -r /tmp/secret/* ./
+    - cp -r /tmp/secret/* ./
 #     - ./mvnw package  
 
 # - name: Image Building
