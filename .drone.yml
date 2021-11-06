@@ -63,3 +63,7 @@ volumes:
 - name: maven-cache
   host:
     path: /root/.m2
+
+trigger:
+  event:
+  - push
