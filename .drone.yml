@@ -15,23 +15,23 @@ steps:
     - name: maven-cache
       path: /root/.m2
   commands:
-    - apt update && apt install git -y
-    - git submodule update --recursive --init
+#     - apt update && apt install git -y
+#     - git submodule update --recursive --init
     - cp -r /tmp/secret/* ./
-    - ./mvnw package  
+#     - ./mvnw package  
 
-- name: Image Building
-  image: docker/compose:1.29.2
-  volumes:
-    - name: dockersock
-      path: /var/run
-    - name: shared-folder 
-      path: /drone/src/target
-  commands:
-    - cd Judger && docker build . -t judger -f Dockerfile.cqi && cd .. && docker-compose -f services.yml build
-  when:
-    branch:
-      - master
+# - name: Image Building
+#   image: docker/compose:1.29.2
+#   volumes:
+#     - name: dockersock
+#       path: /var/run
+#     - name: shared-folder 
+#       path: /drone/src/target
+#   commands:
+#     - cd Judger && docker build . -t judger -f Dockerfile.cqi && cd .. && docker-compose -f services.yml build
+#   when:
+#     branch:
+#       - master
 
 - name: Deploy
   image: docker/compose:1.29.2
