@@ -29,11 +29,11 @@ steps:
       path: /drone/src/target
   commands:
     - cd Judger && docker build . -t judger -f Dockerfile.cqi && cd .. && docker-compose -f services.yml build
-  when:
-    branch:
-      - master
-    event:
-      - push
+#   when:
+#     branch:
+#       - master
+#     event:
+#       - push
 
 - name: Deploy
   image: docker/compose:1.29.2
@@ -45,11 +45,11 @@ steps:
     - docker-compose -f infra.yml up -d && sleep 10
     - docker-compose -f services.yml down 
     - docker-compose -f services.yml up -d 
-  when:
-    branch:
-      - master
-    event:
-      - push
+#   when:
+#     branch:
+#       - master
+#     event:
+#       - push
 
 volumes:
 - name: dockersock
