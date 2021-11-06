@@ -3,37 +3,37 @@ type: docker
 name: Judge-Girl/Judge-Girl
 
 steps:
-- name: Integration
-  image: openjdk:11-jdk-slim-buster
-  volumes:
-    - name: shared-folder
-      path: /drone/src/target
-    - name: secret
-      path: /tmp/secret
-    - name: dockersock
-      path: /var/run
-    - name: maven-cache
-      path: /root/.m2
-  commands:
-    - apt update && apt install git -y
-    - git submodule update --recursive --init
-    - cp -r /tmp/secret/* ./
-    - ./mvnw package  
+# - name: Integration
+#   image: openjdk:11-jdk-slim-buster
+#   volumes:
+#     - name: shared-folder
+#       path: /drone/src/target
+#     - name: secret
+#       path: /tmp/secret
+#     - name: dockersock
+#       path: /var/run
+#     - name: maven-cache
+#       path: /root/.m2
+#   commands:
+#     - apt update && apt install git -y
+#     - git submodule update --recursive --init
+#     - cp -r /tmp/secret/* ./
+#     - ./mvnw package  
 
-- name: Image Building
-  image: docker/compose:1.29.2
-  volumes:
-    - name: dockersock
-      path: /var/run
-    - name: shared-folder 
-      path: /drone/src/target
-  commands:
-    - cd Judger && docker build . -t judger -f Dockerfile.cqi && cd .. && docker-compose -f services.yml build
-#   when:
-#     branch:
-#       - master
-#     event:
-#       - push
+# - name: Image Building
+#   image: docker/compose:1.29.2
+#   volumes:
+#     - name: dockersock
+#       path: /var/run
+#     - name: shared-folder 
+#       path: /drone/src/target
+#   commands:
+#     - cd Judger && docker build . -t judger -f Dockerfile.cqi && cd .. && docker-compose -f services.yml build
+# #   when:
+# #     branch:
+# #       - master
+# #     event:
+# #       - push
 
 - name: Deploy
   image: docker/compose:1.29.2
@@ -42,7 +42,7 @@ steps:
       path: /var/run
   commands:
     - docker network create judge-girl || echo 'Docker Network "judge-girl" already exists'
-    - docker-compose -f infra.yml up -d && sleep 10
+    - docker-compose -f infra.yml up -d && sleep 15
     - docker-compose -f services.yml down 
     - docker-compose -f services.yml up -d 
 #   when:
