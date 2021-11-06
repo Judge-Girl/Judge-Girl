@@ -42,9 +42,9 @@ steps:
       path: /var/run
   commands:
     - docker network create judge-girl || echo 'Docker Network "judge-girl" already exists'
-    - docker-compose --project-name judge-girl-infra -f infra.yml up -d && sleep 10
-    - docker-compose --project-name judge-girl -f services.yml down 
-    - docker-compose --project-name judge-girl -f services.yml up -d 
+    - docker-compose -f infra.yml up -d && sleep 10
+    - docker-compose -f services.yml down 
+    - docker-compose -f services.yml up -d 
   when:
     branch:
       - master
