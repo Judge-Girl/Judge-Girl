@@ -22,7 +22,7 @@ services:
       - mongo-db-data:/data/db
     command: --bind_ip 0.0.0.0
   mysql:
-    image: mysql
+    image: mysql:8.0
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: PLACEHOLDER
@@ -33,6 +33,8 @@ services:
       - ./etc/init-databases.sql:/data/application/init-db.sql
     command:
       - --init-file=/data/application/init-db.sql
+    cap_add:
+      - SYS_NICE
   rabbitmq:
     image: rabbitmq
     restart: always
