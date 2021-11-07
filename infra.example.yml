@@ -22,7 +22,7 @@ services:
       - mongo-db-data:/data/db
     command: --bind_ip 0.0.0.0
   mysql:
-    image: mysql:8.0
+    image: mysql:8.0.27
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: PLACEHOLDER
