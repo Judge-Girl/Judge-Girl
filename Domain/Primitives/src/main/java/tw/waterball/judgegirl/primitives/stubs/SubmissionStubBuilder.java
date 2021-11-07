@@ -73,7 +73,9 @@ public class SubmissionStubBuilder extends Submission {
         verdictBuilder.CE(maxGrade);
         return this;
     }
-
+    public SubmissionStubBuilder NONE() {
+        return this;
+    }
     public SubmissionStubBuilder bag(String key, String message) {
         bag.put(key, message);
         return this;

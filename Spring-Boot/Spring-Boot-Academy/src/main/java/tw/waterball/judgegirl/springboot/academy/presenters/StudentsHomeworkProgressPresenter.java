@@ -5,6 +5,7 @@ import static tw.waterball.judgegirl.commons.utils.StreamUtils.toMap;
 import org.jetbrains.annotations.NotNull;
 import tw.waterball.judgegirl.academy.domain.usecases.homework.GetStudentsHomeworkProgressUseCase;
 import tw.waterball.judgegirl.springboot.academy.view.StudentsHomeworkProgressView;
+import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 
 import java.util.List;
 import java.util.Map;
@@ -17,7 +18,7 @@ public class StudentsHomeworkProgressPresenter implements GetStudentsHomeworkPro
 
     @Override
     public void showRecords(List<GetStudentsHomeworkProgressUseCase.StudentSubmissionRecord> records) {
-        studentsHomeworkProgressView.scoreBoard = getScoreBoard(records);
+        studentsHomeworkProgressView.progress = getScoreBoard(records);
     }
 
     private Map<String, StudentsHomeworkProgressView.StudentProgress> getScoreBoard(List<GetStudentsHomeworkProgressUseCase.StudentSubmissionRecord> records) {
@@ -26,11 +27,15 @@ public class StudentsHomeworkProgressPresenter implements GetStudentsHomeworkPro
 
     @NotNull
     private StudentsHomeworkProgressView.StudentProgress getStudentProgress(GetStudentsHomeworkProgressUseCase.StudentSubmissionRecord record) {
-        return new StudentsHomeworkProgressView.StudentProgress(record.getStudent().getId(),record.getStudent().getName(),getQuestionScores(record));
+        return new StudentsHomeworkProgressView.StudentProgress(record.getStudent().getId(), record.getStudent().getName(), getProblemScores(record));
     }
 
-    private Map<Integer, Integer> getQuestionScores(GetStudentsHomeworkProgressUseCase.StudentSubmissionRecord questionRecord) {
-        return toMap(questionRecord.getRecords(), record -> record.getProblemId(), record -> record.getVerdict().getTotalGrade());
+    private Map<Integer, Integer> getProblemScores(GetStudentsHomeworkProgressUseCase.StudentSubmissionRecord problemRecord) {
+        return toMap(problemRecord.getRecords(), record -> record.getProblemId(), this::getProblemScore);
+    }
+
+    private Integer getProblemScore(SubmissionView record) {
+        return record.getVerdict() != null ? record.getVerdict().getTotalGrade() : 0;
     }
 
     public StudentsHomeworkProgressView present() {

@@ -60,7 +60,7 @@ public class GetStudentsHomeworkProgressUseCase extends AbstractHomeworkUseCase 
         try {
             return of(submissionServiceDriver.findBestRecord(problemId, studentId));
         } catch (NotFoundException e) {
-            return empty();
+            return of(new SubmissionView(null, studentId, problemId, null, null, null, null));
         }
     }
 

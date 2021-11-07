@@ -7,7 +7,6 @@ import tw.waterball.judgegirl.commons.token.TokenService;
 import tw.waterball.judgegirl.primitives.Homework;
 import tw.waterball.judgegirl.springboot.academy.presenters.GroupsHomeworkProgressPresenter;
 import tw.waterball.judgegirl.springboot.academy.presenters.StudentsHomeworkProgressPresenter;
-import tw.waterball.judgegirl.springboot.academy.view.GroupsHomeworkProgressView;
 import tw.waterball.judgegirl.springboot.academy.view.HomeworkProgress;
 import tw.waterball.judgegirl.springboot.academy.view.HomeworkView;
 import tw.waterball.judgegirl.springboot.academy.view.StudentsHomeworkProgressView;
@@ -110,7 +109,7 @@ public class HomeworkController {
     }
 
     @PostMapping("/groups/homework/{homeworkId}/progress")
-    public GroupsHomeworkProgressView getGroupsHomeworkProgress(@RequestHeader("Authorization") String authorization,
+    public StudentsHomeworkProgressView getGroupsHomeworkProgress(@RequestHeader("Authorization") String authorization,
                                                                 @PathVariable int homeworkId,
                                                                 @RequestBody List<String> groupNames) {
         return tokenService.returnIfAdmin(authorization, token -> {

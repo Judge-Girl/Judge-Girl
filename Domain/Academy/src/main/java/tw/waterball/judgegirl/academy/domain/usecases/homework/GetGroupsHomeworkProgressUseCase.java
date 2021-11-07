@@ -38,10 +38,8 @@ public class GetGroupsHomeworkProgressUseCase extends AbstractHomeworkUseCase {
         this.groupRepository = groupRepository;
     }
 
-    public void execute(Request request, Presenter presenter)
-            throws NotFoundException {
+    public void execute(Request request, Presenter presenter) throws NotFoundException {
         Homework homework = findHomework(request.homeworkId);
-
         var students = getGroupMembers(request.groupNames);
         presenter.showRecords(getQuestionRecords(homework, students));
     }
@@ -51,16 +49,16 @@ public class GetGroupsHomeworkProgressUseCase extends AbstractHomeworkUseCase {
         return findStudents(getStudentIds(groups));
     }
 
-    private List<StudentSubmissionRecord> getQuestionRecords(Homework homework, List<Student> students) {
-        return mapToList(students, student -> showBestRecords(student, homework));
+    private List<Student> findStudents(List<Integer> studentIds) {
+        return studentServiceDriver.getStudentsByIds(studentIds);
     }
 
     private List<Integer> getStudentIds(List<Group> groups) {
         return flatMapToList(groups, group -> group.getMemberIds().stream().map(m -> m.getId()).distinct());
     }
 
-    private List<Student> findStudents(List<Integer> studentIds) {
-        return studentServiceDriver.getStudentsByIds(studentIds);
+    private List<StudentSubmissionRecord> getQuestionRecords(Homework homework, List<Student> students) {
+        return mapToList(students, student -> showBestRecords(student, homework));
     }
 
 
@@ -73,7 +71,7 @@ public class GetGroupsHomeworkProgressUseCase extends AbstractHomeworkUseCase {
         try {
             return of(submissionServiceDriver.findBestRecord(problemId, studentId));
         } catch (NotFoundException e) {
-            return empty();
+            return of(new SubmissionView(null, studentId, problemId, null, null, null, null));
         }
     }
 

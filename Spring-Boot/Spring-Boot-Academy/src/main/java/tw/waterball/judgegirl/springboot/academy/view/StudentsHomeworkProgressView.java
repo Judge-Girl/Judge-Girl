@@ -13,8 +13,8 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 public class StudentsHomeworkProgressView {
-    // student's email --> examineeRecord
-    public Map<String, StudentProgress> scoreBoard;
+    // student's email --> student progress
+    public Map<String, StudentProgress> progress;
 
     @Data
     @NoArgsConstructor
@@ -24,7 +24,7 @@ public class StudentsHomeworkProgressView {
         public int studentId;
         public String studentName;
         // problem's id -> score
-        public Map<Integer, Integer> questionScores;
+        public Map<Integer, Integer> problemScores;
     }
 
 }
