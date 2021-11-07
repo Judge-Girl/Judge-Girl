@@ -16,7 +16,6 @@ import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 import javax.inject.Named;
 import java.util.*;
 
-import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.flatMapToList;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.SneakyThrows;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,6 +70,9 @@ public class HomeworkControllerTest extends AbstractSpringBootTest {
     private static final String HOMEWORK_PROGRESS_PATH = "/api/students/{studentId}/homework/{homeworkId}/progress";
     private static final String GET_STUDENTS_HOMEWORK_PROGRESS_PATH = "/api/students/homework/{homeworkId}/progress";
     private static final String GET_GROUPS_HOMEWORK_PROGRESS_PATH = "/api/groups/homework/{homeworkId}/progress";
+    private StudentView studentA;
+    private StudentView studentB;
+    private StudentView studentC;
 
     @Autowired
     private FakeProblemServiceDriver problemServiceDriver;
@@ -89,6 +93,14 @@ public class HomeworkControllerTest extends AbstractSpringBootTest {
     void cleanUp() {
         problemServiceDriver.clear();
         homeworkRepository.deleteAll();
+        studentServiceDriver.clear();
+    }
+
+    @BeforeEach
+    void setup() {
+        studentA = signUpStudent("studentA", "studentA@example.com", "password");
+        studentB = signUpStudent("studentB", "studentB@example.com", "password");
+        studentC = signUpStudent("studentC", "studentC@example.com", "password");
     }
 
     @Test
@@ -187,8 +199,6 @@ public class HomeworkControllerTest extends AbstractSpringBootTest {
             "Should respond these students best records [AC, CE] within the homework progress")
     @Test
     public void testGetStudentsHomeworkProgress() throws Exception {
-        var studentA = signUpStudent("studentA", "studentA@example.com", "password");
-        var studentB = signUpStudent("studentB", "studentB@example.com", "password");
         var homework = createHomeworkWithProblems(PROBLEM1_ID, PROBLEM2_ID);
         var bestRecord1 = achieveBestRecord(PROBLEM1_ID, submission("AC").AC(1, 1, 100).build(studentA.id, PROBLEM1_ID, LANG_ENV));
         var bestRecord2 = achieveBestRecord(PROBLEM2_ID, submission("CE").CE(100).build(studentA.id, PROBLEM2_ID, LANG_ENV));
@@ -211,9 +221,6 @@ public class HomeworkControllerTest extends AbstractSpringBootTest {
             "Should respond these students best records within the homework progress")
     @Test
     public void testGetGroupsHomeworkProgress() throws Exception {
-        var studentA = signUpStudent("studentA", "studentA@example.com", "password");
-        var studentB = signUpStudent("studentB", "studentB@example.com", "password");
-        var studentC = signUpStudent("studentC", "studentC@example.com", "password");
         var homework = createHomeworkWithProblems(PROBLEM1_ID, PROBLEM2_ID);
         var bestRecord1 = achieveBestRecord(PROBLEM1_ID, submission("AC").AC(1, 1, 100).build(studentA.id, PROBLEM1_ID, LANG_ENV));
         var bestRecord2 = achieveBestRecord(PROBLEM2_ID, submission("CE").CE(100).build(studentA.id, PROBLEM2_ID, LANG_ENV));
