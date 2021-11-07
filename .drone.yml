@@ -20,7 +20,8 @@ steps:
     - cp -r /tmp/secret/* ./
     - ./mvnw package  
   when:
-    evant: [push, pull_request]
+    evant: 
+      include: [push, pull_request]
 
 - name: Image Building
   image: docker/compose:1.29.2
