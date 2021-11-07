@@ -55,4 +55,7 @@ volumes:
     path: /root/.m2
 
 trigger:
+  event: 
+    - push
+    - pull_request
   branch: master
