@@ -32,8 +32,6 @@ steps:
   when:
     branch:
       - master
-    event:
-      - push
 
 - name: Deploy
   image: docker/compose:1.29.2
@@ -48,8 +46,6 @@ steps:
   when:
     branch:
       - master
-    event:
-      - push
 
 volumes:
 - name: dockersock
@@ -67,3 +63,4 @@ volumes:
 trigger:
   event:
   - push
+  - pull_request
