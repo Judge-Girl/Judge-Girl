@@ -30,10 +30,7 @@ steps:
   commands:
     - cd Judger && docker build . -t judger -f Dockerfile.cqi && cd .. && docker-compose -f services.yml build
   when:
-    branch:
-      - master
-    event:
-      - push
+    event: push
 
 - name: Deploy
   image: docker/compose:1.29.2
@@ -46,10 +43,7 @@ steps:
     - docker-compose -f services.yml down 
     - docker-compose -f services.yml up -d 
   when:
-    branch:
-      - master
-    event:
-      - push
+    event: push
 
 volumes:
 - name: dockersock
@@ -65,5 +59,7 @@ volumes:
     path: /root/.m2
 
 trigger:
-  event:
-  - push
+  event: 
+    - push
+    - pull_request
+  branch: master
