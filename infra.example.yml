@@ -11,7 +11,7 @@ networks:
 
 services:
   mongodb:
-    image: mongo
+    image: mongo:4.4.10
     restart: always
     environment:
       MONGO_INITDB_ROOT_USERNAME: PLACEHOLDER
@@ -37,7 +37,7 @@ services:
     cap_add:
       - SYS_NICE
   rabbitmq:
-    image: rabbitmq
+    image: rabbitmq:3.8.23
     restart: always
     environment:
       RABBITMQ_DEFAULT_USER: judge-girl-service
@@ -46,7 +46,7 @@ services:
     ports:
       - 5672:5672
   redis:
-    image: redis
+    image: redis:6.2.6
     restart: always
     ports:
       - 6379:6379
