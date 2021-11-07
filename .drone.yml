@@ -15,8 +15,8 @@ steps:
     - name: maven-cache
       path: /root/.m2
   commands:
-    - apt update && apt install git -y
-    - git submodule update --recursive --init
+#     - apt update && apt install git -y
+#     - git submodule update --recursive --init
     - cp -r /tmp/secret/* ./
 #     - ./mvnw package  
 
@@ -28,7 +28,8 @@ steps:
     - name: shared-folder 
       path: /drone/src/target
   commands:
-    - cd Judger && docker build . -t judger -f Dockerfile.cqi && cd .. && docker-compose -f services.yml build
+    - echo "ok"
+#     - cd Judger && docker build . -t judger -f Dockerfile.cqi && cd .. && docker-compose -f services.yml build
   when:
     event: push
 
@@ -38,10 +39,11 @@ steps:
     - name: dockersock
       path: /var/run
   commands:
-    - docker network create judge-girl || echo 'Docker Network "judge-girl" already exists'
-    - docker-compose -f infra.yml up -d && sleep 15
-    - docker-compose -f services.yml down 
-    - docker-compose -f services.yml up -d 
+      - echo "ok"
+#     - docker network create judge-girl || echo 'Docker Network "judge-girl" already exists'
+#     - docker-compose -f infra.yml up -d && sleep 15
+#     - docker-compose -f services.yml down 
+#     - docker-compose -f services.yml up -d 
   when:
     event: push
 
