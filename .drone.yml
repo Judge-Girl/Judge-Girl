@@ -19,9 +19,6 @@ steps:
     - git submodule update --recursive --init
     - cp -r /tmp/secret/* ./
     - ./mvnw package  
-  when:
-    evant: 
-      include: [push, pull_request]
 
 - name: Image Building
   image: docker/compose:1.29.2
@@ -36,8 +33,6 @@ steps:
     branch: master
     evant: push
 
-
-
 - name: Deploy
   image: docker/compose:1.29.2
   volumes:
@@ -51,7 +46,6 @@ steps:
   when:
     branch: master
     evant: push
-    
 
 volumes:
 - name: dockersock
