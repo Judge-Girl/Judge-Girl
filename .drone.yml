@@ -18,7 +18,7 @@ steps:
     - apt update && apt install git -y
     - git submodule update --recursive --init
     - cp -r /tmp/secret/* ./
-    - ./mvnw package  
+#     - ./mvnw package  
 
 - name: Image Building
   image: docker/compose:1.29.2
@@ -62,4 +62,4 @@ trigger:
   event: 
     - push
     - pull_request
-#  branch: master
+  branch: master
