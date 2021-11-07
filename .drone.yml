@@ -19,9 +19,6 @@ steps:
     - git submodule update --recursive --init
     - cp -r /tmp/secret/* ./
     - ./mvnw package  
-  when:
-    branch: master
-    evant: push
 
 - name: Image Building
   image: docker/compose:1.29.2
@@ -34,7 +31,7 @@ steps:
     - cd Judger && docker build . -t judger -f Dockerfile.cqi && cd .. && docker-compose -f services.yml build
   when:
     branch: master
-    evant: pull_request
+    evant: push
 
 - name: Deploy
   image: docker/compose:1.29.2
@@ -48,7 +45,7 @@ steps:
     - docker-compose -f services.yml up -d 
   when:
     branch: master
-    evant: pull_request
+    evant: push
 
 volumes:
 - name: dockersock
@@ -64,6 +61,7 @@ volumes:
     path: /root/.m2
 
 trigger:
-  event:
+  event: 
     - push
     - pull_request
+  branch: master
