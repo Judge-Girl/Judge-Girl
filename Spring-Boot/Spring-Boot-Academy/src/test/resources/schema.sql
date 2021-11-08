@@ -9,7 +9,8 @@ create table exams
     description varchar(255) null,
     name        varchar(255) null,
     start_time  datetime     null,
-    end_time    datetime     null
+    end_time    datetime     null,
+    white_list  varchar(255) null default ''
 );
 
 create table questions

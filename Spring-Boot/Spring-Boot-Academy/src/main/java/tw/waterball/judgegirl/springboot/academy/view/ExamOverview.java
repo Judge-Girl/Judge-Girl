@@ -23,6 +23,7 @@ public class ExamOverview {
     public String description;
     public List<QuestionItem> questions;
     public List<QuestionItem> notFoundQuestions;
+    private List<String> whitelist;
     public int totalScore;
 
     public Optional<QuestionItem> getQuestionById(Question.Id questionId) {

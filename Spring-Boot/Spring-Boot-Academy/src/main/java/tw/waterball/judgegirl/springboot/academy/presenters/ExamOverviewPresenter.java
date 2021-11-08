@@ -2,6 +2,7 @@ package tw.waterball.judgegirl.springboot.academy.presenters;
 
 import tw.waterball.judgegirl.academy.domain.usecases.exam.GetExamOverviewUseCase;
 import tw.waterball.judgegirl.primitives.exam.Exam;
+import tw.waterball.judgegirl.primitives.exam.IpAddress;
 import tw.waterball.judgegirl.primitives.exam.Question;
 import tw.waterball.judgegirl.primitives.problem.Problem;
 import tw.waterball.judgegirl.springboot.academy.view.ExamOverview;
@@ -45,6 +46,7 @@ public class ExamOverviewPresenter implements GetExamOverviewUseCase.Presenter {
                 .description(exam.getDescription())
                 .questions(aggregateQuestionOverviews())
                 .notFoundQuestions(mapToList(notFoundQuestions, QuestionItem::toViewModel))
+                .whitelist(mapToList(exam.getWhitelist(), IpAddress::getIpAddress))
                 .build();
     }
 
