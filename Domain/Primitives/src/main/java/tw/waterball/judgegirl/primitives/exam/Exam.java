@@ -35,27 +35,30 @@ public class Exam {
 
     private final List<Examinee> examinees;
 
+    private final List<IpAddress> whitelist;
+
     public Exam(String name, Duration duration, String description) {
         this(null, name, duration, description);
     }
 
     public Exam(Integer id, String name, Duration duration, String description) {
-        this(id, name, duration, description, new ArrayList<>(), new ArrayList<>());
+        this(id, name, duration, description, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
     }
 
     public Exam(String name, Duration duration, String description,
-                List<Question> questions, List<Examinee> examinees) {
-        this(null, name, duration, description, questions, examinees);
+                List<Question> questions, List<Examinee> examinees, List<IpAddress> whitelist) {
+        this(null, name, duration, description, questions, examinees, whitelist);
     }
 
     public Exam(Integer id, String name, Duration duration, String description,
-                List<Question> questions, List<Examinee> examinees) {
+                List<Question> questions, List<Examinee> examinees, List<IpAddress> whitelist) {
         this.id = id;
         this.name = name;
         this.duration = duration;
         this.description = description;
         this.questions = questions;
         this.examinees = examinees;
+        this.whitelist = whitelist;
         validate(this);
     }
 

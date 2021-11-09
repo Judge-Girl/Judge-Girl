@@ -6,8 +6,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static java.util.Objects.requireNonNullElse;
+import static java.util.Objects.requireNonNullElseGet;
+import static java.util.Optional.ofNullable;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.filterToList;
+import static tw.waterball.judgegirl.commons.utils.StreamUtils.flatMapToList;
 
 public class FakeStudentServiceDriver implements StudentServiceDriver {
 
@@ -20,12 +22,12 @@ public class FakeStudentServiceDriver implements StudentServiceDriver {
 
     @Override
     public List<Student> getStudentsByEmails(List<String> emails) {
-        return filterToList(students.values(), student -> emails.contains(student.getEmail()));
+        return flatMapToList(emails, email -> ofNullable(students.get(email)).stream());
     }
 
     public void addStudent(Student student) {
         students.put(student.getEmail(), student);
-        student.setId(requireNonNullElse(student.getId(), students.size()));
+        student.setId(requireNonNullElseGet(student.getId(), students::size));
     }
 
     public void clear() {

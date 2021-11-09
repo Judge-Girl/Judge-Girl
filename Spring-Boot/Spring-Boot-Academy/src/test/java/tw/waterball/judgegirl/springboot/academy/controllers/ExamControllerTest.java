@@ -130,7 +130,6 @@ class ExamControllerTest extends AbstractSpringBootTest {
 
     private final MockMultipartFile[] mockFiles = codes(SUBMIT_CODE_MULTIPART_KEY_NAME, 2);
 
-
     @BeforeEach
     void setup() {
         fakeProblemServiceDriver();
