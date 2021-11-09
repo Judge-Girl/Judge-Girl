@@ -1,9 +1,7 @@
 package tw.waterball.judgegirl.springboot.academy.controllers;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-
 import lombok.SneakyThrows;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -14,7 +12,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.ResultActions;
-
 import tw.waterball.judgegirl.academy.domain.repositories.GroupRepository;
 import tw.waterball.judgegirl.academy.domain.repositories.HomeworkRepository;
 import tw.waterball.judgegirl.academy.domain.usecases.homework.CreateHomeworkUseCase;
@@ -32,7 +29,7 @@ import tw.waterball.judgegirl.springboot.academy.SpringBootAcademyApplication;
 import tw.waterball.judgegirl.springboot.academy.view.HomeworkProgress;
 import tw.waterball.judgegirl.springboot.academy.view.HomeworkProgress.BestRecord;
 import tw.waterball.judgegirl.springboot.academy.view.HomeworkView;
-import tw.waterball.judgegirl.springboot.academy.view.StudentsHomeworkProgressView;
+import tw.waterball.judgegirl.springboot.academy.view.StudentsHomeworkProgress;
 import tw.waterball.judgegirl.springboot.profiles.Profiles;
 import tw.waterball.judgegirl.studentapi.clients.FakeStudentServiceDriver;
 import tw.waterball.judgegirl.studentapi.clients.view.StudentView;
@@ -54,7 +51,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToSet;
 import static tw.waterball.judgegirl.primitives.stubs.SubmissionStubBuilder.submission;
 import static tw.waterball.judgegirl.springboot.academy.controllers.ExamControllerTest.LANG_ENV;
-import static tw.waterball.judgegirl.studentapi.clients.view.StudentView.toViewModel;
 
 @ActiveProfiles(Profiles.JWT)
 @ContextConfiguration(classes = SpringBootAcademyApplication.class)
@@ -207,10 +203,11 @@ public class HomeworkControllerTest extends AbstractSpringBootTest {
 
         var homeworkProgress = getStudentsHomeworkProgress(homework.id, studentA.email, studentB.email);
 
-        assertTrue(homeworkProgress.getProgress().containsKey(studentA.email));
-        assertTrue(homeworkProgress.getProgress().containsKey(studentB.email));
-        var progressA = homeworkProgress.progress.get(studentA.email);
-        var progressB = homeworkProgress.progress.get(studentB.email);
+        var progresses = homeworkProgress.getProgresses();
+        assertTrue(progresses.containsKey(studentA.email));
+        assertTrue(progresses.containsKey(studentB.email));
+        var progressA = progresses.get(studentA.email);
+        var progressB = progresses.get(studentB.email);
         progressShouldHaveGrade(progressA, bestRecord1, bestRecord2);
         progressShouldHaveGrade(progressB, bestRecord3, notAnswerRecord);
 
@@ -233,16 +230,16 @@ public class HomeworkControllerTest extends AbstractSpringBootTest {
 
         var groupsHomeworkProgress = getGroupsHomeworkProgress(homework.id, GROUP_A_NAME, GROUP_B_NAME);
 
-        var progressA = groupsHomeworkProgress.progress.get(studentA.email);
-        var progressB = groupsHomeworkProgress.progress.get(studentB.email);
-        var progressC = groupsHomeworkProgress.progress.get(studentC.email);
+        var progressA = groupsHomeworkProgress.progresses.get(studentA.email);
+        var progressB = groupsHomeworkProgress.progresses.get(studentB.email);
+        var progressC = groupsHomeworkProgress.progresses.get(studentC.email);
         progressShouldHaveGrade(progressA, bestRecord1, bestRecord2);
         progressShouldHaveGrade(progressB, bestRecord3, bestRecord4);
         progressShouldHaveGrade(progressC, bestRecord5, notAnswerRecord);
 
     }
 
-    private void progressShouldHaveGrade(StudentsHomeworkProgressView.StudentProgress progress, SubmissionView... bestRecords) {
+    private void progressShouldHaveGrade(StudentsHomeworkProgress.StudentProgress progress, SubmissionView... bestRecords) {
         for (SubmissionView bestRecord : bestRecords) {
             var actualProblemScores = bestRecord.getVerdict() != null ? bestRecord.getVerdict().getTotalGrade() : 0;
             var expectedProblemScores = progress.getProblemScores().get(bestRecord.getProblemId());
@@ -375,27 +372,27 @@ public class HomeworkControllerTest extends AbstractSpringBootTest {
                 .andExpect(status().isOk()), HomeworkProgress.class);
     }
 
-    private StudentsHomeworkProgressView getStudentsHomeworkProgress(int homeworkId, String... studentEmails) throws Exception {
+    private StudentsHomeworkProgress getStudentsHomeworkProgress(int homeworkId, String... studentEmails) throws Exception {
         return getBody(mockMvc.perform(
                         withAdminToken(post(GET_STUDENTS_HOMEWORK_PROGRESS_PATH, homeworkId))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(toJson(studentEmails)))
-                .andExpect(status().isOk()), StudentsHomeworkProgressView.class);
+                .andExpect(status().isOk()), StudentsHomeworkProgress.class);
     }
 
 
-    private StudentsHomeworkProgressView getGroupsHomeworkProgress(int homeworkId, String... groupNames) throws Exception {
+    private StudentsHomeworkProgress getGroupsHomeworkProgress(int homeworkId, String... groupNames) throws Exception {
         return getBody(mockMvc.perform(
                         withAdminToken(post(GET_GROUPS_HOMEWORK_PROGRESS_PATH, homeworkId))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(toJson(groupNames)))
-                .andExpect(status().isOk()), StudentsHomeworkProgressView.class);
+                .andExpect(status().isOk()), StudentsHomeworkProgress.class);
     }
 
     private StudentView signUpStudent(String name, String email, String password) {
         Student newStudent = new Student(name, email, password);
         studentServiceDriver.addStudent(newStudent);
-        return toViewModel(newStudent);
+        return StudentView.toViewModel(newStudent);
     }
 
     private Group givenGroupWithMembers(String name, Integer... studentIds) {

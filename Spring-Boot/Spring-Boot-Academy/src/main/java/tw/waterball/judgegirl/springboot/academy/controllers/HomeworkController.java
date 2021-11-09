@@ -9,7 +9,7 @@ import tw.waterball.judgegirl.springboot.academy.presenters.GroupsHomeworkProgre
 import tw.waterball.judgegirl.springboot.academy.presenters.StudentsHomeworkProgressPresenter;
 import tw.waterball.judgegirl.springboot.academy.view.HomeworkProgress;
 import tw.waterball.judgegirl.springboot.academy.view.HomeworkView;
-import tw.waterball.judgegirl.springboot.academy.view.StudentsHomeworkProgressView;
+import tw.waterball.judgegirl.springboot.academy.view.StudentsHomeworkProgress;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 
 import java.util.LinkedList;
@@ -98,9 +98,9 @@ public class HomeworkController {
     }
 
     @PostMapping("/students/homework/{homeworkId}/progress")
-    public StudentsHomeworkProgressView getStudentsHomeworkProgress(@RequestHeader("Authorization") String authorization,
-                                                                    @PathVariable int homeworkId,
-                                                                    @RequestBody List<String> emails) {
+    public StudentsHomeworkProgress getStudentsHomeworkProgress(@RequestHeader("Authorization") String authorization,
+                                                                @PathVariable int homeworkId,
+                                                                @RequestBody List<String> emails) {
         return tokenService.returnIfAdmin(authorization, token -> {
             var presenter = new StudentsHomeworkProgressPresenter();
             getStudentsHomeworkProgressUseCase.execute(new GetStudentsHomeworkProgressUseCase.Request(homeworkId, emails), presenter);
@@ -109,9 +109,9 @@ public class HomeworkController {
     }
 
     @PostMapping("/groups/homework/{homeworkId}/progress")
-    public StudentsHomeworkProgressView getGroupsHomeworkProgress(@RequestHeader("Authorization") String authorization,
-                                                                @PathVariable int homeworkId,
-                                                                @RequestBody List<String> groupNames) {
+    public StudentsHomeworkProgress getGroupsHomeworkProgress(@RequestHeader("Authorization") String authorization,
+                                                              @PathVariable int homeworkId,
+                                                              @RequestBody List<String> groupNames) {
         return tokenService.returnIfAdmin(authorization, token -> {
             var presenter = new GroupsHomeworkProgressPresenter();
             getGroupsHomeworkProgressUseCase.execute(new GetGroupsHomeworkProgressUseCase.Request(homeworkId, groupNames), presenter);

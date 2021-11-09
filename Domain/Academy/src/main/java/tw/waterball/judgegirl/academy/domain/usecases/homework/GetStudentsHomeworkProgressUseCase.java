@@ -12,7 +12,6 @@ import tw.waterball.judgegirl.submissionapi.clients.SubmissionServiceDriver;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 
 import javax.inject.Named;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -40,34 +39,40 @@ public class GetStudentsHomeworkProgressUseCase extends AbstractHomeworkUseCase 
             throws NotFoundException {
         Homework homework = findHomework(request.homeworkId);
         var students = findStudents(request.emails);
-        presenter.showRecords(getStudentSubmissionRecord(homework, students));
-    }
 
-    private List<StudentSubmissionRecord> getStudentSubmissionRecord(Homework homework, List<Student> students) {
-        return mapToList(students, student -> showBestRecords(student, homework));
+        presenter.showProblems(homework.getProblemIds());
+        presenter.showStudents(students);
+        presenter.showRecords(getStudentSubmissionRecord(homework, students));
     }
 
     private List<Student> findStudents(List<String> emails) {
         return studentServiceDriver.getStudentsByEmails(emails);
     }
 
+    private List<StudentSubmissionRecord> getStudentSubmissionRecord(Homework homework, List<Student> students) {
+        return mapToList(students, student -> showBestRecords(student, homework));
+    }
+
     private StudentSubmissionRecord showBestRecords(Student student, Homework homework) {
-        var submissionViews = flatMapToList(homework.getProblemIds(), problemId -> findBestRecord(student.getId(), problemId).stream());
-        return new StudentSubmissionRecord(student, submissionViews);
+        var bestRecords = flatMapToList(homework.getProblemIds(), problemId -> findBestRecord(student.getId(), problemId).stream());
+        return new StudentSubmissionRecord(student, bestRecords);
     }
 
     private Optional<SubmissionView> findBestRecord(int studentId, int problemId) {
         try {
             return of(submissionServiceDriver.findBestRecord(problemId, studentId));
         } catch (NotFoundException e) {
-            return of(new SubmissionView(null, studentId, problemId, null, null, null, null));
+            return empty();
         }
     }
 
     public interface Presenter {
 
-        void showRecords(List<StudentSubmissionRecord> records);
+        void showProblems(List<Integer> problemIds);
 
+        void showStudents(List<Student> students);
+
+        void showRecords(List<StudentSubmissionRecord> records);
     }
 
     @NoArgsConstructor
@@ -81,8 +86,11 @@ public class GetStudentsHomeworkProgressUseCase extends AbstractHomeworkUseCase 
     @NoArgsConstructor
     @AllArgsConstructor
     public static class StudentSubmissionRecord {
-        Student student;
-        List<SubmissionView> records;
+        public Student student;
+        public List<SubmissionView> records;
 
+        public int getStudentId() {
+            return student.getId();
+        }
     }
 }

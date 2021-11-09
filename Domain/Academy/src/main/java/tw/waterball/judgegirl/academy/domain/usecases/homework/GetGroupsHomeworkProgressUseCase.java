@@ -9,13 +9,16 @@ import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.primitives.Homework;
 import tw.waterball.judgegirl.primitives.Student;
 import tw.waterball.judgegirl.primitives.exam.Group;
+import tw.waterball.judgegirl.primitives.exam.MemberId;
 import tw.waterball.judgegirl.studentapi.clients.StudentServiceDriver;
 import tw.waterball.judgegirl.submissionapi.clients.SubmissionServiceDriver;
 import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 
 import javax.inject.Named;
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 
+import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.flatMapToList;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
@@ -40,26 +43,24 @@ public class GetGroupsHomeworkProgressUseCase extends AbstractHomeworkUseCase {
     public void execute(Request request, Presenter presenter) throws NotFoundException {
         Homework homework = findHomework(request.homeworkId);
         var students = getGroupMembers(request.groupNames);
+
+        presenter.showProblems(homework.getProblemIds());
+        presenter.showStudents(students);
         presenter.showRecords(getQuestionRecords(homework, students));
     }
 
     private List<Student> getGroupMembers(List<String> groupNames) {
         var groups = groupRepository.findGroupsByNames(groupNames);
-        return findStudents(getStudentIds(groups));
-    }
-
-    private List<Student> findStudents(List<Integer> studentIds) {
-        return studentServiceDriver.getStudentsByIds(studentIds);
+        return studentServiceDriver.getStudentsByIds(getStudentIds(groups));
     }
 
     private List<Integer> getStudentIds(List<Group> groups) {
-        return flatMapToList(groups, group -> group.getMemberIds().stream().map(m -> m.getId()).distinct());
+        return flatMapToList(groups, group -> group.getMemberIds().stream().map(MemberId::getId).distinct());
     }
 
     private List<StudentSubmissionRecord> getQuestionRecords(Homework homework, List<Student> students) {
         return mapToList(students, student -> showBestRecords(student, homework));
     }
-
 
     private StudentSubmissionRecord showBestRecords(Student student, Homework homework) {
         var bestRecords = flatMapToList(homework.getProblemIds(), problemId -> findBestRecord(student.getId(), problemId).stream());
@@ -70,11 +71,15 @@ public class GetGroupsHomeworkProgressUseCase extends AbstractHomeworkUseCase {
         try {
             return of(submissionServiceDriver.findBestRecord(problemId, studentId));
         } catch (NotFoundException e) {
-            return of(new SubmissionView(null, studentId, problemId, null, null, null, null));
+            return empty();
         }
     }
 
     public interface Presenter {
+
+        void showProblems(List<Integer> problemIds);
+
+        void showStudents(List<Student> students);
 
         void showRecords(List<StudentSubmissionRecord> records);
 
@@ -94,5 +99,8 @@ public class GetGroupsHomeworkProgressUseCase extends AbstractHomeworkUseCase {
         public Student student;
         public List<SubmissionView> records;
 
+        public int getStudentId() {
+            return student.getId();
+        }
     }
 }
