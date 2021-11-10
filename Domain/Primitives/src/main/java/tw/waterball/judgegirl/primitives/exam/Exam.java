@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static java.util.Objects.requireNonNull;
+import static java.util.Objects.requireNonNullElseGet;
 import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.findFirst;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.sum;
@@ -35,7 +36,7 @@ public class Exam {
 
     private final List<Examinee> examinees;
 
-    private final List<IpAddress> whitelist;
+    private List<IpAddress> whitelist;
 
     public Exam(String name, Duration duration, String description) {
         this(null, name, duration, description);
@@ -133,6 +134,10 @@ public class Exam {
 
     public void setDescription(String description) {
         this.description = requireNonNull(description);
+    }
+
+    public void setWhitelist(List<IpAddress> whitelist) {
+        this.whitelist = requireNonNullElseGet(whitelist, this::getWhitelist);
     }
 
     public Date getStartTime() {
