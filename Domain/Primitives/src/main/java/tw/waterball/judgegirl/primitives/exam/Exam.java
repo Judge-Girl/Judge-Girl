@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static java.util.Objects.requireNonNull;
-import static java.util.Objects.requireNonNullElseGet;
 import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.findFirst;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.sum;
@@ -137,7 +136,7 @@ public class Exam {
     }
 
     public void setWhitelist(List<IpAddress> whitelist) {
-        this.whitelist = requireNonNullElseGet(whitelist, this::getWhitelist);
+        this.whitelist = requireNonNull(whitelist);
     }
 
     public Date getStartTime() {
