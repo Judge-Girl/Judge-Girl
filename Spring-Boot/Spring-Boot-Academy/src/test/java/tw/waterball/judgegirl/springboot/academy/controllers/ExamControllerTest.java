@@ -55,6 +55,7 @@ import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static java.util.UUID.randomUUID;
 import static java.util.concurrent.TimeUnit.HOURS;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasItems;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -184,7 +185,8 @@ class ExamControllerTest extends AbstractSpringBootTest {
                 .andExpect(jsonPath("name").value(name))
                 .andExpect(jsonPath("startTime").value(startTime))
                 .andExpect(jsonPath("endTime").value(endTime))
-                .andExpect(jsonPath("description").value(description));
+                .andExpect(jsonPath("description").value(description))
+                .andExpect(jsonPath("whitelist").value(empty()));
     }
 
     @Test
