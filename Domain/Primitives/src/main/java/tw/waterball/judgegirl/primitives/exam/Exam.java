@@ -35,7 +35,7 @@ public class Exam {
 
     private final List<Examinee> examinees;
 
-    private final List<IpAddress> whitelist;
+    private List<IpAddress> whitelist;
 
     public Exam(String name, Duration duration, String description) {
         this(null, name, duration, description);
@@ -133,6 +133,10 @@ public class Exam {
 
     public void setDescription(String description) {
         this.description = requireNonNull(description);
+    }
+
+    public void setWhitelist(List<IpAddress> whitelist) {
+        this.whitelist = requireNonNull(whitelist);
     }
 
     public Date getStartTime() {
