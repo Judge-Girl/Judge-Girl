@@ -1,8 +1,6 @@
 package tw.waterball.judgegirl.springboot.academy.view;
 
 import lombok.*;
-import tw.waterball.judgegirl.commons.utils.StreamUtils;
-import tw.waterball.judgegirl.commons.utils.StringUtils;
 import tw.waterball.judgegirl.primitives.exam.Question;
 import tw.waterball.judgegirl.primitives.problem.Problem;
 
