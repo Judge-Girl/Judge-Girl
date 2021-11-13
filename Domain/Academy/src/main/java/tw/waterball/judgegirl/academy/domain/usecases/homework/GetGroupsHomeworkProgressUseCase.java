@@ -33,7 +33,7 @@ public class GetGroupsHomeworkProgressUseCase extends AbstractHomeworkUseCase {
     private final SubmissionServiceDriver submissionServiceDriver;
     private final GroupRepository groupRepository;
 
-    public GetGroupsHomeworkProgressUseCase(HomeworkRepository homeworkRepository, StudentServiceDriver studentServiceDriver, GroupRepository groupRepository, SubmissionServiceDriver submissionServiceDriver) {
+    public GetGroupsHomeworkProgressUseCase(HomeworkRepository homeworkRepository, StudentServiceDriver studentServiceDriver, SubmissionServiceDriver submissionServiceDriver, GroupRepository groupRepository) {
         super(homeworkRepository);
         this.studentServiceDriver = studentServiceDriver;
         this.submissionServiceDriver = submissionServiceDriver;
