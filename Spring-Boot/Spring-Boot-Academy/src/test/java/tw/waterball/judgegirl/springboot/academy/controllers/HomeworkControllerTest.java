@@ -251,7 +251,7 @@ public class HomeworkControllerTest extends AbstractSpringBootTest {
     private void createProblems(int... problemIds) {
         stream(problemIds).boxed()
                 .map(this::createProblem)
-                .forEach(problemServiceDriver::addProblemView);
+                .forEach(problemServiceDriver::addProblem);
     }
 
     private ProblemView createProblem(int problemId) {
