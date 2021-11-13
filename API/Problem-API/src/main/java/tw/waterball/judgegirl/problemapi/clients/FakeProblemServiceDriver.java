@@ -19,9 +19,13 @@ public class FakeProblemServiceDriver implements ProblemServiceDriver {
         return Optional.ofNullable(problems.get(problemId));
     }
 
-    public ProblemView addProblemView(ProblemView problemView) {
+    public ProblemView addProblem(ProblemView problemView) {
         problems.put(problemView.getId(), problemView);
         return problemView;
+    }
+
+    public void deleteProblem(int problemId){
+        problems.remove(problemId);
     }
 
     @Override

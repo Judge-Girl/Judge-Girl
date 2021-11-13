@@ -44,10 +44,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.sql.SQLException;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
@@ -147,15 +144,15 @@ class ExamControllerTest extends AbstractSpringBootTest {
                 p5 = problemTemplate(testcaseGrades).id(ARCHIVE_PROBLEM_ID).title("Title_5").archived(true).build();
         problem = toViewModel(p1);
         submissionWith2ACs = randomizedSubmission(p1, STUDENT_A_ID, 2);
-        problemServiceDriver.addProblemView(problem);
+        problemServiceDriver.addProblem(problem);
         otherProblem = toViewModel(p2);
-        problemServiceDriver.addProblemView(otherProblem);
+        problemServiceDriver.addProblem(otherProblem);
         anotherProblem = toViewModel(p3);
-        problemServiceDriver.addProblemView(anotherProblem);
+        problemServiceDriver.addProblem(anotherProblem);
         visibleProblem = toViewModel(p4);
-        problemServiceDriver.addProblemView(visibleProblem);
+        problemServiceDriver.addProblem(visibleProblem);
         archivedProblem = toViewModel(p5);
-        problemServiceDriver.addProblemView(archivedProblem);
+        problemServiceDriver.addProblem(archivedProblem);
     }
 
     @AfterEach
@@ -604,6 +601,11 @@ class ExamControllerTest extends AbstractSpringBootTest {
         assertEquals(secondQuestion.getProblemTitle(), otherProblem.getTitle());
     }
 
+    @DisplayName("Give an exam with three questions q1,q2,q3 and the problem related to q2 has been deleted,"
+            + "When get exam overview,"
+            + "question q1 should have problem title and problem be not archived and"
+            + "question q2 should be notFound and"
+            + "question q3 should have problem title and problem be archived.")
     @Test
     void testGetExamOverview() {
         final int QUOTA = 5;
@@ -611,20 +613,23 @@ class ExamControllerTest extends AbstractSpringBootTest {
         ExamView exam = createExamAndGet(start, end, "exam");
         QuestionView q1 = createQuestionAndGet(new CreateQuestionUseCase.Request(exam.getId(), PROBLEM_ID, QUOTA, 50, 1));
         QuestionView q2 = createQuestionAndGet(new CreateQuestionUseCase.Request(exam.getId(), OTHER_PROBLEM_ID, QUOTA, 50, 2));
+        QuestionView q3 = createQuestionAndGet(new CreateQuestionUseCase.Request(exam.getId(), ARCHIVE_PROBLEM_ID, QUOTA, 50, 2));
+        problemServiceDriver.deleteProblem(q2.getProblemId());
 
         ExamOverview examOverview = getExamOverview(exam.getId());
-        ExamOverview.QuestionItem firstQuestion = examOverview.getQuestionById(new Question.Id(q1.examId, q1.problemId)).orElseThrow();
-        ExamOverview.QuestionItem secondQuestion = examOverview.getQuestionById(new Question.Id(q2.examId, q2.problemId)).orElseThrow();
 
+        var nonArchiveQuestion = examOverview.getQuestionById(new Question.Id(q1.examId, q1.problemId)).orElseThrow();
+        var notFoundQuestion = examOverview.getQuestionById(new Question.Id(q2.examId, q2.problemId)).orElseThrow();
+        var archivedQuestion = examOverview.getQuestionById(new Question.Id(q3.examId, q3.problemId)).orElseThrow();
         assertEquals(exam.getId(), examOverview.getId());
         assertEquals(exam.getName(), examOverview.getName());
         assertEquals(start, examOverview.getStartTime());
         assertEquals(end, examOverview.getEndTime());
         assertEquals(exam.getDescription(), examOverview.getDescription());
-        assertEquals(2, examOverview.getQuestions().size());
-
-        assertQuestionEquals(q1, firstQuestion, problem);
-        assertQuestionEquals(q2, secondQuestion, otherProblem);
+        assertEquals(3, examOverview.getQuestions().size());
+        assertQuestionEquals(q1, nonArchiveQuestion, problem);
+        assertQuestionEquals(q2, notFoundQuestion, otherProblem);
+        assertQuestionEquals(q3, archivedQuestion, archivedProblem);
     }
 
     @DisplayName("Give 8 students participating a ongoing exam, one question in the exam with submission quota = 3, " +
@@ -832,7 +837,12 @@ class ExamControllerTest extends AbstractSpringBootTest {
         assertEquals(expectedQuestion.getQuota(), actualQuestion.getQuota());
         assertEquals(expectedQuestion.getScore(), actualQuestion.getMaxScore());
         assertEquals(expectedQuestion.getQuestionOrder(), actualQuestion.getQuestionOrder());
-        assertEquals(problem.getTitle(), actualQuestion.getProblemTitle());
+        assertEquals(problemServiceDriver.getProblem(problem.getId()).isEmpty(), actualQuestion.isNotFound());
+
+        if (!actualQuestion.isNotFound()) {
+            assertEquals(problem.getTitle(), actualQuestion.getProblemTitle());
+            assertEquals(problem.isArchived(), actualQuestion.getArchived());
+        }
     }
 
     private void addGroupsOfExaminees(ExamView exam, Group... groups) throws Exception {
