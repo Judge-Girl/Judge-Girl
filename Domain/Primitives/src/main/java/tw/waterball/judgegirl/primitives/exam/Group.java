@@ -13,6 +13,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static java.util.Arrays.asList;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
 import static tw.waterball.judgegirl.commons.utils.validations.ValidationUtils.validate;
 
@@ -64,7 +65,7 @@ public class Group {
     }
 
     public void addStudentsAsMembers(Student... students) {
-        addMembers(mapToList(students, s -> new MemberId(s.getId())));
+        addStudentsAsMembers(asList(students));
     }
 
     public void deleteMember(MemberId memberId) {

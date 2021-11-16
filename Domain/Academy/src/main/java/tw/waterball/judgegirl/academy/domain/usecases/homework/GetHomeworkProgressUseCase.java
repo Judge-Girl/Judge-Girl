@@ -1,6 +1,7 @@
 package tw.waterball.judgegirl.academy.domain.usecases.homework;
 
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 import tw.waterball.judgegirl.commons.exceptions.NotFoundException;
 import tw.waterball.judgegirl.primitives.Homework;
@@ -11,6 +12,8 @@ import tw.waterball.judgegirl.submissionapi.views.SubmissionView;
 import javax.inject.Named;
 import java.util.Optional;
 
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
 import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
 
 /**
@@ -44,9 +47,9 @@ public class GetHomeworkProgressUseCase {
 
     private Optional<SubmissionView> findBestRecord(int studentId, int problemId) {
         try {
-            return Optional.of(submissionServiceDriver.findBestRecord(problemId, studentId));
+            return of(submissionServiceDriver.findBestRecord(problemId, studentId));
         } catch (NotFoundException e) {
-            return Optional.empty();
+            return empty();
         }
     }
 
@@ -58,6 +61,7 @@ public class GetHomeworkProgressUseCase {
 
     }
 
+    @Data
     @NoArgsConstructor
     @AllArgsConstructor
     public static class Request {
