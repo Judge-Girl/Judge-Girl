@@ -77,7 +77,7 @@ services:
       REDIS_HOST: "${REDIS_HOST}"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock # docker-in-docker for running judger
-    command: "/bin/sh -c 'until nc -z -v -w30 ${RABBIT_HOST} 5672; do echo Waiting for RabbitMQ...; sleep 1; done && java -jar /app.jar'"
+    command: "/bin/bash -c 'until nc -z -v -w30 ${RABBIT_HOST} 5672; do echo Waiting for RabbitMQ...; sleep 1; done && java -jar /app.jar'"
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.submission-service.rule=PathPrefix(`/api/submissions`) || PathPrefix(`/api/problems/{problemId:[0-9]+}/{langEnv:\\w+}/students/{studentId:[0-9]+}/submissions`) || PathPrefix(`/api/problems/{problemId:[0-9]+}/samples`)"
