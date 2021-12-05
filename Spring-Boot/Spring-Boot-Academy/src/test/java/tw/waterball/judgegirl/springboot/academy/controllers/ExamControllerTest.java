@@ -13,6 +13,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import tw.waterball.judgegirl.academy.domain.repositories.ExamFilter;
 import tw.waterball.judgegirl.academy.domain.repositories.ExamRepository;
 import tw.waterball.judgegirl.academy.domain.repositories.GroupRepository;
@@ -44,7 +45,10 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
@@ -777,6 +781,19 @@ class ExamControllerTest extends AbstractSpringBootTest {
         assertEquals(3, C.getQuestionOrder());
     }
 
+    @Test
+    void WhenStudentAGetOnGoingExamWithNonWhitelistIpAddress_ThenShouldRespondNotFound() throws Exception {
+        var exam = createExamAndGet(ONGOING_DURATION, "exam");
+        addExaminee(exam.id, STUDENT_A_ID);
+        String nonWhitelistIpAddress = "31.63.127.255";
+        assertFalse(exam.whitelist.contains(nonWhitelistIpAddress));
+
+        mockMvc.perform(withStudentToken(STUDENT_A_ID,
+                        get("/api/exams/{examId}", exam.id))
+                        .with(remoteAddress(nonWhitelistIpAddress)))
+                .andExpect(status().isNotFound());
+    }
+
     private ExamView givenOneExamCreatedWithTQuestions_ABC_AndGet() throws Exception {
         int examId = createExamAndGet(during(oneSecondAgo(), oneSecondAfter()), "name").getId();
         createQuestion(new CreateQuestionUseCase.Request(examId, PROBLEM_ID, 30, 100, 1))
@@ -899,7 +916,6 @@ class ExamControllerTest extends AbstractSpringBootTest {
                             assertEquals(answer.number, a.getNumber());
                             assertEquals(answer.getAnswerTime(), a.getAnswerTime());
                             assertEquals(answer.getSubmissionId(), a.getSubmissionId());
-
                         },
                         () -> fail("The answer is not saved."));
     }
@@ -1107,6 +1123,13 @@ class ExamControllerTest extends AbstractSpringBootTest {
     private void deleteExam(int examId) {
         mockMvc.perform(withAdminToken(delete("/api/exams/{examId}", examId)))
                 .andExpect(status().isOk());
+    }
+
+    private RequestPostProcessor remoteAddress(String remoteAddress) {
+        return request -> {
+            request.setRemoteAddr(remoteAddress);
+            return request;
+        };
     }
 
 }

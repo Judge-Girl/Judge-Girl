@@ -167,4 +167,8 @@ public class Exam {
     public Optional<Examinee> getExaminee(int studentId) {
         return findFirst(getExaminees(), examinee -> examinee.getId().getStudentId() == studentId);
     }
+
+    public boolean hasIpAddress(IpAddress ipAddress) {
+        return whitelist.contains(ipAddress);
+    }
 }
