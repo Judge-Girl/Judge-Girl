@@ -782,16 +782,31 @@ class ExamControllerTest extends AbstractSpringBootTest {
     }
 
     @Test
-    void WhenStudentAGetOnGoingExamWithNonWhitelistIpAddress_ThenShouldRespondNotFound() throws Exception {
+    void GivenStudentAJoinAnOnGoingExam_WhenGetExamWithIpAddressNotInWhitelist_ShouldRespondNotFound() throws Exception {
+        String nonWhitelistIpAddress = "31.63.127.255";
         var exam = createExamAndGet(ONGOING_DURATION, "exam");
         addExaminee(exam.id, STUDENT_A_ID);
-        String nonWhitelistIpAddress = "31.63.127.255";
         assertFalse(exam.whitelist.contains(nonWhitelistIpAddress));
 
         mockMvc.perform(withStudentToken(STUDENT_A_ID,
                         get("/api/exams/{examId}", exam.id))
                         .with(remoteAddress(nonWhitelistIpAddress)))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void GivenStudentAJoinAnOnGoingExam_WhenGetExamWithIpAddressInWhitelist_ShouldSucceed() throws Exception {
+        String whitelistIpAddress = "31.63.127.255";
+        var expectExam = createExamWithWhiteListAndGet(ONGOING_DURATION, "exam", whitelistIpAddress);
+        addExaminee(expectExam.id, STUDENT_A_ID);
+        assertTrue(expectExam.whitelist.contains(whitelistIpAddress));
+
+        var actualExam = getBody(mockMvc.perform(withStudentToken(STUDENT_A_ID,
+                                get("/api/exams/{examId}", expectExam.id))
+                                .with(remoteAddress(whitelistIpAddress)))
+                        .andExpect(status().isOk()),
+                ExamView.class);
+        assertEquals(expectExam, actualExam);
     }
 
     private ExamView givenOneExamCreatedWithTQuestions_ABC_AndGet() throws Exception {
@@ -997,9 +1012,17 @@ class ExamControllerTest extends AbstractSpringBootTest {
 
     @SneakyThrows
     private ExamView createExamAndGet(Duration duration, String name) {
-        return getBody(createExam(new Exam(name, duration, "description"))
+        return createExamWithWhiteListAndGet(duration, name);
+    }
+
+    @SneakyThrows
+    private ExamView createExamWithWhiteListAndGet(Duration duration, String name, String... whitelist) {
+        var exam = getBody(createExam(new Exam(name, duration, "description"))
+                .andExpect(status().isOk()), ExamView.class);
+        return getBody(updateExam(new UpdateExamUseCase.Request(exam.id, exam.name, exam.startTime, exam.endTime, exam.description, whitelist))
                 .andExpect(status().isOk()), ExamView.class);
     }
+
 
     @SneakyThrows
     private ResultActions createExam(Exam exam) {
