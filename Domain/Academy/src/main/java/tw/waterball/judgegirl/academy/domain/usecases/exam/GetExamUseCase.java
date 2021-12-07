@@ -30,13 +30,13 @@ public class GetExamUseCase extends AbstractExamUseCase {
     }
 
     private void onlyExamineeCanAccessTheExam(Request request, Exam exam) {
-        if (request.onlyExamineeCanAccess && !exam.hasExaminee(request.studentId)) {
+        if (request.isStudent && !exam.hasExaminee(request.studentId)) {
             throw new ExamineeOnlyOperationException();
         }
     }
 
     private void onlyWhitelistIpAddressExamineeCanAccessTheOngoingExam(Request request, Exam exam) {
-        if (request.onlyExamineeCanAccess && exam.isOngoing() && !exam.hasIpAddress(new IpAddress(request.ipAddress))) {
+        if (request.isStudent && exam.isOngoing() && !exam.hasIpAddress(new IpAddress(request.ipAddress))) {
             throw notFound(Exam.class).id(request.examId);
         }
     }
@@ -46,7 +46,7 @@ public class GetExamUseCase extends AbstractExamUseCase {
     @NoArgsConstructor
     public static class Request {
         private int examId;
-        private boolean onlyExamineeCanAccess;
+        private boolean isStudent;
         private int studentId;
         private String ipAddress;
     }
