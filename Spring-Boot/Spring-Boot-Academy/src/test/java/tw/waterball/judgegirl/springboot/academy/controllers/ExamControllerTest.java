@@ -788,7 +788,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
         addExaminee(exam.id, STUDENT_A_ID);
         assertFalse(exam.whitelist.contains(nonWhitelistIpAddress));
 
-        getExamWithWhiteList(exam.id, nonWhitelistIpAddress)
+        getExamWithIpAddress(exam.id, nonWhitelistIpAddress)
                 .andExpect(status().isNotFound());
     }
 
@@ -799,7 +799,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
         addExaminee(expectExam.id, STUDENT_A_ID);
         assertTrue(expectExam.whitelist.contains(whitelistIpAddress));
 
-        var actualExam = getBody(getExamWithWhiteList(expectExam.id, whitelistIpAddress)
+        var actualExam = getBody(getExamWithIpAddress(expectExam.id, whitelistIpAddress)
                 .andExpect(status().isOk()), ExamView.class);
         assertEquals(expectExam, actualExam);
     }
@@ -1018,7 +1018,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
                 .andExpect(status().isOk()), ExamView.class);
     }
 
-    private ResultActions getExamWithWhiteList(int examId, String ipAddress) throws Exception {
+    private ResultActions getExamWithIpAddress(int examId, String ipAddress) throws Exception {
         return mockMvc.perform(withStudentToken(STUDENT_A_ID,
                 get("/api/exams/{examId}", examId))
                 .with(remoteAddress(ipAddress)));
