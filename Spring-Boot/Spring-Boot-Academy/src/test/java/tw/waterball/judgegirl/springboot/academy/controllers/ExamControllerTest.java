@@ -788,7 +788,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
         addExaminee(exam.id, STUDENT_A_ID);
         assertFalse(exam.whitelist.contains(nonWhitelistIpAddress));
 
-        getExamWithIpAddress(exam.id, nonWhitelistIpAddress)
+        getExamById(exam.id, STUDENT_A_ID, nonWhitelistIpAddress)
                 .andExpect(status().isNotFound());
     }
 
@@ -799,7 +799,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
         addExaminee(expectExam.id, STUDENT_A_ID);
         assertTrue(expectExam.whitelist.contains(whitelistIpAddress));
 
-        var actualExam = getBody(getExamWithIpAddress(expectExam.id, whitelistIpAddress)
+        var actualExam = getBody(getExamById(expectExam.id, STUDENT_A_ID, whitelistIpAddress)
                 .andExpect(status().isOk()), ExamView.class);
         assertEquals(expectExam, actualExam);
     }
@@ -1018,12 +1018,6 @@ class ExamControllerTest extends AbstractSpringBootTest {
                 .andExpect(status().isOk()), ExamView.class);
     }
 
-    private ResultActions getExamWithIpAddress(int examId, String ipAddress) throws Exception {
-        return mockMvc.perform(withStudentToken(STUDENT_A_ID,
-                get("/api/exams/{examId}", examId))
-                .with(remoteAddress(ipAddress)));
-    }
-
     @SneakyThrows
     private ResultActions createExam(Exam exam) {
         return mockMvc.perform(withAdminToken(
@@ -1066,6 +1060,20 @@ class ExamControllerTest extends AbstractSpringBootTest {
         return getBody(mockMvc.perform(withAdminToken(
                         get("/api/exams/{examId}", examId)))
                 .andExpect(status().isOk()), ExamView.class);
+    }
+
+    @SneakyThrows
+    private ResultActions getExamById(int examId, int studentId, String ipAddress) {
+        return mockMvc.perform(withStudentToken(studentId,
+                get("/api/exams/{examId}", examId))
+                .with(remoteAddress(ipAddress)));
+    }
+
+    private RequestPostProcessor remoteAddress(String remoteAddress) {
+        return request -> {
+            request.setRemoteAddr(remoteAddress);
+            return request;
+        };
     }
 
     @SneakyThrows
@@ -1147,12 +1155,4 @@ class ExamControllerTest extends AbstractSpringBootTest {
         mockMvc.perform(withAdminToken(delete("/api/exams/{examId}", examId)))
                 .andExpect(status().isOk());
     }
-
-    private RequestPostProcessor remoteAddress(String remoteAddress) {
-        return request -> {
-            request.setRemoteAddr(remoteAddress);
-            return request;
-        };
-    }
-
 }
