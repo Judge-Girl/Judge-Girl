@@ -788,9 +788,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
         addExaminee(exam.id, STUDENT_A_ID);
         assertFalse(exam.whitelist.contains(nonWhitelistIpAddress));
 
-        mockMvc.perform(withStudentToken(STUDENT_A_ID,
-                        get("/api/exams/{examId}", exam.id))
-                        .with(remoteAddress(nonWhitelistIpAddress)))
+        getExamWithWhiteList(exam.id, nonWhitelistIpAddress)
                 .andExpect(status().isNotFound());
     }
 
@@ -801,9 +799,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
         addExaminee(expectExam.id, STUDENT_A_ID);
         assertTrue(expectExam.whitelist.contains(whitelistIpAddress));
 
-        var actualExam = getBody(mockMvc.perform(withStudentToken(STUDENT_A_ID,
-                        get("/api/exams/{examId}", expectExam.id))
-                        .with(remoteAddress(whitelistIpAddress)))
+        var actualExam = getBody(getExamWithWhiteList(expectExam.id, whitelistIpAddress)
                 .andExpect(status().isOk()), ExamView.class);
         assertEquals(expectExam, actualExam);
     }
@@ -1011,17 +1007,22 @@ class ExamControllerTest extends AbstractSpringBootTest {
 
     @SneakyThrows
     private ExamView createExamAndGet(Duration duration, String name) {
-        return createExamWithWhiteListAndGet(duration, name);
+        return getBody(createExam(new Exam(name, duration, "description"))
+                .andExpect(status().isOk()), ExamView.class);
     }
 
     @SneakyThrows
     private ExamView createExamWithWhiteListAndGet(Duration duration, String name, String... whitelist) {
-        var exam = getBody(createExam(new Exam(name, duration, "description"))
-                .andExpect(status().isOk()), ExamView.class);
+        var exam = createExamAndGet(duration, name);
         return getBody(updateExam(new UpdateExamUseCase.Request(exam.id, exam.name, exam.startTime, exam.endTime, exam.description, whitelist))
                 .andExpect(status().isOk()), ExamView.class);
     }
 
+    private ResultActions getExamWithWhiteList(int examId, String ipAddress) throws Exception {
+        return mockMvc.perform(withStudentToken(STUDENT_A_ID,
+                get("/api/exams/{examId}", examId))
+                .with(remoteAddress(ipAddress)));
+    }
 
     @SneakyThrows
     private ResultActions createExam(Exam exam) {
