@@ -802,10 +802,9 @@ class ExamControllerTest extends AbstractSpringBootTest {
         assertTrue(expectExam.whitelist.contains(whitelistIpAddress));
 
         var actualExam = getBody(mockMvc.perform(withStudentToken(STUDENT_A_ID,
-                                get("/api/exams/{examId}", expectExam.id))
-                                .with(remoteAddress(whitelistIpAddress)))
-                        .andExpect(status().isOk()),
-                ExamView.class);
+                        get("/api/exams/{examId}", expectExam.id))
+                        .with(remoteAddress(whitelistIpAddress)))
+                .andExpect(status().isOk()), ExamView.class);
         assertEquals(expectExam, actualExam);
     }
 
