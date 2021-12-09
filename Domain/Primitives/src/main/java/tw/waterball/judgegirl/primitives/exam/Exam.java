@@ -169,6 +169,6 @@ public class Exam {
     }
 
     public boolean hasIpAddress(IpAddress ipAddress) {
-        return whitelist.contains(ipAddress);
+        return whitelist.contains(IpAddress.unspecifiedAddress()) || whitelist.contains(ipAddress);
     }
 }

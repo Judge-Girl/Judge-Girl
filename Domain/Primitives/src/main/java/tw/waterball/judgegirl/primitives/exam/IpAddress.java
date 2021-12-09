@@ -1,8 +1,7 @@
 package tw.waterball.judgegirl.primitives.exam;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
-
-import java.util.Objects;
 
 import static java.util.Objects.requireNonNullElseGet;
 
@@ -10,6 +9,7 @@ import static java.util.Objects.requireNonNullElseGet;
  * @author - wally55077@gmail.com
  */
 @Getter
+@EqualsAndHashCode
 public class IpAddress {
     private static final IpAddress UNSPECIFIED_ADDRESS = new IpAddress("0.0.0.0");
     private static final IpAddress LOCALHOST = new IpAddress("127.0.0.1");
@@ -38,24 +38,5 @@ public class IpAddress {
     @Override
     public String toString() {
         return ipAddress;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        IpAddress ipAddress = (IpAddress) o;
-        return Objects.equals(this.ipAddress, ipAddress.ipAddress)
-                || UNSPECIFIED_ADDRESS.ipAddress.equals(this.ipAddress)
-                || UNSPECIFIED_ADDRESS.ipAddress.equals(ipAddress.ipAddress);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(ipAddress);
     }
 }

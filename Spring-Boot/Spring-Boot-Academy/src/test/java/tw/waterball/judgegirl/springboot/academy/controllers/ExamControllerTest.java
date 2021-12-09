@@ -787,7 +787,6 @@ class ExamControllerTest extends AbstractSpringBootTest {
     @Test
     void testGetNonBlockedExam() throws Exception {
         var expectExam = createExamAndGet(ONGOING_DURATION, "exam");
-        assertTrue(expectExam.whitelist.contains("0.0.0.0"));
         addExaminee(expectExam.id, STUDENT_A_ID);
 
         var actualExam = getBody(getExamById(expectExam.id, STUDENT_A_ID, "31.63.127.255")
@@ -802,7 +801,6 @@ class ExamControllerTest extends AbstractSpringBootTest {
     @Test
     void testGetBlockedExamWithWhitelistIpAddress() throws Exception {
         var expectExam = createExamWithWhiteListAndGet(ONGOING_DURATION, "exam", "31.63.127.255");
-        assertTrue(expectExam.whitelist.contains("31.63.127.255"));
         addExaminee(expectExam.id, STUDENT_A_ID);
 
         var actualExam = getBody(getExamById(expectExam.id, STUDENT_A_ID, "31.63.127.255")
@@ -817,7 +815,6 @@ class ExamControllerTest extends AbstractSpringBootTest {
     @Test
     void testGetBlockedExamWithNonWhitelistIpAddress() throws Exception {
         var exam = createExamWithWhiteListAndGet(ONGOING_DURATION, "exam", "31.63.127.255");
-        assertTrue(exam.whitelist.contains("31.63.127.255"));
         addExaminee(exam.id, STUDENT_A_ID);
 
         getExamById(exam.id, STUDENT_A_ID, "127.0.0.1")

@@ -2,9 +2,8 @@ package tw.waterball.judgegirl.primitives.exam;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static tw.waterball.judgegirl.primitives.exam.IpAddress.localhost;
-import static tw.waterball.judgegirl.primitives.exam.IpAddress.unspecifiedAddress;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class IpAddressTest {
 
@@ -22,10 +21,4 @@ public class IpAddressTest {
         assertDoesNotThrow(IpAddress::localhost);
     }
 
-    @Test
-    public void testIpAddressEquivalent() {
-        assertEquals(unspecifiedAddress(), unspecifiedAddress());
-        assertEquals(unspecifiedAddress(), localhost());
-        assertNotEquals(new IpAddress("31.63.127.255"), new IpAddress("255.255.255.255"));
-    }
 }
