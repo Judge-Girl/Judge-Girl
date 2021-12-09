@@ -58,7 +58,7 @@ public class Exam {
         this.description = description;
         this.questions = questions;
         this.examinees = examinees;
-        this.whitelist = whitelist;
+        this.whitelist = whitelist.isEmpty() ? List.of(IpAddress.unspecifiedAddress()) : whitelist;
         validate(this);
     }
 

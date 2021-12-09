@@ -56,7 +56,6 @@ import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static java.util.UUID.randomUUID;
 import static java.util.concurrent.TimeUnit.HOURS;
-import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasItems;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -187,7 +186,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
                 .andExpect(jsonPath("startTime").value(startTime))
                 .andExpect(jsonPath("endTime").value(endTime))
                 .andExpect(jsonPath("description").value(description))
-                .andExpect(jsonPath("whitelist").value(empty()));
+                .andExpect(jsonPath("whitelist").value(IpAddress.unspecifiedAddress().getIpAddress()));
     }
 
     @Test
@@ -781,27 +780,48 @@ class ExamControllerTest extends AbstractSpringBootTest {
         assertEquals(3, C.getQuestionOrder());
     }
 
+    @DisplayName("Give an ongoing exam with whitelist 0.0.0.0, " +
+            "And StudentA has joined this exam, " +
+            "When get exam, " +
+            "Then should succeed")
     @Test
-    void GivenStudentAJoinAnOnGoingExam_WhenGetExamWithIpAddressNotInWhitelist_ShouldRespondNotFound() throws Exception {
-        String nonWhitelistIpAddress = "31.63.127.255";
-        var exam = createExamAndGet(ONGOING_DURATION, "exam");
-        addExaminee(exam.id, STUDENT_A_ID);
-        assertFalse(exam.whitelist.contains(nonWhitelistIpAddress));
-
-        getExamById(exam.id, STUDENT_A_ID, nonWhitelistIpAddress)
-                .andExpect(status().isNotFound());
-    }
-
-    @Test
-    void GivenStudentAJoinAnOnGoingExam_WhenGetExamWithIpAddressInWhitelist_ShouldSucceed() throws Exception {
-        String whitelistIpAddress = "31.63.127.255";
-        var expectExam = createExamWithWhiteListAndGet(ONGOING_DURATION, "exam", whitelistIpAddress);
+    void testGetNonBlockedExam() throws Exception {
+        var expectExam = createExamAndGet(ONGOING_DURATION, "exam");
+        assertTrue(expectExam.whitelist.contains("0.0.0.0"));
         addExaminee(expectExam.id, STUDENT_A_ID);
-        assertTrue(expectExam.whitelist.contains(whitelistIpAddress));
 
-        var actualExam = getBody(getExamById(expectExam.id, STUDENT_A_ID, whitelistIpAddress)
+        var actualExam = getBody(getExamById(expectExam.id, STUDENT_A_ID, "31.63.127.255")
                 .andExpect(status().isOk()), ExamView.class);
         assertEquals(expectExam, actualExam);
+    }
+
+    @DisplayName("Give an ongoing exam with whitelist 31.63.127.255, " +
+            "And StudentA has joined this exam, " +
+            "When get exam with ip Address 31.63.127.255, " +
+            "Then should succeed")
+    @Test
+    void testGetBlockedExamWithWhitelistIpAddress() throws Exception {
+        var expectExam = createExamWithWhiteListAndGet(ONGOING_DURATION, "exam", "31.63.127.255");
+        assertTrue(expectExam.whitelist.contains("31.63.127.255"));
+        addExaminee(expectExam.id, STUDENT_A_ID);
+
+        var actualExam = getBody(getExamById(expectExam.id, STUDENT_A_ID, "31.63.127.255")
+                .andExpect(status().isOk()), ExamView.class);
+        assertEquals(expectExam, actualExam);
+    }
+
+    @DisplayName("Give an ongoing exam with whitelist 31.63.127.255, " +
+            "And StudentA has joined this exam, " +
+            "When get exam with ipAddress 127.0.0.1, " +
+            "Then should respond notFound")
+    @Test
+    void testGetBlockedExamWithNonWhitelistIpAddress() throws Exception {
+        var exam = createExamWithWhiteListAndGet(ONGOING_DURATION, "exam", "31.63.127.255");
+        assertTrue(exam.whitelist.contains("31.63.127.255"));
+        addExaminee(exam.id, STUDENT_A_ID);
+
+        getExamById(exam.id, STUDENT_A_ID, "127.0.0.1")
+                .andExpect(status().isNotFound());
     }
 
     private ExamView givenOneExamCreatedWithTQuestions_ABC_AndGet() throws Exception {
