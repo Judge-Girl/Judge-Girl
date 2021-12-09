@@ -23,7 +23,7 @@ public class ExamView {
     public Date endTime;
     public String description;
     public List<QuestionView> questions;
-    private List<String> whitelist;
+    public List<String> whitelist;
 
     public static ExamView toViewModel(Exam exam) {
         return ExamView.builder()

@@ -11,7 +11,8 @@ import static java.util.Objects.requireNonNullElseGet;
 @Getter
 @EqualsAndHashCode
 public class IpAddress {
-
+    private static final IpAddress UNSPECIFIED_ADDRESS = new IpAddress("0.0.0.0");
+    private static final IpAddress LOCALHOST = new IpAddress("127.0.0.1");
     private final String ipAddress;
 
     public IpAddress(String ipAddress) {
@@ -19,8 +20,12 @@ public class IpAddress {
         this.ipAddress = ipAddress;
     }
 
+    public static IpAddress unspecifiedAddress() {
+        return UNSPECIFIED_ADDRESS;
+    }
+
     public static IpAddress localhost() {
-        return new IpAddress("127.0.0.1");
+        return LOCALHOST;
     }
 
     private void validateIpAddress(String ipAddress) {

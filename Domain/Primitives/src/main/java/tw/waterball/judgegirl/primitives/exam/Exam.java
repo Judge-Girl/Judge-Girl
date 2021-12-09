@@ -58,7 +58,7 @@ public class Exam {
         this.description = description;
         this.questions = questions;
         this.examinees = examinees;
-        this.whitelist = whitelist;
+        this.whitelist = whitelist.isEmpty() ? List.of(IpAddress.unspecifiedAddress()) : whitelist;
         validate(this);
     }
 
@@ -166,5 +166,9 @@ public class Exam {
 
     public Optional<Examinee> getExaminee(int studentId) {
         return findFirst(getExaminees(), examinee -> examinee.getId().getStudentId() == studentId);
+    }
+
+    public boolean hasIpAddress(IpAddress ipAddress) {
+        return whitelist.contains(IpAddress.unspecifiedAddress()) || whitelist.contains(ipAddress);
     }
 }

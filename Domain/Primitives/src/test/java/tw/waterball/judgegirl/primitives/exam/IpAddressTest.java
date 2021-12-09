@@ -17,6 +17,8 @@ public class IpAddressTest {
         assertThrows(IllegalArgumentException.class, () -> new IpAddress("1000.100.10.0"));
         assertThrows(IllegalArgumentException.class, () -> new IpAddress("256.256.256.256"));
         assertThrows(IllegalArgumentException.class, () -> new IpAddress("localhost"));
+        assertDoesNotThrow(IpAddress::unspecifiedAddress);
         assertDoesNotThrow(IpAddress::localhost);
     }
+
 }

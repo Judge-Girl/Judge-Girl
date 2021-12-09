@@ -13,6 +13,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import tw.waterball.judgegirl.academy.domain.repositories.ExamFilter;
 import tw.waterball.judgegirl.academy.domain.repositories.ExamRepository;
 import tw.waterball.judgegirl.academy.domain.repositories.GroupRepository;
@@ -44,7 +45,10 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
@@ -52,7 +56,6 @@ import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static java.util.UUID.randomUUID;
 import static java.util.concurrent.TimeUnit.HOURS;
-import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasItems;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -183,7 +186,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
                 .andExpect(jsonPath("startTime").value(startTime))
                 .andExpect(jsonPath("endTime").value(endTime))
                 .andExpect(jsonPath("description").value(description))
-                .andExpect(jsonPath("whitelist").value(empty()));
+                .andExpect(jsonPath("whitelist").value(IpAddress.unspecifiedAddress().getIpAddress()));
     }
 
     @Test
@@ -777,6 +780,47 @@ class ExamControllerTest extends AbstractSpringBootTest {
         assertEquals(3, C.getQuestionOrder());
     }
 
+    @DisplayName("Give an ongoing exam with whitelist 0.0.0.0, " +
+            "And StudentA has joined this exam, " +
+            "When get exam, " +
+            "Then should succeed")
+    @Test
+    void testGetNonBlockedExam() throws Exception {
+        var expectExam = createExamAndGet(ONGOING_DURATION, "exam");
+        addExaminee(expectExam.id, STUDENT_A_ID);
+
+        var actualExam = getBody(getExamById(expectExam.id, STUDENT_A_ID, "31.63.127.255")
+                .andExpect(status().isOk()), ExamView.class);
+        assertEquals(expectExam, actualExam);
+    }
+
+    @DisplayName("Give an ongoing exam with whitelist 31.63.127.255, " +
+            "And StudentA has joined this exam, " +
+            "When get exam with ip Address 31.63.127.255, " +
+            "Then should succeed")
+    @Test
+    void testGetBlockedExamWithWhitelistIpAddress() throws Exception {
+        var expectExam = createExamWithWhiteListAndGet(ONGOING_DURATION, "exam", "31.63.127.255");
+        addExaminee(expectExam.id, STUDENT_A_ID);
+
+        var actualExam = getBody(getExamById(expectExam.id, STUDENT_A_ID, "31.63.127.255")
+                .andExpect(status().isOk()), ExamView.class);
+        assertEquals(expectExam, actualExam);
+    }
+
+    @DisplayName("Give an ongoing exam with whitelist 31.63.127.255, " +
+            "And StudentA has joined this exam, " +
+            "When get exam with ipAddress 127.0.0.1, " +
+            "Then should respond notFound")
+    @Test
+    void testGetBlockedExamWithNonWhitelistIpAddress() throws Exception {
+        var exam = createExamWithWhiteListAndGet(ONGOING_DURATION, "exam", "31.63.127.255");
+        addExaminee(exam.id, STUDENT_A_ID);
+
+        getExamById(exam.id, STUDENT_A_ID, "127.0.0.1")
+                .andExpect(status().isNotFound());
+    }
+
     private ExamView givenOneExamCreatedWithTQuestions_ABC_AndGet() throws Exception {
         int examId = createExamAndGet(during(oneSecondAgo(), oneSecondAfter()), "name").getId();
         createQuestion(new CreateQuestionUseCase.Request(examId, PROBLEM_ID, 30, 100, 1))
@@ -899,7 +943,6 @@ class ExamControllerTest extends AbstractSpringBootTest {
                             assertEquals(answer.number, a.getNumber());
                             assertEquals(answer.getAnswerTime(), a.getAnswerTime());
                             assertEquals(answer.getSubmissionId(), a.getSubmissionId());
-
                         },
                         () -> fail("The answer is not saved."));
     }
@@ -986,6 +1029,13 @@ class ExamControllerTest extends AbstractSpringBootTest {
     }
 
     @SneakyThrows
+    private ExamView createExamWithWhiteListAndGet(Duration duration, String name, String... whitelist) {
+        var exam = createExamAndGet(duration, name);
+        return getBody(updateExam(new UpdateExamUseCase.Request(exam.id, exam.name, exam.startTime, exam.endTime, exam.description, whitelist))
+                .andExpect(status().isOk()), ExamView.class);
+    }
+
+    @SneakyThrows
     private ResultActions createExam(Exam exam) {
         return mockMvc.perform(withAdminToken(
                 post("/api/exams")
@@ -1027,6 +1077,20 @@ class ExamControllerTest extends AbstractSpringBootTest {
         return getBody(mockMvc.perform(withAdminToken(
                         get("/api/exams/{examId}", examId)))
                 .andExpect(status().isOk()), ExamView.class);
+    }
+
+    @SneakyThrows
+    private ResultActions getExamById(int examId, int studentId, String ipAddress) {
+        return mockMvc.perform(withStudentToken(studentId,
+                get("/api/exams/{examId}", examId))
+                .with(remoteAddress(ipAddress)));
+    }
+
+    private RequestPostProcessor remoteAddress(String remoteAddress) {
+        return request -> {
+            request.setRemoteAddr(remoteAddress);
+            return request;
+        };
     }
 
     @SneakyThrows
@@ -1108,5 +1172,4 @@ class ExamControllerTest extends AbstractSpringBootTest {
         mockMvc.perform(withAdminToken(delete("/api/exams/{examId}", examId)))
                 .andExpect(status().isOk());
     }
-
 }

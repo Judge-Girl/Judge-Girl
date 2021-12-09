@@ -21,6 +21,7 @@ import tw.waterball.judgegirl.springboot.academy.presenters.*;
 import tw.waterball.judgegirl.springboot.academy.view.*;
 import tw.waterball.judgegirl.studentapi.clients.view.StudentView;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -203,11 +204,13 @@ public class ExamController {
 
     // Student-accessible APIs
     @GetMapping("/exams/{examId}")
-    public ExamView getExamById(@RequestHeader("Authorization") String authorization,
+    public ExamView getExamById(HttpServletRequest httpServletRequest,
+                                @RequestHeader("Authorization") String authorization,
                                 @PathVariable int examId) {
         Token token = tokenService.parseBearerTokenAndValidate(authorization);
+        String ipAddress = httpServletRequest.getRemoteAddr();
         getExamUseCase.execute(new GetExamUseCase.Request(examId,
-                !token.isAdmin(), token.getStudentId()), examPresenter);
+                !token.isAdmin(), token.getStudentId(), ipAddress), examPresenter);
         return examPresenter.present();
     }
 
