@@ -204,13 +204,11 @@ public class ExamController {
 
     // Student-accessible APIs
     @GetMapping("/exams/{examId}")
-    public ExamView getExamById(HttpServletRequest httpServletRequest,
-                                @RequestHeader("Authorization") String authorization,
+    public ExamView getExamById(@RequestHeader("Authorization") String authorization,
                                 @PathVariable int examId) {
         Token token = tokenService.parseBearerTokenAndValidate(authorization);
-        String ipAddress = httpServletRequest.getRemoteAddr();
         getExamUseCase.execute(new GetExamUseCase.Request(examId,
-                !token.isAdmin(), token.getStudentId(), ipAddress), examPresenter);
+                !token.isAdmin(), token.getStudentId()), examPresenter);
         return examPresenter.present();
     }
 
@@ -256,13 +254,15 @@ public class ExamController {
     }
 
     @GetMapping("/exams/{examId}/students/{studentId}/overview")
-    public ExamHome getExamProgressOverview(@RequestHeader("Authorization") String authorization,
+    public ExamHome getExamProgressOverview(HttpServletRequest request,
+                                            @RequestHeader("Authorization") String authorization,
                                             @PathVariable int examId,
                                             @PathVariable int studentId) {
         return tokenService.returnIfGranted(studentId, authorization, token -> {
             StudentExamHomePresenter presenter = new StudentExamHomePresenter();
-            getStudentExamOverviewUseCase.execute(
-                    new GetStudentExamOverviewUseCase.Request(examId, studentId), presenter);
+            String ipAddress = request.getRemoteAddr();
+            getStudentExamOverviewUseCase.execute(new GetStudentExamOverviewUseCase.Request(examId,
+                    !token.isAdmin(), token.getStudentId(), ipAddress), presenter);
             return presenter.present();
         });
     }

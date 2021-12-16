@@ -3,6 +3,7 @@ package tw.waterball.judgegirl.academy.domain.usecases.exam;
 import lombok.AllArgsConstructor;
 import tw.waterball.judgegirl.academy.domain.repositories.ExamRepository;
 import tw.waterball.judgegirl.primitives.exam.Exam;
+import tw.waterball.judgegirl.primitives.exam.IpAddress;
 import tw.waterball.judgegirl.primitives.exam.Question;
 import tw.waterball.judgegirl.primitives.exam.Record;
 import tw.waterball.judgegirl.primitives.problem.Problem;
@@ -16,14 +17,18 @@ import java.util.Optional;
 import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
 
 @Named
-@AllArgsConstructor
-public class GetStudentExamOverviewUseCase {
-    private final ExamRepository examRepository;
+public class GetStudentExamOverviewUseCase extends AbstractExamUseCase {
     private final ProblemServiceDriver problemService;
+
+    public GetStudentExamOverviewUseCase(ExamRepository examRepository, ProblemServiceDriver problemService) {
+        super(examRepository);
+        this.problemService = problemService;
+    }
 
     public void execute(Request request, Presenter presenter) {
         int studentId = request.studentId;
-        Exam exam = findExam(request);
+        Exam exam = findExam(request.examId);
+        onlyWhitelistIpAddressExamineeCanAccessTheOngoingExam(request, exam);
         presenter.showExam(exam);
 
         for (Question question : exam.getQuestions()) {
@@ -41,9 +46,10 @@ public class GetStudentExamOverviewUseCase {
         }
     }
 
-    private Exam findExam(Request request) {
-        return examRepository.findById(request.examId)
-                .orElseThrow(() -> notFound(Exam.class).id(request.examId));
+    private void onlyWhitelistIpAddressExamineeCanAccessTheOngoingExam(Request request, Exam exam) {
+        if (request.isStudent && exam.isOngoing() && !exam.hasIpAddress(new IpAddress(request.ipAddress))) {
+            throw notFound(Exam.class).id(request.examId);
+        }
     }
 
     private Optional<Problem> findProblem(Question question) {
@@ -77,10 +83,8 @@ public class GetStudentExamOverviewUseCase {
     @AllArgsConstructor
     public static class Request {
         public int examId;
-        public Integer studentId;
-
-        public Optional<Integer> getStudentId() {
-            return Optional.of(studentId);
-        }
+        public boolean isStudent;
+        public int studentId;
+        public String ipAddress;
     }
 }

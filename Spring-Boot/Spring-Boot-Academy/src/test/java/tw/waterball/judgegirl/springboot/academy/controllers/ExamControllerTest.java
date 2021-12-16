@@ -786,12 +786,11 @@ class ExamControllerTest extends AbstractSpringBootTest {
             "Then should succeed")
     @Test
     void testGetNonBlockedExam() throws Exception {
-        var expectExam = createExamAndGet(ONGOING_DURATION, "exam");
-        addExaminee(expectExam.id, STUDENT_A_ID);
+        int examId = createExamAndGet(ONGOING_DURATION, "exam").id;
+        addExaminee(examId, STUDENT_A_ID);
 
-        var actualExam = getBody(getExamById(expectExam.id, STUDENT_A_ID, "31.63.127.255")
-                .andExpect(status().isOk()), ExamView.class);
-        assertEquals(expectExam, actualExam);
+        getExamProgressOverview(examId, STUDENT_A_ID, "31.63.127.255")
+                .andExpect(status().isOk());
     }
 
     @DisplayName("Give an ongoing exam with whitelist 31.63.127.255, " +
@@ -800,12 +799,11 @@ class ExamControllerTest extends AbstractSpringBootTest {
             "Then should succeed")
     @Test
     void testGetBlockedExamWithWhitelistIpAddress() throws Exception {
-        var expectExam = createExamWithWhiteListAndGet(ONGOING_DURATION, "exam", "31.63.127.255");
-        addExaminee(expectExam.id, STUDENT_A_ID);
+        int examId = createExamWithWhiteListAndGet(ONGOING_DURATION, "exam", "31.63.127.255").id;
+        addExaminee(examId, STUDENT_A_ID);
 
-        var actualExam = getBody(getExamById(expectExam.id, STUDENT_A_ID, "31.63.127.255")
-                .andExpect(status().isOk()), ExamView.class);
-        assertEquals(expectExam, actualExam);
+        getExamProgressOverview(examId, STUDENT_A_ID, "31.63.127.255")
+                .andExpect(status().isOk());
     }
 
     @DisplayName("Give an ongoing exam with whitelist 31.63.127.255, " +
@@ -814,10 +812,10 @@ class ExamControllerTest extends AbstractSpringBootTest {
             "Then should respond notFound")
     @Test
     void testGetBlockedExamWithNonWhitelistIpAddress() throws Exception {
-        var exam = createExamWithWhiteListAndGet(ONGOING_DURATION, "exam", "31.63.127.255");
-        addExaminee(exam.id, STUDENT_A_ID);
+        int examId = createExamWithWhiteListAndGet(ONGOING_DURATION, "exam", "31.63.127.255").id;
+        addExaminee(examId, STUDENT_A_ID);
 
-        getExamById(exam.id, STUDENT_A_ID, "127.0.0.1")
+        getExamProgressOverview(examId, STUDENT_A_ID, "127.0.0.1")
                 .andExpect(status().isNotFound());
     }
 
@@ -1080,9 +1078,17 @@ class ExamControllerTest extends AbstractSpringBootTest {
     }
 
     @SneakyThrows
-    private ResultActions getExamById(int examId, int studentId, String ipAddress) {
+    private ExamHome getExamProgressOverview(int examId) {
+        return getBody(mockMvc.perform(
+                        withStudentToken(STUDENT_A_ID,
+                                get("/api/exams/{examId}/students/{studentId}/overview", examId, STUDENT_A_ID)))
+                .andExpect(status().isOk()), ExamHome.class);
+    }
+
+    @SneakyThrows
+    private ResultActions getExamProgressOverview(int examId, int studentId, String ipAddress) {
         return mockMvc.perform(withStudentToken(studentId,
-                get("/api/exams/{examId}", examId))
+                get("/api/exams/{examId}/students/{studentId}/overview", examId, studentId))
                 .with(remoteAddress(ipAddress)));
     }
 
@@ -1091,14 +1097,6 @@ class ExamControllerTest extends AbstractSpringBootTest {
             request.setRemoteAddr(remoteAddress);
             return request;
         };
-    }
-
-    @SneakyThrows
-    private ExamHome getExamProgressOverview(int examId) {
-        return getBody(mockMvc.perform(
-                        withStudentToken(STUDENT_A_ID,
-                                get("/api/exams/{examId}/students/{studentId}/overview", examId, STUDENT_A_ID)))
-                .andExpect(status().isOk()), ExamHome.class);
     }
 
     @SneakyThrows
