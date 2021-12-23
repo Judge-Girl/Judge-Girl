@@ -16,11 +16,17 @@ package tw.waterball.judgegirl.springboot.student;
 import org.springframework.boot.SpringApplication;
 import tw.waterball.judgegirl.springboot.profiles.JudgeGirlApplication;
 
+import java.util.Map;
+
 @JudgeGirlApplication
 public class SpringBootStudentApplication {
 
     public static void main(String[] args) {
+        Map<String, String> env = System.getenv();
+        System.out.println("-------------------------");
+        env.forEach((u, v) -> System.out.println(u + "=" + v));
+        System.out.println("-------------------------");
+
         SpringApplication.run(SpringBootStudentApplication.class, args);
     }
-
 }
