@@ -13,6 +13,7 @@ import tw.waterball.judgegirl.studentapi.clients.StudentServiceDriver;
 import javax.inject.Named;
 import java.util.List;
 
+import static tw.waterball.judgegirl.academy.domain.utils.ExamValidationUtil.onlyExamineeCanAccessTheExam;
 import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
 import static tw.waterball.judgegirl.commons.utils.StreamUtils.mapToList;
 
@@ -27,15 +28,9 @@ public class GetExamineesUseCase {
 
     public void execute(Request request, Presenter presenter) throws ExamineeOnlyOperationException {
         Exam exam = findExam(request.examId);
-        onlyExamineeCanAccessTheExam(request, exam);
+        onlyExamineeCanAccessTheExam(request.isStudent, request.studentId, exam);
         List<Student> examinees = findExaminees(exam);
         presenter.showExaminees(examinees);
-    }
-
-    private void onlyExamineeCanAccessTheExam(Request request, Exam exam) {
-        if (request.isOnlyExamineeCanAccess() && !exam.hasExaminee(request.studentId)) {
-            throw new ExamineeOnlyOperationException();
-        }
     }
 
     private List<Student> findExaminees(Exam exam) {
@@ -55,7 +50,7 @@ public class GetExamineesUseCase {
     @NoArgsConstructor
     public static class Request {
         private int examId;
-        private boolean onlyExamineeCanAccess;
+        private boolean isStudent;
         private int studentId;
     }
 }

@@ -48,10 +48,10 @@ public class LoggingAspect {
         var args = joinPoint.getArgs();
         var request = (AnswerQuestionUseCase.Request) args[0];
         var fileResources = request.getFileResources();
-        ANSWER_QUESTION_USE_CASE_LOGGER.info("[Answer the Question] examId={} problemId={} langEnvName=\"{}\" studentId={} fileContentLengthSum={} fileCount={}",
+        ANSWER_QUESTION_USE_CASE_LOGGER.info("[Answer the Question] examId={} problemId={} langEnvName=\"{}\" isStudent={} studentId={} ipAddress=\"{}\" fileContentLengthSum={} fileCount={}",
                 request.getExamId(), request.getProblemId(), request.getLangEnvName(),
-                request.getStudentId(), sum(fileResources, FileResource::getContentLength), fileResources.size());
-
+                request.isStudent(), request.getStudentId(), request.getIpAddress(),
+                sum(fileResources, FileResource::getContentLength), fileResources.size());
         try {
             return joinPoint.proceed(args);
         } catch (SubmissionThrottlingException err) {

@@ -1,7 +1,7 @@
 package tw.waterball.judgegirl.academy.domain.usecases.exam;
 
 import lombok.AllArgsConstructor;
-import lombok.Value;
+import lombok.Data;
 import tw.waterball.judgegirl.academy.domain.repositories.ExamRepository;
 import tw.waterball.judgegirl.academy.domain.usecases.VerdictIssuedEventHandler;
 import tw.waterball.judgegirl.commons.models.files.FileResource;
@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.OptionalInt;
 
 import static java.util.Collections.singletonMap;
+import static tw.waterball.judgegirl.academy.domain.utils.ExamValidationUtil.onlyWhitelistIpAddressExamineeCanAccessTheOngoingExam;
 import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
 import static tw.waterball.judgegirl.commons.utils.ComparableUtils.betterAndNewer;
 
@@ -28,11 +29,14 @@ import static tw.waterball.judgegirl.commons.utils.ComparableUtils.betterAndNewe
  * @author - johnny850807@gmail.com (Waterball)
  */
 @Named
-@AllArgsConstructor
-public class AnswerQuestionUseCase implements VerdictIssuedEventHandler {
+public class AnswerQuestionUseCase extends AbstractExamUseCase implements VerdictIssuedEventHandler {
     public static final String EXAM_ID_IN_BAG = "examId";
     private final SubmissionServiceDriver submissionService;
-    private final ExamRepository examRepository;
+
+    public AnswerQuestionUseCase(SubmissionServiceDriver submissionService, ExamRepository examRepository) {
+        super(examRepository);
+        this.submissionService = submissionService;
+    }
 
     public void execute(Request request, Presenter presenter) throws SubmissionThrottlingException,
             ExamHasNotBeenStartedOrHasBeenClosedException, NoSubmissionQuotaException {
@@ -40,8 +44,9 @@ public class AnswerQuestionUseCase implements VerdictIssuedEventHandler {
         Exam exam = findExam(request.examId);
         Question question = findQuestion(request, exam);
 
-        onlyExamineeCanAnswerQuestion(request);
+        onlyExamineeCanAnswerQuestion(request.studentId, exam);
         examMustHaveBeenStarted(exam);
+        onlyWhitelistIpAddressExamineeCanAccessTheOngoingExam(request.isStudent, request.studentId, new IpAddress(request.ipAddress), exam);
         int remainingSubmissionQuota = calculateRemainingSubmissionQuota(request, question);
         mustHaveRemainingSubmissionQuota(remainingSubmissionQuota, question.getQuota());
 
@@ -54,8 +59,8 @@ public class AnswerQuestionUseCase implements VerdictIssuedEventHandler {
         presenter.showAnswer(answer, submission);
     }
 
-    private void onlyExamineeCanAnswerQuestion(Request request) throws ExamineeOnlyOperationException {
-        if (!examRepository.isExaminee(request.studentId, request.examId)) {
+    private void onlyExamineeCanAnswerQuestion(int studentId, Exam exam) throws ExamineeOnlyOperationException {
+        if (!exam.hasExaminee(studentId)) {
             throw new ExamineeOnlyOperationException();
         }
     }
@@ -75,11 +80,6 @@ public class AnswerQuestionUseCase implements VerdictIssuedEventHandler {
         if (remainingSubmissionQuota <= 0) {
             throw new NoSubmissionQuotaException(maxSubmissionQuota);
         }
-    }
-
-    private Exam findExam(int examId) {
-        return examRepository.findById(examId)
-                .orElseThrow(() -> notFound(Exam.class).id(examId));
     }
 
     private Question findQuestion(Request request, Exam exam) {
@@ -124,12 +124,15 @@ public class AnswerQuestionUseCase implements VerdictIssuedEventHandler {
                 new Grade(newVerdict.getGrade(), newVerdict.getMaxGrade()), event.getSubmissionTime());
     }
 
-    @Value
+    @Data
+    @AllArgsConstructor
     public static class Request {
-        int examId;
-        int problemId;
-        String langEnvName;
-        int studentId;
+        public int examId;
+        public int problemId;
+        public String langEnvName;
+        public boolean isStudent;
+        public int studentId;
+        public String ipAddress;
         public List<FileResource> fileResources;
     }
 

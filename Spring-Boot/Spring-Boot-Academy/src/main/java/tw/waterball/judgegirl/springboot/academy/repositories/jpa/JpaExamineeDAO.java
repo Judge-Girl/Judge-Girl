@@ -8,7 +8,6 @@ import java.util.List;
 
 @Repository
 public interface JpaExamineeDAO extends JpaRepository<ExamineeData, ExamineeData.Id> {
-    boolean existsById_StudentIdAndId_ExamId(int studentId, int examId);
 
     List<ExamineeData> findByStudentId(int studentId, Pageable pageable);
 
