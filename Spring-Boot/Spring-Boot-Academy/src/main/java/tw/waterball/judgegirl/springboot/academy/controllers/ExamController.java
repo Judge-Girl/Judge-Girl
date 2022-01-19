@@ -204,11 +204,13 @@ public class ExamController {
 
     // Student-accessible APIs
     @GetMapping("/exams/{examId}")
-    public ExamView getExamById(@RequestHeader("Authorization") String authorization,
+    public ExamView getExamById(HttpServletRequest request,
+                                @RequestHeader("Authorization") String authorization,
                                 @PathVariable int examId) {
         Token token = tokenService.parseBearerTokenAndValidate(authorization);
+        String ipAddress = request.getRemoteAddr();
         getExamUseCase.execute(new GetExamUseCase.Request(examId,
-                !token.isAdmin(), token.getStudentId()), examPresenter);
+                !token.isAdmin(), token.getStudentId(), ipAddress), examPresenter);
         return examPresenter.present();
     }
 
@@ -223,7 +225,8 @@ public class ExamController {
     }
 
     @PostMapping("/exams/{examId}/problems/{problemId}/{langEnvName}/students/{studentId}/answers")
-    public AnswerQuestionPresenter.View answerQuestion(@RequestHeader("Authorization") String authorization,
+    public AnswerQuestionPresenter.View answerQuestion(HttpServletRequest request,
+                                                       @RequestHeader("Authorization") String authorization,
                                                        @PathVariable int examId,
                                                        @PathVariable int problemId,
                                                        @PathVariable String langEnvName,
@@ -231,9 +234,10 @@ public class ExamController {
                                                        @RequestParam(SUBMIT_CODE_MULTIPART_KEY_NAME) MultipartFile[] submittedCodes) {
         return tokenService.returnIfGranted(studentId, authorization, token -> {
             AnswerQuestionPresenter presenter = new AnswerQuestionPresenter();
+            String ipAddress = request.getRemoteAddr();
             List<FileResource> fileResources = convertMultipartFilesToFileResources(submittedCodes);
             answerQuestionUseCase.execute(new AnswerQuestionUseCase.Request(examId, problemId,
-                    langEnvName, studentId, fileResources), presenter);
+                    langEnvName, !token.isAdmin(), studentId, ipAddress, fileResources), presenter);
             return presenter.present();
         });
     }

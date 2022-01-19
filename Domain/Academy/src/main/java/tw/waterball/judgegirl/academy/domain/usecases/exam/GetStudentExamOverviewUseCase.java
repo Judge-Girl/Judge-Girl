@@ -14,7 +14,7 @@ import javax.inject.Named;
 import javax.validation.Valid;
 import java.util.Optional;
 
-import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
+import static tw.waterball.judgegirl.academy.domain.utils.ExamValidationUtil.onlyExamineeWithWhitelistIpCanAccessOngoingExam;
 
 @Named
 public class GetStudentExamOverviewUseCase extends AbstractExamUseCase {
@@ -28,7 +28,7 @@ public class GetStudentExamOverviewUseCase extends AbstractExamUseCase {
     public void execute(Request request, Presenter presenter) {
         int studentId = request.studentId;
         Exam exam = findExam(request.examId);
-        onlyWhitelistIpAddressExamineeCanAccessTheOngoingExam(request, exam);
+        onlyExamineeWithWhitelistIpCanAccessOngoingExam(request.isStudent, studentId, new IpAddress(request.ipAddress), exam);
         presenter.showExam(exam);
 
         for (Question question : exam.getQuestions()) {
@@ -43,12 +43,6 @@ public class GetStudentExamOverviewUseCase extends AbstractExamUseCase {
                                     presenter.showYourScoreOfQuestion(question, yourScore);
                                 }, () -> presenter.showYourScoreOfQuestion(question, 0));
                     }, () -> presenter.showNotFoundQuestion(question));
-        }
-    }
-
-    private void onlyWhitelistIpAddressExamineeCanAccessTheOngoingExam(Request request, Exam exam) {
-        if (request.isStudent && exam.isOngoing() && !exam.hasIpAddress(new IpAddress(request.ipAddress))) {
-            throw notFound(Exam.class).id(request.examId);
         }
     }
 

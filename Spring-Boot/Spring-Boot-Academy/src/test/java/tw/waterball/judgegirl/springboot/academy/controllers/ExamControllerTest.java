@@ -368,11 +368,12 @@ class ExamControllerTest extends AbstractSpringBootTest {
 
     @Test
     void GivenOneExamAndOneQuestionCreated_WhenDeleteTheQuestion_ShouldSucceed() throws Exception {
-        ExamView examView = createExamAndGet(now(), now(), "sample-exam");
-        createQuestion(new CreateQuestionUseCase.Request(examView.getId(), 2, 5, 100, 1));
-        deleteQuestion(examView.getId(), PROBLEM_ID)
+        int examId = createExamAndGet(now(), now(), "sample-exam").id;
+        createQuestion(new CreateQuestionUseCase.Request(examId, 2, 5, 100, 1));
+
+        deleteQuestion(examId, PROBLEM_ID)
                 .andExpect(status().isOk());
-        assertEquals(0, getExamProgressOverview(examView.getId()).getQuestions().size());
+        assertTrue(getExamOverview(examId).getQuestions().isEmpty());
     }
 
     @Test
