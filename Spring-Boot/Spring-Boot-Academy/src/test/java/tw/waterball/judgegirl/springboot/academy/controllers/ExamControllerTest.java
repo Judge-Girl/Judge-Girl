@@ -371,6 +371,7 @@ class ExamControllerTest extends AbstractSpringBootTest {
         int examId = createExamAndGet(now(), now(), "sample-exam").id;
         addExaminee(examId, STUDENT_A_ID);
         createQuestion(new CreateQuestionUseCase.Request(examId, 2, 5, 100, 1));
+
         deleteQuestion(examId, PROBLEM_ID)
                 .andExpect(status().isOk());
         assertEquals(0, getExamProgressOverview(examId).getQuestions().size());

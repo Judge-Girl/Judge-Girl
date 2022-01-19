@@ -8,7 +8,7 @@ import tw.waterball.judgegirl.primitives.exam.IpAddress;
 
 import javax.inject.Named;
 
-import static tw.waterball.judgegirl.academy.domain.utils.ExamValidationUtil.onlyWhitelistIpAddressExamineeCanAccessTheOngoingExam;
+import static tw.waterball.judgegirl.academy.domain.utils.ExamValidationUtil.onlyExamineeWithWhitelistIpCanAccessOngoingExam;
 
 /**
  * @author - johnny850807@gmail.com (Waterball)
@@ -22,7 +22,7 @@ public class GetExamUseCase extends AbstractExamUseCase {
 
     public void execute(Request request, ExamPresenter presenter) throws ExamineeOnlyOperationException {
         Exam exam = findExam(request.examId);
-        onlyWhitelistIpAddressExamineeCanAccessTheOngoingExam(request.isStudent, request.studentId, new IpAddress(request.ipAddress), exam);
+        onlyExamineeWithWhitelistIpCanAccessOngoingExam(request.isStudent, request.studentId, new IpAddress(request.ipAddress), exam);
         presenter.showExam(exam);
     }
 

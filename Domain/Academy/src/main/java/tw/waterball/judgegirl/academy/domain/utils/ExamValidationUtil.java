@@ -17,7 +17,7 @@ public class ExamValidationUtil {
         }
     }
 
-    public static void onlyWhitelistIpAddressExamineeCanAccessTheOngoingExam(boolean isStudent, int studentId, IpAddress ipAddress, Exam exam) {
+    public static void onlyExamineeWithWhitelistIpCanAccessOngoingExam(boolean isStudent, int studentId, IpAddress ipAddress, Exam exam) {
         onlyExamineeCanAccessTheExam(isStudent, studentId, exam);
         if (isStudent && exam.isOngoing() && !exam.hasIpAddress(ipAddress)) {
             throw notFound(Exam.class).id(exam.getId());

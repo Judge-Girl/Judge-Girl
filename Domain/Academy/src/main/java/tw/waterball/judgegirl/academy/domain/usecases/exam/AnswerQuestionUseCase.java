@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.OptionalInt;
 
 import static java.util.Collections.singletonMap;
-import static tw.waterball.judgegirl.academy.domain.utils.ExamValidationUtil.onlyWhitelistIpAddressExamineeCanAccessTheOngoingExam;
+import static tw.waterball.judgegirl.academy.domain.utils.ExamValidationUtil.onlyExamineeWithWhitelistIpCanAccessOngoingExam;
 import static tw.waterball.judgegirl.commons.exceptions.NotFoundException.notFound;
 import static tw.waterball.judgegirl.commons.utils.ComparableUtils.betterAndNewer;
 
@@ -46,7 +46,7 @@ public class AnswerQuestionUseCase extends AbstractExamUseCase implements Verdic
 
         onlyExamineeCanAnswerQuestion(request.studentId, exam);
         examMustHaveBeenStarted(exam);
-        onlyWhitelistIpAddressExamineeCanAccessTheOngoingExam(request.isStudent, request.studentId, new IpAddress(request.ipAddress), exam);
+        onlyExamineeWithWhitelistIpCanAccessOngoingExam(request.isStudent, request.studentId, new IpAddress(request.ipAddress), exam);
         int remainingSubmissionQuota = calculateRemainingSubmissionQuota(request, question);
         mustHaveRemainingSubmissionQuota(remainingSubmissionQuota, question.getQuota());
 
